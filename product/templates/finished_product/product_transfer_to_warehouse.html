@@ -80,10 +80,11 @@
               <tbody class="mainTableList">
                   {{ formset.management_form}}
                   {% for form in formset %}
-            
+                  
                   {% if voucher_instance.qc_all_qty > 0 %}
-                  {{ form.id }}
+                  
                   <tr>
+                    <input type="hidden" name="{{form.prefix}}-id" value="{{form.instance.id}}" id="id_{{form.prefix}}-id">
                       <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
                       <td>
                           <div class="custom-dropdown-container">
@@ -111,8 +112,9 @@
                       </td>
                   </tr>
                   {% else %}
-                  {{ form.id }}
+             
                   <tr>
+                    <input type="hidden" name="{{form.prefix}}-id" value="{{form.instance.id}}" id="id_{{form.prefix}}-id">
                     <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
                     <td>
                         <div class="custom-dropdown-container">
@@ -176,10 +178,14 @@
                           e.value = "";
                       });
   
-                      const newId = newTable.querySelector('td:first-child span');
+                      const newId = newTable.querySelector('span[id^="id_stock_"]');
                       newId.id = `id_stock_${newFormCount}`;
                       newId.textContent = newFormCount + 1;
-                     
+
+                      const productidElement = newTable.querySelector('input[name$="-id"]');
+                      productidElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-id`;
+                      productidElement.name = `finished_goods_transfer_records_set-${newFormCount}-id`;
+                      productidElement.value = "";
   
                       const productNameElement = newTable.querySelector('input[name^="finished_goods_transfer_records_set-"][name$="-product"]');
                       productNameElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-product`;
@@ -190,7 +196,7 @@
                       itemNameElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-products`;
                       itemNameElement.name = `finished_goods_transfer_records_set-${newFormCount}-products`;
                       itemNameElement.value = "";
-                      itemNameElement.style.readonly ="false";
+                      itemNameElement.style.readonly =false;
   
                       const selectElement = newTable.querySelector('.stock_input_name[name^="select_product_name_"]');
                       selectElement.id = `select_product_name_${newFormCount}`;
@@ -262,14 +268,15 @@
         console.log(forms)
         for(var i=0; i<forms; i++){
             var stockId = document.getElementById('id_finished_goods_transfer_records_set-' + i +'-id').value;
-        
-            if(stockId !== ""){
-             
-                var stockItemName = document.getElementById('id_finished_goods_transfer_records_set-'+ i+'-products');
-                stockItemName.readOnly = true;
+            var stockItemName = document.getElementById('id_finished_goods_transfer_records_set-'+ i+'-products');
+            var stockQty = document.getElementById('id_finished_goods_transfer_records_set-'+i+'-product_quantity_transfer');
             
-                var stockQty = document.getElementById('id_finished_goods_transfer_records_set-'+i+'-product_quantity_transfer');
+            if(stockId !== ""){
+                stockItemName.readOnly = true;
                 stockQty.readOnly = true;
+            }else{
+                stockItemName.readOnly = false;
+                stockQty.readOnly = false;
             }
         }
       
