@@ -1024,6 +1024,16 @@ input[type=number] {
     background: linear-gradient(45deg, #55c2da, #59e0c5);
 }
 
+.filterButton{
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-size: 15px;
+    margin-left: 10px;
+    height:30px;
+    background: linear-gradient(45deg, #f00404, #595ce0);
+}
 .product2item_add_btn{
     color: #fff;
     border: none;

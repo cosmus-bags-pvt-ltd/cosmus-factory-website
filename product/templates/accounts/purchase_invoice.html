@@ -872,13 +872,13 @@ function getGstNo() {
         return true; // Allow default Tab behavior
     }
    
-     });
+});
 
 
      // This ajax call then select item name value send to the backend and append the shade ,color,per gst data show in the table
         var popupWindow = null; // Variable to hold the reference to the popup window
         
-        $(document).on('focusin', 'select[name^="purchase_voucher_items_set-"]', function () {
+        $(document).on('focus', 'select[name^="purchase_voucher_items_set-"]', function () {
             var shadeValue = $('#id_item_checkshade-' + purchaseValue ).val();
             console.log("shadeValue",shadeValue)
           // Unbind any previously bound events before binding new ones
@@ -894,25 +894,22 @@ function getGstNo() {
         })
 
         function handleShadeValueFalse() {
-            $(document).off('keydown.selectKey').on('keydown.selectKey', 'select[name^="purchase_voucher_items_set-"]', function (event) {
-           
+            $(document).on('keydown', 'select[name^="purchase_voucher_items_set-"]', function (event) {
             // Handle Enter key press
             if (event.key === 'Enter') {
                 event.preventDefault(); // Prevent form submission or default behavior
                 const $dropdown = $(this);
                 $dropdown.focus(); 
-                $dropdown.trigger('mousedown').trigger('mouseup'); // Open dropdown
-        
+                $dropdown.trigger('mousedown').trigger('mouseup'); // Open dropdow
             }
 
         });
 
     // Handle the change event for dropdown selection
-    $(document).off('change.selectChange').on('change.selectChange', 'select[name^="purchase_voucher_items_set-"]', function () {
+    $(document).on('change', 'select[name^="purchase_voucher_items_set-"]', function (event) {
         const selectedShade = $(this).val();
         const uniqueIdValue = $(this).closest('tr').find('input[name^="item_unique_id_"]').val();
         const itemShades = $(this).closest('tr').find('[id^="input_item_shade_"]');
-        console.log('itemShades',itemShades)
         itemShades.hide()
         // Trigger the popup on selection
         handlePopup(selectedShade, uniqueIdValue);
@@ -924,11 +921,10 @@ function getGstNo() {
                 event.preventDefault();
                 if (event.key === 'Enter') {
                     const row = $(this);
-                    console.log(row)
                     const selectedShade = $(this).val();
                     const uniqueIdValue = $(this).closest('tr').find('input[name^="item_unique_id_"]').val();
                     const itemShades = $(this).closest('tr').find('[id^="input_item_shade_"]');
-                    console.log(itemShades)
+        
                     $(this).attr('disabled', 'disabled');
                     itemShades.hide();
                     handlePopup(selectedShade, uniqueIdValue);
@@ -946,11 +942,9 @@ function getGstNo() {
                 
                 if(purchaseId ){
                     primary_id = purchaseId
-
                     if (primary_id === "") {
                         primary_id = null
                     }
-
                 }
 
                 if (selectedShade !== "" && primary_id !== null ) {
@@ -969,8 +963,6 @@ function getGstNo() {
             
                                 },
                                 success: function (response) {
-                                    // Open the dynamic URL received from the server
-                                
                                     popupWindow = window.open(response.popup_url, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
                             
                                 },
@@ -1015,8 +1007,6 @@ function getGstNo() {
         }
     });
 </script>
-
-
 <script>
     //This script is to calculate the purchase invoice amount and create a new row to added and append it to the table-->
     function calculateTotalAmount() {
@@ -1345,12 +1335,12 @@ function getGstNo() {
     const form = document.getElementById("newForm");
     const supplier_invoice_number = document.getElementById('')
     // Prevent Enter key from submitting the form
-    // form.addEventListener("keydown", function(event) {
-    //   if (event.key === "Enter") {
-    //     event.preventDefault();
+    form.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
       
-    //   }
-    // });
+      }
+    });
   
     document.addEventListener("DOMContentLoaded", function () {
     const submitButton = document.getElementById("parentFormClick");
@@ -1362,7 +1352,7 @@ function getGstNo() {
         let isValid = true;
         // Check all item name inputs
         itemNameInputs.forEach(input => {
-            console.log('ew',input.value)
+           
             if (!input.value.trim()) {
                 isValid = false;
             }
@@ -1375,37 +1365,36 @@ function getGstNo() {
         });
 
         // // Check all item shade selects
-        // itemShadeSelects.forEach(select => {
-        //     console.log('sdasds',select.value.trim())
-        //     if (!select.value.trim()) {
-        //         isValid = false;
+        itemShadeSelects.forEach(select => {
+            if (!select.value.trim()) {
+                isValid = false;
              
-        //     }
-        //     if(select.value.trim() == ""){
-        //         submitButton.disabled = true;
-        //     }else{
-        //         submitButton.disabled = false; 
-        //     }
-        // });
+            }
+            if(select.value.trim() == ""){
+                submitButton.disabled = true;
+            }else{
+                submitButton.disabled = false; 
+            }
+        });
 
     }
     
 //     // Prevent tabbing if itemQtyInputs are empty
-//     itemShadeSelects.forEach(select => {
-//     select.addEventListener("keydown", function (event) {
-//         if (event.key === "Enter") {
-//             if (!select.value.trim()) {
-//                 // Prevent opening the dropdown if the value is empty
-//                 event.preventDefault();
+    itemShadeSelects.forEach(select => {
+    select.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            if (!select.value.trim()) {
+                // Prevent opening the dropdown if the value is empty
+                event.preventDefault();
                 
            
-//             } else {
-//                 // Allow normal dropdown behavior if the value is valid
-//                 console.log("Dropdown opened on Enter key.");
-//             }
-//         }
-//     });
-// });
+            } else {
+                // Allow normal dropdown behavior if the value is valid
+                console.log("Dropdown opened on Enter key.");
+            }
+        }
+    });
+});
     // itemNameInputs.forEach(input => {
     //     input.addEventListener("input", validateInputs);
     // });
@@ -1428,7 +1417,7 @@ function inputCheck(){
         const itemNameInputsid = document.querySelectorAll('[name^="item_name_"]');
         const productInvoiceId = document.getElementById('id_purchase_voucher_items_set-0-id').value;
         const productPartyName = document.getElementById('id_party_name');
-        console.log('product',productInvoiceId)
+        
         if(productInvoiceId !== ''){
             productPartyName.disabled = true;
         }else{
