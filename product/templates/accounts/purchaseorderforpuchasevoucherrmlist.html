@@ -54,27 +54,38 @@
     <button type="button" class="edit_btn w-100 mb-2" id="NegativeList_btn">Negative List<span class="production_padding"><i class="fas fa-angle-right arrowBtn"></i></span></button>
     <div id="NegativeList" style="display: none;">
         <div>
-            <form action="/purchase-order-for-puchase-voucher-rm-list/" method="GET" id="filterForm">
+
+
+            <form action="" method="POST" id="filterForm">
+                {% csrf_token %}
                 <h4>negetive stock</h4>
+                
                 <div>
                     <label>Sort by:</label>
+                    
                     <button type="submit" class="add_btn" name="sort_name" value="lowest" class="sort-btn">
                        Assending
                     </button>
                     <button type="submit" class="add_btn" name="sort_name" value="highest" class="sort-btn">
                        Decending
                     </button>
-                   
                 </div>
-                    <div class="d-flex mb-3">
-                        <label>Fabric Group :</label>
-                        <input type="number" name="Fabric_Group" id="id_Fabric_Group" class="item-select" value="">
+            </form>
+
+
+            <form action="" method="POST">
+                {% csrf_token %}
+                <div class="d-flex mb-3">
+                    <label>Fabric Group :</label>
+                    <input type="text" name="Fabric_Group" id="id_Fabric_Group" class="item-select" value="">
                     <label>Less Than:</label>
-                        <input type="number" name="less_Number" id="id_lessNumber" class="item-select" value="">
-                        
-                    </div>
-                    <button type="submit" class="ms-5 newProductCreateBtn" id="parentClick">Submit</button>
-                </form>
+                    <input type="text" name="less_Number" id="id_lessNumber" class="item-select" value="">
+                </div>
+
+                <button type="submit" class="ms-5 newProductCreateBtn" id="parentClick">Submit</button>
+            </form>
+
+
                 <form action="/purchase-order-for-puchase-voucher-rm-list/" method="GET">
                    
                 </form>

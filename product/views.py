@@ -7479,8 +7479,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     
 
-    negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum(
-        'shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
+    
 
     negetive_stock_sellerwise = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
 
@@ -7488,42 +7487,37 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     voucher_master = item_purchase_voucher_master.objects.filter(party_name = selected_vendor)
 
-
-    
-
-    
-    
-    
+    filter_name  = request.POST.get('sort_name')
+    selected_fabric_grp = request.POST.get('Fabric_Group')
+    less_Number = request.POST.get('less_Number')
 
 
-    
-    
-    
-    
-    
 
-    
+    if filter_name == 'highest' and filter_name != '':
+        negetive_stock_report = Item_Creation.objects.all().annotate(total_qty = Sum(
+        'shades__godown_shades__quantity')).order_by('total_qty').select_related('Item_Color','Fabric_Group')
 
-    
-    
+    elif filter_name == 'lowest' and filter_name != '':
+        negetive_stock_report = Item_Creation.objects.all().annotate(total_qty = Sum(
+        'shades__godown_shades__quantity')).order_by('-total_qty').select_related('Item_Color','Fabric_Group')
 
+    elif selected_fabric_grp:
+        negetive_stock_report = Item_Creation.objects.filter(Fabric_Group__fab_grp_name = selected_fabric_grp).annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
 
-    
+    elif less_Number:
+        search_value = int(less_Number)
+        print(type(search_value))
+        negetive_stock_report = Item_Creation.objects.annotate(total_qty = Sum('shades__godown_shades__quantity')).filter(total_qty__lt = search_value).order_by('item_name').select_related('Item_Color','Fabric_Group')
+        
+    else:
+        negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
 
-    
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
 
     return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise})
+
+
+
+
 
 
 
@@ -7533,6 +7527,10 @@ def purchase_order_for_purchase_rm_delete(request,pk):
         purchase_order_instance = get_object_or_404(purchase_order_master_for_puchase_voucher_rm,pk=pk)
         purchase_order_instance.delete()
         return redirect('purchase-order-for-puchase-voucher-rm-list')
+
+
+
+
 
 def excel_download_for_purchase_order(request,p_id):
 
@@ -7658,7 +7656,6 @@ def excel_download_for_purchase_order(request,p_id):
             ws.cell(row = max_rows + 4, column = 13, value = "Round off")
             ws.cell(row = max_rows + 5, column = 13, value = "Total Value")
 
-
             ws.cell(row=max_rows + 4, column=5, value=total_quantity)
             ws.cell(row=max_rows + 4, column=6, value=child.item_name.unit_name_item.unit_name)
             ws.merge_cells(start_row=max_rows + 5, start_column=1, end_row=max_rows + 5, end_column=12)
@@ -7706,9 +7703,6 @@ def itemdynamicsearchajax(request):
 
         if item_name_searched:
             
-            
-
-            
 
             searched_item_name_dict = {}
             for queryset in item_name_searched:
@@ -7739,6 +7733,9 @@ def itemdynamicsearchajax(request):
         logger.error(f"Exception in itemdynamicsearchajax - {ve}")
         error_message = f"An error occurred:{str(e)}"
         return JsonResponse({'error': error_message}, status = 500)
+
+
+
 
 
 @login_required(login_url='login')
