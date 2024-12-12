@@ -158,7 +158,7 @@
   $(document).ready(function () {
     $('.delete-btn').click(function () {
       var itemId = $(this).data('item-id');
-      var name = $(this).closest('tr').find('td').eq(1).text();
+      var name = $(this).closest('tr').find('td').eq(2).text();
       var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
       $('#modal-body-text').html('Are you sure you want to delete the product item ' + coloredName + '?');
       $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data

@@ -29,10 +29,12 @@
                         <td><input type="text" class="productinput" name="{{form.prefix}}-product_sku" value="{{form.instance.product_sku}}" maxlength="100" id="id_{{form.prefix}}-product_sku" readonly></td>
                         <td><input type="text" class="productinput" name="{{form.prefix}}-product_color" value="{{form.instance.product_color}}" maxlength="100" id="id_{{form.prefix}}-product_color" readonly></td>
                         <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-cutting_quantity" value="{{form.instance.cutting_quantity}}" id="id_{{form.prefix}}-cutting_quantity" readonly></td>
-                        <td><input type="number" class="productorderqty-input" name="{{form.prefix}}-balance_pcs" value="{{form.instance.balance_pcs}}" id="id_{{form.prefix}}-balance_pcs" readonly></td>
-                        <td><input class="text-danger productorderrawqty-input" value="{{form.instance.approved_pcs}}">
-                            <!-- <input type="number" class="productorderqty-input" name="{{form.prefix}}-" value="{{form.instance.approved_pcs}}" id="id_{{form.prefix}}-approved_pcs"> -->
-                            <input type="number" class="productorderqty-input ms-2" name="{{form.prefix}}-approved_pcs" value="{{form.instance.approved_pcs}}" id="id_{{form.prefix}}-approved_pcs">
+                        <td><input type="number" class="productorderqty-input" name="{{form.prefix}}-balance_pcs" value="{{form.instance.balance_pcs}}" id="id_{{form.prefix}}-balance_pcs" readonly>
+                         <input type="hidden" class="productorderqty-input" name="{{form.prefix}}-updateBlance_pcs" value="{{form.instance.balance_pcs}}" id="id_{{form.prefix}}-updateBlance_pcs"></td>
+                        <td><input type="hidden"  class="text-danger productorderrawqty-input approvedReadonly" value="{{form.instance.approved_pcs}}" readonly>
+                            <input   class="text-danger productorderrawqty-input approvedReadonlyhidden" value="{{form.instance.approved_pcs}}" readonly>
+                            <input type="hidden" class="productorderqty-input ms-2" name="{{form.prefix}}-approved_pcs" value="{{form.instance.approved_pcs}}" id="id_{{form.prefix}}-approved_pcs">
+                            <input type="number" class="productorderqty-input ms-2" name="{{form.prefix}}-approved_pcs_Value" value="" id="id_{{form.prefix}}-approved_pcs_Value">
                         
                         </td>
                       
@@ -43,8 +45,8 @@
                     <tr class="fw-bold text-danger">
                         <td colspan="2">Total</td>
                         <td><span class="ms-2" id="TotalCutting">0</span></td>
-                        <td><span class="ms-2" id="TotalApprove">0</span></td>
                         <td><span class="ms-2" id="TotalBalance">0</span></td>
+                        <td><span class="ms-2" id="TotalApprove">0</span></td>
                     </tr>
                 </tbody>
 
@@ -87,22 +89,35 @@
     checkAll.addEventListener('change', checkboxCheckAll);
 
     function checkboxCheckAll() {
-        var checkboxes = document.querySelectorAll('[name$="-approved_pcs"]');
+        var checkboxes = document.querySelectorAll('[name$="-approved_pcs_Value"]');
         
         checkboxes.forEach(element => {
-            var balanceQty = element.closest('tr').querySelector('[name$="-balance_pcs"]');
-            var cuttingQty = element.closest('tr').querySelector('[name$="-cutting_quantity"]');
+            var rows = element.closest('tr');
+            var balanceQty = rows.querySelector('[name$="-balance_pcs"]');
+            var cuttingQty = rows.querySelector('[name$="-cutting_quantity"]');
+            var approveValue = parseInt(rows.querySelector('.approvedReadonlyhidden').value) || 0;
+            var updateBalance = parseInt(rows.querySelector('[name$= "-updateBlance_pcs"]').value) || 0;
             var balanceValue = parseInt(balanceQty.value) || 0;
             var cuttingValue = parseInt(cuttingQty.value) || 0;
-    
-            if (checkAll.checked) {
-                element.value = cuttingValue;
-                balanceQty.value = 0;
-            } else {
-                element.value = 0;
-                
-                balanceQty.value = cuttingValue;
+
+            if(approveValue > 0){
+                if (checkAll.checked) {
+                    element.value = updateBalance;
+                    balanceQty.value = 0;
+                } else {
+                    element.value = 0;
+                    balanceQty.value = updateBalance;
+                }
+            }else{
+                if (checkAll.checked) {
+                    element.value = cuttingValue;
+                    balanceQty.value = 0;
+                } else {
+                    element.value = 0;
+                    balanceQty.value = cuttingValue;
+                }
             }
+            
         });
     }
 });
@@ -111,33 +126,79 @@ function quantityCheck() {
     totalCutting = 0;
     totalapprove = 0;
     totalbalance = 0;
-    var approved = document.querySelectorAll('[name$= "-approved_pcs"]');
+  
+    var approved = document.querySelectorAll('[name$= "-approved_pcs_Value"]');
 
     approved.forEach(element => {
-        var approvedValues = parseInt(element.value);
-        var cuttingApprovedValue = parseInt(element.closest('tr').querySelector('[name$= "-cutting_quantity"]').value);
-        var currentApproveValues = parseInt(element.closest('tr').querySelector('[name$= "-currentApproved_pcs"]').value);
-        var balanceValueKey = parseInt(element.closest('tr').querySelector('[name$="-balance_pcs"]').value)
-        
-       console.log(approvedValues)
-            if (cuttingApprovedValue < approvedValues) {
-                element.closest('tr').querySelector('[name$= "-approved_pcs"]').value = 0;
+        var row = element.closest('tr');
+        var approvedValues = parseInt(element.value) || 0; // Default to 0 if NaN
+        var cuttingApprovedValue = parseInt(row.querySelector('[name$= "-cutting_quantity"]').value) || 0;
+        var currentApproveValues = parseInt(row.querySelector('[name$= "-currentApproved_pcs"]').value) || 0;
+        var balanceValueKey = parseInt(row.querySelector('[name$= "-balance_pcs"]').value) || 0;
+        var approvedReadOnlyValue = parseInt(row.querySelector('.approvedReadonlyhidden').value) || 0;
+        var updateBalanceValues = parseInt(row.querySelector('[name$= "-updateBlance_pcs"]').value) || 0;
+
+
+        if (!isNaN(approvedReadOnlyValue) && !isNaN(approvedValues)) {
+
+            var finalApprove = approvedValues + approvedReadOnlyValue;
+      
+            row.querySelector('[name$= "-approved_pcs"]').value = finalApprove;
+            row.querySelector('.approvedReadonly').value = finalApprove;
             }
+        
             
-            if (!isNaN(approvedValues) && !isNaN(cuttingApprovedValue)) {
-                var balanceApprovedValue = cuttingApprovedValue - approvedValues;
-                if (balanceApprovedValue < 0) {
-                    element.closest('tr').querySelector('[name$= "-balance_pcs"]').value = cuttingApprovedValue;
-                } else {
-                    element.closest('tr').querySelector('[name$= "-balance_pcs"]').value = balanceApprovedValue;
+            if(approvedReadOnlyValue > 0){
+              
+                if (!isNaN(approvedValues) && !isNaN(updateBalanceValues)) {
+
+                    if (updateBalanceValues < approvedValues) {
+                        row.querySelector('[name$= "-approved_pcs_Value"]').value = 0;
+                    }
+                    if(updateBalanceValues=== 0){
+                   
+                   element.setAttribute('readonly', true);
+                   }else{
+                    element.removeAttribute('readonly');
+                   }
+                    var balanceApprovedValue = updateBalanceValues - approvedValues;
+                    
+                    if (balanceApprovedValue < 0) {
+                        row.querySelector('[name$= "-balance_pcs"]').value = updateBalanceValues;
+                    
+                    } else {
+                        row.querySelector('[name$= "-balance_pcs"]').value = balanceApprovedValue;
+                    }
+                }
+                
+            }else {
+               
+                if (!isNaN(approvedValues) && !isNaN(cuttingApprovedValue)) {
+                    if (cuttingApprovedValue < approvedValues) {
+                    row.querySelector('[name$= "-approved_pcs_Value"]').value = 0;
+                    }
+                    if(finalApprove === cuttingApprovedValue){
+                   
+                   element.setAttribute('readonly', true);
+                   }else{
+                    element.removeAttribute('readonly');
+                   }
+                    var balanceApprovedValue = cuttingApprovedValue - approvedValues;
+                 
+                    if (balanceApprovedValue < 0) {
+                        row.querySelector('[name$= "-balance_pcs"]').value = cuttingApprovedValue;
+                    } else {
+                        row.querySelector('[name$= "-balance_pcs"]').value = balanceApprovedValue;
+                    }
                 }
             }
+           
             totalCutting += cuttingApprovedValue;
-            totalapprove += approvedValues;
-            totalbalance += balanceValueKey;
+            totalapprove += finalApprove;
+            totalbalance += balanceApprovedValue;
             document.getElementById('TotalCutting').textContent =totalCutting
-            document.getElementById('TotalApprove').textContent = totalapprove;
             document.getElementById('TotalBalance').textContent =totalbalance;
+            document.getElementById('TotalApprove').textContent = totalapprove;
         
     });
 }
@@ -145,7 +206,7 @@ function quantityCheck() {
 
     function submitForm(){
         var balanceApprove = document.querySelectorAll('[name$="-balance_pcs"]');
-        var currentApproved = document.querySelectorAll('[name$="-approved_pcs"]');
+        var currentApproved = document.querySelectorAll('[name$="-approved_pcs_Value"]');
         var submitBtn = document.querySelector('.create-btn');
         var checkBoxBtn = document.getElementById('id_checkAll');
         currentApproved.forEach(values =>{
@@ -162,7 +223,7 @@ function quantityCheck() {
         })
 
         if(totalQty === 0){
-            var approveBtn = document.querySelectorAll('[name$= "-approved_pcs"]');
+            var approveBtn = document.querySelectorAll('[name$= "-approved_pcs_Value"]');
                approveBtn.forEach(element =>{
                    element.setAttribute('readonly', true);
                }) 
@@ -176,7 +237,7 @@ function quantityCheck() {
     }
  
     function approveValueCheck(){
-        var approveCheck = document.querySelectorAll('[name$= "-approved_pcs"]');
+        var approveCheck = document.querySelectorAll('[name$= "-approved_pcs_Value"]');
         var submitButton = document.getElementById('cuttingOrderApproved');
         var hasInvalidValue = false; 
 
@@ -212,7 +273,7 @@ function quantityCheck() {
         quantityCheck()
         submitForm()
  
-        let approve = document.querySelectorAll('input[name$="-approved_pcs"]');
+        let approve = document.querySelectorAll('input[name$="-approved_pcs_Value"]');
         approve.forEach(function (element) {
             element.addEventListener('input', () => {
                 quantityCheck();
