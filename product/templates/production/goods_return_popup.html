@@ -48,12 +48,25 @@
                         <td><input type="text" class="productinput" name="{{form.prefix}}-product_color" value="{{form.instance.product_color}}" maxlength="100" id="id_{{form.prefix}}-product_color" readonly></td>
                         <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-L_work_out_pcs" value="{{form.instance.L_work_out_pcs}}" id="id_{{form.prefix}}-L_work_out_pcs" readonly></td>
                         <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-return_pcs" value="{{form.instance.return_pcs}}" id="id_{{form.prefix}}-return_pcs" readonly></td>
-                        <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-pending_for_approval" value="{{form.instance.pending_for_approval}}" id="id_{{form.prefix}}-pending_for_approval" readonly></td>
-                        <td><span class="text-danger ms-2 me-2">{{form.instance.approved_qty}}</span><input type="number" class="productorderqty-input " name="{{form.prefix}}-approved_qty" value="{{form.instance.approved_qty}}" id="id_{{form.prefix}}-approved_qty"></td>
+                        <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-pending_for_approval" value="{{form.instance.pending_for_approval}}" id="id_{{form.prefix}}-pending_for_approval" readonly>
+                            <input type="hidden" class="productorderqty-input" name="{{form.prefix}}-pending_for_approval_pcs" value="{{form.instance.pending_for_approval}}" id="id_{{form.prefix}}-pending_for_approval_pcs"></td>
+                        <td>
+                            <input type="hidden"  class="text-danger productorderrawqty-input approvedReadonly" value="{{form.instance.approved_qty}}" readonly>
+                            <input class="text-danger productorderrawqty-input approvedReadonlyhidden" value="{{form.instance.approved_qty}}" readonly>
+                            <input type="hidden" class="productorderqty-input " name="{{form.prefix}}-approved_qty" value="{{form.instance.approved_qty}}" id="id_{{form.prefix}}-approved_qty">
+                            <input type="number" class="productorderqty-input " name="{{form.prefix}}-approved_qty_value" value="" id="id_{{form.prefix}}-approved_qty_value">
+                        </td>
                         <input type="hidden" class="productorderqty-input" name="{{form.prefix}}-approved_pcs_diffrence" value="{{form.instance.return_pcs}}" id="id_{{form.prefix}}-approved_pcs_diffrence">
                         <input type="hidden" class="productorderqty-input" name="{{form.prefix}}-currentApproved_goods" value="{{form.instance.approved_qty}}" id="id_{{form.prefix}}-currentApproved_goods">
                     </tr>
                     {% endfor %}
+                    <tr class="fw-bold text-danger">
+                        <td colspan="2">Total</td>
+                        <td><span class="ms-2" id="TotalLabourWorkOut">0</span></td>
+                        <td><span class="ms-2" id="TotalLabourWorkOutReturn">0</span></td>
+                        <td><span class="ms-2" id="TotalLabourWorkOutBalance">0</span></td>
+                        <td><span class="ms-2" id="TotalLabourWorkOutApprove">0</span></td>
+                    </tr>
                 </tbody>
                 
             </table>
@@ -70,11 +83,14 @@
     checkAll.addEventListener('change', checkboxCheckAll);
 
     function checkboxCheckAll() {
-        var checkboxes = document.querySelectorAll('[name$="-approved_qty"]');
+        var checkboxes = document.querySelectorAll('[name$="-approved_qty_value"]');
         
         checkboxes.forEach(elements => {
-            var balanceQty = elements.closest('tr').querySelector('[name$="-pending_for_approval"]');
-            var cuttingQty = elements.closest('tr').querySelector('[name$="-L_work_out_pcs"]');
+            var rows = elements.closest('tr');
+            var balanceQty = rows.querySelector('[name$="-pending_for_approval"]');
+            var cuttingQty = rows.querySelector('[name$="-L_work_out_pcs"]');
+            var approveValue = parseInt(rows.querySelector('.approvedReadonlyhidden').value) || 0;
+            var updateBalance = parseInt(rows.querySelector('[name$= "-pending_for_approval_pcs"]').value) || 0;
             var balanceValue = parseInt(balanceQty.value) || 0;
             var cuttingValue = parseInt(cuttingQty.value) || 0;
             
@@ -89,57 +105,98 @@
             }
         });
     }
-    // function toggleVisible(toggleButtonId, dataContainerId) {
-    //   const toggleButton = document.getElementById(toggleButtonId);
-    //   const icon = toggleButton.querySelector(".arrowBtn");
-    //   const dataContainer = document.getElementById(dataContainerId);
-    //   toggleButton.addEventListener("click", function () {
-    //     // Toggle the visibility of the data container
-    //     if (dataContainer.style.display === "none") {
-    //       dataContainer.style.display = "block";
-    //       icon.classList.add("rotate"); // Add rotate class to the icon
-    //     } else {
-    //       dataContainer.style.display = "none";
-    //       icon.classList.remove("rotate"); // Remove rotate class from the icon
-    //     }
-    //   });
-    // }
-    // toggleVisible("goodsRetutn_btn", "goodsRetutn");
+    
     
 });
 
 
     function quantityCheck() {
-        var approved = document.querySelectorAll('[name$= "-approved_qty"]');
+        totalLwout = 0;
+        totalapprove = 0;
+        totalbalance = 0;
+        totalReturn =0;
+        var approved = document.querySelectorAll('[name$= "-approved_qty_value"]');
 
         approved.forEach(element => {
             var approvedValues = parseInt(element.value) || 0;
             var rows = element.closest('tr');
-            var cuttingApprovedValue = parseInt(rows.querySelector('[name$= "-return_pcs"]').value);
-            var approvedDiffrenceValues = parseInt(rows.querySelector('[name$= "-approved_pcs_diffrence"]').value);
+            var LworkOutApprovedValue = parseInt(rows.querySelector('[name$= "-L_work_out_pcs"]').value) || 0;
+            var cuttingApprovedValue = parseInt(rows.querySelector('[name$= "-return_pcs"]').value) || 0;
+            var approvedDiffrenceValues = parseInt(rows.querySelector('[name$= "-approved_pcs_diffrence"]').value) || 0;
+            var approveValue = parseInt(rows.querySelector('.approvedReadonlyhidden').value) || 0;
+            var updateBalance = parseInt(rows.querySelector('[name$= "-pending_for_approval_pcs"]').value) || 0;
         
-            if (cuttingApprovedValue < approvedValues) {
-                rows.querySelector('[name$= "-approved_qty"]').value = 0;
-            }
-        
-            if (!isNaN(approvedValues) && !isNaN(cuttingApprovedValue)) {
+            if (!isNaN(approveValue) && !isNaN(approvedValues)) {
+                var finalApprove = approvedValues + approveValue;
 
-             var balanceApprovedValue = cuttingApprovedValue - approvedValues;
-                if(balanceApprovedValue < 0){
-                    rows.querySelector('[name$= "-pending_for_approval"]').value = cuttingApprovedValue;
-                }else{
-                    rows.querySelector('[name$= "-pending_for_approval"]').value = balanceApprovedValue;
+                rows.querySelector('[name$= "-approved_qty"]').value = finalApprove;
+                rows.querySelector('.approvedReadonly').value = finalApprove;
+            }
+
+            if(approveValue > 0){
+
+                if (!isNaN(approvedValues) && !isNaN(updateBalance)) {
+
+                    if (updateBalance < approvedValues) {
+                    rows.querySelector('[name$= "-approved_qty_value"]').value = 0;
                 }
-               
 
+                if(updateBalance=== 0){
+                   
+                   element.setAttribute('readonly', true);
+                   }else{
+                    element.removeAttribute('readonly');
+                   }
+                var balanceApprovedValue = updateBalance - approvedValues;
+
+                    if(balanceApprovedValue < 0){
+                        rows.querySelector('[name$= "-pending_for_approval"]').value = updateBalance;
+                    }else{
+                        rows.querySelector('[name$= "-pending_for_approval"]').value = balanceApprovedValue;
+                    }
+                
+
+                }
+
+            }else{
+                if (cuttingApprovedValue < approvedValues) {
+                rows.querySelector('[name$= "-approved_qty_value"]').value = 0;
             }
+        
+                if (!isNaN(approvedValues) && !isNaN(cuttingApprovedValue) && !isNaN(updateBalance)) {
+
+                    if(cuttingApprovedValue=== approvedValues){
+                   
+                        element.setAttribute('readonly', true);
+                    }else{
+                        element.removeAttribute('readonly');
+                    }
+                var balanceApprovedValue = cuttingApprovedValue - approvedValues;
+                    if(balanceApprovedValue < 0){
+                        rows.querySelector('[name$= "-pending_for_approval"]').value = cuttingApprovedValue;
+                    }else{
+                        rows.querySelector('[name$= "-pending_for_approval"]').value = balanceApprovedValue;
+                    }
+                }
+            }
+
+            totalLwout+= LworkOutApprovedValue;
+            totalReturn += cuttingApprovedValue;
+            totalapprove += finalApprove;
+            totalbalance += balanceApprovedValue;
+
+            document.getElementById('TotalLabourWorkOut').textContent =totalLwout;
+            document.getElementById('TotalLabourWorkOutReturn').textContent =totalReturn;
+            document.getElementById('TotalLabourWorkOutBalance').textContent =totalbalance;
+            document.getElementById('TotalLabourWorkOutApprove').textContent = totalapprove;
+            
         })
     }
 
     function submitForm(){
     var balanceApprove = document.querySelectorAll('[name$= "-pending_for_approval"]');
     var totalQty = 0;
-    var currentApproved = document.querySelectorAll('[name$= "-approved_qty"]');
+    var currentApproved = document.querySelectorAll('[name$= "-approved_qty_value"]');
     var submitBtn = document.querySelector('.create-btn');
     var checkboxBtn = document.getElementById('id_checkAll');
     currentApproved.forEach(values =>{
@@ -154,7 +211,7 @@
 
     if(totalQty === 0){
      
-        var approveBtn = document.querySelectorAll('[name$= "-approved_qty"]');
+        var approveBtn = document.querySelectorAll('[name$= "-approved_qty_value"]');
         approveBtn.forEach(element =>{
             element.setAttribute('readonly', true);
         });
@@ -168,7 +225,7 @@
 
 
     function approveValueCheck(){
-    var approved = document.querySelectorAll('[name$= "-approved_qty"]');
+    var approved = document.querySelectorAll('[name$= "-approved_qty_value"]');
     var submitButton = document.getElementById('goodsValueBtn');
     var hasInvalidValue = false; 
 
@@ -201,7 +258,7 @@
 }
 
 function submitButtoncheck() {
-    var newapprove = document.querySelectorAll('[name$= "-approved_qty"]');
+    var newapprove = document.querySelectorAll('[name$= "-approved_qty_value"]');
     var allValuesEqual = true; 
 
     newapprove.forEach(element => {
@@ -224,7 +281,7 @@ function submitButtoncheck() {
     
         quantityCheck()
         submitForm()
-        let approve = document.querySelectorAll('input[name$="-approved_qty"]');
+        let approve = document.querySelectorAll('input[name$="-approved_qty_value"]');
         approve.forEach(function (element) {
             element.addEventListener('input', () => {
                 quantityCheck();

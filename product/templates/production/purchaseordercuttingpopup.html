@@ -102,6 +102,7 @@
 
             if(approveValue > 0){
                 if (checkAll.checked) {
+                   
                     element.value = updateBalance;
                     balanceQty.value = 0;
                 } else {
@@ -110,6 +111,7 @@
                 }
             }else{
                 if (checkAll.checked) {
+                    
                     element.value = cuttingValue;
                     balanceQty.value = 0;
                 } else {
@@ -145,7 +147,7 @@ function quantityCheck() {
       
             row.querySelector('[name$= "-approved_pcs"]').value = finalApprove;
             row.querySelector('.approvedReadonly').value = finalApprove;
-            }
+        }
         
             
             if(approvedReadOnlyValue > 0){
@@ -173,11 +175,11 @@ function quantityCheck() {
                 
             }else {
                
-                if (!isNaN(approvedValues) && !isNaN(cuttingApprovedValue)) {
+                if (!isNaN(approvedValues) && !isNaN(cuttingApprovedValue) && !isNaN(updateBalanceValues) ) {
                     if (cuttingApprovedValue < approvedValues) {
                     row.querySelector('[name$= "-approved_pcs_Value"]').value = 0;
                     }
-                    if(finalApprove === cuttingApprovedValue){
+                    if(approvedValues=== cuttingApprovedValue){
                    
                    element.setAttribute('readonly', true);
                    }else{
