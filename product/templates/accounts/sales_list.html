@@ -2,7 +2,18 @@
 {% load static %} 
 
 {% block body %}
-<div>
+
+<a href="{% url 'sales-voucher-create' %}">create</a>
+{% for sale in sales_list %}
+  <p>{{ sale }}</p>
+  <a href="{% url 'sales-voucher-create' sale.id %}">Edit</a>
+  <a href="{% url 'sales-voucher-delete' sale.id %}" onclick="return confirm('You want to delete?')">Delete</a>
+{% endfor %}
+  
+
+
+
+{% comment %} <div>
   <h2>Sales Invoice List</h2>
   <div class="">
     
@@ -52,7 +63,7 @@
           </div>  
          
         </div>
-   
+    {% endcomment %}
 
     
     

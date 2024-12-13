@@ -1,8 +1,24 @@
 {% extends 'product/base.html' %} 
 {% load static %} 
 
-{% block body %} 
-<div>
+{% block body %}
+<form action="" method="POST">
+  {% csrf_token %}
+  {{ master_form }}
+
+  {{ formset.management_form }}
+  {% for form in formset %}
+    {{ form }}
+    
+  {% endfor %}
+  <input type="submit">
+    
+</form>
+
+
+
+
+{% comment %} <div>
         <!-- <h2>Sales invoice</h2> -->
       <form class="mt-4" action="" method="POST">
           {% csrf_token %}
@@ -255,6 +271,6 @@
   }
 });
 
-</script>
+</script> {% endcomment %}
 
 {% endblock body %}
