@@ -45,9 +45,8 @@
               <select class="item-select destination_godowns" required name="destination_warehouse" id="id_destination_warehouse">
                 {% if form.instance.pk %}
                   <option value="{{form.instance.destination_warehouse.id}}">{{form.instance.destination_warehouse.warehouse_name_finished}}</option>
-    
-
-                {% elif not form.instance.pk %}
+               
+                  {% elif not form.instance.pk %}
 
                   <option value=""></option>
       
@@ -80,16 +79,15 @@
               <tbody class="mainTableList">
                   {{ formset.management_form}}
                   {% for form in formset %}
-                  
                   {% if voucher_instance.qc_all_qty > 0 %}
-                  
+                  {{form.id}}
                   <tr>
-                    <input type="hidden" name="{{form.prefix}}-id" value="{{form.instance.id}}" id="id_{{form.prefix}}-id">
+                    <input type="hidden" name="{{form.prefix}}-ids" value="{{form.instance.id}}" id="id_{{form.prefix}}-ids">
                       <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
                       <td>
                           <div class="custom-dropdown-container">
-                            <input readonly  type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" > 
-                              <input readonly type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Product_Name }} {{form.instance.product.PProduct_SKU}}{% endif %}"> 
+                            <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" readonly> 
+                              <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Product_Name }} {{form.instance.product.PProduct_SKU}}{% endif %}" readonly> 
                               <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice stock_input_name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
   
                                </div>
@@ -99,22 +97,22 @@
                           <input type="text" value="{{form.instance.product.PProduct_color.color_name}}" name="stock_color_{{forloop.counter0}}" id="id_stock_color_{{forloop.counter0}}" class="purchase-amount stock_color" readonly>
                       </td>
                       <td>
-                          <input readonly type="text" value="{{form.instance.product_quantity_transfer|default_if_none:''}}" class="purchase-amount stock_qty" name="{{form.prefix}}-product_quantity_transfer" maxlength="200" id="id_{{form.prefix}}-product_quantity_transfer">
+                          <input  type="text" value="{{form.instance.product_quantity_transfer|default_if_none:''}}" class="purchase-amount stock_qty" name="{{form.prefix}}-product_quantity_transfer" maxlength="200" id="id_{{form.prefix}}-product_quantity_transfer" readonly>
                       </td>
                       <td>
-                          <input readonly type="text" value="NOS" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-amount stock_units" readonly>
+                          <input  type="text" value="NOS" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-amount stock_units" readonly>
                       </td>
                       <td>
-                          <input readonly type="text" value="{{form.instance.remarks|default_if_none:''}}" class="purchase-amount stock_remarks" name="{{form.prefix}}-remarks" maxlength="255" id="id_{{form.prefix}}-remarks">
+                          <input  type="text" value="{{form.instance.remarks|default_if_none:''}}" class="purchase-amount stock_remarks" name="{{form.prefix}}-remarks" maxlength="255" id="id_{{form.prefix}}-remarks" readonly>
                       </td>
                       <td>
-                          <span class="delete-btn border-0 bg-transparent" style="cursor: pointer; display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-transnfer_cancelled_records" id="id_{{form.prefix}}-transnfer_cancelled_records" value=""></i></span>
+                          <span class="delete-btn border-0 bg-transparent" style="cursor: pointer; display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-transnfer_cancelled_records" id="id_{{form.prefix}}-transnfer_cancelled_records" value="" readonly></i></span>
                       </td>
                   </tr>
                   {% else %}
              
                   <tr>
-                    <input type="hidden" name="{{form.prefix}}-id" value="{{form.instance.id}}" id="id_{{form.prefix}}-id">
+                    <input type="hidden" name="{{form.prefix}}-ids" value="{{form.instance.id}}" id="id_{{form.prefix}}-ids">
                     <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
                     <td>
                         <div class="custom-dropdown-container">
@@ -182,9 +180,9 @@
                       newId.id = `id_stock_${newFormCount}`;
                       newId.textContent = newFormCount + 1;
 
-                      const productidElement = newTable.querySelector('input[name$="-id"]');
-                      productidElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-id`;
-                      productidElement.name = `finished_goods_transfer_records_set-${newFormCount}-id`;
+                      const productidElement = newTable.querySelector('input[name$="-ids"]');
+                      productidElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-ids`;
+                      productidElement.name = `finished_goods_transfer_records_set-${newFormCount}-ids`;
                       productidElement.value = "";
   
                       const productNameElement = newTable.querySelector('input[name^="finished_goods_transfer_records_set-"][name$="-product"]');
@@ -267,17 +265,37 @@
         var forms = document.getElementById('id_finished_goods_transfer_records_set-TOTAL_FORMS').value;
         console.log(forms)
         for(var i=0; i<forms; i++){
-            var stockId = document.getElementById('id_finished_goods_transfer_records_set-' + i +'-id').value;
+            var stockId = document.getElementById('id_finished_goods_transfer_records_set-' + i +'-ids').value;
             var stockItemName = document.getElementById('id_finished_goods_transfer_records_set-'+ i+'-products');
             var stockQty = document.getElementById('id_finished_goods_transfer_records_set-'+i+'-product_quantity_transfer');
-            
-            if(stockId !== ""){
+            var deleteButton = document.getElementById('id_finished_goods_transfer_records_set-'+ i +'-transnfer_cancelled_records').value;
+            var addButton = document.getElementById('addRowButton');
+            var submitBtn = document.getElementById('submitButtonStockTransfer')
+           
+            console.log("deleteButton",deleteButton)
+            if(stockId !== "" && stockId !== "None"){
                 stockItemName.readOnly = true;
                 stockQty.readOnly = true;
             }else{
                 stockItemName.readOnly = false;
                 stockQty.readOnly = false;
             }
+
+            if(deleteButton === "True"){
+                addButton.style.display="none";
+                submitBtn.style.display = "none";
+            }else{
+                submitBtn.style.display = "block";
+            }
+            var deleteBtn = document.querySelectorAll('.delete-btn')
+            deleteBtn.forEach(function(button){
+                var deleteCheck = button.querySelector('[id$="-transnfer_cancelled_records"]').value;
+                if(deleteCheck === "True"){
+                    button.style.display = "none";
+                }else{
+                      button.style.display = "block";
+                }
+            })
         }
       
     }
@@ -288,12 +306,13 @@
           var enterPressed = false;
           var itemName;
           var purchaseValue;
-          var productWerhouseid = $('#id_finished_goods_transfer_records_set-0-id').val() || '';  
-          if(productWerhouseid == ''){
+          var productWerhouseid = $('#id_finished_goods_transfer_records_set-0-ids').val();  
+
+          if(productWerhouseid == '' || productWerhouseid === "None" ){
             $('#id_source_warehouse').on('change', function () {
               const godown_id = $(this).val();
               const id = $(this).attr('id');
-              console.log(godown_id)
+        
               $.ajax({
                   url: '/producttransfertowarehouseajax/',
                   method: 'GET',
@@ -331,7 +350,7 @@
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
                         searchedProductNameDic = response.filtered_product; 
-                    
+                        console.log('searchedProductNameDic',searchedProductNameDic)
                         const searchQuery = nameValue.toLowerCase();
                         const searchTerms = searchQuery.split(/\s+/);
                         const convertStringData = searchTerms.toString();
@@ -551,8 +570,8 @@
 
         }else{
             var productTransferdate = $('#productTransferDate').val();
-
-            var ProductDataObject;
+            if(productTransferdate !== "None"){
+                var ProductDataObject;
             try {
             // Fix single quotes and mismatched quotes in the JSON string
                 const sanitizedData = productTransferdate
@@ -789,7 +808,10 @@
                       return true; // Allow default Tab behavior
                     }
               
-                }); 
+                });
+            }
+
+             
             }
         })
 

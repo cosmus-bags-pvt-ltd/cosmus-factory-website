@@ -6951,11 +6951,12 @@ def product_transfer_to_warehouse_list(request):
     return render(request,'finished_product/product_transfer_to_warehouse_list.html',{'warehouse_product_transfer_list':warehouse_product_transfer_list})
 
 
+
+
 @login_required(login_url='login')
 def product_transfer_to_warehouse_delete(request):
     id = request.POST.get('ProductId')
     
-     
     transfer_records = Finished_goods_transfer_records.objects.filter(Finished_goods_Stock_TransferMasterinstance = id)
     for record in transfer_records:
         if not record.transnfer_cancelled_records:
@@ -6968,9 +6969,12 @@ def product_transfer_to_warehouse_delete(request):
             warehouse_transfer_records_quantity_revert.save()
             transfer_records.update(transnfer_cancelled_records=True)
 
-            return JsonResponse({'response':True},status=200)
+    return JsonResponse({'response':True},status=200)
         
-    return redirect('all-product-transfer-to-warehouse')
+    # return redirect('all-product-transfer-to-warehouse')
+
+
+
 
 
 def product_transfer_to_warehouse_ajax(request):

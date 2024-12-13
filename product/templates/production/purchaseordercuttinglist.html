@@ -195,11 +195,9 @@
                     },
                     success: function(response) {
                         $('#exampleModal').modal('hide');
-                        // Disable buttons and visually "disable" the row
-                        $row.css('opacity', '0.5'); // Gray out the row
-                        $row.find('button').prop('disabled', true); // Disable all buttons within the row
-
-                        // Optionally, remove the event listeners from the buttons
+                   
+                        $row.css('opacity', '0.5'); 
+                        $row.find('button').prop('disabled', true);
                         $row.find('button').off('click');
                         window.location.reload(); // Refresh the page
                     },
