@@ -106,7 +106,7 @@
                                 <td>{{item.Item_Color.color_name}}</td>
                                 <td>{{item.total_qty | default_if_none:0}}</td>
                                 <td>{{item.Units}}</td>
-                                <td><input type="checkbox" class="text-success" id="" name="" value=""></td>
+                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="" name="" value=""></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -168,15 +168,20 @@
         toggleVisible("set_production_btn", "set_production");
 
 
+        function checkBoxData(){
+            var checkBox = document.querySelectorAll('.purchaseCheckBox');
+            checkBox.forEach(function(item){
+                item.addEventListener('click',function(){
+                    var itemPk = item.closest('tr').querySelector('#id_item_pk').value;
+                    
+                    console.log(itemPk)
+                })
+            })
+        }
         
     })
-    document.body.appendChild(document.getElementById('exampleModal'));
-    document.addEventListener("DOMContentLoaded", function () {
-        window.onload = function() {
-        document.getElementById("id_gst_percentage").focus();
-    };
-    });
-   
+    checkBoxData()
+    document.body.appendChild(document.getElementById('exampleModal'));   
     $(document).ready(function(){
       
         $('.delete-btn').click(function(){

@@ -13,30 +13,30 @@
             <div class="d-flex mb-3">
                 <span id="purchaseError" class="error-messages"></span>
                 <div class="d-flex ">
-                    <label for="id_purchase_number"  class="me-3">Purchase No :</label>
+                    <label for="id_purchase_number"  class="">Purchase No:</label>
                 
                     <input type="text" class="item-select" name="purchase_number" id ="id_purchase_number" value="{{product_pur_vouch_form.instance.purchase_number}}" maxlength="255" required readonly>
                 </div>
                 <span id="SupplierError" class="error-messages"></span>
-                <div class="d-flex ms-2">
-                    <label for="id_supplier_invoice_number" class="" >Supplier No :</label>
+                <div class="d-flex">
+                    <label for="id_supplier_invoice_number" class="" >Supplier No:</label>
                     <input type="text" class="item-select" name="supplier_invoice_number" id ="id_supplier_invoice_number" value="{{product_pur_vouch_form.instance.supplier_invoice_number}}" maxlength="255" required readonly  aria-required="true">
                 </div>
                
-                <div class="d-flex ms-3">
-                    <label for="id_GST_numbers" class="" >Company GST No :</label>
+                <div class="d-flex">
+                    <label for="id_GST_numbers" class="" >GST No:</label>
                     <input type="text" class="item-select" name="GST_numbers" id ="id_company_GST_numbers" value="27AAACG20210238" maxlength="50" readonly >
                 </div>
-                <div class="d-flex ms-3">
-                    <label for="id_ledger_type" class="me-2" >ledger Type :</label>
-                    <input type="text" class="item-select border-0 bg-transparent" name="ledger_type" id ="id_ledger_type" value="{{product_pur_vouch_form.instance.ledger_type}}" maxlength="50" default='Purchase(Product)' readonly placeholder="Purchase(Product)" >
+                <div class="d-flex">
+                    <label for="id_ledger_type" class="" >ledger Type:</label>
+                    <input type="text" class="item-select border-0 bg-transparent e" name="ledger_type" id ="id_ledger_type" value="{{product_pur_vouch_form.instance.ledger_type}}" maxlength="50" default='Purchase(Product)' style="outline:none;" readonly placeholder="Purchase(Product)" >
                 </div>
                 
             </div>
             <span id="ledgerError" class="error-messages"></span>
             <div class="d-flex mb-3">
                 <div class="d-flex">
-                    <label for="id_GST_numbers" class="me-2" >Finished godowns :</label>
+                    <label for="id_GST_numbers" class="me-2" >Finished godowns:</label>
                     <select name="finished_godowns" required id="id_finished_godowns" class="item-select" disabled>
                         {% for warehouse in warehouses %}
                           <option value="{{ warehouse.pk }}">{{ warehouse.warehouse_name_finished }}</option>
@@ -45,7 +45,7 @@
                 </div>
                 <span id="purchaseError" class="error-messages"></span>
                 <div class="d-flex ms-3">
-                    <label for="id_party_name" class="me-3" >Party A/C Name :</label>
+                    <label for="id_party_name" class="me-3" >Party A/C Name:</label>
                     <select class="product2Select text-black" name="party_name" required id="id_party_name" disabled>
                         {% if product_pur_vouch_form.instance.id %}
                         <option value="{{product_pur_vouch_form.instance.party_name.id}}">{{product_pur_vouch_form.instance.party_name.name}}</option>
@@ -60,7 +60,7 @@
                     <button disabled type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
                 </div>
                 <div class="d-flex ms-3">
-                    <label for="id_GST_number" class="me-2" >Party GST No :</label>
+                    <label for="id_GST_number" class="me-2" >Party GST No:</label>
                     <input type="text" class="item-select" name="GST_number" id ="id_GST_number"  value="{% if product_pur_vouch_form.instance.id %}{{ product_pur_vouch_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15" readonly required>
                 </div>
             
@@ -72,15 +72,15 @@
             <div class="d-flex mb-3">
                 <span id="purchaseError" class="error-messages"></span>
                 <div class="d-flex ">
-                    <label for="id_purchase_number"  class="me-3">Purchase No :</label>
+                    <label for="id_purchase_number"  class="me-1">Purchase No:</label>
                     
                     <input type="text" class="item-select" name="purchase_number" id ="id_purchase_number" value="{{product_pur_vouch_form.instance.purchase_number}}" maxlength="255" required>
                     
                     
                 </div>
                 <span id="SupplierError" class="error-messages"></span>
-                <div class="d-flex ms-2">
-                    <label for="id_supplier_invoice_number" class="" >Supplier No :</label>
+                <div class="d-flex ms-1">
+                    <label for="id_supplier_invoice_number" class="me-1" >Supplier No:</label>
                     {% if product_pur_vouch_form.instance.id %}
                     <input type="text" class="item-select" name="supplier_invoice_number" id ="id_supplier_invoice_number" value="{{product_pur_vouch_form.instance.supplier_invoice_number}}" maxlength="255" readonly>
                     {% elif not product_pur_vouch_form.instance.id %}
@@ -88,20 +88,20 @@
                     {% endif %}
                 </div>
                
-                <div class="d-flex ms-3">
-                    <label for="id_GST_numbers" class="" >Company GST No :</label>
+                <div class="d-flex">
+                    <label for="id_GST_numbers" class="" >GST No:</label>
                     <input type="text" class="item-select" name="GST_numbers" id ="id_company_GST_numbers" value="27AAACG20210238" maxlength="50" readonly >
                 </div>
-                <div class="d-flex ms-3">
-                    <label for="id_ledger_type" class="me-2" >ledger Type :</label>
-                    <input type="text" class="item-select border-0 bg-transparent" name="ledger_type" id ="id_ledger_type" value="{{product_pur_vouch_form.instance.ledger_type}}" maxlength="50" default='Purchase(Product)' readonly placeholder="Purchase(Product)" >
+                <div class="d-flex ">
+                    <label for="id_ledger_type" class="" >ledger Type:</label>
+                    <input type="text" class="item-select border-0 bg-transparent" name="ledger_type" id ="id_ledger_type" value="{{product_pur_vouch_form.instance.ledger_type}}" maxlength="50" default='Purchase(Product)'style="outline:none;" readonly placeholder="Purchase(Product)" >
                 </div>
                 
             </div>
             <span id="ledgerError" class="error-messages"></span>
             <div class="d-flex mb-3">
                 <div class="d-flex">
-                    <label for="id_GST_numbers" class="me-2" >Finished godowns :</label>
+                    <label for="id_GST_numbers" class="me-2" >Finished godowns:</label>
                     <select name="finished_godowns" required id="id_finished_godowns" class="item-select text-dark">
                         {% for warehouse in warehouses %}
                           <option value="{{ warehouse.pk }}">{{ warehouse.warehouse_name_finished }}</option>
@@ -110,7 +110,7 @@
                 </div>
                 <span id="purchaseError" class="error-messages"></span>
                 <div class="d-flex ms-3">
-                    <label for="id_party_name" class="me-3" >Party A/C Name :</label>
+                    <label for="id_party_name" class="me-3" >Party A/C Name:</label>
                     <select class="product2Select" name="party_name" required id="id_party_name">
                         {% if product_pur_vouch_form.instance.id %}
                         <option value="{{product_pur_vouch_form.instance.party_name.id}}">{{product_pur_vouch_form.instance.party_name.name}}</option>
@@ -125,7 +125,7 @@
                     <button type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
                 </div>
                 <div class="d-flex ms-3">
-                    <label for="id_GST_number" class="me-2" >Party GST No :</label>
+                    <label for="id_GST_number" class="me-2" >Party GST No:</label>
                     <input type="text" class="item-select" name="GST_number" id ="id_GST_number"  value="{% if product_pur_vouch_form.instance.id %}{{ product_pur_vouch_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15" readonly required>
                 </div>
             
