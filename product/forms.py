@@ -1132,6 +1132,10 @@ Purchaseorderforpuchasevoucherrmformset = inlineformset_factory(
     purchase_order_master_for_puchase_voucher_rm,purchase_order_for_puchase_voucher_rm,form = 
     Purchaseorderforpuchasevoucherrmform,extra=1, can_delete=True)
 
+Purchaseorderforpuchasevoucherrmformsetupdate = inlineformset_factory(
+    purchase_order_master_for_puchase_voucher_rm,purchase_order_for_puchase_voucher_rm,form = 
+    Purchaseorderforpuchasevoucherrmform,extra=0, can_delete=True)
+
 
 
 

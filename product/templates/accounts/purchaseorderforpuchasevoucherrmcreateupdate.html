@@ -75,26 +75,32 @@
                 {{ forms.id }}
                 <tr>
                     <td><input type="number" class="rowNo  bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}" readonly></td>
-                    <td><input type="text" name="item_Mcode_{{forloop.counter0}}" id="item_Mcode_{{forloop.counter0}}" value="" class="purchase-amount" readonly></td>
+                    <td><input type="text" name="item_Mcode_{{forloop.counter0}}" id="item_Mcode_{{forloop.counter0}}" value="{{ forms.instance.item_name.Material_code}}" class="purchase-amount" readonly></td>
                     <td>
                         <div class="custom-dropdown-container">
-                            <input  type="hidden" name="{{forms.prefix}}-item_name" id="{{forms.prefix}}-item_name" class="purchaseDate"  value="{% if forms.instance.id %}{{ forms.instance.item_shade.items.item_name }}{% endif %}"  > 
-                            <input  type="text" name="item_name_{{forloop.counter0}}" id="item_name_{{forloop.counter0}}" class="productpurchaseInvoice search-input"  placeholder="Item Name" autocomplete="off" value="{% if forms.instance.id %}{{ forms.instance.item_shade.items.item_name }}{% endif %}"  > 
+                            <input  type="hidden" name="{{forms.prefix}}-item_name" id="{{forms.prefix}}-item_name" class="purchaseDate"  value="{% if forms.instance.id %}{{ forms.instance.item_name.id }}{% endif %}"  > 
+                            <input  type="text" name="item_name_{{forloop.counter0}}" id="item_name_{{forloop.counter0}}" class="productpurchaseInvoice search-input"  placeholder="Item Name" autocomplete="off" value="{% if forms.instance.id %}{{ forms.instance.item_name.item_name }}{% endif %}"> 
                             <div name="select_item_name_{{forloop.counter0}}" class="productpurchaseInvoice item-name s-suggestion-container item-select_input" id="select_item_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Item Name" >
                               
                            
                              </div>
                         </div> 
                     </td>
-                    <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_shade.items.Item_Color.color_name }}{% endif %}" class="purchase-input" style="margin-left: 10px;" readonly></td>
-                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.quantity_total | default_if_none:'' }}" class="purchase-input"></td>
-                    <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_shade.items.unit_name_item.unit_name }}{% endif %}" class="purchase-mark" readonly></td>
+                    <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.Item_Color.color_name }}{% endif %}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+
+                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" class="purchase-input"></td>
+
+                    <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.unit_name_item.unit_name }}{% endif %}" class="purchase-mark" readonly></td>
+
                     <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" value="250" ></td>
+
+
                     <td>
                         <input type="number" id="{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
                     </td>
+
                     <td>
-                        <input type="number" id="{{forms.prefix}}-gst" class="purchase-mark purchase-gst" name="{{forms.prefix}}-gst" value="{{ forms.instance.item_shade.items.Item_Creation_GST.gst_percentage}}" readonly >
+                        <input type="number" id="{{forms.prefix}}-gst" class="purchase-mark purchase-gst" name="{{forms.prefix}}-gst" value="{{ forms.instance.item_name.Item_Creation_GST.gst_percentage}}" readonly >
                     </td>
                     <td>
                         <input type="number" id="{{forms.prefix}}-cgst" class="purchase-input purchase-cgst" name="{{forms.prefix}}-cgst" value=""readonly >
@@ -140,7 +146,7 @@
                     <div class=" mb-3">
                         <label class="purchase-lable fw-bold">Fright & Transport</label>
                         <span class="purchase-span">
-                            <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="0" maxlength="50" step=".01" required >
+                            <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{ master_form.instance.fright_transport }}" maxlength="50" step=".01" required >
                         </span>
                     </div>
                     <div class=" mb-3">
@@ -310,6 +316,7 @@
                 'item_value': item_value,
             },
             success: function (response) {
+                console.log(response)
                 var itemrownameid = itemName.split('-')[1];
                 console.log('ews',response.item_m_code_out)
             

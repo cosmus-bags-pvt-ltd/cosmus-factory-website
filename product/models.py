@@ -397,7 +397,7 @@ class Item_Creation(models.Model):
     def __str__(self):
         return self.item_name
     
-
+#This
 class item_color_shade(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT, blank=True, null=True)
     items = models.ForeignKey(Item_Creation, on_delete = models.CASCADE, related_name = 'shades')
@@ -416,6 +416,8 @@ class item_color_shade(models.Model):
         return self.item_shade_name
 
 
+
+#This
 class opening_shade_godown_quantity(models.Model):
     opening_purchase_voucher_godown_item = models.ForeignKey(item_color_shade, on_delete = models.CASCADE)
     opening_godown_id = models.ForeignKey('Godown_raw_material', on_delete = models.PROTECT)
@@ -533,6 +535,9 @@ class Godown_raw_material(models.Model):
 
         super().save(*args, **kwargs)
 
+
+
+#This
 class item_shades_godown_report(models.Model):  
 
     inward_outward = [
@@ -593,7 +598,7 @@ class RawStockTransferMaster(models.Model):
     updated_date = models.DateTimeField(auto_now = True)
 
 
-
+#This
 class RawStockTrasferRecords(models.Model):
     master_instance = models.ForeignKey(RawStockTransferMaster, on_delete = models.CASCADE)
     item_shade_transfer = models.ForeignKey(item_color_shade , on_delete= models.CASCADE)
@@ -614,7 +619,7 @@ class item_purchase_voucher_master(models.Model):
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
-
+#This
 class purchase_voucher_items(models.Model):
     item_purchase_master = models.ForeignKey(item_purchase_voucher_master, on_delete = models.CASCADE)
     item_shade = models.ForeignKey(item_color_shade, on_delete = models.PROTECT)
@@ -642,7 +647,7 @@ class shade_godown_items_temporary_table(models.Model):
     rate = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     amount = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     
-
+#This
 class item_godown_quantity_through_table(models.Model):
     godown_name = models.ForeignKey(Godown_raw_material, on_delete = models.PROTECT, related_name= 'raw_godown_names')
     Item_shade_name = models.ForeignKey(item_color_shade, related_name = 'godown_shades', on_delete = models.PROTECT)
@@ -1151,6 +1156,7 @@ class finishedgoodsbinallocation(models.Model):
         super().save(*args, ** kwargs)
 
 
+
 class sales_voucher_master_finish_Goods(models.Model):
     sales_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
     buyer_inv_no = models.CharField(max_length = 100)
@@ -1163,6 +1169,7 @@ class sales_voucher_master_finish_Goods(models.Model):
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
+
 
 
 class sales_voucher_finish_Goods(models.Model):

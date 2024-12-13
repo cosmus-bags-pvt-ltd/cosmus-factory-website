@@ -81,7 +81,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate)
 
 
 logger = logging.getLogger('product_views')
@@ -2160,7 +2160,7 @@ def purchasevouchercreateupdate(request, pk = None):
     
     item_name_searched = Item_Creation.objects.all()
     if request.META.get('HTTP_X_REQUESTED_WITH') != 'XMLHttpRequest':
-
+        
         
         if pk:
             purchase_invoice_instance = get_object_or_404(item_purchase_voucher_master,pk=pk)
@@ -2244,7 +2244,7 @@ def purchasevouchercreateupdate(request, pk = None):
         if shade_count == 1:
             auto_popup_flag = True
 
-
+        
     except Exception as e:
         print(f'exception occoured {e}')
     
@@ -6764,6 +6764,9 @@ def product_purchase_voucher_create_update(request, pk=None):
 
 
 
+
+
+
 @login_required(login_url='login')
 def product_purchase_voucher_list(request):
 
@@ -7427,18 +7430,19 @@ def delete_bin_in_rack(request,bin_id):
 
 
 
-
-
-
-
-
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
+
+
+    item_value = request.GET.get('item_value')
+    item_shades = item_color_shade.objects.filter(items = item_value)
+
+    print(item_shades)
 
     if p_id:
         order_instance = purchase_order_master_for_puchase_voucher_rm.objects.get(id=p_id)
         master_form = Purchaseordermasterforpuchasevoucherrmform(instance=order_instance)
-        formset = Purchaseorderforpuchasevoucherrmformset(instance=order_instance)
+        formset = Purchaseorderforpuchasevoucherrmformsetupdate(instance=order_instance)
 
     else:
         order_instance = None
@@ -7474,6 +7478,13 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
 
 
 def purchase_order_for_puchase_voucher_rm_list(request):
+
+
+
+
+
+
+
     
     order_list = purchase_order_master_for_puchase_voucher_rm.objects.all().order_by('po_no')
 
@@ -7487,9 +7498,9 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     voucher_master = item_purchase_voucher_master.objects.filter(party_name = selected_vendor)
 
-    filter_name  = request.POST.get('sort_name')
-    selected_fabric_grp = request.POST.get('Fabric_Group')
-    less_Number = request.POST.get('less_Number')
+    filter_name  = request.GET.get('sort_name')
+    selected_fabric_grp = request.GET.get('Fabric_Group')
+    less_Number = request.GET.get('less_Number')
 
 
 
@@ -7500,6 +7511,14 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     elif filter_name == 'lowest' and filter_name != '':
         negetive_stock_report = Item_Creation.objects.all().annotate(total_qty = Sum(
         'shades__godown_shades__quantity')).order_by('-total_qty').select_related('Item_Color','Fabric_Group')
+    
+
+    elif selected_fabric_grp and less_Number:
+        search_value = int(less_Number)
+        negetive_stock_report = (
+            Item_Creation.objects.filter(Fabric_Group__fab_grp_name=selected_fabric_grp).annotate(total_qty=Sum('shades__godown_shades__quantity')).filter(total_qty__lt=search_value).order_by('item_name').select_related('Item_Color', 'Fabric_Group'))
+
+
 
     elif selected_fabric_grp:
         negetive_stock_report = Item_Creation.objects.filter(Fabric_Group__fab_grp_name = selected_fabric_grp).annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
@@ -7508,12 +7527,13 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         search_value = int(less_Number)
         print(type(search_value))
         negetive_stock_report = Item_Creation.objects.annotate(total_qty = Sum('shades__godown_shades__quantity')).filter(total_qty__lt = search_value).order_by('item_name').select_related('Item_Color','Fabric_Group')
-        
+
+
     else:
         negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
 
 
-    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise})
+    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number})
 
 
 
