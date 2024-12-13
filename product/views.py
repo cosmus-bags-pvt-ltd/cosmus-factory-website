@@ -2675,7 +2675,7 @@ def salesvoucherupdate(request,pk):
 
 @login_required(login_url='login')
 def salesvoucherlist(request):
-    return render(request,'.html')
+    return render(request,'sales_list.html')
 
 
 

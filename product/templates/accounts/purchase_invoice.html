@@ -1343,58 +1343,47 @@ function getGstNo() {
     });
   
     document.addEventListener("DOMContentLoaded", function () {
-    const submitButton = document.getElementById("parentFormClick");
-    const itemNameInputs = document.querySelectorAll("input[id^='item_name_']");
-    const itemShadeSelects = document.querySelectorAll("select[id$='-item_shade']");
-    const itemQtyInputs = document.querySelectorAll("input[id$='-quantity_total']");
+    // const submitButton = document.getElementById("parentFormClick");
+    // const itemNameInputs = document.querySelectorAll("input[id^='item_name_']");
+    // const itemShadeSelects = document.querySelectorAll("select[id$='-item_shade']");
+    // const itemQtyInputs = document.querySelectorAll("input[id$='-quantity_total']");
 
-    function validateInputs() {
-        let isValid = true;
+    // function validateInputs() {
+    //     let isValid = true;
         // Check all item name inputs
-        itemNameInputs.forEach(input => {
+        // itemNameInputs.forEach(input => {
            
-            if (!input.value.trim()) {
-                isValid = false;
-            }
-            if(input.value.trim() == ""){
-                submitButton.disabled = true;
-            }else{
-                submitButton.disabled = false; 
-            }
+        //     if (!input.value.trim()) {
+        //         isValid = false;
+        //     }
+        //     if(input.value.trim() == ""){
+        //         submitButton.disabled = true;
+        //     }else{
+        //         submitButton.disabled = false; 
+        //     }
             
-        });
+        // });
 
         // // Check all item shade selects
-        itemShadeSelects.forEach(select => {
-            if (!select.value.trim()) {
-                isValid = false;
-             
-            }
-            if(select.value.trim() == ""){
-                submitButton.disabled = true;
-            }else{
-                submitButton.disabled = false; 
-            }
-        });
-
-    }
+        
+    // }
     
 //     // Prevent tabbing if itemQtyInputs are empty
-    itemShadeSelects.forEach(select => {
-    select.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            if (!select.value.trim()) {
-                // Prevent opening the dropdown if the value is empty
-                event.preventDefault();
+//     itemShadeSelects.forEach(select => {
+//     select.addEventListener("keydown", function (event) {
+//         if (event.key === "Enter") {
+//             if (!select.value.trim()) {
+//                 // Prevent opening the dropdown if the value is empty
+//                 event.preventDefault();
                 
            
-            } else {
-                // Allow normal dropdown behavior if the value is valid
-                console.log("Dropdown opened on Enter key.");
-            }
-        }
-    });
-});
+//             } else {
+//                 // Allow normal dropdown behavior if the value is valid
+//                 console.log("Dropdown opened on Enter key.");
+//             }
+//         }
+//     });
+// });
     // itemNameInputs.forEach(input => {
     //     input.addEventListener("input", validateInputs);
     // });
@@ -1402,12 +1391,12 @@ function getGstNo() {
     // itemShadeSelects.forEach(select => {
     //     select.addEventListener("change", validateInputs);
     // });
-    submitButton.addEventListener('click',function(){
-        validateInputs()
-    })
+    // submitButton.addEventListener('click',function(){
+    //     validateInputs()
+    // })
  
     // Initial validation on page load
-    validateInputs();
+    //validateInputs();
     inputCheck();
 });
 
