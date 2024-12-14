@@ -2,16 +2,24 @@
 {% load static %} 
 
 {% block body %}
-<div>
+
+<!-- <a href="{% url 'sales-voucher-create' %}">create</a>
+{% for sale in sales_list %}
+  <p>{{ sale }}</p>
+  <a href="{% url 'sales-voucher-create' sale.id %}">Edit</a>
+  <a href="{% url 'sales-voucher-delete' sale.id %}" onclick="return confirm('You want to delete?')">Delete</a>
+{% endfor %} -->
+  
   <h2>Sales Invoice List</h2>
   <div class="">
     
       <div class="d-flex mb-3">
-        <button class="acc-btn" onclick="">Add Invoice +</button>
+        <button class="acc-btn" onclick="addButtonRedirect()">Add Invoice +</button>
         <div class="container-account"> 
          <input class="" type="search" placeholder="Search" aria-label="Search" id="" name="" />
            <a class="px-2 py-2" href="#"><i class="fa-solid fa-magnifying-glass"></i></a>
         </div>
+        <button class="product-btn ml-3 ms-3" onclick="redirectsalesFilter()">Clear Filter</button>
        </div>
       </div>  
          
@@ -23,7 +31,7 @@
                   <th >Date</th>
                   <th >Party A/c Name</th>
                   <th >Voucher Type</th>
-                  <th >Voucher No</th>
+                  <th >Sales No</th>
                   <th >Debit Amount</th>
                   <th >Credit Amount</th>
                   <th >Edit</th>
@@ -33,18 +41,19 @@
               </thead>
               
               <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+                {% for sale in sales_list %}
               <tr>
-                <td>1</td>
-                <td>01-01-2024</td>
-                <td>akash</td>
-                <td>Sales</td>
-                <td>9078097</td>
-                <td></td>
-                <td>10</td>
-                <td><a href=""><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-                <td><a href=""><i class="fa-solid fa-trash text-danger px-2"></i></a></td>
+                <td>{{forloop.counter}}</td>
+                <td>{{sale.created_date}}</td>
+                <td>{{sale.party_name.name}}</td>
+                <td>{{sale.ledger_type}}</td>
+                <td>{{sale.sales_no}}</td>
+                <td>{{sale.grand_total}}</td>
+                <td>{{sale.grand_total}}</td>
+                <td><a href="{% url 'sales-voucher-create' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
+                <td><a href="{% url 'sales-voucher-delete' sale.id %}"><i class="fa-solid fa-trash text-danger px-2"></i></a></td>
               </tr>
-             
+              {% endfor %}
              
               </tbody>
               
@@ -55,6 +64,10 @@
    
 
     
-    
+    <script>
+      function addButtonRedirect(){
+        window.location.href= "/salesvouchercreateupdate/"
+      }
+    </script>
 
 {% endblock body %}

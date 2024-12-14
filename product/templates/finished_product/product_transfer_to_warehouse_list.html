@@ -147,7 +147,7 @@ function cancelProductTransfer(){
       var cancelProduct = document.querySelectorAll('.deleted_Value');
       cancelProduct.forEach(function(elemet){
         var cancelQty = elemet.value;
-        if(cancelQty === 'true'){
+        if(cancelQty === 'True'){
           var mainRows = elemet.closest('tr');
 
           mainRows.style.opacity = '0.5';

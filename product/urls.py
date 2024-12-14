@@ -131,10 +131,10 @@ urlpatterns = [
     path('itemdynamicsearchajax/',views.itemdynamicsearchajax,name = 'item-dynamic-search-ajax'),
 
     #SalesVoucher
-    path('salesvouchercreate/', views.salesvouchercreate, name = 'sales-voucher-create'),
-    path('salesvoucherupdate/', views.salesvoucherupdate, name = 'sales-voucher-update'),
+    path('salesvouchercreateupdate/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
+    path('salesvouchercreateupdate/<int:s_id>/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
     path('salesvoucherlist/', views.salesvoucherlist, name = 'sales-voucher-list'),
-    path('salesvoucherdelete/', views.salesvoucherdelete, name = 'sales-voucher-delete'),
+    path('salesvoucherdelete/<int:pk>/', views.salesvoucherdelete, name = 'sales-voucher-delete'),
 
     #subcategorys
     path('gstcreate/', views.gst_create_update, name = 'gst-create-list'),

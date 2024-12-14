@@ -53,7 +53,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
-                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total,
+                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_master_finish_Goods,
                     set_prod_item_part_name, shade_godown_items,
                     shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items)
 
@@ -73,7 +73,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, salesvouchermasterfinishGoodsForm,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -81,7 +81,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset)
 
 
 logger = logging.getLogger('product_views')
@@ -2660,28 +2660,69 @@ def purchasevoucherdelete(request,pk):
 
 
 @login_required(login_url='login')
-def salesvouchercreate(request):
-    return render(request,'.html')
+def salesvouchercreateupdate(request,s_id=None):
 
 
 
+    if s_id:
+        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+        master_form = salesvouchermasterfinishGoodsForm(instance=voucher_instance)
+        formset = salesvoucherupdateformset(instance=voucher_instance)
+        page_name = 'Edit Sales Invoice'
+    else:
+        voucher_instance = None
+        master_form = salesvouchermasterfinishGoodsForm()
+        formset = salesvouchercreateformset()
+        page_name = 'Create Sales Invoice'
+    
 
-@login_required(login_url='login')
-def salesvoucherupdate(request,pk):
-    return render(request,'.html')
+    if request.method == "POST":
+        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
+        if s_id:
+            formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+        else:
+            formset = salesvouchercreateformset(request.POST)
+
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    formset.instance = master_form_instance
+                    formset.save()
+
+                    return redirect('sales-voucher-list')
+            except Exception as e:
+                print(e)
+
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name})
 
 
 
 
 @login_required(login_url='login')
 def salesvoucherlist(request):
-    return render(request,'sales_list.html')
+    sales_list = sales_voucher_master_finish_Goods.objects.all()
+    return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
 
 
 
 @login_required(login_url='login')
 def salesvoucherdelete(request,pk):
-    pass
+    sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
+    sales_instance.delete()
+    return redirect('sales-voucher-list')
 
 
 
@@ -6262,8 +6303,6 @@ def raw_material_estimation_popup(request, pk=None):
         
             
             
-            
-            
             product_2_items_instances = product_2_items_instances_unique.union(product_2_items_instances_common)
 
             
@@ -6375,6 +6414,8 @@ def raw_material_estimation_popup(request, pk=None):
                   'product_2_item_formset': product_2_item_formset,
                   'raw_material_product_estimation_items_formset':material_product_estimation_items_formset,
                   'product_ref_items_instance':product_ref_items_instance})
+
+
 
 
 def labour_workin_approval_split(request,ref_id):
@@ -6957,21 +6998,24 @@ def product_transfer_to_warehouse_list(request):
 def product_transfer_to_warehouse_delete(request):
     id = request.POST.get('ProductId')
     
-    transfer_records = Finished_goods_transfer_records.objects.filter(Finished_goods_Stock_TransferMasterinstance = id)
-    for record in transfer_records:
-        if not record.transnfer_cancelled_records:
-            godown_transfer_records_quantity_revert = product_godown_quantity_through_table.objects.get(product_color_name = record.product, godown_name = record.Finished_goods_Stock_TransferMasterinstance.source_warehouse)
-            godown_transfer_records_quantity_revert.quantity = godown_transfer_records_quantity_revert.quantity + record.product_quantity_transfer
-            godown_transfer_records_quantity_revert.save()
-            
-            warehouse_transfer_records_quantity_revert = Product_warehouse_quantity_through_table.objects.get(product = record.product)
-            warehouse_transfer_records_quantity_revert.quantity = warehouse_transfer_records_quantity_revert.quantity - record.product_quantity_transfer
-            warehouse_transfer_records_quantity_revert.save()
-            transfer_records.update(transnfer_cancelled_records=True)
+    master_instance = Finished_goods_Stock_TransferMaster.objects.get(id=id)
+    if master_instance:
+        master_instance.transnfer_cancelled = True
+        master_instance.save()
 
-    return JsonResponse({'response':True},status=200)
+        transfer_records = Finished_goods_transfer_records.objects.filter(Finished_goods_Stock_TransferMasterinstance = id)
+        for record in transfer_records:
+            if not record.transnfer_cancelled_records:
+                godown_transfer_records_quantity_revert = product_godown_quantity_through_table.objects.get(product_color_name = record.product, godown_name = record.Finished_goods_Stock_TransferMasterinstance.source_warehouse)
+                godown_transfer_records_quantity_revert.quantity = godown_transfer_records_quantity_revert.quantity + record.product_quantity_transfer
+                godown_transfer_records_quantity_revert.save()
+                
+                warehouse_transfer_records_quantity_revert = Product_warehouse_quantity_through_table.objects.get(product = record.product)
+                warehouse_transfer_records_quantity_revert.quantity = warehouse_transfer_records_quantity_revert.quantity - record.product_quantity_transfer
+                warehouse_transfer_records_quantity_revert.save()
+                transfer_records.update(transnfer_cancelled_records=True)
         
-    # return redirect('all-product-transfer-to-warehouse')
+    return redirect('all-product-transfer-to-warehouse')
 
 
 
@@ -7438,10 +7482,11 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
 
 
-    item_value = request.GET.get('item_value')
-    item_shades = item_color_shade.objects.filter(items = item_value)
+    # item_value = request.GET.get('item_value')
+    # item_shades = item_color_shade.objects.filter(items = item_value)
+    # print(item_shades)
 
-    print(item_shades)
+    
 
     if p_id:
         order_instance = purchase_order_master_for_puchase_voucher_rm.objects.get(id=p_id)
@@ -7483,18 +7528,8 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
 
 def purchase_order_for_puchase_voucher_rm_list(request):
 
-
-
-
-
-
-
     
     order_list = purchase_order_master_for_puchase_voucher_rm.objects.all().order_by('po_no')
-
-    
-
-    
 
     negetive_stock_sellerwise = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
 
@@ -7558,18 +7593,12 @@ def purchase_order_for_purchase_rm_delete(request,pk):
 
 def excel_download_for_purchase_order(request,p_id):
 
-
-
     purchase_order_child = purchase_order_for_puchase_voucher_rm.objects.filter(master_instance = p_id)
     party_details = purchase_order_master_for_puchase_voucher_rm.objects.get(id=p_id)
     wb = Workbook()
     default_sheet = wb['Sheet']
     wb.remove(default_sheet)
     ws = wb.create_sheet('Purchase Order')
-
-
-
-
 
     logo_path = "static/images/PO_for_RM_logo.jpg"
     img = Image(logo_path)
@@ -7801,6 +7830,9 @@ def productdynamicsearchajax(request):
 
 
 
+
+
+
 def CheckUniqueFieldDuplicate(model_name, searched_value, col_name):
     
     if searched_value:
@@ -7821,6 +7853,10 @@ def CheckUniqueFieldDuplicate(model_name, searched_value, col_name):
         return JsonResponse({'validation_flag':validation_flag})
     else:
         return JsonResponse({f'Status':'No data recieved - {e}'}, status=404)
+
+
+
+
 
 
 
@@ -7876,24 +7912,26 @@ def UniqueValidCheckAjax(request):
         return JsonResponse({'Status': 'Invalid data received'}, status=400)
 
 
-            
+
+
+
+
+
+
 @login_required(login_url='login')
 def session_data_test(request):
-    
-    
-    
-    
-
-    
+        
     session_data = request.session
-    
-    
     
     for key, value in session_data.items():
         print(f"Key: {key}, Value: {value}")
 
     context = {}
     return render(request,'misc/session_test.html', context=context)
+
+
+
+
 
 
 def finished_goods_stock_all(request,pk=None):
@@ -7913,6 +7951,10 @@ def finished_goods_stock_all(request,pk=None):
 
     return render(request,'finished_product/finishedgoodsstockall.html',{
                                 'finished_godown_all':finished_godown_all, 'wareshouse_all':wareshouse_all})
+
+
+
+
 
 
 def product_2_item_ajax(request):
@@ -7950,11 +7992,17 @@ def product_2_item_ajax(request):
 
 
 
+
+
+
 @login_required(login_url='login')
 def creditdebitreport(request):
     all_reports = account_credit_debit_master_table.objects.all()
 
     return render(request,'misc/credit_debit_master_report.html',{'all_reports':all_reports,'page_name':'Credit/Debit Report'})
+
+
+
 
 
 
@@ -8044,6 +8092,10 @@ def godown_stock_raw_material_report_fab_grp(request,g_id,fab_id=None):
                                                                              'Fabric_grp_name':Fabric_grp_name,
                                                                              'queryset':queryset,
                                                                              'querylist':querylist})
+
+
+
+
 
 
 
@@ -8325,6 +8377,8 @@ def allrawmaterialstockreport(request):
 
 
 
+
+
 @login_required(login_url='login')
 def allfinishedgoodsstockreport(request):
 
@@ -8339,6 +8393,9 @@ def allfinishedgoodsstockreport(request):
     
 
     return render(request,'reports/allfinishedgoodsstockreport.html',{'product_queryset':product_queryset})
+
+
+
 
 
 @login_required(login_url='login')
@@ -8372,16 +8429,6 @@ def qc_approved_model_wise_report(request,ref_id):
 
             lwi_p_2_i_approved = dict(record.l_w_in_products.all().values_list('product_sku','approved_qty'))
 
-            
-            
-            
-
-            
-            
-
-
-            
-            
 
             skus = {}
             
@@ -8422,6 +8469,10 @@ def qc_approved_model_wise_report(request,ref_id):
     return render(request, 'reports/qcapprovedmodelwisereport.html',{'product_instance':product_instance,
                                                                      'sorted_data':sorted_data,'all_sku':all_sku,
                                                                      'consolidated_approval_dict':consolidated_approval_dict})
+
+
+
+
 
 @login_required(login_url='login')
 def raw_material_excel_download(request):
@@ -8673,15 +8724,9 @@ def finished_goods_sorting_list(request):
         )   
     
 
-
     finished_goods_all_records = list(finished_goods_purchase_voucher_instances) + list(finished_goods_transfer_m_instances)
 
-    
-    
     sorted_data = sorted(finished_goods_all_records, key=attrgetter('created_date'), reverse = False)
-
-
-    
 
     return render(request,'finished_product/finishedgoodssortinglist.html',{'sorted_data':sorted_data})
 
@@ -8691,4 +8736,6 @@ def finished_goods_sorting_list(request):
 def warehouse_navigator(request):
     warehouses = Finished_goods_warehouse.objects.prefetch_related('warehouses__zones__racks').all()
     return render(request,'finished_product/warehouse_navigator.html',{'warehouses':warehouses})
+
+
 
