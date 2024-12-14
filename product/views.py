@@ -6996,11 +6996,17 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 
 
 
+
+
+
 @login_required(login_url='login')
 def product_transfer_to_warehouse_list(request):
     warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty')).order_by('voucher_no')
     
     return render(request,'finished_product/product_transfer_to_warehouse_list.html',{'warehouse_product_transfer_list':warehouse_product_transfer_list})
+
+
+
 
 
 
@@ -7068,8 +7074,191 @@ def product_transfer_to_warehouse_ajax(request):
 
     
 
-def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
+# def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
+#     try:
+#         if voucher_type == 'transfer':
+#             stock_transfer_instance = Finished_goods_Stock_TransferMaster.objects.get(pk=id)
+            
+#             finished_goods_transfer_items_instances =  Finished_goods_transfer_records.objects.filter(Finished_goods_Stock_TransferMasterinstance = stock_transfer_instance, transnfer_cancelled_records=False)
+
+#             purchase_number = stock_transfer_instance.voucher_no
+
+#             formset = stock_transfer_instance_formset_only_for_update(request.POST or None, queryset=finished_goods_transfer_items_instances, instance=stock_transfer_instance)
+
+#             completed_qs = Finished_goods_transfer_records.objects.filter(Finished_goods_Stock_TransferMasterinstance=stock_transfer_instance, qc_recieved_qty__gt = 0, transnfer_cancelled_records=False)
+
+#             completed_formset = stock_transfer_instance_formset_only_for_update(queryset = completed_qs, instance=stock_transfer_instance)
+
+#         elif voucher_type == 'purchase':
+#             product_purchase_voucher_items_instance = product_purchase_voucher_master.objects.get(pk=id)
+
+#             purchase_number = product_purchase_voucher_items_instance.purchase_number
+#             formset = product_purchase_voucher_items_instance_formset_only_for_update(request.POST or None, instance=product_purchase_voucher_items_instance)
+
+#             completed_qs = product_purchase_voucher_items.objects.filter(product_purchase_master=product_purchase_voucher_items_instance, qc_recieved_qty__gt = 0)
+
+#             completed_formset = product_purchase_voucher_items_instance_formset_only_for_update(queryset=completed_qs, instance=product_purchase_voucher_items_instance)
+
+
+#     except Exception as e:
+#         print(e)
+
+    
+#     if request.method == 'POST':
+#         try:
+#             with transaction.atomic():
+#                 manual_serial_number = request.POST.get('manual_serial_number')
+#                 scanned_sku = int(request.POST.get('product_sku'))
+#                 scanned_serialnumber = request.POST.get('scanned_serial_number')
+#                 selected_product_bin = request.POST.get('product_bin')
+#                 selected_voucher_type = request.POST.get('voucher_type')
+                
+                
+
+#                 if scanned_serialnumber:
+#                     prathamesh = scanned_serialnumber
+#                 else:
+#                     prathamesh = manual_serial_number
+                
+#                 if prathamesh and scanned_sku and selected_product_bin and selected_voucher_type:
+
+#                     if formset.is_valid():
+#                         form_present = False 
+
+#                         if selected_voucher_type == 'purchase':
+                            
+#                             for form in formset:
+#                                 if form.instance.product_name.PProduct_SKU == scanned_sku and form.instance.quantity_total > form.instance.qc_recieved_qty and form.instance.diffrence_qty != 0:
+                                    
+#                                     try:
+#                                         product_pur_items_instance = get_object_or_404(product_purchase_voucher_items,pk=form.instance.id)
+
+#                                         product_instance = get_object_or_404(PProduct_Creation, pk=scanned_sku)
+
+#                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
+                                        
+#                                         finishedgoodsbinallocation.objects.create(related_purchase_item = product_pur_items_instance, 
+#                                                 unique_serial_no = prathamesh,product = product_instance, 
+#                                                 bin_number = bin_instance ,source_type = 'purchase')
+                                        
+#                                         form.instance.qc_recieved_qty = form.instance.qc_recieved_qty + 1
+#                                         form.instance.diffrence_qty = form.instance.diffrence_qty - 1
+
+#                                     except ValueError as ve:
+#                                         messages.error(request, f'{ve}')
+#                                         raise
+
+#                                     except Exception as e:
+#                                         messages.error(request, f'{e}')
+#                                         raise
+
+#                                     try:
+#                                         product_warehouse_obj =  Product_warehouse_quantity_through_table.objects.get(
+#                                                 warehouse=product_pur_items_instance.product_purchase_master.finished_godowns,
+#                                                 product=product_instance) 
+                                    
+#                                         product_warehouse_obj.quantity = product_warehouse_obj.quantity - 1
+#                                         product_warehouse_obj.save()
+
+#                                     except ObjectDoesNotExist:
+#                                         messages.error(request, 'Product quantity in Warhouse not found')
+#                                         raise
+#                                     except Exception as e:
+#                                         messages.error(request, f'Other exception {e}')
+#                                         raise
+
+#                                     form.save()
+#                                     form_present = True
+#                                     messages.success(request,f'SerialNumber - {prathamesh} added to Bin - {bin_instance.bin_name} Sucessfully')
+#                                     break            
+#                                 else:
+#                                     form_present = False
+                                    
+                            
+#                         elif selected_voucher_type == 'transfer':
+#                             for form in formset:
+#                                 if form.instance.product.PProduct_SKU == scanned_sku and form.instance.product_quantity_transfer > form.instance.qc_recieved_qty and form.instance.diffrence_qty != 0:
+                                    
+#                                     try:
+
+#                                         product_transfer_items_instance = get_object_or_404(Finished_goods_transfer_records,pk=form.instance.id)
+
+#                                         product_instance = get_object_or_404(PProduct_Creation,pk=scanned_sku)
+
+#                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
+
+#                                         finishedgoodsbinallocation.objects.create(related_transfer_record = product_transfer_items_instance, 
+#                                                     unique_serial_no = prathamesh, product = product_instance, 
+#                                                     bin_number = bin_instance ,source_type='transfer')
+                                        
+#                                         form.instance.qc_recieved_qty = form.instance.qc_recieved_qty + 1
+#                                         form.instance.diffrence_qty = form.instance.diffrence_qty - 1
+
+#                                     except ValueError as ve:
+#                                         messages.error(request, f'{ve}')
+#                                         raise
+
+#                                     except Exception as e:
+#                                         messages.error(request, f'{e}')
+#                                         raise
+
+#                                     try:
+#                                         product_warehouse_obj =  Product_warehouse_quantity_through_table.objects.get(
+#                                                 warehouse=product_transfer_items_instance.Finished_goods_Stock_TransferMasterinstance.destination_warehouse,
+#                                                 product=product_instance) 
+                                    
+#                                         product_warehouse_obj.quantity = product_warehouse_obj.quantity - 1
+#                                         product_warehouse_obj.save()
+
+#                                     except ObjectDoesNotExist:
+#                                         messages.error(request, 'Product quantity in Warhouse not found')
+#                                         raise
+
+#                                     except Exception as e:
+#                                         messages.error(request, f'Other exception {e}')
+#                                         raise
+
+#                                     form.save()
+#                                     form_present = True
+#                                     messages.success(request,f'SerialNumber - {scanned_serialnumber} added to Bin - {bin_instance.bin_name} Sucessfully')
+#                                     break
+#                                 else:
+#                                     form_present = False
+                                    
+#                         if form_present == False:
+#                             messages.error(request,f'No Product SKU found in the scanned Voucher')
+#                             return redirect(reverse('stock-transfer-instance-list-popup', args=[id,selected_voucher_type]))
+
+#                     else:
+#                         messages.error(request,f'Error with formset validation - {formset.errors}')
+#                         return redirect(reverse('stock-transfer-instance-list-popup', args=[id,selected_voucher_type]))
+
+#                 else:
+#                     raise ValidationError('Name , SKU, Color or Bin not selected')
+
+#         except IntegrityError:
+#             messages.error(request,f'The scanned Serial Number already Exists')
+#             return redirect(reverse('stock-transfer-instance-list-popup', args=[id,selected_voucher_type]))
+
+#         except ValidationError as ve:
+#             messages.error(request,f'Required Data not filled {ve} ')
+#             return redirect(reverse('stock-transfer-instance-list-popup', args=[id,selected_voucher_type]))
+
+#         except Exception as e:
+#             messages.error(request,f'Exception Occoured - {e}')
+#             return redirect(reverse('stock-transfer-instance-list-popup', args=[id,selected_voucher_type]))
+
+#     return render(request, 'finished_product/stock_transfer_instance_list_popup.html',{'formset': formset,
+#                                                 'purchase_number':purchase_number,'voucher_type': voucher_type,
+#                                                 'completed_formset':completed_formset})
+
+
+
+
+
+def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
+    v_no = request.GET.get('id_voucher_no')
     try:
         if voucher_type == 'transfer':
             stock_transfer_instance = Finished_goods_Stock_TransferMaster.objects.get(pk=id)
@@ -7084,6 +7273,10 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
             completed_formset = stock_transfer_instance_formset_only_for_update(queryset = completed_qs, instance=stock_transfer_instance)
 
+            entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=v_no)
+
+            
+
         elif voucher_type == 'purchase':
             product_purchase_voucher_items_instance = product_purchase_voucher_master.objects.get(pk=id)
 
@@ -7094,6 +7287,9 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
             completed_formset = product_purchase_voucher_items_instance_formset_only_for_update(queryset=completed_qs, instance=product_purchase_voucher_items_instance)
 
+            entries = finishedgoodsbinallocation.objects.filter(related_purchase_item__product_purchase_master__purchase_number = v_no)
+
+            
 
     except Exception as e:
         print(e)
@@ -7107,7 +7303,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                 scanned_serialnumber = request.POST.get('scanned_serial_number')
                 selected_product_bin = request.POST.get('product_bin')
                 selected_voucher_type = request.POST.get('voucher_type')
-
+                
                 if scanned_serialnumber:
                     prathamesh = scanned_serialnumber
                 else:
@@ -7153,6 +7349,8 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         product_warehouse_obj.quantity = product_warehouse_obj.quantity - 1
                                         product_warehouse_obj.save()
 
+                                        #here
+                                        print("Here for purchase")
                                     except ObjectDoesNotExist:
                                         messages.error(request, 'Product quantity in Warhouse not found')
                                         raise
@@ -7203,6 +7401,9 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         product_warehouse_obj.quantity = product_warehouse_obj.quantity - 1
                                         product_warehouse_obj.save()
 
+                                        #here
+                                        print("Here for sales")
+
                                     except ObjectDoesNotExist:
                                         messages.error(request, 'Product quantity in Warhouse not found')
                                         raise
@@ -7241,9 +7442,25 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
             messages.error(request,f'Exception Occoured - {e}')
             return redirect(reverse('stock-transfer-instance-list-popup', args=[id,selected_voucher_type]))
 
+    
+
+    
+
+    
     return render(request, 'finished_product/stock_transfer_instance_list_popup.html',{'formset': formset,
                                                 'purchase_number':purchase_number,'voucher_type': voucher_type,
-                                                'completed_formset':completed_formset})
+                                                'completed_formset':completed_formset,'single_entries':entries})
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7258,13 +7475,6 @@ def process_serial_no(request):
             
             except IntegrityError:
                 return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
-
-            
-            
-            
-
-            
-            
 
 
             try:

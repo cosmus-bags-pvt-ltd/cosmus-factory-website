@@ -174,13 +174,22 @@
     </div>
 </div>
 
+<div>
+    
+    {% for entries in single_entries %}
+        {{entries}}
+    {% endfor %}
+        
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const inwardSearch = document.getElementById('inwordSerialNo');
         const manualSearch = document.getElementById('id_manualSerialNo');
         const stockTable = document.getElementById('stockTransferList');
         const responseMessage = $('#responseMessage');
-    
+        const id_voucher_no = document.getElementById('id_voucher_no').value;
+        console.log('id_voucher_no',id_voucher_no)
         // Focus on input field and hide table initially for `inwordSerialNo`
         inwardSearch.focus();
         inwardSearch.addEventListener('input', function () {
@@ -201,6 +210,16 @@
                 inwardSearch.value = ''; // Clear inward search if `id_manualSerialNo` has input
             }
         });
+
+        $.ajax({
+            url: '/stocktransferinstancelistpopup/',
+            type: 'GET',
+            data: { 
+                'id_voucher_no':id_voucher_no,
+            },
+
+        })
+       
     });
     
     $(document).ready(function () {

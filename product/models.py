@@ -1103,6 +1103,7 @@ class product_purchase_voucher_items(models.Model):
     qc_recieved_qty = models.IntegerField(default=0)
     diffrence_qty = models.IntegerField(null=True, blank=True)
     
+    
 
 class Finished_goods_Stock_TransferMaster(models.Model):
 
@@ -1131,6 +1132,8 @@ class Finished_goods_transfer_records(models.Model):
     transnfer_cancelled_records = models.BooleanField(default=False)
     qc_recieved_qty = models.IntegerField(default=0)
     diffrence_qty = models.IntegerField(null=True, blank=True)
+
+    
 
 
 class finishedgoodsbinallocation(models.Model):
@@ -1198,5 +1201,7 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
     item_name = models.ForeignKey(Item_Creation,on_delete=models.PROTECT)
     quantity = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     rate = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+
+
 
 
