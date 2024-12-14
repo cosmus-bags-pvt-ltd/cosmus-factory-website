@@ -28,7 +28,7 @@
                     <tr>
                         <input type="hidden" value="purchase" class="recordtype">
                         <input type="hidden" value="{{records.id}}" class="recordId">
-                        <td><span class="stockValue">Purchase</span>/{{records.purchase_number}}</td>
+                        <td><span class="stockValue">Purchase</span>/<span class="voucher_no">{{records.purchase_number}}</span></td>
                         <td>{{records.created_date}}</td>
                         <td>Status</td>
                         <td>{{records.party_name.name}}</td>
@@ -45,7 +45,7 @@
                     <tr>
                         <input type="hidden" value="transfer" class="recordtype">
                         <input type="hidden" value="{{records.id}}" class="recordId">
-                        <td><span class="stockValue">Transfer</span>/{{records.voucher_no}}</td>
+                        <td><span class="stockValue">Transfer</span>/<span class="voucher_no">{{records.voucher_no}}</span></td>
                         <td>{{records.created_date}}</td>
                         <td>Status</td>
                         <td>{{records.source_warehouse.godown_name_finished}}</td>
@@ -83,10 +83,12 @@
                     var recordId = parseInt(row.querySelector('.recordId').value)
                     var recordtype = row.querySelector('.recordtype').value
                     var stockValues = row.querySelector('.stockValue').textContent;
+                    var v_number = row.querySelector('.voucher_no').textContent;
+
                     console.log(recordId)
                     console.log(stockValues,'stockValues')
                    
-                    window.location.href = '/stocktransferinstancelistpopup/'+  recordId +'/'+ recordtype;
+                    window.location.href = '/stocktransferinstancelistpopup/'+  recordId +'/'+ recordtype +'/'+ v_number;
                     
                 })
             })
