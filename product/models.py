@@ -964,9 +964,12 @@ class labour_workin_approval_report(models.Model):
     difference_qty = models.IntegerField(null=False, blank=False)
     unique_id = models.UUIDField(null=False, blank=False)
 
+
+
 class raw_material_production_estimation(models.Model):
     raw_material_godown_id = models.ForeignKey(Godown_raw_material, on_delete=models.PROTECT)
     narration = models.CharField(null=True, blank=True)
+
 
 
 class raw_material_product_ref_items(models.Model):
