@@ -2661,8 +2661,12 @@ def purchasevoucherdelete(request,pk):
 
 @login_required(login_url='login')
 def salesvouchercreateupdate(request,s_id=None):
-
-
+    # p_id = 
+    # party_name = Ledger.objects.all()
+    # product_info = PProduct_Creation.objects.get(Product = )
+    # sku=
+    # mrp=
+    # customer_price = 
 
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
@@ -6461,12 +6465,14 @@ def raw_material_estimation_calculate(request):
     master_pk = request.GET.get('unique_id')
     if master_pk:
         
+
         try:
             estimation_master_instance = get_object_or_404(raw_material_production_estimation,pk = master_pk)
 
         except ObjectDoesNotExist as e:
             print(e)
 
+        
         for instance in estimation_master_instance.raw_material_production_estimations_total.all():
             instance.delete()
         
@@ -6474,16 +6480,19 @@ def raw_material_estimation_calculate(request):
             final_total_list = {}
             for master_instance in estimation_master_instance.raw_material_production_estimations.all():
                 
-                primary_list = []
 
+                primary_list = []
+                
                 for master_items in master_instance.raw_material_product_ref_itemss_p_2_i.values('material_name','total_comsumption'):
                     primary_list.append(master_items)
                 
-
+                      
+                 
+                    
                 for x in primary_list:
                     material_name = x['material_name']
                     qty = x['total_comsumption']
-
+                    
                     material_in_dict  = final_total_list.get(material_name)
 
                     if material_in_dict:
@@ -6491,13 +6500,15 @@ def raw_material_estimation_calculate(request):
 
                     else:
                         final_total_list[material_name] = qty
+            
+
 
             for key, value in final_total_list.items():
 
                 try:
                     
                     difference_quantity_in_p_o_stage = purchase_order_for_raw_material.objects.filter(material_name=key).aggregate(total_po_qty=Sum('total_comsumption')) 
-                    
+
                     total_po_qty = difference_quantity_in_p_o_stage['total_po_qty'] if difference_quantity_in_p_o_stage['total_po_qty'] else 0
 
                     difference_quantity_in_cutting_stage = purchase_order_for_raw_material_cutting_items.objects.filter(material_name=key).aggregate(total_cutting_qty = Sum('total_comsumption'))
@@ -6519,10 +6530,10 @@ def raw_material_estimation_calculate(request):
                 raw_material_production_total.objects.create(raw_material_estination_master = estimation_master_instance,item_name=key,total_consump=value,godown_stock = total_godown_stock,balance_stock = total_balance_stock)
 
         response_dict = raw_material_production_total.objects.filter(raw_material_estination_master = estimation_master_instance).values('item_name','total_consump','godown_stock','balance_stock')
-        
+        print(len(response_dict))
         return JsonResponse({'response_dict':list(response_dict)})   
 
-
+   
 
 
 def raw_material_estimate_delete(request,pk):
@@ -7481,13 +7492,6 @@ def delete_bin_in_rack(request,bin_id):
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
 
-
-    # item_value = request.GET.get('item_value')
-    # item_shades = item_color_shade.objects.filter(items = item_value)
-    # print(item_shades)
-
-    
-
     if p_id:
         order_instance = purchase_order_master_for_puchase_voucher_rm.objects.get(id=p_id)
         master_form = Purchaseordermasterforpuchasevoucherrmform(instance=order_instance)
@@ -7806,14 +7810,17 @@ def productdynamicsearchajax(request):
             Q(PProduct_color__color_name__icontains=product_name_typed) |
             Q(Product__Product_Name__icontains=product_name_typed)
         ).distinct().values('PProduct_SKU', 'PProduct_color__color_name', 
-                            'Product__Product_Name', 'Product__Product_GST__gst_percentage')
+                            'Product__Product_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice')
         
         if products.exists():
             product_searched_dict = {
                 product['PProduct_SKU']: [
                     product.get('Product__Product_Name', ''),
                     product.get('PProduct_color__color_name', ''),
-                    product.get('Product__Product_GST__gst_percentage', '')
+                    product.get('Product__Product_GST__gst_percentage', ''),
+                    product.get('Product__Product_MRP', ''),
+                    product.get('Product__Product_SalePrice_CustomerPrice', '')
+
                 ] for product in products
             }
             
