@@ -178,20 +178,10 @@
                 </thead>
                 <tbody class="mainTableList">
                   <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                
                   </tr>
                   <tr class="Total">
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                   
                   </tr>
                 </tbody>
     
@@ -761,6 +751,7 @@ $(document).ready(function(){
                     formCountInput.value = formCount + 1; 
                     tableBody.appendChild(lastRow);
                     bindRowListeners(lastRow)
+                    calculateTaxSummary();
                 }
                 document.getElementById('id_productRow').value = '1';
                 calculateTotalAmount();
@@ -793,6 +784,7 @@ $(document).ready(function(){
         }
         if (saleSplInput) {
           saleSplInput.addEventListener('input', calculateTotalAmount);
+          saleSplInput.addEventListener('input',calculateTaxSummary);
         }
     }
     });
@@ -965,19 +957,110 @@ $(document).ready(function(){
         document.getElementById('id_grand_total').value = isNaN(finalTotals) ? '' : finalTotals.toFixed(2);
     }
     // Call the function initially to calculate total amount, GST, and grand total on page load
- 
-    // Add onchange event handler to id_fright_transport
-    document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
+     // Add onchange event handler to id_fright_transport
+     document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
     document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
     document.getElementById('id_cashDisct').addEventListener('input', calculateOtherTotal);
+    
+    function calculateTaxSummary(){
+      const row = document.querySelectorAll('#salesbody tr')
+      const taxSummary = {}; 
+      const isGstMatching = getGstNo();
+      console.log('row',row)
+      row.forEach(row => {
+        if (row.style.display === 'none') return; // Skip hidden rows
+        const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
+        const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
+        console.log('taxableValue',taxableValue)
+        console.log('gstRate',gstRate)
+        if (!taxSummary[gstRate]) {
+      // Initialize data for this GST rate
+          taxSummary[gstRate] = {
+            taxableValue: 0,
+            cgst: 0,
+            sgst: 0
+          };
+        }
+        taxSummary[gstRate].taxableValue += taxableValue;
+
+        if (isGstMatching) {
+      // GST numbers match: split equally into CGST and SGST
+      taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
+      taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
+    } else {
+      // GST numbers do not match: treat all as SGST (or IGST)
+      taxSummary[gstRate].cgst += 0; // No CGST
+      taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
+    }
+       
+      })
+
+      const taxSummaryBody = document.querySelector('#taxSummary .mainTableList');
+       taxSummaryBody.innerHTML = ''; // Clear previous summary
+       let totalAmount = 0; // To calculate total amount
+       let totalTaxAmount = 0;
+       let totalcgstAmount = 0;
+       let totalsgstAmount = 0;
+
+
+       Object.keys(taxSummary).forEach(rate => {
+        const { taxableValue, cgst, sgst } = taxSummary[rate];
+        const total = taxableValue + cgst + sgst; // Total amount for this GST rate
+        totalAmount += total;
+        totalTaxAmount +=taxableValue;
+        totalcgstAmount += cgst;
+        totalsgstAmount += sgst;
+        let row;
+        if (isGstMatching) {
+          // GST numbers match: show both CGST and SGST rates
+          row = `
+            <tr>
+              <td>${taxableValue.toFixed(2)}</td>
+              <td>${rate / 2}%</td>
+              <td>${cgst.toFixed(2)}</td>
+              <td>${rate / 2}%</td>
+              <td>${sgst.toFixed(2)}</td>
+              <td>${total.toFixed(2)}</td>
+            </tr>
+          `;
+        } else {
+          // GST numbers do not match: show only SGST/IGST
+          row = `
+            <tr>
+              <td>${taxableValue.toFixed(2)}</td>
+              <td class="">0%</td>
+              <td  class="">0.00</td>
+              <td>${rate}%</td>
+              <td>${sgst.toFixed(2)}</td>
+              <td>${total.toFixed(2)}</td>
+            </tr>
+          `;
+        }
+
+        taxSummaryBody.insertAdjacentHTML('beforeend', row);
+      });
+      const totalRow = `
+      <tr class="Total">
+        <td class=" fw-bold">${totalTaxAmount.toFixed(2)}</td>
+        <td></td>
+        <td class=" fw-bold">${totalcgstAmount.toFixed(2)}</td>
+        <td></td>
+        <td class="fw-bold">${totalsgstAmount.toFixed(2)}</td>
+        <td class="fw-bold">${totalAmount.toFixed(2)}</td>
+      </tr>
+    `;
+    taxSummaryBody.insertAdjacentHTML('beforeend', totalRow);
+      }
+
     document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
         input.addEventListener('input', function(){
           calculateTotalAmount();
           calculateOtherTotal();
+        
         });
-        });
+      });
         document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
         input.addEventListener('input', function(){
           calculateTaxSummary();
@@ -986,21 +1069,10 @@ $(document).ready(function(){
     })
     
     
-
+    calculateTaxSummary()
     calculateTotalAmount();
     calculateOtherTotal();
 
-    function calculateTaxSummary(){
-      var tableform = document.getElementById('id_sales_voucher_finish_goods_set-TOTAL_FORMS')
-      var tableValue = parseInt(tableform.value)
-      var totalgst = document.querySelectorAll('[name$="-gst"]')
-      
-      var creatTd = 
 
-
-      totalgst.forEach(function(gst){
-        console.log('totalgst',gst.value)
-      })
-    }
 </script>
 {% endblock body %}

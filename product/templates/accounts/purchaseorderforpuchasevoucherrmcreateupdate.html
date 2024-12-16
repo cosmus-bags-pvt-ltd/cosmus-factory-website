@@ -88,7 +88,7 @@
 
                     <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.unit_name_item.unit_name }}{% endif %}" class="purchase-mark" readonly></td>
 
-                    <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" value="250" ></td>
+                    <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" value="{{forms.instance.rate | default_if_none:'' }}" ></td>
 
                     <td>
                         <input type="hidden" id="{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
@@ -133,6 +133,12 @@
                         <span class="purchase-span">
                             <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
                         </span>           
+                    </div>
+                    <div class=" mb-3">
+                        <label class="purchase-lable fw-bold">Gst <input type="number" class="product_row" id="id_updateGst" value="{{master_form.instance.updateGst | default_if_none:''}}" maxlength="50" step=".01">% </label>
+                        <span class="purchase-span">
+                            <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="updategst" id ="id_updategst" value="{{master_form.instance.GstValue | default_if_none:'0'}}" maxlength="50" step=".01" readonly >
+                        </span>
                     </div>
                     <div class=" mb-3">
                         <label class="purchase-lable fw-bold">Fright & Transport</label>
@@ -572,14 +578,23 @@ function getGstNo() {
 
         const grandTotals = parseFloat(document.getElementById('id_grand_amount').value);
         //console.log('grandTotals',grandTotals)
+        const taxablevalue = parseFloat(document.getElementById('id_grand_taxableAmount').value);
         let  grossTotal = grandTotals;      
 
         // Set the calculated gross total value to the gross total input field
-        document.getElementById('id_gross_total').value =isNaN(grossTotal) ? '' : grossTotal.toFixed(2);
+        document.getElementById('id_gross_total').value =isNaN(taxablevalue) ? '' : taxablevalue.toFixed(2);
+
+        const updateGst = parseInt(document.getElementById('id_updateGst').value);
+      
+        
+        
+        let cashdisc = taxablevalue * updateGst / 100;
+   
+        document.getElementById('id_updategst').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
 
         const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
 
-        let finalTotal = grossTotal + frightTransport;
+        let finalTotal = taxablevalue + cashdisc + frightTransport;
 
         document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
 
@@ -596,7 +611,7 @@ function getGstNo() {
     // Add onchange event handler to id_fright_transport
     document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
     document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
-     
+    document.getElementById('id_updateGst').addEventListener('input', calculateOtherTotal);
     
 
   
