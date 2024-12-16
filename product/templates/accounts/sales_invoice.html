@@ -908,7 +908,7 @@ $(document).ready(function(){
             sgstValue.value = isNaN(totalIgst) ? '' : totalIgst.toFixed(2);
             totalSgst += totalIgst;
             total +=  newTotalAmount;  
-            grandTotal = newTotalAmount + newTotalAmount ;
+            grandTotal = newTotalAmount + totalIgst ;
            
         }
             amountInput.value = isNaN(newTotalAmount) ? '' : newTotalAmount.toFixed(2);
@@ -966,13 +966,12 @@ $(document).ready(function(){
       const row = document.querySelectorAll('#salesbody tr')
       const taxSummary = {}; 
       const isGstMatching = getGstNo();
-      console.log('row',row)
+   
       row.forEach(row => {
         if (row.style.display === 'none') return; // Skip hidden rows
         const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
         const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
-        console.log('taxableValue',taxableValue)
-        console.log('gstRate',gstRate)
+    
         if (!taxSummary[gstRate]) {
       // Initialize data for this GST rate
           taxSummary[gstRate] = {
@@ -984,14 +983,15 @@ $(document).ready(function(){
         taxSummary[gstRate].taxableValue += taxableValue;
 
         if (isGstMatching) {
-      // GST numbers match: split equally into CGST and SGST
-      taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
-      taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
-    } else {
-      // GST numbers do not match: treat all as SGST (or IGST)
-      taxSummary[gstRate].cgst += 0; // No CGST
-      taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
-    }
+          // GST numbers match: split equally into CGST and SGST
+          taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
+          taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
+        } else {
+          // GST numbers do not match: treat all as SGST (or IGST)
+          taxSummary[gstRate].cgst += 0; // No CGST
+          taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
+          console.log('test',(taxableValue * gstRate) / 100)
+        }
        
       })
 
@@ -1051,6 +1051,9 @@ $(document).ready(function(){
     `;
     taxSummaryBody.insertAdjacentHTML('beforeend', totalRow);
       }
+
+
+      
 
     document.addEventListener("DOMContentLoaded", function () {
 

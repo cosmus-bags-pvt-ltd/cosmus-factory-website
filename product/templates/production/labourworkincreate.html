@@ -261,6 +261,34 @@
     CalculateAmount();
     totalValueCheck();
     approveValueCheck();
+    var submitButton = document.getElementById('id_submitLabourWorkIn');
+    var forms = document.getElementById('labourWorkInForm')
+    var return_qty = document.querySelectorAll('[name$="-return_pcs"]')
+    forms.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.type !== "submit") {
+            event.preventDefault(); // Prevent form submission
+        }
+        });
+        return_qty.forEach((input, index) => {
+            // Listen for keydown events on each Order Quantity input field
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); // Prevent the default behavior of the Enter key
+                    input.blur(); // Optional: Remove focus to mimic submission for the row
+                    // Focus on the next Order Quantity input field, if available
+                    const nextInput = return_qty[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    
+                    }
+                }
+            });
+        });
+        submitButton.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            forms.submit(); // Trigger form submission
+        }
+        });
   })
 
   function totalValueCheck(){
@@ -477,10 +505,9 @@
     });
 
     window.addEventListener("popstate", function() {
-    console.log("test spinner");
+
     var spinnerModalElement = document.getElementById('exampleModal');
     var spinnerModal = bootstrap.Modal.getInstance(spinnerModalElement);
-    console.log('spinner',spinnerModal);
    
     if (spinnerModal) {
       spinnerModal.hide();

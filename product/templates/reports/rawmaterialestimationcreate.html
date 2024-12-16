@@ -112,6 +112,8 @@
                         <th>Product Name</th>
                         <th>Total Consump</th>
                         <th>Godown Stock</th>
+                        <th></th>
+                        <th></th>
                         <th>Balance Stock</th>
                     </tr>
                 </thead>
@@ -135,8 +137,9 @@
 
      document.body.appendChild(document.getElementById('exampleModal'));
         function calteRawMaterial(button){
-    
+            // openNewPopup(button, '/rawmaterialestimationpopup/');
             var unique_id = document.getElementById('id_unique_Value').value;
+
             $.ajax({  
                 url:"/rawmaterialestimationcalculate/",   
                 type:"GET",   
@@ -288,7 +291,7 @@ function newPopUpwindow(button, path){
   var minWidth = 1150; // minimum width
   var minHeight = 800; // minimum height
   var instanceid = $(button).closest('tr').find('.newIdInstance').val();
-  console.log(instanceid)     
+      
     if(instanceid){
          // Open new page with specified dimensions
   popUpNewWindow = window.open(path + instanceid, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes'); 
