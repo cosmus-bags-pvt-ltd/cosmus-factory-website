@@ -443,8 +443,8 @@ function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) 
 
 // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
 function getGstNo() {
-  const partyGstValue = document.getElementById('id_GST_number').value;
-  const comapnyGst = document.getElementById('id_company_GST_numbers').value;
+  let partyGstValue = document.getElementById('id_GST_number').value;
+  let comapnyGst = document.getElementById('id_company_GST_numbers').value;
 
       comapnyGst = comapnyGst.toString();
       partyGstValue = partyGstValue.toString();
@@ -652,7 +652,7 @@ randomValue();
                     if (index <= optionsCount) {
                     
                         const $selectedItem = $options.eq(index);
-                        console.log($selectedItem)
+                   
                         const $nextItem = $selectedItem.next();
                         const nameDataKey = $selectedItem.text();
                         const nameKey = $selectedItem.data('key');
