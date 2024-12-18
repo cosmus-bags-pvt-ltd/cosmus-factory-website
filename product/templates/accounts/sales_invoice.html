@@ -4,7 +4,7 @@
 {% block body %}
 <div>
         
-      <form class="mt-3" action="" method="POST">
+      <form class="mt-3" action="" method="POST" id="salesForm">
         {% csrf_token %}
         <div class="d-flex mb-2">
           <label for="" class="me-3">Type:</label>
@@ -191,7 +191,7 @@
           </div>
          
       </div>
-    <div class="col-lg-3">
+    <div class="col-lg-3" id="saleTotal">
       <div class="mb-4">
           <div class=" mb-3">
               <label  class="purchase-lable fw-bold">Gross total</label>
@@ -884,7 +884,7 @@ $(document).ready(function(){
             if(getGstNo()){ 
 
             newTotalAmount = addsplAmount / (1 + gst / 100);
-            const totalGst = addsplAmount -newIgst;
+            const totalGst = addsplAmount - newTotalAmount;
        
             newCgst = totalGst / 2;
             newSgst = totalGst / 2;
@@ -1053,8 +1053,6 @@ $(document).ready(function(){
       }
 
 
-      
-
     document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
@@ -1069,6 +1067,26 @@ $(document).ready(function(){
           calculateTaxSummary();
         });
         });
+
+        const table = document.getElementById("salesTable");
+      const salesTotal = document.getElementById('saleTotal');
+
+      // Prevent Enter key from submitting the form inside table inputs
+      table.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" && event.target.tagName === "INPUT") {
+              event.preventDefault(); // Prevent form submission
+              console.log(`Enter key prevented on input: ${event.target.id}`);
+              
+          }
+      });
+      salesTotal.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" && event.target.tagName === "INPUT") {
+              event.preventDefault(); // Prevent form submission
+              console.log(`Enter key prevented on input: ${event.target.id}`);
+
+          }
+      });
+      inputCheck()
     })
     
     
@@ -1076,6 +1094,59 @@ $(document).ready(function(){
     calculateTotalAmount();
     calculateOtherTotal();
 
+  function inputCheck(){
+
+    const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
+    const productInvoiceId = document.getElementById('id_sales_voucher_finish_goods_set-0-id').value;
+    console.log('productInvoiceId',productInvoiceId)
+    itemNameInputsid.forEach((input, index) => {
+    input.addEventListener("keydown", function (event) {
+
+        const closestRow = input.closest('tr');
+        const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
+        console.log('allInputsInRow',allInputsInRow)
+        if(productInvoiceId === ''){
+            if(allInputsInRow === ''){
+                if (event.key === "Tab") {
+            event.preventDefault(); // Prevent default tab behavior
+
+            // Check if the current input has a value
+            if (input.value.trim() !== "") {
+                // If not the last input, move focus to the next row's item name
+                if (itemNameInputsid[index + 1]) {
+                    itemNameInputsid[index + 1].focus();
+                }
+            } else {
+                // If current input is empty, refocus on it
+                input.focus();
+            }
+        }
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent default Enter key behavior
+
+            // Find the current <td> containing this input
+            const currentTd = this.closest('td');
+                console.log('currentId',currentTd)
+            // Find the next <td> sibling
+            if (currentTd) {
+                const nextTd = currentTd.nextElementSibling;
+
+                // Check if next <td> exists and contains an input
+                if (nextTd) {
+                    const nextInput = nextTd.querySelector('input');
+                    if (nextInput) {
+                        nextInput.focus(); // Move focus to the next input
+                    }
+                }
+            }
+        }
+            }
+        }
+        
+    });
+    });
+    }
+inputCheck()
 
 </script>
 {% endblock body %}

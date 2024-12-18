@@ -211,18 +211,15 @@
                     method: 'GET',
                     data: { 'nameValue': nameValue },
                     success: function (response) {
-
                         // Function to escape special characters in the search query
                         function escapeRegExp(string) {
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
                         searchedItemNameDict = response.searched_item_name_dict;
-                     
                         var searchQuery = nameValue.toLowerCase();
                         var escapedSearchQuery = escapeRegExp(searchQuery); // Escape special characters in search query
                         var regex = new RegExp('(' + escapedSearchQuery + ')', 'gi');
-                        var filteredOptions = Object.entries(searchedItemNameDict).filter(([key, value]) => value.toLowerCase().includes(searchQuery));
-                        
+                        var filteredOptions = Object.entries(searchedItemNameDict).filter(([key, value]) => value.toLowerCase().includes(searchQuery));                       
                         // Clear and repopulate options
                         suggestionsContainer.empty();
 
@@ -236,7 +233,6 @@
                                 const numberKey = value.split(/-?\d+(\.\d+)?,/)[2].trim();
 
                                 // Initialize the color based on valueCalculate
-                                
                                 if (parseFloat(valueCalculate) > 0) {
                                     colorStyle = 'color: green; float: right;';
                                 } else {
@@ -254,18 +250,12 @@
                                     </div>`);
                             } 
                             
-                
                         });
-                        
-                    
                     },
                     error: function (xhr) {
                         console.log(xhr.status + ": " + xhr.responseText);
                         if (xhr.status === 404) {
-                            
-                            suggestionsContainer.show();
-                            suggestionsContainer.empty();
-                            suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                            suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
                         }
                     }
                 });
@@ -277,10 +267,7 @@
             suggestionsContainer.on('click', '.itemName-div', function(e) {
                 var item_value = $(this).data('key');
                 var itemNamevaluesCheck = $(this).text();
-              
-               
-               
-            
+        
                 $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
                 $(this).addClass('selected').siblings().removeClass('selected');
 
