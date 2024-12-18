@@ -2952,6 +2952,255 @@ def packaging_delete(request,pk):
 
 
 
+# @login_required(login_url='login')
+# def product2item(request,product_refrence_id):
+    
+#     try:
+
+#         all_ref_ids = Product.objects.all()
+        
+#         items = Item_Creation.objects.all().order_by('item_name')
+#         product_refrence_no = product_refrence_id
+#         model_name = Product.objects.get(Product_Refrence_ID=product_refrence_id)
+
+#         Products_all = PProduct_Creation.objects.filter(Product__Product_Refrence_ID=product_refrence_id).select_related('PProduct_color')
+
+#         if not Products_all.exists():
+#                 raise ValueError("No products found for the given reference ID.")
+        
+        
+#         extraformspecial = True
+#         for product in Products_all:
+#             if product.product_2_item_through_table_set.filter(common_unique = False):
+#                 extraformspecial = False
+
+        
+#         extraformcommon = True
+#         for product in Products_all:
+#             if product.product_2_item_through_table_set.filter(common_unique = True):
+#                 extraformcommon = False
+        
+
+        
+        
+#         product2item_instances = product_2_item_through_table.objects.filter(
+#             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,
+#               common_unique = False).select_related('PProduct_pk','Item_pk','PProduct_pk__PProduct_color').order_by('row_number')
+        
+
+#         if extraformspecial:
+#             formset_single = Product2ItemFormsetExtraForm(queryset = product2item_instances, prefix='product2itemuniqueformset')
+
+#         else:
+#             formset_single = Product2ItemFormset(queryset=product2item_instances , prefix = 'product2itemuniqueformset')
+
+        
+        
+        
+        
+        
+        
+#         distinct_product2item_commmon_instances = product_2_item_through_table.objects.filter(
+#             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,common_unique = True).order_by(
+#                 'row_number','id').distinct('row_number').select_related('PProduct_pk','Item_pk')
+
+
+#         if extraformcommon:
+#             formset_common = Product2CommonItemFormSetExtraForm(queryset=distinct_product2item_commmon_instances,prefix='product2itemcommonformset')
+
+#         else:
+#             formset_common = Product2CommonItemFormSet(queryset=distinct_product2item_commmon_instances,prefix='product2itemcommonformset')
+
+
+        
+#         clone_ajax_valid = False
+#         if extraformcommon and extraformspecial:
+#             clone_ajax_valid = True
+
+#         if request.method == 'POST':
+#             print(request.POST)
+#             formset_single = Product2ItemFormset(request.POST, queryset=product2item_instances, prefix='product2itemuniqueformset')
+#             formset_common = Product2CommonItemFormSet(request.POST, queryset=distinct_product2item_commmon_instances, prefix='product2itemcommonformset') 
+            
+#             formset_single_valid = False
+#             formset_common_valid = False
+            
+            
+#             if formset_single.is_valid():
+                
+#                 try:
+                    
+#                     for form in formset_single.deleted_forms:
+#                         if form.instance.pk:  
+                            
+                            
+                            
+                            
+                            
+                            
+#                             form.instance.delete()
+                            
+                            
+
+                    
+#                     for form in formset_single:
+#                         if not form.cleaned_data.get('DELETE'): 
+#                             if form.cleaned_data.get('Item_pk'):  
+                                
+#                                 if form.instance.pk:  
+#                                     existing_instance = product_2_item_through_table.objects.get(pk=form.instance.pk)  
+#                                     initial_rows = existing_instance.no_of_rows 
+#                                 else:
+#                                     initial_rows = 0
+
+#                                 p2i_instance = form.save(commit = False)
+#                                 p2i_instance.c_user = request.user
+#                                 p2i_instance.common_unique = False 
+#                                 p2i_instance.save()
+#                                 logger.info(f"Product to item created/updated special - {p2i_instance.id}")
+
+#                                 no_of_rows_to_create = form.cleaned_data['no_of_rows'] - initial_rows   
+#                                 p2i_instance.row_number = form.cleaned_data['row_number']
+
+#                                 if no_of_rows_to_create > 0:
+#                                     for row in range(no_of_rows_to_create):
+                                        
+#                                         logger.info(f" set prod item part name created of p2i instance - {p2i_instance.id}")
+#                                         set_prod_item_part_name.objects.create(producttoitem = p2i_instance, c_user = request.user)
+
+#                                 p2i_instance.save()
+#                                 formset_single_valid = True
+
+#                             else:
+#                                 raise ValidationError('Please select existing Item Name or select from the dropdown')
+                                
+#                 except Exception as e:
+#                     logger.error(f'Error saving unique records - {e}')
+#                     messages.error(request, f'Error saving unique records - {e}')  
+            
+#             else:
+#                 logger.error(f'Error saving unique records - {formset_single.errors}')
+#                 messages.error(request, f'Error saving unique records - {formset_single.errors}') 
+                            
+            
+#             if formset_common.is_valid():
+#                 try:
+#                     for form in formset_common.deleted_forms:
+#                         if form.instance.id: 
+#                             deleted_item = form.instance.Item_pk  
+                            
+                            
+
+                            
+#                             for product in Products_all: 
+#                                 p2i_to_delete = product_2_item_through_table.objects.filter(PProduct_pk=product, Item_pk=deleted_item, common_unique=True)
+#                                 logger.info(f"Deleted product to item instace of {product}, - {deleted_item}")
+#                                 p2i_to_delete.delete()
+                            
+                            
+
+                            
+#                     for form in formset_common: 
+#                         if not form.cleaned_data.get('DELETE'): 
+
+#                             if form.cleaned_data.get('Item_pk'):  
+
+#                                 for product in Products_all:
+                                    
+                                    
+#                                     item = form.cleaned_data['Item_pk']
+                                    
+#                                     obj, created = product_2_item_through_table.objects.get_or_create(PProduct_pk=product, Item_pk=item, common_unique=True)
+#                                     obj.c_user = request.user
+                                    
+                                    
+#                                     if created:
+#                                         initial_rows = 0
+
+#                                     if not created:
+#                                         initial_rows = obj.no_of_rows
+                                    
+#                                     obj.no_of_rows = form.cleaned_data['no_of_rows']
+#                                     obj.Remark = form.cleaned_data['Remark']
+#                                     obj.row_number = form.cleaned_data['row_number']
+#                                     logger.info(f"Product to item created/updated common - {obj.id}")
+#                                     obj.save()
+                                
+                                    
+#                                     rows_to_create = form.cleaned_data['no_of_rows'] - initial_rows
+#                                     if rows_to_create > 0:
+#                                             for row in range(rows_to_create):
+#                                                 set_prod_item_part_name.objects.create(producttoitem = obj,c_user = request.user)
+#                                                 logger.info(f" set prod item part name created of - {obj.id}")
+
+#                                     formset_common_valid = True
+
+#                             else:
+#                                 raise ValidationError('Please select existing Item Name or select from the dropdown')
+                                    
+
+#                 except Exception as e:
+#                     logger.error(f'Error saving common records - {e}')
+#                     messages.error(request, f'Error saving common records{e}.') 
+
+#             else:
+#                 logger.error(f'Error saving unique records - {formset_common.errors}')
+#                 messages.error(request, f'Error saving unique records - {formset_common.errors}')
+        
+
+#             if formset_common_valid and formset_single_valid:
+
+#                 messages.success(request,'Items to Product sucessfully added.')
+#                 close_window_script = """
+#                                                 <script>
+#                                                 window.opener.location.reload(true);  // Reload parent window if needed
+#                                                 window.close();  // Close current window
+#                                                 </script>
+#                                                 """
+#                 return HttpResponse(close_window_script)
+            
+#             else:
+#                 for form_errors in formset_common.errors:
+#                     if form_errors:
+#                         logger.error(f'Error with formset_common form - {product_refrence_id } - {form_errors}')
+#                         messages.error(request, f'{form_errors}')
+
+#                 for form_errors in formset_single.errors:
+#                     if form_errors:
+#                         logger.error(f'Error with formset_common form - {product_refrence_id } - {form_errors}')
+#                         messages.error(request, f'{form_errors}')
+
+
+#                 close_window_script = """
+#                             <script>
+#                                                 window.opener.location.reload(true);  // Reload parent window if needed
+#                                                 window.close();  // Close current window
+#                                                 </script>
+#                                                 """
+#                 return HttpResponse(close_window_script)
+
+
+#         return render(request,'production/product2itemsetproduction.html', {'formset_single':formset_single,'formset_common':formset_common,
+#                                                                 'Products_all':Products_all,'all_ref_ids':all_ref_ids,'clone_ajax_valid':clone_ajax_valid,
+#                                                                 'items':items,'product_refrence_no': product_refrence_no,'model_name':model_name})
+
+#     except Exception as e:
+#         logger.error(f'Error with forms - {product_refrence_id } - {e}')
+#         messages.error(request, 'An unexpected error occurred. Please try again later.')
+#         return render(request, 'production/product2itemsetproduction.html', {
+#             'formset_single': formset_single,
+#             'formset_common': formset_common,
+#             'Products_all': Products_all,
+#             'items': items,
+#             'product_refrence_no': product_refrence_no,
+#             'model_name':model_name
+#         })
+
+
+
+
+
+
 @login_required(login_url='login')
 def product2item(request,product_refrence_id):
     
@@ -2994,12 +3243,7 @@ def product2item(request,product_refrence_id):
         else:
             formset_single = Product2ItemFormset(queryset=product2item_instances , prefix = 'product2itemuniqueformset')
 
-        
-        
-        
-        
-        
-        
+
         distinct_product2item_commmon_instances = product_2_item_through_table.objects.filter(
             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,common_unique = True).order_by(
                 'row_number','id').distinct('row_number').select_related('PProduct_pk','Item_pk')
@@ -3018,7 +3262,7 @@ def product2item(request,product_refrence_id):
             clone_ajax_valid = True
 
         if request.method == 'POST':
-            print(request.POST)
+            # print(request.POST)
             formset_single = Product2ItemFormset(request.POST, queryset=product2item_instances, prefix='product2itemuniqueformset')
             formset_common = Product2CommonItemFormSet(request.POST, queryset=distinct_product2item_commmon_instances, prefix='product2itemcommonformset') 
             
@@ -3032,21 +3276,12 @@ def product2item(request,product_refrence_id):
                     
                     for form in formset_single.deleted_forms:
                         if form.instance.pk:  
-                            
-                            
-                            
-                            
-                            
-                            
                             form.instance.delete()
                             
-                            
 
-                    
                     for form in formset_single:
                         if not form.cleaned_data.get('DELETE'): 
-                            if form.cleaned_data.get('Item_pk'):  
-                                
+                            if form.cleaned_data.get('Item_pk'):                                  
                                 if form.instance.pk:  
                                     existing_instance = product_2_item_through_table.objects.get(pk=form.instance.pk)  
                                     initial_rows = existing_instance.no_of_rows 
@@ -3082,15 +3317,11 @@ def product2item(request,product_refrence_id):
                 logger.error(f'Error saving unique records - {formset_single.errors}')
                 messages.error(request, f'Error saving unique records - {formset_single.errors}') 
                             
-            
             if formset_common.is_valid():
                 try:
                     for form in formset_common.deleted_forms:
                         if form.instance.id: 
                             deleted_item = form.instance.Item_pk  
-                            
-                            
-
                             
                             for product in Products_all: 
                                 p2i_to_delete = product_2_item_through_table.objects.filter(PProduct_pk=product, Item_pk=deleted_item, common_unique=True)
@@ -3098,18 +3329,24 @@ def product2item(request,product_refrence_id):
                                 p2i_to_delete.delete()
                             
                             
-
-                            
-                    for form in formset_common: 
+                    for form in formset_common:
+                        
                         if not form.cleaned_data.get('DELETE'): 
 
                             if form.cleaned_data.get('Item_pk'):  
 
                                 for product in Products_all:
-                                    
-                                    
-                                    item = form.cleaned_data['Item_pk']
-                                    
+
+                                
+                                    old_item = form.initial.get('Item_pk')
+
+                                    if old_item:
+                                        item = old_item
+                                        print("old",old_item)
+                                    else:
+                                        item = form.cleaned_data['Item_pk']
+                                        print(item)
+
                                     obj, created = product_2_item_through_table.objects.get_or_create(PProduct_pk=product, Item_pk=item, common_unique=True)
                                     obj.c_user = request.user
                                     
@@ -3119,7 +3356,8 @@ def product2item(request,product_refrence_id):
 
                                     if not created:
                                         initial_rows = obj.no_of_rows
-                                    
+                                        
+                                    obj.Item_pk = form.cleaned_data['Item_pk']
                                     obj.no_of_rows = form.cleaned_data['no_of_rows']
                                     obj.Remark = form.cleaned_data['Remark']
                                     obj.row_number = form.cleaned_data['row_number']
@@ -3195,6 +3433,29 @@ def product2item(request,product_refrence_id):
             'product_refrence_no': product_refrence_no,
             'model_name':model_name
         })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4395,6 +4656,8 @@ def excel_download_production(request, module_name, pk):
 
 
 
+
+
 @login_required(login_url = 'login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
@@ -4413,12 +4676,11 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
                             PProduct_pk__Product__Product_Refrence_ID = product_refrence_no, common_unique = True).order_by(
                                 'row_number','id').distinct('row_number')
     
-    
-    
+
     
     product_2_items_instances = product_2_items_instances_unique.union(product_2_items_instances_common)
     
-
+    
     model_name = purchase_order_instance.product_reference_number.Model_Name
 
     physical_stock_all_godowns = {}
@@ -4440,8 +4702,7 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
 
     purchase_order_raw_formset = purchase_order_raw_product_qty_formset(instance = purchase_order_instance)
 
-
-
+    
     
     if not purchase_order_instance.raw_materials.all():
         
@@ -4450,8 +4711,7 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
         initial_data = []
         for query in product_2_items_instances:
             rate_first = query.Item_pk.shades.order_by('id').first() 
-            
-            
+
             if query.common_unique == True:
                 product_color_or_common_item = 'Common Item'
                 product_sku_or_common_item = 'Common Item'
@@ -4491,10 +4751,10 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
     
     elif purchase_order_instance.raw_materials.all():
 
-        physical_stock_all_godown_json = None 
+        physical_stock_all_godown_json = None
 
         purchase_order_raw_product_sheet_formset = inlineformset_factory(purchase_order, purchase_order_for_raw_material, form=purchase_order_raw_product_sheet_form, extra=0, can_delete=False)
-
+        
         purchase_order_raw_sheet_formset = purchase_order_raw_product_sheet_formset(instance=purchase_order_instance)
 
 
@@ -4548,9 +4808,7 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
                 print(purchase_order_raw_formset.errors,purchase_order_raw_sheet_formset.errors)
                 raise ValidationError("No products found for the given reference ID.")
                 
-                
-                
-                
+  
                 
         except ValidationError as ve:
                 messages.error(request,f' Please enter correct Procurement color wise QTY {ve}')
@@ -4564,6 +4822,8 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
                                                                       'purchase_order_raw_formset':purchase_order_raw_formset,
                                                                       'purchase_order_raw_sheet_formset':purchase_order_raw_sheet_formset,
                                                                       'physical_stock_all_godown_json':physical_stock_all_godown_json,'page_name':'Purchase Order View'})
+
+
 
 
 
@@ -6458,6 +6718,9 @@ def labour_workin_approval_split(request,ref_id):
   
     return render(request,'finished_product/labourworkinapprovalsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list})
 
+ 
+
+
 
 
 def raw_material_estimation_calculate(request):
@@ -6465,10 +6728,10 @@ def raw_material_estimation_calculate(request):
     master_pk = request.GET.get('unique_id')
     if master_pk:
         
-
         try:
             estimation_master_instance = get_object_or_404(raw_material_production_estimation,pk = master_pk)
-
+            
+            
         except ObjectDoesNotExist as e:
             print(e)
 
@@ -6478,6 +6741,7 @@ def raw_material_estimation_calculate(request):
         
         if estimation_master_instance:
             final_total_list = {}
+
             for master_instance in estimation_master_instance.raw_material_production_estimations.all():
                 
 
@@ -6485,22 +6749,21 @@ def raw_material_estimation_calculate(request):
                 
                 for master_items in master_instance.raw_material_product_ref_itemss_p_2_i.values('material_name','total_comsumption'):
                     primary_list.append(master_items)
-                
-                      
-                 
-                    
+
+                  
                 for x in primary_list:
                     material_name = x['material_name']
                     qty = x['total_comsumption']
                     
+
                     material_in_dict  = final_total_list.get(material_name)
 
                     if material_in_dict:
                         final_total_list[material_name] = qty + material_in_dict
-
+                        
                     else:
                         final_total_list[material_name] = qty
-            
+                        
 
 
             for key, value in final_total_list.items():
@@ -6513,8 +6776,10 @@ def raw_material_estimation_calculate(request):
 
                     difference_quantity_in_cutting_stage = purchase_order_for_raw_material_cutting_items.objects.filter(material_name=key).aggregate(total_cutting_qty = Sum('total_comsumption'))
 
+                    
                     total_cutting_qty = difference_quantity_in_cutting_stage['total_cutting_qty'] if difference_quantity_in_cutting_stage['total_cutting_qty'] else 0
-
+                    
+                    
                     diffrence_qty = total_po_qty - total_cutting_qty
 
                     
@@ -6527,13 +6792,253 @@ def raw_material_estimation_calculate(request):
                 total_godown_stock = godown_qty
                 total_balance_stock = godown_qty - value
 
+                
                 raw_material_production_total.objects.create(raw_material_estination_master = estimation_master_instance,item_name=key,total_consump=value,godown_stock = total_godown_stock,balance_stock = total_balance_stock)
-
+                
+                
         response_dict = raw_material_production_total.objects.filter(raw_material_estination_master = estimation_master_instance).values('item_name','total_consump','godown_stock','balance_stock')
+
+        ref_id = []
+        product_ref_ids = estimation_master_instance.raw_material_production_estimations.values('product_id__Product_Refrence_ID')
+        
+        
+        for product_ref_id in product_ref_ids:
+            for key,val in product_ref_id.items():
+                ref_id.append(val)
+                
+
+        purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = ref_id)
+
+
+
+        sku_total_qty = {}
+
+        po_id = []
+        for order in purchase_orders:
+            for x in order.p_o_to_products.all():
+
+                po_no = x.purchase_order_id.purchase_order_number
+
+                if po_no not in po_id:
+                    po_id.append(po_no)
+
+                product_reference_number = x.purchase_order_id.product_reference_number.Product_Refrence_ID
+                sku = x.product_id.PProduct_SKU
+                process_quantity = x.process_quantity
+
+                
+                if product_reference_number not in sku_total_qty:
+                    sku_total_qty[product_reference_number] = {}
+
+                
+                current_quantity = sku_total_qty[product_reference_number].get(sku, 0)
+                sku_total_qty[product_reference_number][sku] = current_quantity + process_quantity
+
+        
+        for product_reference_number, skus in sku_total_qty.items():
+            total_quantity = sum(skus.values())
+            skus['total'] = total_quantity
+
+
+
+
+
+        ordered_raw_materials = purchase_order_for_raw_material_cutting_items.objects.filter(material_name__in=final_total_list,purchase_order_cutting__purchase_order_id__purchase_order_number__in = po_id)
+
+
+        material_data_with_values = []
+        for material in ordered_raw_materials:
+            
+            dict_to_apnd = {
+                'ref_no' : material.purchase_order_cutting.purchase_order_id.product_reference_number.Product_Refrence_ID,
+                'product_color': material.product_color,
+                'product_sku' : material.product_sku,
+                'material_name': material.material_name,
+                'fabric_type' : material.material_color_shade.items.Fabric_nonfabric,
+                'consumption': material.consumption,
+                'combi_consumption': material.combi_consumption
+            }
+
+            
+            if not any(item['material_name'] == material.material_name for item in material_data_with_values):
+                material_data_with_values.append(dict_to_apnd)
+
+
+        list_to_send_for_cutting = []
+        for key,value in sku_total_qty.items():
+
+            for data in material_data_with_values:
+
+                if data['ref_no'] == key:
+
+                    if data['fabric_type'] == 'Fabric':
+
+                        for k,v in value.items():
+
+                            sku_inside = str(k)
+                            if data['product_sku'] == sku_inside:
+
+                                total_consumption_value = v * data['consumption']
+
+                                total_combi_consumption_value = v * data['combi_consumption']
+
+                                total_consumption = total_consumption_value + total_combi_consumption_value
+
+                                dict_append = {
+                                    'material_name':data['material_name'],
+                                    'cutting_consumption' : total_consumption
+                                }
+
+                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
+                                    list_to_send_for_cutting.append(dict_append)
+
+
+                            elif data['product_sku'] == 'Common Item':
+                                
+                                total_consumption_value = value['total'] * data['consumption']
+
+                                total_combi_consumption_value = value['total'] * data['combi_consumption']
+
+                                total_consumption = total_consumption_value + total_combi_consumption_value
+
+                                dict_append = {
+                                    'material_name':data['material_name'],
+                                    'cutting_consumption' : total_consumption
+                                }
+
+                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
+                                    list_to_send_for_cutting.append(dict_append)
+                                
+                    else:
+                        total_consumption = 0.00
+
+
+                        dict_append = {
+                                    'material_name':data['material_name'],
+                                    'cutting_consumption' : total_consumption
+                                }
+
+                        if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
+                            list_to_send_for_cutting.append(dict_append)
+        
+
+        lwo_pending = product_to_item_labour_workout.objects.filter(labour_workout__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id)
+
+        sku_total_qty_lwo = {}
+
+        for x in lwo_pending:
+
+            product_reference_number = x.labour_workout.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID
+            sku = x.product_sku
+            process_quantity = x.pending_pcs
+
+            if product_reference_number not in sku_total_qty_lwo:
+                sku_total_qty_lwo[product_reference_number] = {}
+                
+            if sku not in sku_total_qty_lwo[product_reference_number]:
+                sku_total_qty_lwo[product_reference_number][sku] = process_quantity
+                
+            else:
+                sku_total_qty_lwo[product_reference_number][sku] += process_quantity
+
+        for product_reference_number, skus in sku_total_qty_lwo.items():
+            total_quantity = sum(skus.values())
+            skus['total'] = total_quantity
+
+
+        list_to_send_for_lwo = []
+
+        for key,value in sku_total_qty_lwo.items():
+
+            for data in material_data_with_values:
+
+                if data['ref_no'] == key:
+
+                    if data['fabric_type'] == 'Non Fabric':
+
+                        for k,v in value.items():
+
+                            sku_inside = str(k)
+                            if data['product_sku'] == sku_inside:
+
+                                total_consumption_value = v * data['consumption']
+
+                                total_combi_consumption_value = v * data['combi_consumption']
+
+                                total_consumption = total_consumption_value + total_combi_consumption_value
+
+                                dict_append = {
+                                    'material_name':data['material_name'],
+                                    'lwo_consumption' : total_consumption
+                                }
+
+                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
+                                    list_to_send_for_lwo.append(dict_append)
+
+
+                            elif data['product_sku'] == 'Common Item':
+                                
+                                total_consumption_value = value['total'] * data['consumption']
+
+                                total_combi_consumption_value = value['total'] * data['combi_consumption']
+
+                                total_consumption = total_consumption_value + total_combi_consumption_value
+
+                                dict_append = {
+                                    'material_name':data['material_name'],
+                                    'lwo_consumption' : total_consumption
+                                }
+
+                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
+                                    list_to_send_for_lwo.append(dict_append)
+            
+                    else:
+                        total_consumption = 0.00
+
+
+                        dict_append = {
+                                    'material_name':data['material_name'],
+                                    'lwo_consumption' : total_consumption
+                                }
+
+                        if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
+                            list_to_send_for_lwo.append(dict_append)
+
+        merged_data = {}
+
+        
+        for item in list_to_send_for_cutting:
+            material = item['material_name']
+            merged_data[material] = {
+                'material_name': material,
+                'cutting_consumption': item.get('cutting_consumption', decimal.Decimal('0.0')),
+                'lwo_consumption': decimal.Decimal('0.0')
+            }
+
+        
+        for item in list_to_send_for_lwo:
+            material = item['material_name']
+            if material in merged_data:
+                merged_data[material]['lwo_consumption'] = item.get('lwo_consumption', decimal.Decimal('0.0'))
+            else:
+                merged_data[material] = {
+                    'material_name': material,
+                    'cutting_consumption': decimal.Decimal('0.0'),
+                    'lwo_consumption': item.get('lwo_consumption', decimal.Decimal('0.0'))
+                }
+
+        final_data = list(merged_data.values())
+        
+        print(final_data)
+        print(len(final_data))
+
         print(len(response_dict))
-        return JsonResponse({'response_dict':list(response_dict)})   
+        return render(request,'reports/raw_material_estimation_calculation_pop_up.html')
+        
 
    
+
+
 
 
 def raw_material_estimate_delete(request,pk):
