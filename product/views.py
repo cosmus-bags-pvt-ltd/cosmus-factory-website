@@ -6921,6 +6921,8 @@ def raw_material_estimation_calculate(request,u_id):
                         if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
                             list_to_send_for_cutting.append(dict_append)
         
+        # print(list_to_send_for_cutting)
+
 
         lwo_pending = product_to_item_labour_workout.objects.filter(labour_workout__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id)
 
@@ -7004,6 +7006,8 @@ def raw_material_estimation_calculate(request,u_id):
                         if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
                             list_to_send_for_lwo.append(dict_append)
 
+        # print(list_to_send_for_lwo)
+
         merged_data = {}
 
         
@@ -7027,12 +7031,20 @@ def raw_material_estimation_calculate(request,u_id):
                     'lwo_consumption': item.get('lwo_consumption', decimal.Decimal('0.0'))
                 }
 
+        for item in response_dict:
+            material = item['item_name']
+            if material in merged_data:
+                merged_data[material]['total_consump'] = item.get('total_consump', decimal.Decimal('0.0'))
+                merged_data[material]['godown_stock'] = item.get('godown_stock', decimal.Decimal('0.0'))
+                merged_data[material]['balance_stock'] = item.get('balance_stock', decimal.Decimal('0.0'))
+            
+
         final_data = list(merged_data.values())
         
         print(final_data)
-        print(len(final_data))
+        # print(len(final_data))
 
-        print(len(response_dict))
+        # print(response_dict)
         return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':final_data})
         
 
