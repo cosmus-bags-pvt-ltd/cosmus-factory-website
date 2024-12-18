@@ -845,20 +845,6 @@ class labour_workout_master(models.Model):
 
     
     
-    
-    
-
-    
-    
-    
-        
-    
-    
-    
-    
-    
-        
-    
 
 class product_to_item_labour_workout(models.Model):
     labour_workout = models.ForeignKey(labour_workout_master,related_name='labour_workout_items' ,on_delete=models.CASCADE)
@@ -931,6 +917,8 @@ class labour_work_in_master(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT,null=False, blank=False)
     modified_date = models.DateTimeField(auto_now=True)
 
+
+
 class labour_work_in_product_to_item(models.Model):
     labour_workin_instance = models.ForeignKey(labour_work_in_master, on_delete=models.CASCADE, related_name='l_w_in_products')
     product_sku = models.PositiveBigIntegerField()
@@ -984,6 +972,8 @@ class raw_material_product_wise_qty(models.Model):
     product_color = models.CharField(max_length=100)
     estimate_qty = models.IntegerField(default=0)
 
+
+
 class raw_material_product_to_items(models.Model):
     raw_material_ref_id = models.ForeignKey(raw_material_product_ref_items, related_name= 'raw_material_product_ref_itemss_p_2_i' ,on_delete=models.CASCADE)
     product_sku = models.CharField(max_length=50)
@@ -1005,8 +995,10 @@ class raw_material_product_to_items(models.Model):
     Remark = models.CharField(max_length = 50, null=False, blank=False)
     pcs = models.IntegerField(default = 0)
 
+
+
 class raw_material_production_total(models.Model):
-    raw_material_estination_master = models.ForeignKey(raw_material_production_estimation,related_name='raw_material_production_estimations_total' ,on_delete=models.CASCADE)
+    raw_material_estination_master = models.ForeignKey(raw_material_production_estimation,related_name='raw_material_production_estimations_total',on_delete=models.CASCADE)
     item_name = models.CharField(max_length=100)
     total_consump = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     godown_stock = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
