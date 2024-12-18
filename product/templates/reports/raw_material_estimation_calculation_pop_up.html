@@ -1,0 +1,43 @@
+{% extends 'misc/navbar_popup.html' %}
+{% load static %}
+{% block body %}
+
+<div class="responsives">
+    <table class="table table-hover table-bordered table-striped">
+        <thead class="name_absolute sticky-top">
+            <tr>
+                <th>No</th>
+                <th>Product Name</th>
+                <th>Total Consump</th>
+                <th>Godown Stock</th>
+                <th>Cutting Pend Qty</th>
+                <th>LWO Pend QTY</th>
+                <th>Balance Stock</th>
+                <th>Select</th>
+                <th>Last Buying Seller</th>
+                <th>Mobile No</th>
+                <th>Email ID</th>
+            </tr>
+        </thead>
+        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;"> 
+            {% for data in  final_data %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td class="text-nowrap">{{data.material_name}}</td>
+                <td></td>
+                <td></td>
+                <td>{{data.cutting_consumption}}</td>
+                <td>{{data.lwo_consumption}}</td>
+                <td></td>
+                <td><input type="checkbox" class="text-success purchaseCheckBox" id="" name="" value=""></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- {{ final_data }} -->
+
+{% endblock body%}

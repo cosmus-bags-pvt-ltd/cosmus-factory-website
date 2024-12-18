@@ -6723,13 +6723,13 @@ def labour_workin_approval_split(request,ref_id):
 
 
 
-def raw_material_estimation_calculate(request):
+def raw_material_estimation_calculate(request,u_id):
     
-    master_pk = request.GET.get('unique_id')
-    if master_pk:
+    # master_pk = request.GET.get('unique_id')
+    if u_id:
         
         try:
-            estimation_master_instance = get_object_or_404(raw_material_production_estimation,pk = master_pk)
+            estimation_master_instance = get_object_or_404(raw_material_production_estimation,pk = u_id)
             
             
         except ObjectDoesNotExist as e:
@@ -7033,7 +7033,7 @@ def raw_material_estimation_calculate(request):
         print(len(final_data))
 
         print(len(response_dict))
-        return render(request,'reports/raw_material_estimation_calculation_pop_up.html')
+        return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':final_data})
         
 
    
