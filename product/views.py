@@ -7037,7 +7037,7 @@ def raw_material_estimation_calculate(request):
                 merged_data[material]['total_consump'] = item.get('total_consump', decimal.Decimal('0.0'))
                 merged_data[material]['godown_stock'] = item.get('godown_stock', decimal.Decimal('0.0'))
                 merged_data[material]['balance_stock'] = item.get('balance_stock', decimal.Decimal('0.0'))
-            
+                
 
         final_data = list(merged_data.values())
         
