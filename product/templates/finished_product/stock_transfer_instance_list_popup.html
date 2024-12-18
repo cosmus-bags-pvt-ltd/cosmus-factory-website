@@ -131,39 +131,37 @@
     </form>
     <div class="mt-2">
         <div>
-            <h4 class="fw-bold">INWarded Product</h4>
+            <div class="d-flex">
+                <h4 class="fw-bold">INWarded Product</h4>
+                <h5 class="fw-bold" style="margin-left: 384px;">Total : <span class="totalentries text-danger"></span></h5>
+            </div>
+           
             <div class="row">
                 <div class="col-lg-7">
-                    <table class="table table-striped table-hover table-bordered">
+                    <table class="table table-striped table-hover table-bordered" id="inwordDateTable">
                         <thead class="name_absolute sticky-top">
                             <tr>
                                 <th>Product Name</th>
                                 <th>Product SKU</th>
+                                <th>Serial No</th>
                                 <th>Quantity</th>
                                 <th>QC Recieved QTY</th>
+                                <th>Bin NO</th>
+                                <th>Delete</th>
                             </tr>
                         </thead>
                         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-                            {{ completed_formset.management_form}}
-                            {% for form in completed_formset %}
-                            {% if form.instance.product_purchase_master.purchase_number %}
+                            {% for entries in single_entries %}
                         
                             <tr>
-                                <td><input type="text" class="productShadeCutting_Material_input " value="{{ form.instance.product_name.Product.Product_Name }}" readonly></td>
-                                <td><input type="number" class="productShadeCutting_Material_input inwardedsku" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ form.instance.quantity_total|default_if_none:0 }}" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input inwardedReceivedQty" value="{{form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>   
+                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Product_Name }}" readonly></td>
+                                <td><input type="number" class="stockQrcode_input inwardedsku" value="{{ entries.product.PProduct_SKU }}" readonly></td>
+                                <td><input type="text" class="stockQrcode_input" value="{{ entries.unique_serial_no }}" readonly></td>
+                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ entries.quantity_total|default_if_none:0 }}" readonly></td>
+                                <td><input type="number" class="productorderrawqty-input inwardedReceivedQty" value="1" readonly></td> 
+                                <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}" readonly></td>  
+                                <td><button class="border-0 bg-transparent delete-btn" data-item-id="" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
                             </tr>
-                        
-                            {% elif form.instance.Finished_goods_Stock_TransferMasterinstance.voucher_no %}
-                            <tr>
-                                <td><input type="text" class="productShadeCutting_Material_input" value="{{ form.instance.product.Product.Product_Name }}" readonly></td>
-                                <td><input type="number" class="productShadeCutting_Material_input inwardedsku" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ form.instance.product_quantity_transfer |default_if_none:0 }}" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input inwardedReceivedQty" value="{{ form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
-                            </tr>
-                        
-                            {% endif %}
                             {% endfor %}
                         </tbody>    
                     </table>
@@ -174,22 +172,33 @@
     </div>
 </div>
 
-<div>
-    
-    {% for entries in single_entries %}
-        {{entries}}
-    {% endfor %}
-        
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="modal-body-text">
+            Are you sure you want to delete this Product?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
+          <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
+        </div>
+      </div>
+    </div>
 </div>
 
 <script>
+     document.body.appendChild(document.getElementById('exampleModal'));
     document.addEventListener('DOMContentLoaded', function () {
         const inwardSearch = document.getElementById('inwordSerialNo');
         const manualSearch = document.getElementById('id_manualSerialNo');
         const stockTable = document.getElementById('stockTransferList');
         const responseMessage = $('#responseMessage');
         const id_voucher_no = document.getElementById('id_voucher_no').value;
-        console.log('id_voucher_no',id_voucher_no)
+
         // Focus on input field and hide table initially for `inwordSerialNo`
         inwardSearch.focus();
         inwardSearch.addEventListener('input', function () {
@@ -219,7 +228,7 @@
             },
 
         })
-       
+        calculateQty()
     });
     
     $(document).ready(function () {
@@ -329,8 +338,45 @@
     
             return response;
         }
+
+
+        $('.delete-btn').click(function(){
+            var itemId = $(this).data('item-id');
+            var name = $(this).closest('tr').find('td').eq(1).text();
+            var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
+    
+            $('#modal-body-text').html('Are you sure you want to delete the gst ' + coloredName + '?');
+            $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
+            $('#exampleModal').modal('show');
+        });
+    
+        // Confirm delete button click event
+        $('#confirmDeleteButton').click(function(){
+            var itemId = $(this).data('item-id');
+            // Redirect to delete view
+            // window.location.href = '/gstdelete/' + itemId;
+        });
+
     });
 
+   function calculateQty(){
+
+    var rows = document.querySelectorAll('#inwordDateTable .mainTableList tr');
+    totalValue = 0;
+    // console.log(rows)
+    rows.forEach(function(row){
+        var inwordQty = parseInt(row.querySelector('.inwardedReceivedQty').value);
+        // console.log('inwordQty',inwordQty)
+        totalValue += inwordQty;
+
+        document.querySelector('.totalentries').textContent = totalValue;
+    })
+
+   }
+  
+   calculateQty()
+  
 </script>
+
 {% endblock body %}
 

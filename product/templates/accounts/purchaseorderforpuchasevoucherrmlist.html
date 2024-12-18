@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-lg-12 mt-4">
           <div class="d-flex mb-3">
-            <button class="item-btn" id="createVouchar" onclick="redirectVoucher();">Create Invoice +</button>
+            <button class="item-btn" id="createVouchar" onclick="redirectVoucher();">Create PO +</button>
             <div class="container-flex"> 
              <input class="" type="search" placeholder="Search" aria-label="Search" />
              <input type="submit" class="mx-2"></input>
@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-    <button type="button" class="edit_btn w-100 mb-2" id="NegativeList_btn">Negative Stock<span class="production_padding"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+    <button type="button" class="edit_btn w-75 mb-2" id="NegativeList_btn">Negative Stock<span class="production_padding"><i class="fas fa-angle-right arrowBtn"></i></span></button><button class="edit_btn mb-2" id="selectedRowPo">Create PO +</button>
     <div id="NegativeList" style="display: block;">
         <div class="d-flex mb-3">
             <form action="" method="GET" id="filterForm">
@@ -89,6 +89,8 @@
                                 <th>Color</th>
                                 <th>Quantity</th>
                                 <th>Units</th>
+                                <th>Cutting Pend QTY</th>
+                                <th>LWO Pend QTY</th>
                                 <th>Select</th>
                                 <th>Last Buying seller</th>
                                 <th>Mobile No</th>
@@ -106,6 +108,8 @@
                                 <td>{{item.Item_Color.color_name}}</td>
                                 <td>{{item.total_qty | default_if_none:0}}</td>
                                 <td>{{item.Units}}</td>
+                                <td></td>
+                                <td></td>
                                 <td><input type="checkbox" class="text-success purchaseCheckBox" id="" name="" value=""></td>
                                 <td></td>
                                 <td></td>
@@ -168,19 +172,64 @@
         toggleVisible("set_production_btn", "set_production");
 
 
-        function checkBoxData(){
-            var checkBox = document.querySelectorAll('.purchaseCheckBox');
-            checkBox.forEach(function(item){
-                item.addEventListener('click',function(){
-                    var itemPk = item.closest('tr').querySelector('#id_item_pk').value;
-                    
-                    console.log(itemPk)
-                })
-            })
-        }
+        
         
     })
+    function checkBoxData(){
+            var checkBox = document.querySelectorAll('.purchaseCheckBox');
+            var itemdis = {}; // Initialize the dictionary
+
+        checkBox.forEach(function(item) {
+            item.addEventListener('click', function() {
+                console.log(item);
+                var itemPk = item.closest('tr').querySelector('#id_item_pk').value;
+                console.log(itemPk);
+
+                // Add or remove data in the dictionary based on the checkbox state
+                if (item.checked) {
+                    itemdis[itemPk] = true; // Add or update the dictionary
+                } else {
+                    delete itemdis[itemPk]; // Remove the key if unchecked
+                }
+
+                console.log(itemdis); // Check the updated dictionary
+            });
+        });
+
+        document.getElementById('selectedRowPo').addEventListener('click',function(){
+          // Send the itemdis data to the backend
+          $.ajax({
+            url:"//",   
+            type:"POST",   
+            headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken() // For CSRF-protected servers like Django
+                },
+            data:JSON.stringify({ items: itemdis }),
+            success:function(response){
+
+            },
+            error:function(error){
+                console.error('Error:', error);
+                  alert('Failed to send data to the backend.');
+            }
+          })
+        
+    });
+  
+
+        }
+
+        function getCSRFToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue || '';
+}
+
     checkBoxData()
+
     document.body.appendChild(document.getElementById('exampleModal'));   
     $(document).ready(function(){
       

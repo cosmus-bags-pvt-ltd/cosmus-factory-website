@@ -7779,7 +7779,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
             completed_formset = stock_transfer_instance_formset_only_for_update(queryset = completed_qs, instance=stock_transfer_instance)
 
             entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=v_no)
-
+            
             
 
         elif voucher_type == 'purchase':

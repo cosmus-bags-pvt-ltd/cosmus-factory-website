@@ -1999,6 +1999,17 @@ table>:not(caption)>*>*{
 .productShadeCutting_Material_input:focus{
     outline: none;
 }
+.stockQrcode_input{
+    width: 140px;
+    border-radius: 3px;
+    border: none;
+    padding-left: 6px;
+    height: 28px;
+    background-color: transparent;
+}
+.stockQrcode_input:focus{
+    outline: none;
+}
 .product-ModelInput{
     width: 215px;
     border-radius: 3px;

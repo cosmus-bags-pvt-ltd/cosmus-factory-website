@@ -4,7 +4,7 @@
 {% block body %}
 
 <div class="mt-2">
-    <form method="POST">
+    <form method="POST" id="rawMaterialEstimationForm">
         {% csrf_token %}
         <h4 class="mb-3">Raw Material Estimation</h4>
         <div class="mb-2">
@@ -271,6 +271,8 @@ function valueCheck() {
     document.addEventListener('DOMContentLoaded', () => {
         var formElements = document.querySelectorAll('input[name$="-panha"], input[name$="-units"], input[name$="-g_total"] , input[name$="-g_total_combi"]');
         var processQuantityElements = document.querySelectorAll('input[name$="-estimate_qty"]');
+        var submitButton = document.getElementById('RawMaterialSubmit')
+        var forms = document.getElementById('rawMaterialEstimationForm')
             formElements.forEach(element => {
                 element.addEventListener('focus', calculateRawData);
                 element.addEventListener('focus', calculateTotalConsumption);
@@ -285,6 +287,35 @@ function valueCheck() {
                 });
 
             });
+
+            forms.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.type !== "submit") {
+            event.preventDefault(); // Prevent form submission
+        }
+        });
+        processQuantityElements.forEach((input, index) => {
+            // Listen for keydown events on each Order Quantity input field
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); // Prevent the default behavior of the Enter key
+                    input.blur(); // Optional: Remove focus to mimic submission for the row
+                    // Focus on the next Order Quantity input field, if available
+                    const nextInput = processQuantityElements[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    
+                    }else {
+                        // If it's the last input, focus the submit button
+                        submitButton.focus();
+                    }
+                }
+            });
+        });
+        submitButton.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            forms.submit(); // Trigger form submission
+        }
+        });
             valueCheck()
             calculateTotalConsumption();
             calculateRawData(); // Initialize the calculation on page load

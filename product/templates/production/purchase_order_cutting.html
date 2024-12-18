@@ -730,6 +730,11 @@ function updateCuttingQuantity(finalTotal){
 
     document.addEventListener('DOMContentLoaded', ()=>{
         let qty = document.querySelectorAll('input[name$="-cutting_quantity"]');
+        const submitButton = document.getElementById('id_submitPurchaseOrderCutting')
+        const forms = document.getElementById('cuttingOrderForm')
+        
+   
+
         qty.forEach(element => {
             
             element.addEventListener('input', () => {
@@ -740,6 +745,35 @@ function updateCuttingQuantity(finalTotal){
                 balanceQty();
             });
         })
+
+        forms.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.type !== "submit") {
+            event.preventDefault(); // Prevent form submission
+        }
+        });
+        qty.forEach((input, index) => {
+            // Listen for keydown events on each Order Quantity input field
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); // Prevent the default behavior of the Enter key
+                    input.blur(); // Optional: Remove focus to mimic submission for the row
+                    // Focus on the next Order Quantity input field, if available
+                    const nextInput = qty[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    
+                    }else {
+                        // If it's the last input, focus the submit button
+                        submitButton.focus();
+                    }
+                }
+            });
+        });
+        submitButton.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            forms.submit(); // Trigger form submission
+        }
+        });
         submitForm();
          processValueQty();
          cuttingOrder();
@@ -753,5 +787,6 @@ function updateCuttingQuantity(finalTotal){
             document.forms[0].reset();
         }
     });
+
 </script>
 {% endblock %}

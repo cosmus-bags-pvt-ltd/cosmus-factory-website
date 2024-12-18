@@ -72,9 +72,9 @@
                         <label for="id_total_balance_pcs" class="">Balance pcs:</label> 
 
                             {% if labour_work_out_child_form.instance.id %}
-                            <input class="purchase-input text-danger ms-2 me-3 pb-2" value="{{labour_work_out_child_form.instance.total_balance_pcs}}" name="total_balance_pcs" id="id_total_balance_pcs" readonly style="outline: none;">
+                            <input class="purchase-input text-danger ms-2 me-3 pb-2" value="{{labour_work_out_child_form.instance.total_balance_pcs |default_if_none:'0'}}" name="total_balance_pcs" id="id_total_balance_pcs" readonly style="outline: none;">
                             {% elif not labour_work_out_child_form.instance.id %}
-                            <input class="purchase-input text-danger ms-2 me-3 pb-2" value="{{labour_work_out_child_form.initial.total_balance_pcs}}" name="total_balance_pcs" id="id_total_balance_pcs" readonly style="outline: none;">
+                            <input class="purchase-input text-danger ms-2 me-3 pb-2" value="{{labour_work_out_child_form.initial.total_balance_pcs |default_if_none:'0'}}" name="total_balance_pcs" id="id_total_balance_pcs" readonly style="outline: none;">
                             {% endif %}
                         </div>
                     </div>
@@ -608,12 +608,13 @@ function labourWorkOutCheck(){
         }
     }
 document.addEventListener('DOMContentLoaded', function() {
-    labourApprovedQty()
-    labourWorkOutCheck()
-    balanceQty()
+   
     const pendingQty = document.querySelectorAll('[name$="-processed_pcs"]');
+    const submitButton = document.getElementById('id_submitLabourWorkOut')
+    const forms = document.getElementById('labourWorkOutForm')
+      
     pendingQty.forEach(function(el){
-        // el.addEventListener('focus', balanceQty);
+       
       el.addEventListener('input',function(){
          balanceQty();
         fabricQty();
@@ -622,6 +623,38 @@ document.addEventListener('DOMContentLoaded', function() {
         labourWorkOutCheck()
       })
     })
+
+    forms.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.type !== "submit") {
+            event.preventDefault(); // Prevent form submission
+        }
+        });
+        pendingQty.forEach((input, index) => {
+            // Listen for keydown events on each Order Quantity input field
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); // Prevent the default behavior of the Enter key
+                    input.blur(); // Optional: Remove focus to mimic submission for the row
+                    // Focus on the next Order Quantity input field, if available
+                    const nextInput = pendingQty[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    
+                    }else {
+                        // If it's the last input, focus the submit button
+                        submitButton.focus();
+                    }
+                }
+            });
+        });
+        submitButton.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            forms.submit(); // Trigger form submission
+        }
+        });
+    labourApprovedQty()
+    labourWorkOutCheck()
+    balanceQty()
    
 });
 
