@@ -77,67 +77,67 @@
         </div>
 
      
-        <script>
+<script>
          
-                const primaryId  = document.getElementById('primary_id').value;
-                const shadeId = document.getElementById('id_shade_id').value;
-                const prefixId = document.getElementById('prefix_id').value;
-                const uniqueId = document.getElementById('id_unique_id_godown').value;
+    const primaryId  = document.getElementById('primary_id').value;
+    const shadeId = document.getElementById('id_shade_id').value;
+    const prefixId = document.getElementById('prefix_id').value;
+    const uniqueId = document.getElementById('id_unique_id_godown').value;
 
                
-            if(primaryId != "None" && uniqueId == "None"){
-                const formDataget = $('#childform').serializeArray(); // Serialize form data
+    if(primaryId != "None" && uniqueId == "None"){
+        const formDataget = $('#childform').serializeArray(); // Serialize form data
 
-                document.getElementById('popupData').addEventListener('click', function() {
-                    const formData = $('#childform').serializeArray(); // Serialize form data
-                    const prefixs = formData.find(field => field.name === 'prefix_id')?.value;
+        document.getElementById('popupData').addEventListener('click', function() {
+            const formData = $('#childform').serializeArray(); // Serialize form data
+            const prefixs = formData.find(field => field.name === 'prefix_id')?.value;
 
-                function findFieldByName(formData, fieldName) {
-                    return formData.find(field => field.name === fieldName);
-               }
+            function findFieldByName(formData, fieldName) {
+                return formData.find(field => field.name === fieldName);
+            }
 
-               const array2 = formData
-               const array1 = formDataget
-               const primaryIdDict = {"name": "primary_id" , "value": primaryId};
-               const shadeIdDict = {"name": "shade_id" , "value":shadeId};
-               const prefixIdDict = {"name": "prefix_id" , "value":prefixId};
+            const array2 = formData
+            const array1 = formDataget
+            const primaryIdDict = {"name": "primary_id" , "value": primaryId};
+            const shadeIdDict = {"name": "shade_id" , "value":shadeId};
+            const prefixIdDict = {"name": "prefix_id" , "value":prefixId};
 
-                function getChangedDicts(array1, array2, extraFields) {
-                    const changedDicts = [];
+            function getChangedDicts(array1, array2, extraFields) {
+                const changedDicts = [];
                 
-                    // Iterate over each object in array1
-                    array1.forEach(function (obj1) {
-                        const obj2 = array2.find(function (item) {
+                // Iterate over each object in array1
+                array1.forEach(function (obj1) {
+                    const obj2 = array2.find(function (item) {
                         return item.name === obj1.name;
                     });
 
                     if (obj2) {
-            if (obj2.value !== obj1.value) {
-                // If values differ, the field is modified
-                changedDicts.push({
-                    name: obj1.name,
-                    change_type: "modified",
-                    original_value: obj1.value,
-                    value: obj2.value,
+                        if (obj2.value !== obj1.value) {
+                            // If values differ, the field is modified
+                            changedDicts.push({
+                            name: obj1.name,
+                            change_type: "modified",
+                            original_value: obj1.value,
+                            value: obj2.value,
+                            });
+                        } else {
+                            // If values are the same, the field is unchanged
+                            changedDicts.push({
+                                name: obj1.name,
+                                change_type: "unchanged",
+                                //original_value: obj1.value,
+                                value: obj2.value,
+                            });
+                        }
+                    } else {
+                        // If obj2 does not exist, the field is removed
+                        changedDicts.push({
+                            name: obj1.name,
+                            change_type: "removed",
+                            original_value: obj1.value,
+                        });
+                    }
                 });
-            } else {
-                // If values are the same, the field is unchanged
-                changedDicts.push({
-                    name: obj1.name,
-                    change_type: "unchanged",
-                    //original_value: obj1.value,
-                    value: obj2.value,
-                });
-            }
-        } else {
-            // If obj2 does not exist, the field is removed
-            changedDicts.push({
-                name: obj1.name,
-                change_type: "removed",
-                original_value: obj1.value,
-            });
-        }
-    });
                 // Check for added fields in array2
                 array2.forEach(function (obj2) {
                     if (!array1.some((obj1) => obj1.name === obj2.name)) {
@@ -151,35 +151,31 @@
                 });
 
                     // Add extra fields if they exist
-                    if (extraFields) {
-                        extraFields.forEach(function(field) {
-                            if (field) {
-                                changedDicts.push(field);
-                            }
-                        });
-                    }
-
-                 return changedDicts;
+                if (extraFields) {
+                    extraFields.forEach(function(field) {
+                        if (field) {
+                            changedDicts.push(field);
+                        }
+                    });
                 }
 
-
-                //var extraFields = [ primaryIdDict, shadeIdDict , prefixIdDict];
-                // Call the function to get the changed dictionaries
-                const ChildData = getChangedDicts(array1, array2);
-                
-            
-                const dataWithPrefix = {
-                [`popupRow_${prefixId}`]:ChildData,
-                };
-
-                window.opener.postMessage(dataWithPrefix, "*"); // Send form data to parent window
-                window.close(); // Close the child window
-            });
+                return changedDicts;
             }
-      
-        </script>
 
-    <script>
+            //var extraFields = [ primaryIdDict, shadeIdDict , prefixIdDict];
+            // Call the function to get the changed dictionaries
+            const ChildData = getChangedDicts(array1, array2);
+    
+            const dataWithPrefix = { [`popupRow_${prefixId}`]:ChildData,};
+
+            window.opener.postMessage(dataWithPrefix, "*"); // Send form data to parent window
+            window.close(); // Close the child window
+        });
+    }
+      
+</script>
+
+<script>
     function shadeGodown(){
         const total_form_Value = document.getElementById('id_shade_godown_items_set-TOTAL_FORMS').value;
         
@@ -236,42 +232,32 @@
 
         }
        // This function for form submit then function call and send the data to the parent page with the value
-        function submitData(){
-           
-           
-            jsondata()
+    function submitData(){
+        jsondata()
 
-            const newUniqueId = document.getElementById('shade_godown_items_set-0-unique_id').value;
-            const newTotalQty = document.getElementById('grand_godown_quantity').value;
-            const newTotalRate = document.getElementById('grand_godown_rate').value;
-            const newPrimaryKey = document.getElementById('id_primary_key_godown').value;
-            const prefixValue = document.getElementById('prefix_id').value;
+        const newUniqueId = document.getElementById('shade_godown_items_set-0-unique_id').value;
+        const newTotalQty = document.getElementById('grand_godown_quantity').value;
+        const newTotalRate = document.getElementById('grand_godown_rate').value;
+        const newPrimaryKey = document.getElementById('id_primary_key_godown').value;
+        const prefixValue = document.getElementById('prefix_id').value;
     
-            const newSessionData = {
-                "newUniqueId": newUniqueId,
-                "newTotalQty": newTotalQty,
-                "newTotalRate": newTotalRate,
-                "prefixValue": prefixValue,
-                "newPrimaryKey": newPrimaryKey
-            }
-            
-            window.opener.updateFormData(newSessionData);
+        const newSessionData = {
+            "newUniqueId": newUniqueId,
+            "newTotalQty": newTotalQty,
+            "newTotalRate": newTotalRate,
+            "prefixValue": prefixValue,
+            "newPrimaryKey": newPrimaryKey
         }
-    </script>
+            
+        window.opener.updateFormData(newSessionData);
+    }
+</script>
 
-    <script>
+<script>
         // create a new row and the calculation the single row and save
-        $(document).ready (function(){    //addbutton click then check the rate value is not empty then add a new row // otherwise don't add a new row
+    $(document).ready (function(){    //addbutton click then check the rate value is not empty then add a new row // otherwise don't add a new row
         $('#addModalButton').on('click', function() {  //first find the last row rate value is not empty then add a new row there any one rate value is empty then don't add a new row
         
-        // $(document).on('input',  ' .godown-rate', function() { 
-
-        // const newRates = $('#newTable').find('tbody tr').last().find('input[name^="shade_godown_items_set-"][name$="-rate"]').val();
-        // console.log("newRate",newRates);
-        // })
-        // const newRates = $('#newTable').find('tbody tr').length;
-        //     console.log(newRates);
-        // if(newRate > 1){
             const newFormValue = document.getElementById('id_shade_godown_items_set-TOTAL_FORMS');
             let formsValue = parseInt(newFormValue.value);
             const tableClone = $('#newTable').find('tbody tr').last().clone(true);
@@ -279,157 +265,150 @@
             tableClone.show();
         
             //update the input name and id for the new row
-        const newGodownItem = tableClone.find('select[name^="shade_godown_items_set-"][name$="-godown_id"]');
-        newGodownItem.attr('name', 'shade_godown_items_set-'+formsValue +'-godown_id');
-        newGodownItem.attr('id', 'shade_godown_items_set-' + formsValue + '-godown_id');
-        newGodownItem.val('');
-      
-        const oldGodownItem = tableClone.find('input[name^="shade_godown_items_set-"][name$="-old_godown_id"]');
-        oldGodownItem.attr('name', 'shade_godown_items_set-'+formsValue +'-old_godown_id');
-        oldGodownItem.attr('id', 'shade_godown_items_set-' + formsValue + '-old_godown_id');
-        oldGodownItem.val('');
-
-        const newQuantity = tableClone.find('input[name^="shade_godown_items_set-"][name$="-quantity"]');
-        newQuantity.attr('name', 'shade_godown_items_set-' + formsValue + '-quantity');
-        newQuantity.attr('id', 'shade_godown_items_set-' + formsValue + '-quantity');
-        newQuantity.val(0);
+            const newGodownItem = tableClone.find('select[name^="shade_godown_items_set-"][name$="-godown_id"]');
+            newGodownItem.attr('name', 'shade_godown_items_set-'+formsValue +'-godown_id');
+            newGodownItem.attr('id', 'shade_godown_items_set-' + formsValue + '-godown_id');
+            newGodownItem.val('');
         
-        const newQuantityValue = tableClone.find('input[name^="shade_godown_items_set-"][name$="-new_quantity"]');
-        newQuantityValue.attr('name', 'shade_godown_items_set-' + formsValue + '-new_quantity');
-        newQuantityValue.attr('id', 'shade_godown_items_set-' + formsValue + '-new_quantity');
-        newQuantityValue.val(0);
-       
+            const oldGodownItem = tableClone.find('input[name^="shade_godown_items_set-"][name$="-old_godown_id"]');
+            oldGodownItem.attr('name', 'shade_godown_items_set-'+formsValue +'-old_godown_id');
+            oldGodownItem.attr('id', 'shade_godown_items_set-' + formsValue + '-old_godown_id');
+            oldGodownItem.val('');
+
+            const newQuantity = tableClone.find('input[name^="shade_godown_items_set-"][name$="-quantity"]');
+            newQuantity.attr('name', 'shade_godown_items_set-' + formsValue + '-quantity');
+            newQuantity.attr('id', 'shade_godown_items_set-' + formsValue + '-quantity');
+            newQuantity.val(0);
+            
+            const newQuantityValue = tableClone.find('input[name^="shade_godown_items_set-"][name$="-new_quantity"]');
+            newQuantityValue.attr('name', 'shade_godown_items_set-' + formsValue + '-new_quantity');
+            newQuantityValue.attr('id', 'shade_godown_items_set-' + formsValue + '-new_quantity');
+            newQuantityValue.val(0);
         
-        const newRate = tableClone.find('input[name^="shade_godown_items_set-"][name$="-rate"]');
-        newRate.attr('name', 'shade_godown_items_set-' + formsValue + '-rate');
-        newRate.attr('id', 'shade_godown_items_set-' + formsValue + '-rate');
+            
+            const newRate = tableClone.find('input[name^="shade_godown_items_set-"][name$="-rate"]');
+            newRate.attr('name', 'shade_godown_items_set-' + formsValue + '-rate');
+            newRate.attr('id', 'shade_godown_items_set-' + formsValue + '-rate');
 
-        const firtRowRate = tableClone.find('input[name^="shade_godown_items_set-"][name$="-rate"]').last().val();
-        newRate.val(firtRowRate);
-        //newRate.attr('readonly', true);
-       
-
-        const newAmount = tableClone.find('input[name^="shade_godown_items_set-"][name$="-amount"]');
-        newAmount.attr('name', 'shade_godown_items_set-' + formsValue + '-amount');
-        newAmount.attr('id', 'shade_godown_items_set-' + formsValue + '-amount');
-        newAmount.val('');
-
-        const newUniqueValue = tableClone.find('input[name^="shade_godown_items_set-"][name$="-unique_id"]');
-        newUniqueValue.attr('name', 'shade_godown_items_set-' + formsValue + '-unique_id');
-        newUniqueValue.attr('id', 'shade_godown_items_set-' + formsValue + '-unique_id');
-        newUniqueValue.val('{{unique_id}}');
+            const firtRowRate = tableClone.find('input[name^="shade_godown_items_set-"][name$="-rate"]').last().val();
+            newRate.val(firtRowRate);
+            //newRate.attr('readonly', true);
         
-        const ID = tableClone.find('input[name^="shade_godown_items_set-"][name$="-id"]');
-        ID.attr('name', 'shade_godown_items_set-' + formsValue + '-id');
-        ID.attr('id', 'shade_godown_items_set-' + formsValue + '-id');
-        ID.val('');
 
-        const deleteElement = tableClone.find('input[name^="shade_godown_items_set-"][name$="-DELETE"]');
-        deleteElement.attr('name', 'shade_godown_items_set-' + formsValue + '-DELETE');
-        deleteElement.attr('id', 'shade_godown_items_set-' + formsValue + '-DELETE');
-        deleteElement.val('');
-        
-        
-        newFormValue.value = formsValue + 1;
+            const newAmount = tableClone.find('input[name^="shade_godown_items_set-"][name$="-amount"]');
+            newAmount.attr('name', 'shade_godown_items_set-' + formsValue + '-amount');
+            newAmount.attr('id', 'shade_godown_items_set-' + formsValue + '-amount');
+            newAmount.val('');
 
-        $('#newTable tbody').append(tableClone);
+            const newUniqueValue = tableClone.find('input[name^="shade_godown_items_set-"][name$="-unique_id"]');
+            newUniqueValue.attr('name', 'shade_godown_items_set-' + formsValue + '-unique_id');
+            newUniqueValue.attr('id', 'shade_godown_items_set-' + formsValue + '-unique_id');
+            newUniqueValue.val('{{unique_id}}');
+            
+            const ID = tableClone.find('input[name^="shade_godown_items_set-"][name$="-id"]');
+            ID.attr('name', 'shade_godown_items_set-' + formsValue + '-id');
+            ID.attr('id', 'shade_godown_items_set-' + formsValue + '-id');
+            ID.val('');
+
+            const deleteElement = tableClone.find('input[name^="shade_godown_items_set-"][name$="-DELETE"]');
+            deleteElement.attr('name', 'shade_godown_items_set-' + formsValue + '-DELETE');
+            deleteElement.attr('id', 'shade_godown_items_set-' + formsValue + '-DELETE');
+            deleteElement.val('');
+            
+            
+            newFormValue.value = formsValue + 1;
+
+            $('#newTable tbody').append(tableClone);
        
        
-        calculateGodownAmount();
-        deleteRowCalculate();
-       
-      // }   
-    });
-    //deleteRowCalculate();
+            calculateGodownAmount();
+            deleteRowCalculate();
+        });
+    
+        // This funcion calculate the amount for each row then set the total amount and total quantity
+        function calculateNewRow(row) {
+                const inputQty = row.find('.godown-quantity[name^="shade_godown_items_set-"][name$="-quantity"]').val();
+                const inputQtyValue = parseFloat(inputQty);
+                const inputRate = row.find('.godown-rate[name^="shade_godown_items_set-"][name$="-rate"]').val();
+                const inputRateValue = parseFloat(inputRate);
+                let totalAmount = row.find('.godown-amount[name^="shade_godown_items_set-"][name$="-amount"]').val();
+                // Calculate and set the amount for this row
 
-   
-
-  // This funcion calculate the amount for each row then set the total amount and total quantity
-  function calculateNewRow(row) {
-        const inputQty = row.find('.godown-quantity[name^="shade_godown_items_set-"][name$="-quantity"]').val();
-        const inputQtyValue = parseFloat(inputQty);
-        const inputRate = row.find('.godown-rate[name^="shade_godown_items_set-"][name$="-rate"]').val();
-        const inputRateValue = parseFloat(inputRate);
-        let totalAmount = row.find('.godown-amount[name^="shade_godown_items_set-"][name$="-amount"]').val();
-        // Calculate and set the amount for this row
-
-        if (isNaN(inputQtyValue) || isNaN(inputRateValue)) {
-                return 0;
+                if (isNaN(inputQtyValue) || isNaN(inputRateValue)) {
+                        return 0;
+                    }
+                const amount = inputQtyValue * inputRateValue;
+                
+                totalAmount = isNaN(amount) ? '' : amount.toFixed(2);
+                row.find('.godown-amount[name^="shade_godown_items_set-"][name$="-amount"]').val(totalAmount);
+                
+                return amount;
+            
             }
-        const amount = inputQtyValue * inputRateValue;
+        // calculate the total quantity
+        function calculateQty(row) {
+            const inputQty = row.find('.godown-quantity[name^="shade_godown_items_set-"][name$="-quantity"]').val();
+            const inputQtyValue = parseFloat(inputQty);
+            return inputQtyValue;
         
-        totalAmount = isNaN(amount) ? '' : amount.toFixed(2);
-        row.find('.godown-amount[name^="shade_godown_items_set-"][name$="-amount"]').val(totalAmount);
-        
-        return amount;
-       
-    }
-    // calculate the total quantity
-    function calculateQty(row) {
-        const inputQty = row.find('.godown-quantity[name^="shade_godown_items_set-"][name$="-quantity"]').val();
-        const inputQtyValue = parseFloat(inputQty);
-        return inputQtyValue;
-      
-    }
-    function calculateRate(row){
-        const inputRate = row.find('.godown-rate[name^="shade_godown_items_set-"][name$="-rate"]').val();
-        const inputRateValue = parseFloat(inputRate);
-        return inputRateValue;
-    }
-    // Function to calculate total amount
-    function calculateGodownAmount() {
-        let total = 0;
-        let totalRate = 0;
-        let totalQty = 0;
-        // Iterate over each row in the table body
-        $('#newTable tbody tr').each(function() {
-            let newAmount = calculateNewRow($(this));
-            let newQty = calculateQty($(this));
-            let newRate = calculateRate($(this));
+        }
+        function calculateRate(row){
+            const inputRate = row.find('.godown-rate[name^="shade_godown_items_set-"][name$="-rate"]').val();
+            const inputRateValue = parseFloat(inputRate);
+            return inputRateValue;
+        }
+        // Function to calculate total amount
+        function calculateGodownAmount() {
+            let total = 0;
+            let totalRate = 0;
+            let totalQty = 0;
+            // Iterate over each row in the table body
+            $('#newTable tbody tr').each(function() {
+                let newAmount = calculateNewRow($(this));
+                let newQty = calculateQty($(this));
+                let newRate = calculateRate($(this));
 
-            totalQty += newQty;
-            totalRate = newRate;
-            total += newAmount;
+                totalQty += newQty;
+                totalRate = newRate;
+                total += newAmount;
+            });
+            // Update the total amount field
+            $('#grand_godown_amount').val(total);
+            $('#grand_godown_quantity').val(totalQty);
+            $('#grand_godown_rate').val(totalRate);
+        }
+
+
+        function deleteRowCalculate(){
+            let totalAmount = 0; // Total amount across all rows
+            let totalQty = 0; // Total quantity
+            let totalRate = 0; 
+            
+            $('#newTable tbody tr:visible').each(function() {
+                const amount = parseFloat( $(this).find('.godown-amount').val()); // Calculate amount for this row
+                const qty = parseFloat($(this).find('.godown-quantity').val()); // Calculate quantity
+                const rate = parseFloat($(this).find('.godown-rate').val()); // Calculate rate
+
+                // Accumulate totals
+                totalAmount += amount; // Add amount to total
+                totalQty += qty; // Add quantity to total
+                totalRate = rate; // Set rate (if applicable, otherwise accumulate)
+            });
+                    // Update the totals in the UI
+            $('#grand_godown_amount').val(totalAmount.toFixed(2));
+            $('#grand_godown_quantity').val(totalQty.toFixed(2));
+            $('#grand_godown_rate').val(totalRate.toFixed(2));             
+        }
+        $(document).on('click','#popupData', function(){
+            calculateGodownAmount();
+            deleteRowCalculate();
+        })
+
+        $(document).on('input change', '.godown-quantity, .godown-rate, .godown-select', function() {
+            calculateGodownAmount();
+            deleteRowCalculate();
         });
-        // Update the total amount field
-        $('#grand_godown_amount').val(total);
-        $('#grand_godown_quantity').val(totalQty);
-        $('#grand_godown_rate').val(totalRate);
-    }
-
-
-    function deleteRowCalculate(){
-        let totalAmount = 0; // Total amount across all rows
-        let totalQty = 0; // Total quantity
-        let totalRate = 0; 
-        
-        $('#newTable tbody tr:visible').each(function() {
-            const amount = parseFloat( $(this).find('.godown-amount').val()); // Calculate amount for this row
-            const qty = parseFloat($(this).find('.godown-quantity').val()); // Calculate quantity
-            const rate = parseFloat($(this).find('.godown-rate').val()); // Calculate rate
-
-            // Accumulate totals
-            totalAmount += amount; // Add amount to total
-            totalQty += qty; // Add quantity to total
-            totalRate = rate; // Set rate (if applicable, otherwise accumulate)
-        });
-                // Update the totals in the UI
-        $('#grand_godown_amount').val(totalAmount.toFixed(2));
-        $('#grand_godown_quantity').val(totalQty.toFixed(2));
-        $('#grand_godown_rate').val(totalRate.toFixed(2));             
-    }
-    $(document).on('click','#popupData', function(){
-        calculateGodownAmount();
-        deleteRowCalculate();
-    })
-
-    $(document).on('input change', '.godown-quantity, .godown-rate, .godown-select', function() {
-    calculateGodownAmount();
-    deleteRowCalculate();
-    });
       
-   
-   
         //Delete row from delete button click then ajax request sent to backend foe deletion a row from table
         $(document).on('click', '.delete-btn', function() {
             const tableRows = $('#newTable').find('tbody tr'); 

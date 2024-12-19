@@ -1,8 +1,9 @@
 {% extends 'product/base.html' %} 
 {% load static %} 
+
+
 {% block body %} 
 <div>
-
     <form class="mt-4" action=""method="POST" autocomplete="off" id="newForm">
         
         {% csrf_token %}
@@ -69,19 +70,21 @@
 
         <table id="myTable" class="table table-striped table-hover table-responsive">
             <thead class="name_absolute">
-                <th>No</th>
-                <th colspan="2">Item Name</th>
-                <th style="padding-left: 25px;">Colour</th>
-                <th style="padding-left: 20px;">Shade</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Units</th>
-                <th>Tax</th>
-                <th>GST %</th>
-                <th>CGST</th>
-                <th>SGST/IGST</th>
-                <th>Total Amount</th>
-                <th>DELETE</th>
+                <tr>
+                    <th>No</th>
+                    <th colspan="2">Item Name</th>
+                    <th style="padding-left: 25px;">Colour</th>
+                    <th style="padding-left: 20px;">Shade</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>Units</th>
+                    <th>Tax</th>
+                    <th>GST %</th>
+                    <th>CGST</th>
+                    <th>SGST/IGST</th>
+                    <th>Total Amount</th>
+                    <th>DELETE</th>
+                </tr>
             </thead>
             <tbody class="mainTableList">
                 {{items_formset.management_form}}
@@ -89,6 +92,7 @@
                 {{ forms.id }}
                 
                 <tr>
+                    
                     <input type="hidden" id="{{forms.prefix}}-popupData" name="{{forms.prefix}}-popupData" value="">    
                     <input type="hidden" id="{{forms.prefix}}-jsonDataInputquantity" value="" name="{{forms.prefix}}-jsonDataInputquantity">
                     <input type="hidden" class="unique-id" name="item_unique_id_{{forloop.counter0}}" value='' id="item_unique_id_{{forloop.counter0}}">
@@ -109,8 +113,8 @@
                     </td>
                     <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_shade.items.Item_Color.color_name }}{% endif %}" class="purchase-input" style="margin-left: 10px;" readonly></td>
                     <td>
-                        <input type="hidden" id="id_item_checkshade-{{forloop.counter0}}" name="item_checkshade-{{forloop.counter0}}" value="">
-                        <span id="input_item_shade_{{forloop.counter0}}" class="purchase-select" style="border: none; color: #000; background-color: transparent; display: none; outline: none;"></span>
+                        <input type="hidden" id="id_item_checkshade-{{forloop.counter0}}" name="item_checkshade-{{forloop.counter0}}" value="" >
+                        <input type="text" readonly id="input_item_shade_{{forloop.counter0}}" class="purchase-select" style="border: none; color: #000; background-color: transparent; display: none; outline: none;" tabindex="-1">
                         <select name="{{forms.prefix}}-item_shade" class="purchase-select item-shade" aria-label="Select Item Shade" id="{{forms.prefix}}-item_shade">
                             {% if forms.instance.id %}
                                 <option value="{{forms.instance.item_shade.id}}">{{forms.instance.item_shade.item_shade_name}}</option>
@@ -137,8 +141,8 @@
                     <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
                     <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="{{forms.prefix}}-DELETE" value="" ></i></span></td>
                     
-                </tr>   
-                {% endfor %}
+                 </tr>   
+            {% endfor %}
             </tbody>
             <tbody>
                 <tr>
@@ -155,49 +159,50 @@
             </tbody>
 
         </table>
-       
-    <div class="row">
-        <div class="col-lg-9">
-            <div class="ms-2">
-                <input type="number" class="product_row" name="productRow" id="id_productRow" value="1">
-                <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
+        <div class="row">
+            <div class="col-lg-9">
+                <div class="ms-2">
+                    <input type="number" class="product_row" name="productRow" id="id_productRow" value="1">
+                    <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3">
-            <div class="mb-4">
-                <div class=" mb-3">
-                    <label  class="purchase-lable fw-bold">Gross total</label>
-                    <span class="purchase-span">
-                        <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
-                    </span>           
+            <div class="col-lg-3">
+                <div class="mb-4">
+                    <div class=" mb-3">
+                        <label  class="purchase-lable fw-bold">Gross total</label>
+                        <span class="purchase-span">
+                            <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
+                        </span>           
+                    </div>
+                    <div class=" mb-3">
+                        <label class="purchase-lable fw-bold">Fright & Transport</label>
+                        <span class="purchase-span">
+                            <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+                        </span>
+                    </div>
+                    <div class=" mb-3">
+                        <input type="hidden" id="temp_grand_total" value="">
+                        <label class="purchase-lable fw-bold">Round Of </label>
+                        <span class="purchase-span">
+                            <input type="number" class="purchaseTableLabel-roundOf  purchase-amounts" name="round_off" id ="id_round_off" value="" maxlength="50" step=".01" readonly required>
+                        </span> 
+                    </div>
+                
+                    <div class=" mb-3">
+                        <label class="purchase-lable fw-bold">Grand total</label>
+                        <span class="purchase-span"><input type="number" class="purchaseTableLabel-total purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
+                    </div>
                 </div>
-                <div class=" mb-3">
-                    <label class="purchase-lable fw-bold">Fright & Transport</label>
-                    <span class="purchase-span">
-                        <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
-                    </span>
-                </div>
-                <div class=" mb-3">
-                    <input type="hidden" id="temp_grand_total" value="">
-                    <label class="purchase-lable fw-bold">Round Of </label>
-                    <span class="purchase-span">
-                        <input type="number" class="purchaseTableLabel-roundOf  purchase-amounts" name="round_off" id ="id_round_off" value="" maxlength="50" step=".01" readonly required>
-                    </span> 
-                </div>
+            </div>
             
-                <div class=" mb-3">
-                    <label class="purchase-lable fw-bold">Grand total</label>
-                    <span class="purchase-span"><input type="number" class="purchaseTableLabel-total purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
-                </div>
-            </div>
+            
+            
         </div>
-        
-        
-        
-    </div>
-      <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
+
+        <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
     </form>
 </div>
+
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -209,257 +214,254 @@
     </div> 
 </div>
 
-
 <!--This script use for party name add which use in ledger create popup-->
 <script>
-      document.body.appendChild(document.getElementById('exampleModal'));
-      $('#newForm').off('submit').on('submit', function(e) {
-            var $submitButton = $('#id_submitPurchaseOrderCutting');  // The submit button
-            var originalButtonValue = $('#exampleModal');  // Store original button text
-            originalButtonValue.show();
-        });
+    document.body.appendChild(document.getElementById('exampleModal'));
+    $('#newForm').off('submit').on('submit', function(e) {
+          var $submitButton = $('#id_submitPurchaseOrderCutting');  // The submit button
+          var originalButtonValue = $('#exampleModal');  // Store original button text
+          originalButtonValue.show();
+      });
 
-    var popUpNewWindow = null;
+  var popUpNewWindow = null;
 function openPurchasePartyPopup(button){
-    openNewPopup(button, '{% url "ledger-popup-create" %}');
+  openNewPopup(button, '{% url "ledger-popup-create" %}');
 }
 
 function openNewPopup(button, url){
-    if (popUpNewWindow === null || popUpNewWindow.closed) {
-        newPopUpwindow(button, url);
-    } else {
-  
-        popUpNewWindow.focus();
-    }
+  if (popUpNewWindow === null || popUpNewWindow.closed) {
+      newPopUpwindow(button, url);
+  } else {
+
+      popUpNewWindow.focus();
+  }
 }
 
 function newPopUpwindow(button, path){
-    // Specify minimum height and width
-  var minWidth = 1150; // minimum width
-  var minHeight = 800; // minimum height
+  // Specify minimum height and width
+var minWidth = 1150; // minimum width
+var minHeight = 800; // minimum height
 
-  $('body').addClass('popup-open');
-  $('body').append('<div class="popup-overlay"></div>');
+$('body').addClass('popup-open');
+$('body').append('<div class="popup-overlay"></div>');
 
-  // Open new page with specified dimensions
-  popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-    // Ensure only one event listener is attached
-  
-    window.addEventListener('message', function(event){
-        if (event.data.message === 'close') {
-                $('body').removeClass('popup-open');
-                $('.popup-overlay').remove();
-                popUpNewWindow.close();
-                
-             }
-           });
+// Open new page with specified dimensions
+popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
+  // Ensure only one event listener is attached
+
+  window.addEventListener('message', function(event){
+      if (event.data.message === 'close') {
+              $('body').removeClass('popup-open');
+              $('.popup-overlay').remove();
+              popUpNewWindow.close();
+              
+           }
+         });
 
 
-    // Listen for messages from the popup window
-    window.addEventListener('click', function(event) {
-    handleOutsideClick(event);
-  });
+  // Listen for messages from the popup window
+  window.addEventListener('click', function(event) {
+  handleOutsideClick(event);
+});
 }
 function handleOutsideClick(event) {
 var popUpRect = document.querySelector('body').getBoundingClientRect();
 var clickX = event.clientX;
 var clickY = event.clientY;
+
+// Check if the click is outside the popup window
+if (
+  clickX > popUpRect.left || clickX <= popUpRect.right ||
+  clickY > popUpRect.top || clickY <= popUpRect.bottom
+) {
  
-  // Check if the click is outside the popup window
-  if (
-    clickX > popUpRect.left || clickX <= popUpRect.right ||
-    clickY > popUpRect.top || clickY <= popUpRect.bottom
-  ) {
-   
-    popUpNewWindow.focus();
-    
-  }
+  popUpNewWindow.focus();
+  
+}
 
 }
 
 window.addEventListener('message', function(event) {
-    const data = event.data;
-    console.log(data.ledger_labour);
-    if (data.ledger_labour) {
-        populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
-    }
+  const data = event.data;
+  console.log(data.ledger_labour);
+  if (data.ledger_labour) {
+      populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
+  }
 });
 
 function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
-    const dropdown = $(dropdownSelector);
-    dropdown.empty();
-    dropdown.append('<option value="">' + defaultText + '</option>');
+  const dropdown = $(dropdownSelector);
+  dropdown.empty();
+  dropdown.append('<option value="">' + defaultText + '</option>');
 
-    items.forEach(item => {
-        dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
-    });
+  items.forEach(item => {
+      dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+  });
 }
 </script>
 
 <script>
-    $(document).ready(function(){
-        $('#id_purchase_number').on('focusout',function(){
-            var purchase_number = $(this).val();
-           console.log(purchase_number)
-           var purchaseId = $('#id_purchase_voucher_items_set-0-id').val();
-           console.log('purchaseId',purchaseId)
-            var purchase = $("#id_purchase_number");
-            var errorElement = $('#purchaseError'); // The error message element
-            var submitForm = $('#parentFormClick');
-            if(purchaseId === ''){
-                $.ajax({
-                url: '/uniquevalidcheckajax/',
-                method: 'GET',
-                data: {
-                    'purchase_number': purchase_number,
-                    
-                },
-                success: function (data) {
-                    console.log(data.validation_flag)
-                    if(data.validation_flag === true){
-                       purchase.css('border', '1px solid red');
-                        errorElement.text('*Purchase number already exists');
-                        errorElement.show();
-                        submitForm.prop('disabled', true);
-                       
-                    }else {
-                        
-                        purchase.css('border', '1px solid black');
-                        errorElement.text('');
-                        errorElement.hide();
-                        submitForm.prop('disabled', false);
-                    }
-                   
-                },
-                error: function (error) {   
-                    console.log(error);
-                }
-
-            })
-            }
-            
-        })
-   
-//this ajax is for gst no 
-        $(document).on('change', 'select[name^="party_name"]', function () {
-
-        const selected_party_name = $(this).val()
-        const int_selected_party_name = parseInt(selected_party_name)
-
-        $.ajax({
-            url: '/purchasevouchercreate/',
-            method: 'GET',
-            data: {
-                'selected_party_name': selected_party_name,
-            },
-            success: function (response) {
-                const party_gst_no_response = response.party_gst_no
-                const gst_no_input = document.getElementById('id_GST_number')
-                gst_no_input.value = party_gst_no_response
-                getGstNo()
-                calculateTotalAmount()
-            },
-            error: function (xhr, errmsg, err) {
-                console.log('Error sending value to the backend');
-            }
-        })
-        })
-    })
-
-    window.addEventListener('message', receiveMessage, false);
-    function receiveMessage(event) {
-        const dataWithPrefix = event.data;
-        const convertedData = {};
-
-        if (typeof dataWithPrefix === 'object' && Object.keys(dataWithPrefix).length > 0) {
-            const datalength = Object.values(dataWithPrefix)[0]
-            const dataId =Object.keys(dataWithPrefix)[0];
-            var datasId;
-            if (dataId) {
-                 datasId = dataId.split('_')[1];
-                    // Use datasId as needed
-            } else {
-                    // Handle the case where dataId is undefined
-                 console.log('No dataId found');
-            }
-            if(datalength){
-                for (let i = 0; i < datalength.length; i++) {
-                    const name = datalength[i].name;
-                    const value = datalength[i].value;
-                    const original_value = datalength[i].original_value || null;
-                    const changeData = datalength[i].change_type
+  $(document).ready(function(){
+      $('#id_purchase_number').on('focusout',function(){
+        var purchase_number = $(this).val();
+        var purchaseId = $('#id_purchase_voucher_items_set-0-id').val();
+        var purchase = $("#id_purchase_number");
+        var errorElement = $('#purchaseError'); // The error message element
+        var submitForm = $('#parentFormClick');
+          if(purchaseId === ''){
+              $.ajax({
+              url: '/uniquevalidcheckajax/',
+              method: 'GET',
+              data: {
+                  'purchase_number': purchase_number,
+                  
+              },
+              success: function (data) {
                
-                    if (convertedData.hasOwnProperty(name)) {
-                        if (!Array.isArray(convertedData[name])) {
-                            convertedData[name] = [convertedData[name]]; // Convert to array
-                        }
-                        convertedData[name].push(value); // Push new value to array
-                    } else {
-                        convertedData[name] = value; // Set the initial value
-                    } 
-                }
-            }else {
-                // Handle the case where dataId is undefined
-                console.log('No dataId found');
-            }
+                  if(data.validation_flag === true){
+                     purchase.css('border', '1px solid red');
+                      errorElement.text('*Purchase number already exists');
+                      errorElement.show();
+                      submitForm.prop('disabled', true);
+                     
+                  }else {
+                      
+                      purchase.css('border', '1px solid black');
+                      errorElement.text('');
+                      errorElement.hide();
+                      submitForm.prop('disabled', false);
+                  }
+                 
+              },
+              error: function (error) {   
+                  console.log(error);
+              }
 
-        }
-             // Set the popupData with convertedData
-        if(datasId != ''){
-        var data = document.getElementById('purchase_voucher_items_set-' + datasId + '-popupData');
-         data.value = JSON.stringify(convertedData);
-        }
-    }
+          })
+          }
+          
+      })
+ 
+//this ajax is for gst no 
+      $(document).on('change', 'select[name^="party_name"]', function () {
+
+      const selected_party_name = $(this).val()
+      const int_selected_party_name = parseInt(selected_party_name)
+
+      $.ajax({
+          url: '/purchasevouchercreate/',
+          method: 'GET',
+          data: {
+              'selected_party_name': selected_party_name,
+          },
+          success: function (response) {
+              const party_gst_no_response = response.party_gst_no
+              const gst_no_input = document.getElementById('id_GST_number')
+              gst_no_input.value = party_gst_no_response
+              getGstNo()
+              calculateTotalAmount()
+          },
+          error: function (xhr, errmsg, err) {
+              console.log('Error sending value to the backend');
+          }
+      })
+      })
+  })
+
+  window.addEventListener('message', receiveMessage, false);
+  function receiveMessage(event) {
+      const dataWithPrefix = event.data;
+      const convertedData = {};
+
+      if (typeof dataWithPrefix === 'object' && Object.keys(dataWithPrefix).length > 0) {
+          const datalength = Object.values(dataWithPrefix)[0]
+          const dataId =Object.keys(dataWithPrefix)[0];
+          var datasId;
+          if (dataId) {
+               datasId = dataId.split('_')[1];
+                  // Use datasId as needed
+          } else {
+                  // Handle the case where dataId is undefined
+               console.log('No dataId found');
+          }
+          if(datalength){
+              for (let i = 0; i < datalength.length; i++) {
+                  const name = datalength[i].name;
+                  const value = datalength[i].value;
+                  const original_value = datalength[i].original_value || null;
+                  const changeData = datalength[i].change_type
+             
+                  if (convertedData.hasOwnProperty(name)) {
+                      if (!Array.isArray(convertedData[name])) {
+                          convertedData[name] = [convertedData[name]]; // Convert to array
+                      }
+                      convertedData[name].push(value); // Push new value to array
+                  } else {
+                      convertedData[name] = value; // Set the initial value
+                  } 
+              }
+          }else {
+              // Handle the case where dataId is undefined
+              console.log('No dataId found');
+          }
+
+      }
+           // Set the popupData with convertedData
+      if(datasId != ''){
+      var data = document.getElementById('purchase_voucher_items_set-' + datasId + '-popupData');
+       data.value = JSON.stringify(convertedData);
+      }
+  }
 
 </script>
- <script>
+<script>
 // this code contain the popup window for on submit button send to to parent window 
 // this function retrive the data and compare with same unquie id and update the table data
 
 //pefix value on item-shade change 
-    function updateFormData(newSessionData){
-        const newQty = newSessionData.newTotalQty;
-        const newRate = newSessionData.newTotalRate;
-        const prefixId = newSessionData.prefixValue;
-        const oldQty =  document.getElementById('purchase_voucher_items_set-'+ prefixId + '-quantity_total')
-        const oldRate =  document.getElementById('purchase_voucher_items_set-'+ prefixId + '-rate')  
-        oldQty.value = newQty
-        oldRate.value = newRate
-        calculateTotalAmount()
-        calculateOtherTotal()
-    }
- 
-// This function access for child popup window data on submit button. this data will be reflated to the main godown qunatity with the godown name 
-    function BackendQuantityjson(jsonString){
-        const jsonData = JSON.parse(jsonString);
-        const row_prefix_child = jsonData.parent_row_prefix_id;
-        const updateJsonData= document.getElementById('purchase_voucher_items_set-'+ row_prefix_child + '-jsonDataInputquantity');
+  function updateFormData(newSessionData){
+      const newQty = newSessionData.newTotalQty;
+      const newRate = newSessionData.newTotalRate;
+      const prefixId = newSessionData.prefixValue;
+      const oldQty =  document.getElementById('purchase_voucher_items_set-'+ prefixId + '-quantity_total')
+      const oldRate =  document.getElementById('purchase_voucher_items_set-'+ prefixId + '-rate')  
+      oldQty.value = newQty
+      oldRate.value = newRate
+      calculateTotalAmount()
+      calculateOtherTotal()
+  }
 
-            updateJsonData.value = JSON.stringify(jsonData);
-    }
-    
+// This function access for child popup window data on submit button. this data will be reflated to the main godown qunatity with the godown name 
+  function BackendQuantityjson(jsonString){
+      const jsonData = JSON.parse(jsonString);
+      const row_prefix_child = jsonData.parent_row_prefix_id;
+      const updateJsonData= document.getElementById('purchase_voucher_items_set-'+ row_prefix_child + '-jsonDataInputquantity');
+
+          updateJsonData.value = JSON.stringify(jsonData);
+  }
+  
 
 // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
 function getGstNo() {
-    let partyGstValue = document.getElementById('id_GST_number').value;
-    let comapnyGst = document.getElementById('id_company_GST_numbers').value;
+  let partyGstValue = document.getElementById('id_GST_number').value;
+  let comapnyGst = document.getElementById('id_company_GST_numbers').value;
 
-        comapnyGst = comapnyGst.toString();
-        partyGstValue = partyGstValue.toString();
+      comapnyGst = comapnyGst.toString();
+      partyGstValue = partyGstValue.toString();
 
-    const newCompanyGst = comapnyGst.slice(0,2);
-    const newPartyGst = partyGstValue.slice(0,2);
-    return newCompanyGst === newPartyGst;
+  const newCompanyGst = comapnyGst.slice(0,2);
+  const newPartyGst = partyGstValue.slice(0,2);
+  return newCompanyGst === newPartyGst;
 }
 
-    // this function gereate a randow uuid and store the value in unique id
-    function randomValue (){
-    var itemShadeIdValue;
+  // this function gereate a randow uuid and store the value in unique id
+function randomValue (){
+    let itemShadeIdValue;
     const itemName = document.querySelector('select[name^="purchase_voucher_items_set-"]').closest('tr');
     const selectElement = itemName.querySelector('select[name^="purchase_voucher_items_set-"]');
     const itemShadeName = selectElement.getAttribute('name');
     const totalForms = document.getElementById('id_purchase_voucher_items_set-TOTAL_FORMS').value;
- 
+
     itemShadeIdValue = itemShadeName.split('-')[1];
 
     for( let i =0; i<totalForms ; i++){
@@ -469,9 +471,9 @@ function getGstNo() {
         const uniqueId = document.getElementById('item_unique_id_' + i);
         uniqueId.value = uuid;   
     }
-   }
- }
-  randomValue();
+    }
+}
+randomValue();
 
 </script>
 
@@ -479,6 +481,7 @@ function getGstNo() {
     //This ajax call is to populate the shade and color based on the selected item once retrive the value
     // When click the item name then append the shades with the color, per 
     $(document).ready(function () {
+   
         var itemName;
         var uniqueIdValue;
         var purchaseValue;
@@ -500,7 +503,7 @@ function getGstNo() {
         var selectElementValue = itemShadeValue.value;
     
         if(newData == ''){
-            itemShade.textContent = selectElementValue;
+            itemShade.value =selectElementValue;
             itemShade.style ="display: none";
         }
 
@@ -532,68 +535,61 @@ function getGstNo() {
             if ((purchaseData === '' && uniqueValue !== '') || (purchaseData === '' && uniqueValue === '' && jsonData === '')) {
                 if(nameValue.length >= 1){
                     $.ajax({
-                    url: '/itemdynamicsearchajax/',
-                    method: 'GET',
-                    data: { 'nameValue': nameValue },
-                    success: function (response) {
+                        url: '/itemdynamicsearchajax/',
+                        method: 'GET',
+                        data: { 'nameValue': nameValue },
+                        success: function (response) {
 
-                        // Function to escape special characters in the search query
-                        function escapeRegExp(string) {
-                            return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
-                        }
-                        searchedItemNameDict = response.searched_item_name_dict;
-                     
-                        var searchQuery = nameValue.toLowerCase();
-                        var escapedSearchQuery = escapeRegExp(searchQuery); // Escape special characters in search query
-                        var regex = new RegExp('(' + escapedSearchQuery + ')', 'gi');
-                        var filteredOptions = Object.entries(searchedItemNameDict).filter(([key, value]) => value.toLowerCase().includes(searchQuery));
+                            // Function to escape special characters in the search query
+                            function escapeRegExp(string) {
+                                return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+                            }
+                            searchedItemNameDict = response.searched_item_name_dict;
                         
-                        // Clear and repopulate options
-                        suggestionsContainer.empty();
-
-                        $.each(filteredOptions, function(index, [key, value]) {
-                         
-                            let highlightedText = value;
-                            let colorStyle = '';
-                            if (searchQuery) {
-                                highlightedText = value.split("|")[0].replace(regex, '<span class="highlight">$1</span>');
-                                const valueCalculate = value.split("|")[1].split(",")[0].trim(); 
-                                const numberKey = value.split(/-?\d+(\.\d+)?,/)[2].trim();
-
-                                // Initialize the color based on valueCalculate
-                                
-                                if (parseFloat(valueCalculate) > 0) {
-                                    colorStyle = 'color: green; float: right;';
-                                } else {
-                                    colorStyle = 'color: red;  float: right;';
-                                }
-
-                                if(numberKey.includes(searchQuery)){
-                                    numberKeyHighlighted = `<span class="highlight">M Code - ${numberKey}</span>`;
-                                }else {
-                                    numberKeyHighlighted = `M Code - ${numberKey}`;
-                                }
-                                suggestionsContainer.append(`<div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion " data-key="${key}">${highlightedText} <span style="${colorStyle}">${valueCalculate}</span>
-                                    <br>
-                                    <span style="font-weight:bold">${numberKeyHighlighted}</span>
-                                    </div>`);
-                            } 
+                            var searchQuery = nameValue.toLowerCase();
+                            var escapedSearchQuery = escapeRegExp(searchQuery); // Escape special characters in search query
+                            var regex = new RegExp('(' + escapedSearchQuery + ')', 'gi');
+                            var filteredOptions = Object.entries(searchedItemNameDict).filter(([key, value]) => value.toLowerCase().includes(searchQuery));
                             
-                
-                        });
-                        
-                    
-                    },
-                    error: function (xhr) {
-                        console.log(xhr.status + ": " + xhr.responseText);
-                        if (xhr.status === 404) {
-                            
-                            suggestionsContainer.show();
+                            // Clear and repopulate options
                             suggestionsContainer.empty();
-                            suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+
+                            $.each(filteredOptions, function(index, [key, value]) {
+                            
+                                let highlightedText = value;
+                                let colorStyle = '';
+                                if (searchQuery) {
+                                    highlightedText = value.split("|")[0].replace(regex, '<span class="highlight">$1</span>');
+                                    const valueCalculate = value.split("|")[1].split(",")[0].trim(); 
+                                    const numberKey = value.split(/-?\d+(\.\d+)?,/)[2].trim();
+
+                                    // Initialize the color based on valueCalculate
+                                    
+                                    if (parseFloat(valueCalculate) > 0) {
+                                        colorStyle = 'color: green; float: right;';
+                                    } else {
+                                        colorStyle = 'color: red;  float: right;';
+                                    }
+
+                                    if(numberKey.includes(searchQuery)){
+                                        numberKeyHighlighted = `<span class="highlight">M Code - ${numberKey}</span>`;
+                                    }else {
+                                        numberKeyHighlighted = `M Code - ${numberKey}`;
+                                    }
+                                    suggestionsContainer.append(`<div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion " data-key="${key}">${highlightedText} <span style="${colorStyle}">${valueCalculate}</span>
+                                        <br>
+                                        <span style="font-weight:bold">${numberKeyHighlighted}</span>
+                                        </div>`);
+                                } 
+                            });
+                        },
+                        error: function (xhr) {
+                            console.log(xhr.status + ": " + xhr.responseText);
+                            if (xhr.status === 404) {
+                                suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                            }
                         }
-                    }
-                });
+                    });
                 }else{
                     suggestionsContainer.empty();
                 }
@@ -616,274 +612,251 @@ function getGstNo() {
                 $(this).addClass('selected').siblings().removeClass('selected');
 
                 if (newData == '' && itemShadeValue != '' && itemShadeValue != "None") {
-                    itemShade.text(itemShadeValue);
+                    itemShade.val(itemShadeValue);
                     itemShade.show();
                 }
                 handleSelection(purchaseValue,itemName, item_value)
-                suggestionsContainer.css('display', 'none');
-                
+                suggestionsContainer.css('display', 'none'); 
             });
-        
-        
         });
-
-       // Function to handle the AJAX request and UI updates
-        function handleSelection(purchaseValue,itemName, item_value) {
-
-        if (item_value !== undefined) {
-        var selectedValue = searchedItemNameDict[item_value];
-        var namevalueCheck = selectedValue.match(/[a-zA-Z\s().0-9]+/g).join('');
-
-        var numberValue = selectedValue.match(/-?\d+(\.\d+)?/g)[0];
-        var newnameValue = namevalueCheck.replace(/[\.\s 0-9]+$/, '');
-        var valueKey = namevalueCheck + ' ' + numberValue ;
-            
-        $(`input[name^="item_name_${purchaseValue}"]`).val(newnameValue);
-
-        $.ajax({
-            url: '/purchasevouchercreate/',
-            method: 'GET',
-            data: {
-                'item_value': item_value,
-            },
-            success: function (response) {
-                var itemrownameid = itemName.split('-')[1];
-                var differentShades = Object.keys(response.item_shade).length;
-                
-                var itemCheckshadeValue = document.querySelector('#id_item_checkshade-' + itemrownameid);
-                itemCheckshadeValue.value = response.auto_popup_flag;
-                    var itemcolorinput = document.querySelector('#item_color_' + itemrownameid);
-                    var item_color = response.item_color;
-
-                    var itemperinput = document.querySelector('#item_per_' + itemrownameid);
-                    var itemperinput_response = response.item_per;
-
-                    itemcolorinput.value = item_color;
-                    itemperinput.value = itemperinput_response;
-
-                    var itemgstinput = document.querySelector('#purchase_voucher_items_set-' + itemrownameid + '-gst');
-                    var item_gst_value_response = response.item_gst_out;
-                    itemgstinput.value = item_gst_value_response;
-
-                if(differentShades > 1){
-                    $('#' + itemName).empty().append('<option value="">Select Shade</option>');
-
-                    
-                    var item_shade_response = response.item_shade;
-                    var item_shade__quantity = response.item_shades_total_quantity_dict;
-
-                    $.each(item_shade_response, function (key, value) {
-                        if (item_shade__quantity.hasOwnProperty(key)) {
-
-                            var item_shade_qty = item_shade__quantity[key];
-                            var optionHtml;
-
-                            if (item_shade_qty > 0) {
-                                optionHtml = '<option value="' + key + '" style="color: green;">' + value + '&nbsp;&nbsp;&nbsp;' +item_shade_qty + '</option>';
-                            } else {
-                                optionHtml = '<option value="' + key + '" style="color: red;">' + value + '&nbsp;&nbsp;&nbsp;' + item_shade_qty + '</option>';
-                            }
-
-                            var $option = $(optionHtml);
-                            $('#' + itemName).append($option);
-
-                            // Additional fallback for browsers that don't support <span> within <option>
-                            if ($option.find('span').length === 0) {
-                                $option.css('color', item_shade_qty > 0 ? 'green' : 'red');
-                            }
-
-                        } else {
-                            $('#' + itemName).append('<option value="' + key + '">' + value + '</option>');
-                        }
-                    }); 
-                }else{
-
-                    $('#' + itemName).empty();
-                    var item_shade_response = response.item_shade;
-                    var item_shade__quantity = response.item_shades_total_quantity_dict;
-
-                    $.each(item_shade_response, function (key, value) {
-                        if (item_shade__quantity.hasOwnProperty(key)) {
-
-                            var item_shade_qty = item_shade__quantity[key];
-                            var optionHtml;
-
-                            if (item_shade_qty > 0) {
-                                optionHtml = '<option value="' + key + '" style="color: green;">' + value + '&nbsp;&nbsp;&nbsp;' +item_shade_qty + '</option>';
-                            } else {
-                                optionHtml = '<option value="' + key + '" style="color: red;">' + value + '&nbsp;&nbsp;&nbsp;' + item_shade_qty + '</option>';
-                            }
-
-                            var $option = $(optionHtml);
-                            $('#' + itemName).append($option);
-
-                            // Additional fallback for browsers that don't support <span> within <option>
-                            if ($option.find('span').length === 0) {
-                                $option.css('color', item_shade_qty > 0 ? 'green' : 'red');
-                            }
-
-                        } else {
-                            $('#' + itemName).append('<option value="' + key + '">' + value + '</option>');
-                        }
-                    }); 
-
-                }
-                ajaxInProgress = false;
-            },
-            error: function (xhr, errmsg, err) {
-                console.log('Error sending value to the backend');
-                ajaxInProgress = false;
-            }
-        });
-      }
-      }
 
         $(document).on('click','[name^="item_name_"]', function(event) {
-
-            event.preventDefault();
-            var purchaseData = $(`#purchase_voucher_items_set-${purchaseValue}-popupData`).val();
-            if(purchaseData != ""){
-                var itemNames = $(this).closest('tr').find('input[name^="item_name_"]');
-                var itemShade = $(this).closest('tr').find('select[name^="purchase_voucher_items_set-"]');
-                itemNames.attr('readonly', true);
-                itemShade.prop('disabled', true);
-            }
-            
+          event.preventDefault();
+            var  selectName = $(this).closest('tr').find('[id^="select_item_name_"]').attr('id');
+             var selectItem = $(`#${selectName}`);
+            selectItem.css("display" ,"none");
+                      
         })
 
         var index = 0; // Declare index outside of the event listener
         var indexbool = true;
 
-     $(document).on('keydown', 'input[name^="item_name_"]', function(event) {
-        const $inputField = $(this);
-        const $dropdownOptions = $inputField.next('.item-name');
-        const $options = $dropdownOptions.find('.itemName-div');
-        const optionsCount = $options.length - 1;
-        const searchText = $inputField.val().trim();
-        const hiddenValue = $inputField.closest('.custom-dropdown-container').find(`#select_item_name_${purchaseValue}`);
-        if (searchText === '') {
-            index = 0;
-            return;
-        }
-        const newHeight = $inputField.offset();
-        const windowHeight = $(window).height();
-        const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
-   
-
-        if (event.key === 'ArrowDown') {
-             event.preventDefault();
-
-            if (index <= optionsCount) {
-            
-                const $selectedItem = $options.eq(index);
-                const $nextItem = $selectedItem.next();
-                const nameDataKey = $selectedItem.text();
-                const nameKey = $selectedItem.data('key');
-
-                $inputField.attr('data-key', nameKey);
+        $(document).on('keydown', 'input[name^="item_name_"]', function(event) {
+                const $inputField = $(this);
+                const $dropdownOptions = $inputField.next('.item-name');
+                const $options = $dropdownOptions.find('.itemName-div');
+                const optionsCount = $options.length - 1;
+                const searchText = $inputField.val().trim();
+                const hiddenValue = $inputField.closest('.custom-dropdown-container').find(`#select_item_name_${purchaseValue}`);
+                if (searchText === '') {
+                    index = 0;
+                    return;
+                }
              
-                $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
-                const itemOffsetTop = $nextItem.position().top;
-                const itemHeight = $nextItem.outerHeight();
-                const selectScrollTop = $dropdownOptions.scrollTop();
-                const selectHeight = $dropdownOptions.height();
+                if (event.key === 'ArrowDown') {
+                    event.preventDefault();
 
-                if (itemOffsetTop + itemHeight > selectHeight) {
-                    $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
-                } else if (itemOffsetTop < 0) {
-                    $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                    if (index <= optionsCount) {
+                    
+                        const $selectedItem = $options.eq(index);
+                   
+                        const $nextItem = $selectedItem.next();
+                        const nameDataKey = $selectedItem.text();
+                        const nameKey = $selectedItem.data('key');
+
+                        $inputField.attr('data-key', nameKey);
+                    
+                        $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                        const itemOffsetTop = $nextItem.position().top;
+                        const itemHeight = $nextItem.outerHeight();
+                        const selectScrollTop = $dropdownOptions.scrollTop();
+                        const selectHeight = $dropdownOptions.height();
+
+                        if (itemOffsetTop + itemHeight > selectHeight) {
+                            $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                        } else if (itemOffsetTop < 0) {
+                            $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                        }
+                        $selectedItem.addClass('selected');
+                        if (index !== optionsCount) {
+                            index += 1;
+                            indexbool = true;
+                        }
+                    } else {
+                        index = 0;
+                    }
                 }
-                $selectedItem.addClass('selected');
-                if (index !== optionsCount) {
-                    index += 1;
-                    indexbool = true;
+
+                if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+
+                    if (index != 0 && indexbool == true) {
+                        index -= 1;
+                    }
+
+                    if (index <= optionsCount) {
+                    
+                        const $selectedItem = $options.eq(index);
+                        const $prevItem = $selectedItem.prev();
+                        const nameDataKey = $selectedItem.text();
+                        const nameKey = $selectedItem.data('key');
+
+                        $inputField.attr('data-key', nameKey);
+                        
+                        $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                        
+                        const itemOffsetTop = $prevItem.position().top;
+                        const itemHeight = $prevItem.outerHeight();
+                        const selectScrollTop = $dropdownOptions.scrollTop();
+                        const selectHeight = $dropdownOptions.height();
+
+                        if (itemOffsetTop < 0) {
+                            $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                        } else if (itemOffsetTop + itemHeight > selectHeight) {
+                            $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                        }
+
+                        $selectedItem.addClass('selected');
+                    } else {
+                        index = 0;
+                    }
                 }
-            } else {
+
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+            
+                const itemEnterValue = $(this);
+                const item_value = itemEnterValue.attr('data-key');
+
+                nameDataKey = '';
+                nameKey = '';
                 index = 0;
-            }
-        }
+                indexbool = false;
 
-        if (event.key === 'ArrowUp') {
-             event.preventDefault();
+                const newData = $('#purchase_voucher_items_set-' + purchaseValue + '-jsonDataInputquantity').val();
+                const itemShade = $('#input_item_shade_' + purchaseValue);
+                const itemShadeValue = $('#purchase_voucher_items_set-' + purchaseValue + '-old_item_shade_for_dropdown_change').val();
+                console.log(itemShadeValue)
 
-            if (index != 0 && indexbool == true) {
-                index -= 1;
-            }
+                if (newData == '' && itemShadeValue != '' && itemShadeValue != "None") {
+                    itemShade.val(itemShadeValue);
+                    itemShade.show();
+                }else{
 
-            if (index <= optionsCount) {
-               
-                const $selectedItem = $options.eq(index);
-                const $prevItem = $selectedItem.prev();
-                const nameDataKey = $selectedItem.text();
-                const nameKey = $selectedItem.data('key');
-
-                $inputField.attr('data-key', nameKey);
-                
-                $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
-                
-                const itemOffsetTop = $prevItem.position().top;
-                const itemHeight = $prevItem.outerHeight();
-                const selectScrollTop = $dropdownOptions.scrollTop();
-                const selectHeight = $dropdownOptions.height();
-
-                if (itemOffsetTop < 0) {
-                    $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
-                } else if (itemOffsetTop + itemHeight > selectHeight) {
-                    $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                    itemShade.hide();
                 }
+                handleSelection(purchaseValue,itemName, item_value);
+                enterPressed = true;
+                hiddenValue.css("display" ,"none");
+                }
+            });
 
-                $selectedItem.addClass('selected');
-            } else {
-                index = 0;
+
+        // Function to handle the AJAX request and UI updates
+        function handleSelection(purchaseValue,itemName, item_value) {
+
+            if (item_value !== undefined) {
+                var selectedValue = searchedItemNameDict[item_value];
+                var namevalueCheck = selectedValue.match(/[a-zA-Z\s().0-9]+/g).join('');
+
+                var numberValue = selectedValue.match(/-?\d+(\.\d+)?/g)[0];
+                var newnameValue = namevalueCheck.replace(/[\.\s 0-9]+$/, '');
+                var valueKey = namevalueCheck + ' ' + numberValue ;
+                    
+                $(`input[name^="item_name_${purchaseValue}"]`).val(newnameValue);
+                
+
+                $.ajax({
+                    url: '/purchasevouchercreate/',
+                    method: 'GET',
+                    data: {
+                        'item_value': item_value,
+                    },
+                    success: function (response) {
+                        console.log('Data sent successfully');
+                      
+                        var itemrownameid = itemName.split('-')[1];
+                        var differentShades = Object.keys(response.item_shade).length;
+                
+                        var itemCheckshadeValue = document.querySelector('#id_item_checkshade-' + itemrownameid);
+                        itemCheckshadeValue.value = response.auto_popup_flag;
+                        
+                        var itemcolorinput = document.querySelector('#item_color_' + itemrownameid);
+                        var item_color = response.item_color;
+
+                        var itemperinput = document.querySelector('#item_per_' + itemrownameid);
+                        var itemperinput_response = response.item_per;
+
+                        itemcolorinput.value = item_color;
+                        itemperinput.value = itemperinput_response;
+
+                        var itemgstinput = document.querySelector('#purchase_voucher_items_set-' + itemrownameid + '-gst');
+                        var item_gst_value_response = response.item_gst_out;
+                        itemgstinput.value = item_gst_value_response;
+
+                        var item_shade_response = response.item_shade;
+                        var item_shade__quantity = response.item_shades_total_quantity_dict;
+
+                        if(differentShades > 1){
+                            $('#' + itemName).empty().append('<option value="">Select Shade</option>');
+                            $.each(item_shade_response, function (key, value) {
+                                if (item_shade__quantity.hasOwnProperty(key)) {
+
+                                    var item_shade_qty = item_shade__quantity[key];
+                                    var optionHtml;
+                                    if (item_shade_qty > 0) {
+                                        optionHtml = '<option value="' + key + '" style="color: green;">' + value + '&nbsp;&nbsp;&nbsp;' +item_shade_qty + '</option>';
+                                    } else {
+                                        optionHtml = '<option value="' + key + '" style="color: red;">' + value + '&nbsp;&nbsp;&nbsp;' + item_shade_qty + '</option>';
+                                    }
+
+                                    var $option = $(optionHtml);
+                                    $('#' + itemName).append($option);
+
+                                    // Additional fallback for browsers that don't support <span> within <option>
+                                    if ($option.find('span').length === 0) {
+                                        $option.css('color', item_shade_qty > 0 ? 'green' : 'red');
+                                    }
+
+                                } else {
+                                    $('#' + itemName).append('<option value="' + key + '">' + value + '</option>');
+                                }
+                            }); 
+                        }else{
+                            $('#' + itemName).empty();
+
+                            $.each(item_shade_response, function (key, value) {
+                                if (item_shade__quantity.hasOwnProperty(key)) {
+
+                                    var item_shade_qty = item_shade__quantity[key];
+                                    var optionHtml;
+                                    if (item_shade_qty > 0) {
+                                        optionHtml = '<option value="' + key + '" style="color: green;">' + value + '&nbsp;&nbsp;&nbsp;' +item_shade_qty + '</option>';
+                                    } else {
+                                        optionHtml = '<option value="' + key + '" style="color: red;">' + value + '&nbsp;&nbsp;&nbsp;' + item_shade_qty + '</option>';
+                                    }
+
+                                    var $option = $(optionHtml);
+                                    $('#' + itemName).append($option);
+
+                                    // Additional fallback for browsers that don't support <span> within <option>
+                                    if ($option.find('span').length === 0) {
+                                        $option.css('color', item_shade_qty > 0 ? 'green' : 'red');
+                                    }
+
+                                } else {
+                                    $('#' + itemName).append('<option value="' + key + '">' + value + '</option>');
+                                }
+                            }); 
+                        }
+
+                        ajaxInProgress = false;
+                    },
+                    error: function (xhr, errmsg, err) {
+                        console.log('Error sending value to the backend');
+                        ajaxInProgress = false;
+                    }
+                });
             }
         }
 
-        if (event.key === 'Enter') {
-             event.preventDefault();
-            const itemEnterValue = $(this);
-            const item_value = itemEnterValue.attr('data-key');
-
-            nameDataKey = '';
-            nameKey = '';
-            index = 0;
-            indexbool = false;
-
-            const newData = $('#purchase_voucher_items_set-' + purchaseValue + '-jsonDataInputquantity').val();
-            const itemShade = $('#input_item_shade_' + purchaseValue);
-            const itemShadeValue = $('#purchase_voucher_items_set-' + purchaseValue + '-old_item_shade_for_dropdown_change').val();
+       // This ajax call then select item name value send to the backend and append the shade ,color,per gst data show in the table
+       var popupWindow = null; // Variable to hold the reference to the popup window
         
-
-            if (newData == '' && itemShadeValue != '' && itemShadeValue != "None") {
-                itemShade.text(itemShadeValue);
-                itemShade.show();
-            }else{
-
-                itemShade.hide();
-            }
-         
-          
-            handleSelection(purchaseValue,itemName, item_value);
-            enterPressed = true;
-            hiddenValue.css("display" ,"none");
-            $inputField.blur();
-        }
-        if (event.key === 'Tab' && enterPressed) {
-        enterPressed = false; // Reset Enter key handling
-        return true; // Allow default Tab behavior
-    }
-   
-});
-
-
-     // This ajax call then select item name value send to the backend and append the shade ,color,per gst data show in the table
-        var popupWindow = null; // Variable to hold the reference to the popup window
-        
-        $(document).on('focus', 'select[name^="purchase_voucher_items_set-"]', function () {
+        $(document).on('focusin', 'select[name^="purchase_voucher_items_set-"]', function () {
             var shadeValue = $('#id_item_checkshade-' + purchaseValue ).val();
-            console.log("shadeValue",shadeValue)
           // Unbind any previously bound events before binding new ones
-            $(document).off('change', 'select[name^="purchase_voucher_items_set-"]');
-            $(document).off('keydown', 'select[name^="purchase_voucher_items_set-"]');
+            $(document).off('change keydown', 'select[name^="purchase_voucher_items_set-"]');
         
             if (shadeValue === "false") {
                 handleShadeValueFalse();
@@ -894,31 +867,21 @@ function getGstNo() {
         })
 
         function handleShadeValueFalse() {
-            $(document).on('keydown', 'select[name^="purchase_voucher_items_set-"]', function (event) {
-            // Handle Enter key press
-            if (event.key === 'Enter') {
-                event.preventDefault(); // Prevent form submission or default behavior
-                const $dropdown = $(this);
-                $dropdown.focus(); 
-                $dropdown.trigger('mousedown').trigger('mouseup'); // Open dropdow
-            }
-
-        });
-
-    // Handle the change event for dropdown selection
-    $(document).on('change', 'select[name^="purchase_voucher_items_set-"]', function (event) {
-        const selectedShade = $(this).val();
-        const uniqueIdValue = $(this).closest('tr').find('input[name^="item_unique_id_"]').val();
-        const itemShades = $(this).closest('tr').find('[id^="input_item_shade_"]');
-        itemShades.hide()
-        // Trigger the popup on selection
-        handlePopup(selectedShade, uniqueIdValue);
-    });
-}
+            
+            // Handle the change event for dropdown selection
+            $(document).on('change', 'select[name^="purchase_voucher_items_set-"]', function (event) {
+                const selectedShade = $(this).val();
+                const uniqueIdValue = $(this).closest('tr').find('input[name^="item_unique_id_"]').val();
+                const itemShades = $(this).closest('tr').find('[id^="input_item_shade_"]');
+                itemShades.hide()
+                // Trigger the popup on selection
+                handlePopup(selectedShade, uniqueIdValue);
+            });
+        }
 
         function handleShadeValueTrue() {
             $(document).on('keydown', 'select[name^="purchase_voucher_items_set-"]', function (event) {
-                event.preventDefault();
+               
                 if (event.key === 'Enter') {
                     const row = $(this);
                     const selectedShade = $(this).val();
@@ -936,77 +899,76 @@ function getGstNo() {
 
         function handlePopup(selectedShade, uniqueIdValue) {
             const purchaseId = $('#id_purchase_voucher_items_set-' + purchaseValue + '-id').val();
-
             const prefix_id = purchaseValue;
-                let primary_id = null;
+            const minWidth = 800;
+            const minHeight = 600;
+            let primary_id = null;
                 
-                if(purchaseId ){
-                    primary_id = purchaseId
-                    if (primary_id === "") {
-                        primary_id = null
-                    }
+            if(purchaseId ){
+                primary_id = purchaseId
+                if (primary_id === "") {
+                    primary_id = null
                 }
-
-                if (selectedShade !== "" && primary_id !== null ) {
-                        if (popupWindow === null || popupWindow.closed) { // Check if no popup is open or the existing one is closed
-                            const minWidth = 800;
-                            const minHeight = 600;
+            }   
+            if (selectedShade !== "" && primary_id !== null ) {
+                if (popupWindow === null || popupWindow.closed) { // Check if no popup is open or the existing one is closed
                     
-                            $.ajax({
-                                // Use Django URL name to fetch the URL dynamically
-                                url: '{% url "purchasevoucher-createpopup-ajax" %}',
-                                method: 'GET',
-                                data: {
-                                    'selected_shade': selectedShade,
-                                    'purchase_id': primary_id,
-                                    'prefix_id':prefix_id, 
+                    $.ajax({
+                        // Use Django URL name to fetch the URL dynamically
+                        url: '{% url "purchasevoucher-createpopup-ajax" %}',
+                        method: 'GET',
+                            data: {
+                            'selected_shade': selectedShade,
+                            'purchase_id': primary_id,
+                            'prefix_id':prefix_id, 
             
-                                },
-                                success: function (response) {
-                                    popupWindow = window.open(response.popup_url, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
+                        },
+                        success: function (response) {
+                            popupWindow = window.open(response.popup_url, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
                             
-                                },
-                                error: function (xhr, errmsg, err) {
-                                    console.log('Error getting popup URL');
-                                }
-                            });
-                        } else {
-                            // If a popup window is already open, notify the user or take appropriate action
-                            console.log('A popup window is already open');
+                        },
+                        error: function (xhr, errmsg, err) {
+                           console.log('Error getting popup URL');
                         }
+                    });
+                } else {
+                    // If a popup window is already open, notify the user or take appropriate action
+                    console.log('A popup window is already open');
+                }
                     
-                    }else if (uniqueIdValue !== "" && selectedShade !== "" ) {
-                        if (popupWindow === null || popupWindow.closed) { // Check if no popup is open or the existing one is closed
-                            const minWidth = 800;
-                            const minHeight = 600;
-                        
-                            $.ajax({
-                                // Use Django URL name to fetch the URL dynamically
-                                url: '{% url "purchasevoucher-createpopup-ajax" %}',
-                                method: 'GET',
-                                data: {
-                                    'selected_shade': selectedShade,
-                                    'unique_invoice_row_id': uniqueIdValue,
-                                    'prefix_id':prefix_id,
+            }else if (uniqueIdValue !== "" && selectedShade !== "" ) {
+                if (popupWindow === null || popupWindow.closed) { // Check if no popup is open or the existing one is closed
+                   
+                    $.ajax({
+                        // Use Django URL name to fetch the URL dynamically
+                        url: '{% url "purchasevoucher-createpopup-ajax" %}',
+                        method: 'GET',
+                        data: {
+                            'selected_shade': selectedShade,
+                            'unique_invoice_row_id': uniqueIdValue,
+                            'prefix_id':prefix_id,
                                     
-                                },
-                                success: function (response) {
-                                    // Open the dynamic URL received from the server
-                                    popupWindow = window.open(response.popup_url, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
+                        },
+                        success: function (response) {
+                            // Open the dynamic URL received from the server
+                            popupWindow = window.open(response.popup_url, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
                     
-                                },
-                                error: function (xhr, errmsg, err) {
-                                    console.log('Error getting popup URL');
-                                }
-                            });
-                        } else {
-                            // If a popup window is already open, notify the user or take appropriate action
-                            console.log('A popup window is already open');
+                        },
+                        error: function (xhr, errmsg, err) {
+                            console.log('Error getting popup URL');
                         }
-                    }
+                    });
+                } else {
+                    // If a popup window is already open, notify the user or take appropriate action
+                    console.log('A popup window is already open');
+                }
+            }
+                
         }
     });
 </script>
+
+
 <script>
     //This script is to calculate the purchase invoice amount and create a new row to added and append it to the table-->
     function calculateTotalAmount() {
@@ -1109,8 +1071,6 @@ function getGstNo() {
     document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
      
     
-
-  
     // Event listener for the add row button
     document.addEventListener('DOMContentLoaded', function () {
     const addButton= document.getElementById('addRowButton');
@@ -1332,71 +1292,72 @@ function getGstNo() {
 
 </script>
 <script>
+ 
+    document.addEventListener("DOMContentLoaded", function () {
+    const submitButton = document.getElementById("parentFormClick");
+    const itemNameInputs = document.querySelectorAll("input[id^='item_name_']");
     const form = document.getElementById("newForm");
-    const supplier_invoice_number = document.getElementById('')
-    // Prevent Enter key from submitting the form
-    form.addEventListener("keydown", function(event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-      
-      }
+    let formSubmitted = false;
+    
+    function validateInputs() {
+        let isValid = true;
+        // Check all item name inputs
+        itemNameInputs.forEach(input => {
+           
+            if (!input.value.trim()) {
+                isValid = false;
+            }
+            if(input.value.trim() == ""){
+                submitButton.disabled = true;
+            }else{
+                submitButton.disabled = false; 
+            }
+            
+        });
+        
+    }
+    
+
+    itemNameInputs.forEach(input => {
+        input.addEventListener("input", validateInputs);
+    });
+
+    submitButton.addEventListener('click',function(){
+        validateInputs()
+    })
+    
+
+    // Prevent Enter key from submitting the form on specific inputs
+    form.addEventListener("keydown", function (event) {
+        const forbiddenKeys = ["Enter"];
+        const target = event.target;
+
+        // Check if the target is an input field (rate, quantity, GST, etc.)
+        if (forbiddenKeys.includes(event.key) && target.tagName === "INPUT") {
+            event.preventDefault(); // Stop form submission
+            // console.log(`Enter key prevented on input: ${target.id}`);
+        }
+    });
+
+    // Allow form submission only when clicking the submit button
+ 
+
+    submitButton.addEventListener("click", function () {
+        formSubmitted = true;
+    });
+
+    form.addEventListener("submit", function (event) {
+        if (!formSubmitted) {
+            event.preventDefault();
+            // console.log("Form submission blocked: Submit button not clicked.");
+        } else {
+            // console.log("Form submitted successfully!");
+            formSubmitted = false; // Reset for next submission
+        }
     });
   
-    document.addEventListener("DOMContentLoaded", function () {
-    // const submitButton = document.getElementById("parentFormClick");
-    // const itemNameInputs = document.querySelectorAll("input[id^='item_name_']");
-    // const itemShadeSelects = document.querySelectorAll("select[id$='-item_shade']");
-    // const itemQtyInputs = document.querySelectorAll("input[id$='-quantity_total']");
-
-    // function validateInputs() {
-    //     let isValid = true;
-        // Check all item name inputs
-        // itemNameInputs.forEach(input => {
-           
-        //     if (!input.value.trim()) {
-        //         isValid = false;
-        //     }
-        //     if(input.value.trim() == ""){
-        //         submitButton.disabled = true;
-        //     }else{
-        //         submitButton.disabled = false; 
-        //     }
-            
-        // });
-
-        // // Check all item shade selects
-        
-    // }
-    
-//     // Prevent tabbing if itemQtyInputs are empty
-//     itemShadeSelects.forEach(select => {
-//     select.addEventListener("keydown", function (event) {
-//         if (event.key === "Enter") {
-//             if (!select.value.trim()) {
-//                 // Prevent opening the dropdown if the value is empty
-//                 event.preventDefault();
-                
-           
-//             } else {
-//                 // Allow normal dropdown behavior if the value is valid
-//                 console.log("Dropdown opened on Enter key.");
-//             }
-//         }
-//     });
-// });
-    // itemNameInputs.forEach(input => {
-    //     input.addEventListener("input", validateInputs);
-    // });
-
-    // itemShadeSelects.forEach(select => {
-    //     select.addEventListener("change", validateInputs);
-    // });
-    // submitButton.addEventListener('click',function(){
-    //     validateInputs()
-    // })
- 
     // Initial validation on page load
-    //validateInputs();
+    validateInputs();
     inputCheck();
 });
 

@@ -767,6 +767,73 @@
         })
     
     })
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const submitButton = document.getElementById("submitButtonStockTransfer");
+    const itemNameInputs = document.querySelectorAll("input[id^='item_name_']");
+    const form = document.getElementById("stockTransferForm");
+    let formSubmitted = false;
+    
+    function validateInputs() {
+        let isValid = true;
+        // Check all item name inputs
+        itemNameInputs.forEach(input => {
+           
+            if (!input.value.trim()) {
+                isValid = false;
+            }
+            if(input.value.trim() == ""){
+                submitButton.disabled = true;
+            }else{
+                submitButton.disabled = false; 
+            }
+            
+        });
+        
+    }
+
+    itemNameInputs.forEach(input => {
+        input.addEventListener("input", validateInputs);
+    });
+
+    submitButton.addEventListener('click',function(){
+        validateInputs()
+    })
+    
+
+    // Prevent Enter key from submitting the form on specific inputs
+    form.addEventListener("keydown", function (event) {
+        const forbiddenKeys = ["Enter"];
+        const target = event.target;
+
+        // Check if the target is an input field (rate, quantity, GST, etc.)
+        if (forbiddenKeys.includes(event.key) && target.tagName === "INPUT") {
+            event.preventDefault(); // Stop form submission
+            // console.log(`Enter key prevented on input: ${target.id}`);
+        }
+    });
+
+    // Allow form submission only when clicking the submit button
+ 
+
+    submitButton.addEventListener("click", function () {
+        formSubmitted = true;
+    });
+
+    form.addEventListener("submit", function (event) {
+        if (!formSubmitted) {
+            event.preventDefault();
+            // console.log("Form submission blocked: Submit button not clicked.");
+        } else {
+            // console.log("Form submitted successfully!");
+            formSubmitted = false; // Reset for next submission
+        }
+    });
+  
+    // Initial validation on page load
+    validateInputs();
+   
+});
 </script>
 
 {% endblock %}

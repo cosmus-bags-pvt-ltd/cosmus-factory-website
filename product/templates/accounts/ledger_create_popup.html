@@ -1,8 +1,6 @@
 {% extends 'misc/navbar_popup.html' %} 
 {% load static %} 
  {% block body %}
-
-
 <div class="create_item_form">
   <form action="" method="POST" id="ledgerForm">
       {% csrf_token %}
@@ -153,46 +151,46 @@
     document.addEventListener("DOMContentLoaded", function () {
         window.onload = function() {
           document.getElementById("id_name").focus();;
-    };
+        };
     });
-document.getElementById('ledgerForm').addEventListener('submit', async function (event) {
-  event.preventDefault();  // Prevent the default form submission
-  const form = event.target;
-  const formData = new FormData(form);
+    document.getElementById('ledgerForm').addEventListener('submit', async function (event) {
+      event.preventDefault();  // Prevent the default form submission
+      const form = event.target;
+      const formData = new FormData(form);
 
-  try {
+      try {
 
-    const response = await fetch(form.action, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': '{{ csrf_token }}',
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+          }
+        });
+
+        if (response.ok) {
+          
+          const data = await response.json();  // Await the response.json() call
+          console.log(data);
+          window.opener.postMessage(data, '*');
+          window.close();  // Now you can access the JSON data
+          formSubmitted = true;  // Set flag to true after successful submission
+        } else {
+          console.error('Failed to create ledger.');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
       }
     });
 
-    if (response.ok) {
-      
-      const data = await response.json();  // Await the response.json() call
-      console.log(data);
-      window.opener.postMessage(data, '*');
-      window.close();  // Now you can access the JSON data
-      formSubmitted = true;  // Set flag to true after successful submission
-    } else {
-      console.error('Failed to create ledger.');
-    }
-
-  } catch (error) {
-    console.error('Error:', error);
-  }
-});
-
-// Handle the case when the window is closed without form submission
-window.addEventListener('beforeunload', function (event) {
-  if (!formSubmitted) {
-    const data = { message: 'close' };
-    window.opener.postMessage(data, '*');
-  }
-});
+    // Handle the case when the window is closed without form submission
+    window.addEventListener('beforeunload', function (event) {
+      if (!formSubmitted) {
+        const data = { message: 'close' };
+        window.opener.postMessage(data, '*');
+      }
+    });
 </script>
 {% endblock body %}
 

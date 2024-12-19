@@ -6718,18 +6718,15 @@ def labour_workin_approval_split(request,ref_id):
   
     return render(request,'finished_product/labourworkinapprovalsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list})
 
- 
 
 
 
-
-def raw_material_estimation_calculate(request):
+def raw_material_estimation_calculate(request,u_id):
     
-    master_pk = request.GET.get('unique_id')
-    if master_pk:
+    if u_id:
         
         try:
-            estimation_master_instance = get_object_or_404(raw_material_production_estimation,pk = master_pk)
+            estimation_master_instance = get_object_or_404(raw_material_production_estimation,pk = u_id)
             
             
         except ObjectDoesNotExist as e:
@@ -6796,7 +6793,7 @@ def raw_material_estimation_calculate(request):
                 raw_material_production_total.objects.create(raw_material_estination_master = estimation_master_instance,item_name=key,total_consump=value,godown_stock = total_godown_stock,balance_stock = total_balance_stock)
                 
                 
-        response_dict = raw_material_production_total.objects.filter(raw_material_estination_master = estimation_master_instance).values('item_name','total_consump','godown_stock','balance_stock')
+        response_dict = raw_material_production_total.objects.filter(raw_material_estination_master = estimation_master_instance).values('id','item_name','total_consump','godown_stock','balance_stock')
 
         ref_id = []
         product_ref_ids = estimation_master_instance.raw_material_production_estimations.values('product_id__Product_Refrence_ID')
@@ -6841,8 +6838,6 @@ def raw_material_estimation_calculate(request):
 
 
 
-
-
         ordered_raw_materials = purchase_order_for_raw_material_cutting_items.objects.filter(material_name__in=final_total_list,purchase_order_cutting__purchase_order_id__purchase_order_number__in = po_id)
 
 
@@ -6871,57 +6866,42 @@ def raw_material_estimation_calculate(request):
 
                 if data['ref_no'] == key:
 
-                    if data['fabric_type'] == 'Fabric':
+                    for k,v in value.items():
 
-                        for k,v in value.items():
+                        sku_inside = str(k)
+                        if data['product_sku'] == sku_inside:
 
-                            sku_inside = str(k)
-                            if data['product_sku'] == sku_inside:
+                            total_consumption_value = v * data['consumption']
 
-                                total_consumption_value = v * data['consumption']
+                            total_combi_consumption_value = v * data['combi_consumption']
 
-                                total_combi_consumption_value = v * data['combi_consumption']
+                            total_consumption = total_consumption_value + total_combi_consumption_value
 
-                                total_consumption = total_consumption_value + total_combi_consumption_value
+                            dict_append = {
+                                'material_name':data['material_name'],
+                                'cutting_consumption' : total_consumption
+                            }
 
-                                dict_append = {
-                                    'material_name':data['material_name'],
-                                    'cutting_consumption' : total_consumption
-                                }
-
-                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
-                                    list_to_send_for_cutting.append(dict_append)
+                            if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
+                                list_to_send_for_cutting.append(dict_append)
 
 
-                            elif data['product_sku'] == 'Common Item':
+                        elif data['product_sku'] == 'Common Item':
+                            
+                            total_consumption_value = value['total'] * data['consumption']
+
+                            total_combi_consumption_value = value['total'] * data['combi_consumption']
+
+                            total_consumption = total_consumption_value + total_combi_consumption_value
+
+                            dict_append = {
+                                'material_name':data['material_name'],
+                                'cutting_consumption' : total_consumption
+                            }
+
+                            if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
+                                list_to_send_for_cutting.append(dict_append)
                                 
-                                total_consumption_value = value['total'] * data['consumption']
-
-                                total_combi_consumption_value = value['total'] * data['combi_consumption']
-
-                                total_consumption = total_consumption_value + total_combi_consumption_value
-
-                                dict_append = {
-                                    'material_name':data['material_name'],
-                                    'cutting_consumption' : total_consumption
-                                }
-
-                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
-                                    list_to_send_for_cutting.append(dict_append)
-                                
-                    else:
-                        total_consumption = 0.00
-
-
-                        dict_append = {
-                                    'material_name':data['material_name'],
-                                    'cutting_consumption' : total_consumption
-                                }
-
-                        if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
-                            list_to_send_for_cutting.append(dict_append)
-        
-        # print(list_to_send_for_cutting)
 
 
         lwo_pending = product_to_item_labour_workout.objects.filter(labour_workout__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id)
@@ -7006,7 +6986,7 @@ def raw_material_estimation_calculate(request):
                         if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
                             list_to_send_for_lwo.append(dict_append)
 
-        # print(list_to_send_for_lwo)
+
 
         merged_data = {}
 
@@ -7033,20 +7013,55 @@ def raw_material_estimation_calculate(request):
 
         for item in response_dict:
             material = item['item_name']
+            material_id = item['id']
             if material in merged_data:
                 merged_data[material]['total_consump'] = item.get('total_consump', decimal.Decimal('0.0'))
                 merged_data[material]['godown_stock'] = item.get('godown_stock', decimal.Decimal('0.0'))
-                merged_data[material]['balance_stock'] = item.get('balance_stock', decimal.Decimal('0.0'))
-                
+                merged_data[material]['id'] = material_id
 
         final_data = list(merged_data.values())
         
-        print(final_data)
-        # print(len(final_data))
 
-        # print(response_dict)
-        return render(request,'reports/raw_material_estimation_calculation_pop_up.html')
-        
+        dataset_to_send = []
+        for dataset in final_data:
+            try:
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = dataset['material_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+                
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
+                
+            except Exception as e:  
+                print(f"Error occurred: {e}")
+                p_name = None
+                mobile = None
+
+
+            cutting_consumption = decimal.Decimal(dataset['cutting_consumption'])
+            lwo_consumption = decimal.Decimal(dataset['lwo_consumption'])
+            total_consump = decimal.Decimal(dataset['total_consump'])
+            godown_stock = decimal.Decimal(dataset['godown_stock'])
+
+            balance_stock = godown_stock - (cutting_consumption + lwo_consumption + total_consump)
+            
+            # print(balance_stock)
+            dataset_to_send.append({
+                'id':dataset['id'],
+                'material_name':dataset['material_name'],
+                'total_consump':total_consump,
+                'cutting_consumption': cutting_consumption,
+                'lwo_consumption': lwo_consumption,
+                'godown_stock':godown_stock,
+                'balance_stock': balance_stock,
+                'party_name' : p_name,
+                'mobile_no' : mobile,
+            })
+        print(dataset_to_send)
+        return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':dataset_to_send})
 
    
 
@@ -7065,6 +7080,9 @@ def raw_material_estimate_delete(request,pk):
         messages.error(request,f'Cannot delete {raw_material_estimation_instance.id} because it is referenced by other objects. {e}')
     return redirect('rawmaterial-estimation-list')
                 
+
+
+
 
 def raw_material_estimation_calculate_excel_download(request,id):
 
