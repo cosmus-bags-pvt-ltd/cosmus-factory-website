@@ -50,17 +50,16 @@
 </div>
 <script>
     document.getElementById('checkboxSubmit').addEventListener('click',function(){
-        const selectedItemId = {};
+        const selectedItemId = [];
 
         document.querySelectorAll('.purchaseCheckBox:checked').forEach((checkbox)=>{
             const id = checkbox.id;
             const value = parseInt(checkbox.value);
-
-            selectedItemId[id] = value;
+            selectedItemId.push(value);
         })
         // JSON.stringify(selectedItemId)
         console.log(selectedItemId);
-
+        
         $.ajax({
             url: '/purchaseorderforpuchasevoucherrmcreateupdate/',
               method: 'GET',
