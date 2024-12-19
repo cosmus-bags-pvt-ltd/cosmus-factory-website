@@ -7068,6 +7068,12 @@ def raw_material_estimation_calculate(request,u_id):
 
 
 
+
+
+
+
+
+
 def raw_material_estimate_delete(request,pk):
 
     try:
@@ -8236,6 +8242,9 @@ def delete_bin_in_rack(request,bin_id):
 
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
+    
+    # item_id_list = request.POST.get()
+
 
     if p_id:
         order_instance = purchase_order_master_for_puchase_voucher_rm.objects.get(id=p_id)
