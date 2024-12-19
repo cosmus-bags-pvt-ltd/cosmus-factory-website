@@ -7060,7 +7060,7 @@ def raw_material_estimation_calculate(request,u_id):
                 'party_name' : p_name,
                 'mobile_no' : mobile,
             })
-        print(dataset_to_send)
+        # print(dataset_to_send)
         return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':dataset_to_send})
 
    
@@ -8243,13 +8243,12 @@ def delete_bin_in_rack(request,bin_id):
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
     
-    item_id_list = request.GET.get('selectedItemId')
-    try:
-        if item_id_list:
-            item_id_list = json.loads(item_id_list)
-            print(item_id_list)
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
+    
+
+
+    
+    
+    
 
 
     if p_id:
@@ -8285,6 +8284,49 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
             print(formset.errors)
         return redirect('purchase-order-for-puchase-voucher-rm-list')
     return render(request,'accounts/purchaseorderforpuchasevoucherrmcreateupdate.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
+
+
+
+
+
+
+def purchase_order_for_puchase_voucher_rm_create_update_from_pop_up(request):
+    selected_item_id = request.GET.get('selectedItemId')  # Get the string
+    
+
+    if selected_item_id:
+        selected_item_list = json.loads(selected_item_id)
+        
+
+        item_name_queryset = raw_material_production_total.objects.filter(pk__in=selected_item_list)
+        print(item_name_queryset)
+
+        
+        if item_name_queryset.exists():
+            dict_with_data = {}
+            for material_name in item_name_queryset:
+                raw_mat_name = material_name.item_name
+                item_data = Item_Creation.objects.filter(item_name = raw_mat_name).first()
+                
+                dict_with_data[raw_mat_name] = {
+                        'item_name': item_data.item_name,
+                        'Material_code': item_data.Material_code,
+                        'Item_Color': item_data.Item_Color.color_name if item_data.Item_Color else None,
+                        'GST_percentage': item_data.Item_Creation_GST.gst_percentage if item_data.Item_Creation_GST else None,
+                        'unit_name': item_data.unit_name_item.unit_name if item_data.unit_name_item else None
+                    }
+
+            
+            return JsonResponse({'response': True, 'data': dict_with_data},status=200)
+    
+    return render(request,'accounts/purchaseorderforpuchasevoucherrmcreateupdate.html')
+
+
+
+
+
+
+
 
 
 

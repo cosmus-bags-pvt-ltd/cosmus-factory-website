@@ -47,28 +47,33 @@
     
     {% endif %}
     </div>
+    
+ 
 </div>
 <script>
     document.getElementById('checkboxSubmit').addEventListener('click',function(){
-        const selectedItemId = [];
+        const selectedItem = [];
 
         document.querySelectorAll('.purchaseCheckBox:checked').forEach((checkbox)=>{
             const id = checkbox.id;
             const value = parseInt(checkbox.value);
-            selectedItemId.push(value);
+            selectedItem.push(value);
         })
-        // JSON.stringify(selectedItemId)
-        console.log(selectedItemId);
+        console.log(selectedItem)
         
         $.ajax({
-            url: '/purchaseorderforpuchasevoucherrmcreateupdate/',
+            url: '/purchaseorderforpuchasevoucherrmcreateupdatefrompopup/',
               method: 'GET',
               data: {
-                  'selectedItemId': selectedItemId,
-                  'csrfmiddlewaretoken': '{{ csrf_token }}',
+                  'selectedItemId': JSON.stringify(selectedItem),
               },
               success: function (response) {
-                console.log(response)
+                if(response.response == true){
+                    const selectedIds = JSON.stringify(selectedItem);
+                    window.opener.location.href = "/purchaseorderforpuchasevoucherrmcreateupdatefrompopup/";
+                    window.close();
+                    
+                }
                  
               },
               error: function (error) {   
