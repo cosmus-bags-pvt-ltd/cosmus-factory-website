@@ -1,43 +1,85 @@
 {% extends 'misc/navbar_popup.html' %}
 {% load static %}
 {% block body %}
+<div>
+    <div class="responsives mb-3">
+        <table class="table table-hover table-bordered table-striped" id="rawmaterialCalculation">
+            <thead class="name_absolute sticky-top">
+                <tr>
+                    <th>No</th>
+                    <th>Product Name</th>
+                    <th>Total Consump</th>
+                    <th>Godown Stock</th>
+                    <th>Cutting Pend Qty</th>
+                    <th>LWO Pend QTY</th>
+                    <th>Balance Stock</th>
+                    <th>Select</th>
+                    <th>Last Buying Seller</th>
+                    <th>Mobile No</th>
+                    <th>Email ID</th>
+                </tr>
+            </thead>
+            <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;"> 
+                {% for data in  final_data %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td class="text-nowrap">{{data.material_name}}</td>
+                    <td><span class="totalConsump">{{data.total_consump}}</span></td>
+                    <td><span class="totalgodown">{{data.godown_stock}}</span></td>
+                    <td><span class="totalcutting">{{data.cutting_consumption}}</span></td>
+                    <td><span class="totallwo">{{data.lwo_consumption}}</span></td>
+                    <td><span class="balanceStock">0.00</span></td>
+                    <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}" name="{{ data.material_name }}" value="{{ forloop.counter }}"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<div class="responsives">
-    <table class="table table-hover table-bordered table-striped">
-        <thead class="name_absolute sticky-top">
-            <tr>
-                <th>No</th>
-                <th>Product Name</th>
-                <th>Total Consump</th>
-                <th>Godown Stock</th>
-                <th>Cutting Pend Qty</th>
-                <th>LWO Pend QTY</th>
-                <th>Balance Stock</th>
-                <th>Select</th>
-                <th>Last Buying Seller</th>
-                <th>Mobile No</th>
-                <th>Email ID</th>
-            </tr>
-        </thead>
-        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;"> 
-            {% for data in  final_data %}
-            <tr>
-                <td>{{forloop.counter}}</td>
-                <td class="text-nowrap">{{data.material_name}}</td>
-                <td>{{data.total_consump}}</td>
-                <td>{{data.godown_stock}}</td>
-                <td>{{data.cutting_consumption}}</td>
-                <td>{{data.lwo_consumption}}</td>
-                <td>{{data.balance_stock}}</td>
-                <td><input type="checkbox" class="text-success purchaseCheckBox" id="" name="" value=""></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div>
+        <button type="submit" class="newProductCreateBtn" id="checkboxSubmit">Submit</button>
+        {% if instance_exists_check %}
+
+        <button><a class="modal-btn" style = "text-decoration: none;" href="{% url 'raw-material-estimation-calculate-excel-download' product_estimation_form.instance.pk %}">Download Excel</a></button>
+       
+       {% endif %}
+    </div>
 </div>
-<!-- {{ final_data }} -->
+<script>
+    
+
+    document.getElementById('checkboxSubmit').addEventListener('click',function(){
+        const selectedItemId = {};
+
+        document.querySelectorAll('.purchaseCheckBox:checked').forEach((checkbox)=>{
+            const id = checkbox.id;
+            const name = checkbox.name;
+
+            selectedItemId[id] = name;
+        })
+        // JSON.stringify(selectedItemId)
+        console.log(selectedItemId);
+
+        fetch('//',{
+            method:"POST",
+            headers : {
+                'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value 
+            },
+            body: JSON.stringify(selectedItemId)
+
+        })
+        .then(response => response.json())
+        .then(data =>{
+            console.log('data:',data)
+        })
+        .catch(error =>{
+            console.error('Error:', error);
+        })
+    })
+</script>
 
 {% endblock body%}
