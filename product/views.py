@@ -8243,7 +8243,13 @@ def delete_bin_in_rack(request,bin_id):
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
     
-    # item_id_list = request.POST.get()
+    item_id_list = request.GET.get('selectedItemId')
+    try:
+        if item_id_list:
+            item_id_list = json.loads(item_id_list)
+            print(item_id_list)
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
 
 
     if p_id:

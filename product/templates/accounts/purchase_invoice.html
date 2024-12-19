@@ -45,9 +45,9 @@
               
                     <select class="product2Select text-dark" name="party_name" required id="id_party_name">
                         {% if master_form.instance.id %}
-                        {% for x in party_names %}
-                        <option value="{{x.id}}">{{x.name}}</option>
-                        {% endfor %}
+                   
+                        <option value="{{master_form.instance.party_name.id}}">{{master_form.instance.party_name.name}}</option>
+                    
                         {% elif not master_form.instance.id %}
                         <option value=""></option>
                         {% for x in party_names %}
