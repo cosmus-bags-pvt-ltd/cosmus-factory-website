@@ -2107,31 +2107,7 @@ table>:not(caption)>*>*{
     margin-left: 5px; /* Optional, adjust as needed */
 }
 
-/* #id_submitLabourWorkOut {
-    position: relative;
-}
 
-#spinner {
-    position: relative;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-} */
-
-
-/* .item-shade{
-    position: relative;
-    display: inline-block;
-    width: 150px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-.selected-option {
-    padding: 5px;
-} */
 
 .shadeName_suggetion{
     padding: 5px;
@@ -2190,6 +2166,8 @@ table>:not(caption)>*>*{
 .item-shade::-webkit-scrollbar-thumb:hover {
     background: #000;
 }
+
+
 
 
 /*===product cart rating===*/
