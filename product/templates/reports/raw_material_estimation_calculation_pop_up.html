@@ -1,4 +1,4 @@
-{% extends 'misc/navbar_popup.html' %}
+{% extends 'product/base.html' %} 
 {% load static %}
 {% block body %}
 <div class="mt-2">
@@ -40,7 +40,7 @@
     </div>
 
     <div>
-        <button type="submit" class="newProductCreateBtn" id="checkboxSubmit">Submit</button>
+        <button type="submit" class="newProductCreateBtn" id="checkboxSubmit"><a href="{% url 'purchase-order-for-puchase-voucher-rm-create-update' %}">Submit</a></button>
         {% if instance_exists_check %}
 
         <button><a class="modal-btn" style = "text-decoration: none;" href="{% url 'raw-material-estimation-calculate-excel-download' product_estimation_form.instance.pk %}">Download Excel</a></button>
@@ -62,19 +62,13 @@
         console.log(selectedItem)
         
         $.ajax({
-            url: '/purchaseorderforpuchasevoucherrmcreateupdatefrompopup/',
+            url: '/purchaseorderforpuchasevoucherrmcreateupdate/',
               method: 'GET',
               data: {
                   'selectedItemId': JSON.stringify(selectedItem),
               },
               success: function (response) {
-                if(response.response == true){
-                    const selectedIds = JSON.stringify(selectedItem);
-                    window.opener.location.href = "/purchaseorderforpuchasevoucherrmcreateupdatefrompopup/";
-                    window.close();
-                    
-                }
-                 
+                console.log(response);
               },
               error: function (error) {   
                   console.log(error);

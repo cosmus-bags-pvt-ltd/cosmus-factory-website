@@ -22,7 +22,7 @@
             </select>
             <input type="hidden" id="id_unique_Value" name="unique_id" value="{{product_estimation_form.instance.pk}}">
             {% if instance_exists_check %}
-            <button class="create-btn mt-3" id="calculate" type="button"  onclick="calculateRawMaterial(this)">Calculate</button>
+            <button class="create-btn mt-3" id="calculate" type="button"  ><a href="{% url 'raw-material-estimation-calculate' product_estimation_form.instance.pk %}">Calculate</a></button>
             {% endif %}
         </div>
         
@@ -272,7 +272,7 @@
 
   
 
-var popUpNewWindow = null;
+{% comment %} var popUpNewWindow = null;
 function calculateRawMaterial(button){
     openNewPopup(button, '/rawmaterialestimationcalculate/');
 }
@@ -297,7 +297,7 @@ function newPopUpwindow(button, path){
          // Open new page with specified dimensions
   popUpNewWindow = window.open(path + unique_id, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes'); 
      }
-}
+} {% endcomment %}
 </script>
 
 

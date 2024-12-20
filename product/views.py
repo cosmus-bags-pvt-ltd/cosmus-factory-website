@@ -8243,14 +8243,6 @@ def delete_bin_in_rack(request,bin_id):
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
     
-    
-
-
-    
-    
-    
-
-
     if p_id:
         order_instance = purchase_order_master_for_puchase_voucher_rm.objects.get(id=p_id)
         master_form = Purchaseordermasterforpuchasevoucherrmform(instance=order_instance)
@@ -8293,13 +8285,21 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
 def purchase_order_for_puchase_voucher_rm_create_update_from_pop_up(request):
     selected_item_id = request.GET.get('selectedItemId')  # Get the string
     
+    dict_with_data = None
 
     if selected_item_id:
         selected_item_list = json.loads(selected_item_id)
         
-
         item_name_queryset = raw_material_production_total.objects.filter(pk__in=selected_item_list)
         print(item_name_queryset)
+
+        # Purchaseorderforpuchasevoucherrmformset = inlineformset_factory(
+        # purchase_order_master_for_puchase_voucher_rm, 
+        # purchase_order_for_puchase_voucher_rm, 
+        # fields=('item_name',), 
+        # extra=1, 
+        # can_delete=True
+        # )
 
         
         if item_name_queryset.exists():
@@ -8316,12 +8316,88 @@ def purchase_order_for_puchase_voucher_rm_create_update_from_pop_up(request):
                         'unit_name': item_data.unit_name_item.unit_name if item_data.unit_name_item else None
                     }
 
+            return JsonResponse({'response': True,'dict_with_data':dict_with_data},status=200)
+
+    #     Purchaseorderforpuchasevoucherrmformset = inlineformset_factory(purchase_order_master_for_puchase_voucher_rm, purchase_order_for_puchase_voucher_rm, fields=('item_name',), extra=1, can_delete=True)
+
+    #     initial_data = list(dict_with_data.values())
+    #     formset = Purchaseorderforpuchasevoucherrmformset(queryset=purchase_order_for_puchase_voucher_rm.objects.none(),initial=initial_data)
+
+    #     for idx, form in enumerate(formset.forms):
+    #         if idx in dict_with_data:
+    #             form.initial = dict_with_data[idx]
+    # else:
+    #     dict_with_data = None
+    #     master_form = Purchaseordermasterforpuchasevoucherrmform()
+    #     formset = Purchaseorderforpuchasevoucherrmformset()
+
+    return render(request,'accounts/purchaseorderforpuchasevoucherrmcreateupdate.html',{'dict_with_data':dict_with_data})
+
+
+
+
+
+# from django.forms import inlineformset_factory
+# from django.http import JsonResponse
+# from django.shortcuts import render, redirect
+# import json
+
+# def purchase_order_for_puchase_voucher_rm_create_update_from_pop_up(request):
+#     selected_item_id = request.GET.get('selectedItemId')
+#     dict_with_data = {}
+
+#     # Step 1: Parse and process the dictionary data
+#     if selected_item_id:
+#         try:
+#             selected_item_list = json.loads(selected_item_id)
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid data format'}, status=400)
+
+#         # Query and populate the dictionary
+#         item_name_queryset = raw_material_production_total.objects.filter(pk__in=selected_item_list)
+#         for material_name in item_name_queryset:
+#             raw_mat_name = material_name.item_name
+#             item_data = Item_Creation.objects.filter(item_name=raw_mat_name).first()
+
+#             if item_data:
+#                 dict_with_data[raw_mat_name] = {
+#                     'item_name': item_data.id,  # Use the ID since item_name is a ForeignKey
+#                     'quantity': 0,  # Default value
+#                     'rate': 0,  # Default value
+#                 }
+#                 return JsonResponse({'response': True},status=200)
             
-            return JsonResponse({'response': True, 'data': dict_with_data},status=200)
-    
-    return render(request,'accounts/purchaseorderforpuchasevoucherrmcreateupdate.html')
+#     # Step 2: Create the formset dynamically based on the dictionary size
+#     PurchaseOrderFormset = inlineformset_factory(
+#         purchase_order_master_for_puchase_voucher_rm,
+#         purchase_order_for_puchase_voucher_rm,
+#         fields=('item_name', 'quantity', 'rate'),
+#         extra=len(dict_with_data),  # Number of forms equals the number of dictionary entries
+#         can_delete=True
+#     )
 
+#     if
 
+#     # Step 3: Prepopulate the formset with dictionary data
+#     if request.method == 'GET':
+#         # Convert the dictionary data into a list of initial data
+#         initial_data = list(dict_with_data.values())
+
+#         formset = PurchaseOrderFormset(
+#             queryset=purchase_order_for_puchase_voucher_rm.objects.none(),
+#             initial=initial_data  # Prepopulate forms with dictionary data
+#         )
+#     elif request.method == 'POST':
+#         formset = PurchaseOrderFormset(request.POST)
+#         if formset.is_valid():
+#             formset.save()
+#             return redirect('success_view')
+
+#     return render(
+#         request,
+#         'accounts/purchaseorderforpuchasevoucherrmcreateupdatepopup.html',
+#         {'formset': formset, 'dict_with_data': dict_with_data}
+#     )
 
 
 
