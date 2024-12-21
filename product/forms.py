@@ -1118,7 +1118,7 @@ class Purchaseordermasterforpuchasevoucherrmform(forms.ModelForm):
 
   class Meta:
     model = purchase_order_master_for_puchase_voucher_rm
-    fields = ['po_no','party_name','fright_transport','payment_term']
+    fields = ['po_no','party_name','fright_transport','payment_term','voucher_gst']
 
 
 

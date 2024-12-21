@@ -4,7 +4,6 @@
 
 <form action="" method='POST' class="mt-4">
     {% csrf_token %}
-    <input type="hidden" id="rmEstimationSelect" value="{{dict_with_data}}">
     <div class="row mb-3">
         <div class="col-lg-4">
             <div class="d-flex  mb-3">
@@ -48,7 +47,7 @@
         <div class="col-lg-4">
             <div class="d-flex mb-3">
                 <label for="id_payment_term"  class="me-2">Payment Term :</label>
-                <input type="text" class="item-select" name="payment_term" id ="id_payment_term" value="{{master_form.instance.payment_term }}" maxlength="255" required >
+                <input type="text" class="item-select" name="payment_term" id ="id_payment_term" value="{{master_form.instance.payment_term |default_if_none:'' }}" maxlength="255" required >
             </div>
         </div>
     </div>
@@ -120,7 +119,7 @@
                     <td>
                         <div class="custom-dropdown-container">
                             <input  type="hidden" name="{{forms.prefix}}-item_name" id="{{forms.prefix}}-item_name" class="purchaseDate"  value="{{ forms.initial.item_id }}"  > 
-                            <input  type="text" name="item_name_{{forloop.counter0}}" id="item_name_{{forloop.counter0}}" class="productpurchaseInvoice search-input"  placeholder="Item Name" autocomplete="off" value="{{ forms.item_name.initial }}"> 
+                            <input  type="text" name="item_name_{{forloop.counter0}}" id="item_name_{{forloop.counter0}}" class="productpurchaseInvoice search-input"  placeholder="Item Name" autocomplete="off" value="{{ forms.item_name.initial |default_if_none:'' }}"> 
                             <div name="select_item_name_{{forloop.counter0}}" class="productpurchaseInvoice item-name s-suggestion-container item-select_input" id="select_item_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Item Name" >
                               
                            
@@ -151,14 +150,6 @@
                 </tr>
                 
                 {% endif %}
-                
-
-
-
-
-
-
-                
                 {% endfor %}
             </tbody>
             <tbody>
@@ -190,7 +181,7 @@
                         </span>           
                     </div>
                     <div class=" mb-3">
-                        <label class="purchase-lable fw-bold">Gst <input type="number" class="product_row" id="id_updateGst" value="{{master_form.instance.updateGst | default_if_none:''}}" maxlength="50" step=".01">% </label>
+                        <label class="purchase-lable fw-bold">Gst <input type="number" name="voucher_gst" class="product_row" id="id_voucher_gst" value="{{master_form.instance.voucher_gst | default_if_none:''}}" maxlength="50" step=".01">% </label>
                         <span class="purchase-span">
                             <input type="number" style="margin-left: 60px;" class="purchaseTableLabel-transport  purchase-amounts" name="updategst" id ="id_updategst" value="{{master_form.instance.GstValue | default_if_none:'0'}}" maxlength="50" step=".01" readonly >
                         </span>
@@ -214,10 +205,7 @@
                         <span class="purchase-span"><input type="number" class="purchaseTableLabel-total purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
                     </div>
                 </div>
-            </div>
-            
-            
-            
+            </div> 
         </div>
           <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
     </div>
@@ -626,7 +614,7 @@ function getGstNo() {
         // Set the calculated gross total value to the gross total input field
         document.getElementById('id_gross_total').value =isNaN(taxablevalue) ? '' : taxablevalue.toFixed(2);
 
-        const updateGst = parseInt(document.getElementById('id_updateGst').value);
+        const updateGst = parseInt(document.getElementById('id_voucher_gst').value);
       
         
         
@@ -653,7 +641,7 @@ function getGstNo() {
     // Add onchange event handler to id_fright_transport
     document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
     document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
-    document.getElementById('id_updateGst').addEventListener('input', calculateOtherTotal);
+    document.getElementById('id_voucher_gst').addEventListener('input', calculateOtherTotal);
     
 
   
