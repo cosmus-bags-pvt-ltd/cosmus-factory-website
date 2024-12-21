@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-    <button type="button" class="edit_btn w-75 mb-2" id="NegativeList_btn">Negative Stock<span class="production_padding"><i class="fas fa-angle-right arrowBtn"></i></span></button><button class="edit_btn mb-2" id="selectedRowPo">Create PO +</button>
+    <button type="button" class="edit_btn w-75 mb-2" id="NegativeList_btn">Negative Stock<span class="production_padding"><i class="fas fa-angle-right arrowBtn"></i></span></button><button type="submit" class="edit_btn mb-2" id="checkboxSubmit">Create PO +</button>
     <div id="NegativeList" style="display: block;">
         <div class="d-flex mb-3">
             <form action="" method="GET" id="filterForm">
@@ -78,9 +78,9 @@
             </form>
         </div>
 
-                <div>
+                <div class="stock_responsive">
                     <table class="table table-striped table-hover table-bordered">
-                        <thead class="name_absolute">
+                        <thead class="name_absolute sticky-top">
                             <tr>
                                 <th>No</th>
                                 <th>M Code/Color Code</th>
@@ -97,7 +97,7 @@
                                 <th>Email</th>
                             </tr>
                         </thead>
-                        <tbody class="mainTableList">
+                        <tbody class="mainTableList" style="max-height: 400px; overflow-y: auto;">
                             {% for item in negetive_stock_report %}
                             <tr>
                                 <input type="hidden" id="id_item_pk" value="{{item.id}}">
@@ -110,7 +110,7 @@
                                 <td>{{item.Units}}</td>
                                 <td></td>
                                 <td></td>
-                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="" name="" value=""></td>
+                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.id }}"></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -175,60 +175,22 @@
         
         
     })
-    function checkBoxData(){
-            var checkBox = document.querySelectorAll('.purchaseCheckBox');
-            var itemdis = {}; // Initialize the dictionary
+    
+        document.getElementById('checkboxSubmit').addEventListener('click',function(){
+        let selectedItem = {};
 
-        checkBox.forEach(function(item) {
-            item.addEventListener('click', function() {
-                console.log(item);
-                var itemPk = item.closest('tr').querySelector('#id_item_pk').value;
-                console.log(itemPk);
+        document.querySelectorAll('.purchaseCheckBox:checked').forEach((checkbox)=>{
+            const id = checkbox.id;
+            const value = parseInt(checkbox.value);
+            selectedItem[id] = value;
+        })
+        var selectedValue =  JSON.stringify(selectedItem);
 
-                // Add or remove data in the dictionary based on the checkbox state
-                if (item.checked) {
-                    itemdis[itemPk] = true; // Add or update the dictionary
-                } else {
-                    delete itemdis[itemPk]; // Remove the key if unchecked
-                }
+        const url = `/purchaseorderforpuchasevoucherrmcreateupdate/?selectedItemId=${encodeURIComponent(selectedValue)}`;
+        window.location.href = url;
 
-                console.log(itemdis); // Check the updated dictionary
-            });
-        });
+    })
 
-        document.getElementById('selectedRowPo').addEventListener('click',function(){
-          // Send the itemdis data to the backend
-          $.ajax({
-            url:"//",   
-            type:"POST",   
-            headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken() // For CSRF-protected servers like Django
-                },
-            data:JSON.stringify({ items: itemdis }),
-            success:function(response){
-
-            },
-            error:function(error){
-                console.error('Error:', error);
-                  alert('Failed to send data to the backend.');
-            }
-          })
-        
-    });
-  
-
-        }
-
-        function getCSRFToken() {
-    const cookieValue = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-    return cookieValue || '';
-}
-
-    checkBoxData()
 
     document.body.appendChild(document.getElementById('exampleModal'));   
     $(document).ready(function(){
