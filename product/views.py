@@ -2662,8 +2662,7 @@ def purchasevoucherdelete(request,pk):
 @login_required(login_url='login')
 def salesvouchercreateupdate(request,s_id=None):
 
-    party_name = Ledger.objects.all()
-
+    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
 
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
@@ -8140,6 +8139,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         negetive_stock_report = Item_Creation.objects.all().annotate(total_qty = Sum(
         'shades__godown_shades__quantity')).order_by('total_qty').select_related('Item_Color','Fabric_Group')
 
+
     elif filter_name == 'lowest' and filter_name != '':
         negetive_stock_report = Item_Creation.objects.all().annotate(total_qty = Sum(
         'shades__godown_shades__quantity')).order_by('-total_qty').select_related('Item_Color','Fabric_Group')
@@ -8163,6 +8163,19 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     else:
         negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
+
+
+        pending_ref_no_list = []
+        pending_ref_no = purchase_order_to_product.objects.filter(process_quantity__gt=0)
+
+        for item in pending_ref_no:
+            ref_id = item.purchase_order_id.product_reference_number.Product_Refrence_ID
+            if ref_id not in pending_ref_no_list:
+                pending_ref_no_list.append(ref_id)
+
+        print(pending_ref_no_list)
+
+        
 
 
     return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number})
@@ -8532,7 +8545,9 @@ def session_data_test(request):
 
 def finished_goods_stock_all(request,pk=None):
     wareshouse_all = Finished_goods_warehouse.objects.all()
-    button_value = True
+    
+    button_value = request.POST.get('All_stock')
+    
     if pk:
         warehouse_data = Product_warehouse_quantity_through_table.objects.filter(product__PProduct_SKU = OuterRef('pk'),                     
                          warehouse__id = pk).values('quantity')     
@@ -8540,16 +8555,17 @@ def finished_goods_stock_all(request,pk=None):
         finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Subquery(
             warehouse_data)).order_by('Product__Product_Name').select_related('PProduct_color')
 
-    else:
-        if button_value:
-            finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
-                'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color') 
-        else:
-            finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
-                'product_warehouse_quantity_through_table__quantity')).filter(total_warehouse_stock__isnull=False).order_by('Product__Product_Name').select_related('PProduct_color')
+    elif button_value:
 
-    return render(request,'finished_product/finishedgoodsstockall.html',{
-                                'finished_godown_all':finished_godown_all, 'wareshouse_all':wareshouse_all})
+        
+        finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
+            'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color') 
+    else:
+
+        finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
+            'product_warehouse_quantity_through_table__quantity')).filter(total_warehouse_stock__isnull=False).order_by('Product__Product_Name').select_related('PProduct_color')
+
+    return render(request,'finished_product/finishedgoodsstockall.html',{'finished_godown_all':finished_godown_all, 'wareshouse_all':wareshouse_all})
 
 
 

@@ -9,9 +9,9 @@
                     <th>No</th>
                     <th>Product Name</th>
                     <th>Total Consump</th>
-                    <th>Godown Stock</th>
                     <th>Cutting Pend Qty</th>
                     <th>LWO Pend QTY</th>
+                    <th>Godown Stock</th>
                     <th>Balance Stock</th>
                     <th>Select</th>
                     <th>Last Buying Seller</th>
@@ -25,10 +25,10 @@
                     <td>{{forloop.counter}}</td>
                     <td class="text-nowrap">{{data.material_name}}</td>
                     <td>{{data.total_consump}}</td>
-                    <td>{{data.godown_stock}}</td>
-                    <td>{{data.cutting_consumption}}</td>
-                    <td>{{data.lwo_consumption}}</td>
-                    <td>{{data.balance_stock}}</td>
+                    <td><span>{{data.cutting_consumption}}</span></td>
+                    <td><span>{{data.lwo_consumption}}</span></td>
+                    <td><span class="godownStock">{{data.godown_stock}}</span></td>
+                    <td><span class="balanceStock">{{data.balance_stock}}</span></td>
                     <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ data.item_id }}"></td>
                     <td>{{data.party_name| default_if_none:""}}</td>
                     <td>{{data.mobile_no| default_if_none:""}}</td>
@@ -66,6 +66,31 @@
         window.location.href = url;
 
     })
+
+    function balanceQty(){
+        let balanceStock = document.querySelectorAll('.balanceStock');
+        let godownStock = document.querySelectorAll('.godownStock');
+        balanceStock.forEach((stock)=>{
+            let balance = parseFloat(stock.textContent);
+           
+            if(balance > 0){
+                stock.style.color = 'green';
+            }else{
+                stock.style.color = 'red';
+            } 
+            
+        }) 
+        godownStock.forEach((value)=>{
+            let stocks = parseFloat(value.textContent);
+            console.log(stocks)
+            if(stocks > 0){
+                value.style.color = 'green';
+            }else{
+                value.style.color = 'red';
+            } 
+        })  
+    }
+    balanceQty()
 </script>
 
 
