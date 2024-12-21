@@ -23,6 +23,12 @@
                     {% for x in party_names %}
                     <option value="{{x.id}}">{{x.name}}</option>
                     {% endfor %}
+
+                    {% elif not forms.instance.id %}
+                    {% for x in party_names %}
+                    <option value="{{x.id}}">{{x.name}}</option>
+                    {% endfor %}
+
                     {% endif%}
                 </select>
             </div>
@@ -41,8 +47,8 @@
         </div>
         <div class="col-lg-4">
             <div class="d-flex mb-3">
-                <label for="id_paymentTerm"  class="me-2">Payment Term :</label>
-                <input type="text" class="item-select" name="paymentTerm" id ="id_paymentTerm" value="{{form.instance.payment_term}}" maxlength="255" required >
+                <label for="id_payment_term"  class="me-2">Payment Term :</label>
+                <input type="text" class="item-select" name="payment_term" id ="id_payment_term" value="{{master_form.instance.payment_term }}" maxlength="255" required >
             </div>
         </div>
     </div>
@@ -67,11 +73,13 @@
             </thead>
             <tbody class="mainTableList">
                 {{formset.management_form}}
+                
                 {% for forms in formset %}
                 {{ forms.id }}
+                {% if forms.instance.id %}
                 <tr>
                     <td><input type="number" class="rowNo  bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}" readonly></td>
-                    <td><input type="text" name="item_Mcode_{{forloop.counter0}}" id="item_Mcode_{{forloop.counter0}}" value="{{ forms.instance.item_name.Material_code}}" class="purchase-amount" readonly></td>
+                    <td><input type="text" name="item_Mcode_{{forloop.counter0}}" id="item_Mcode_{{forloop.counter0}}" value="{{ forms.instance.item_name.Material_code}}" class="purchase-amount" readonly> </td>
                     <td>
                         <div class="custom-dropdown-container">
                             <input  type="hidden" name="{{forms.prefix}}-item_name" id="{{forms.prefix}}-item_name" class="purchaseDate"  value="{% if forms.instance.id %}{{ forms.instance.item_name.id }}{% endif %}"  > 
@@ -104,6 +112,53 @@
                     <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="{{forms.prefix}}-DELETE" value="" ></i></span></td>
                     
                 </tr>
+
+                {% elif not forms.instance.id %}
+                <tr>
+                    <td><input type="number" class="rowNo  bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}" readonly></td>
+                    <td><input type="text" name="item_Mcode_{{forloop.counter0}}" id="item_Mcode_{{forloop.counter0}}" value="{{ forms.initial.Material_code}}" class="purchase-amount" readonly> </td>
+                    <td>
+                        <div class="custom-dropdown-container">
+                            <input  type="hidden" name="{{forms.prefix}}-item_name" id="{{forms.prefix}}-item_name" class="purchaseDate"  value="{{ forms.initial.item_id }}"  > 
+                            <input  type="text" name="item_name_{{forloop.counter0}}" id="item_name_{{forloop.counter0}}" class="productpurchaseInvoice search-input"  placeholder="Item Name" autocomplete="off" value="{{ forms.item_name.initial }}"> 
+                            <div name="select_item_name_{{forloop.counter0}}" class="productpurchaseInvoice item-name s-suggestion-container item-select_input" id="select_item_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Item Name" >
+                              
+                           
+                             </div>
+                        </div> 
+                    </td>
+                    <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{{forms.initial.item_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+
+                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'' }}" class="purchase-input"></td>
+
+                    <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{{ forms.initial.item_unit }}" class="purchase-mark" readonly></td>
+
+                    <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" value="{{forms.initial.rate | default_if_none:'' }}" ></td>
+
+                    <td>
+                        <input type="hidden" id="{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.initial.amount | default_if_none:''}}" readonly>
+                        <input type="number" id="{{forms.prefix}}-gst" class="purchase-mark purchase-gst" name="{{forms.prefix}}-gst" value="{{ forms.initial.item_gst }}" readonly >
+                    </td>
+                    <td>
+                        <input type="number" id="{{forms.prefix}}-cgst" class="purchase-input purchase-cgst" name="{{forms.prefix}}-cgst" value=""readonly >
+                    </td>
+                    <td>
+                        <input type="number" id="{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
+                    </td>
+                    <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
+                    <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="{{forms.prefix}}-DELETE" value="" ></i></span></td>
+                    
+                </tr>
+                
+                {% endif %}
+                
+
+
+
+
+
+
+                
                 {% endfor %}
             </tbody>
             <tbody>

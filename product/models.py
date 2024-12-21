@@ -494,6 +494,7 @@ class Ledger(models.Model):
     landline_no = models.BigIntegerField()
     bank_details =  models.TextField(blank = True)
     Debit_Credit =  models.CharField(choices = DEBIT_CREDIT ,max_length = 255, blank = True)
+    # E_mail = models.EmailField(max_length=255)
     created_date = models.DateTimeField(auto_now_add= True)
     modified_date_time = models.DateTimeField(auto_now= True)
 
@@ -1129,7 +1130,7 @@ class Finished_goods_transfer_records(models.Model):
 
 
 class finishedgoodsbinallocation(models.Model):
-    related_purchase_item = models.ForeignKey(product_purchase_voucher_items, on_delete=models.PROTECT, null=True, blank=True)
+    related_purchase_item = models.ForeignKey(product_purchase_voucher_items, on_delete=models.CASCADE, null=True, blank=True)
     related_transfer_record = models.ForeignKey(Finished_goods_transfer_records, on_delete=models.PROTECT, null=True, blank=True)
     unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
@@ -1185,7 +1186,7 @@ class purchase_order_master_for_puchase_voucher_rm(models.Model):
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     payment_term = models.CharField(max_length=20, null=True, blank=True)
     fright_transport = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
-
+    # voucher_gst = models.IntegerField()
 
 
 class purchase_order_for_puchase_voucher_rm(models.Model):
@@ -1193,7 +1194,7 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
     item_name = models.ForeignKey(Item_Creation,on_delete=models.PROTECT)
     quantity = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     rate = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
-
+    
 
 
 
