@@ -311,7 +311,7 @@ urlpatterns = [
 
     # purchase order for rawmaterial
     path('purchaseorderforpuchasevoucherrmcreateupdate/', views.purchase_order_for_puchase_voucher_rm_create_update, name = 'purchase-order-for-puchase-voucher-rm-create-update'),
-    path('purchaseorderforpuchasevoucherrmcreateupdatefrompopup/', views.purchase_order_for_puchase_voucher_rm_create_update_from_pop_up, name = 'purchase-order-for-puchase-voucher-rm-create-update-from-pop-up'),
+    # path('purchaseorderforpuchasevoucherrmcreateupdatefrompopup/', views.purchase_order_for_puchase_voucher_rm_create_update_from_pop_up, name = 'purchase-order-for-puchase-voucher-rm-create-update-from-pop-up'),
     path('purchaseorderforpuchasevoucherrmcreateupdate/<int:p_id>/', views.purchase_order_for_puchase_voucher_rm_create_update, name = 'purchase-order-for-puchase-voucher-rm-create-update'),
     path('purchaseorderforpuchasevoucherrmlist/', views.purchase_order_for_puchase_voucher_rm_list, name='purchase-order-for-puchase-voucher-rm-list'),
     path('purchaseorderforpuchasevoucherrmdelete/<int:pk>/', views.purchase_order_for_purchase_rm_delete, name = 'purchase-order-for-puchase-voucher-rm-delete'),

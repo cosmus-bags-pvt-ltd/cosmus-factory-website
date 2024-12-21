@@ -22,7 +22,7 @@
             </select>
             <input type="hidden" id="id_unique_Value" name="unique_id" value="{{product_estimation_form.instance.pk}}">
             {% if instance_exists_check %}
-            <button class="create-btn mt-3" id="calculate" type="button"  onclick="calculateRawMaterial(this)">Calculate</button>
+            <button class="create-btn mt-3" id="calculate" type="button"  ><a class="text-white text-decoration-none " href="{% url 'raw-material-estimation-calculate' product_estimation_form.instance.pk %}">Calculate</a></button>
             {% endif %}
         </div>
         
@@ -97,42 +97,6 @@
 
 
 </div> 
-
-<!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable">
-      <div class="modal-content" style="width: 136% !important">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Raw Material Estimation Calculation </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <table class="table table-striped table-hover table-bordered text-nowrap" >
-                <thead class="name_absolute">
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Total Consump</th>
-                        <th>Godown Stock</th>
-                        <th></th>
-                        <th></th>
-                        <th>Balance Stock</th>
-                    </tr>
-                </thead>
-                <tbody class="mainTableList calculateTable">
-                    
-                </tbody>
-            </table>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">Close</button>
-          {% if instance_exists_check %}
-
-         <a class="modal-btn" style = "text-decoration: none;" href="{% url 'raw-material-estimation-calculate-excel-download' product_estimation_form.instance.pk %}">Download Excel</a>
-        
-        {% endif %}
-        </div>
-      </div>
-    </div>
-  </div> -->
 <script>
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -209,34 +173,34 @@
     deleteRow()
 
   
-var popUpNewWindow = null;
-
-function calculateRawMaterial(button) {
-    // Proceed to open the popup
-    openNewPopup(button, '/rawmaterialestimationcalculate/');
+    var popUpNewWindow = null;
+    function openRawMaterialPopup(button){
+    openNewPopup(button, '/rawmaterialestimationpopup/');
 }
 
-function openNewPopup(button, url) {
+function openNewPopup(button, url){
     if (popUpNewWindow === null || popUpNewWindow.closed) {
         newPopUpwindow(button, url);
     } else {
+  
         popUpNewWindow.focus();
-        hideLoader(button); // Hide loader if popup is already open
     }
 }
 
-function newPopUpwindow(button, path) {
-    var minWidth = 1250; 
-    var minHeight = 800; 
-    var unique_id = parseInt(document.getElementById('id_unique_Value').value);
-    
-    if (unique_id) {
-        popUpNewWindow = window.open(path + unique_id, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
+function newPopUpwindow(button, path){
+    // Specify minimum height and width
+  var minWidth = 1150; // minimum width
+  var minHeight = 800; // minimum height
+  var instanceid = $(button).closest('tr').find('.newIdInstance').val();
+  console.log(instanceid)     
+    if(instanceid){
+         // Open new page with specified dimensions
+  popUpNewWindow = window.open(path + instanceid, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes'); 
+    }
 
-    } 
+    // Ensure only one event listener is attached
+
 }
-
-
 </script>
 
 

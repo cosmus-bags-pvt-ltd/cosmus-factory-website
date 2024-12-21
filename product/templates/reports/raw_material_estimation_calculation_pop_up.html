@@ -1,4 +1,4 @@
-{% extends 'misc/navbar_popup.html' %}
+{% extends 'product/base.html' %} 
 {% load static %}
 {% block body %}
 <div class="mt-2">
@@ -53,35 +53,34 @@
 <script>
 
     document.getElementById('checkboxSubmit').addEventListener('click',function(){
-        const selectedItem = [];
+        const selectedItem = {};
 
         document.querySelectorAll('.purchaseCheckBox:checked').forEach((checkbox)=>{
             const id = checkbox.id;
             const value = parseInt(checkbox.value);
-            selectedItem.push(value);
+            selectedItem[id] = value
         })
-        console.log(selectedItem)
-        
-        $.ajax({
-            url: '/purchaseorderforpuchasevoucherrmcreateupdatefrompopup/',
-              method: 'GET',
-              data: {
-                  'selectedItemId': JSON.stringify(selectedItem),
-              },
-              success: function (response) {
-                if(response.response == true){
-                    const selectedIds = JSON.stringify(selectedItem);
-                    window.opener.location.href = "/purchaseorderforpuchasevoucherrmcreateupdatefrompopup/";
-                    window.close();
-                    
-                }
-                 
-              },
-              error: function (error) {   
-                  console.log(error);
-              }
+        const selectedIds = JSON.stringify(selectedItem);
+        const encodedData = encodeURIComponent(selectedIds);
 
-        })
+        // Redirect with query parameters
+        const newPageUrl = `/purchaseorderforpuchasevoucherrmcreateupdate/?data=${encodedData}`;
+        window.location.href = newPageUrl;
+        // $.ajax({
+        //     url: '/purchaseorderforpuchasevoucherrmcreateupdate/',
+        //       method: 'GET',
+        //       data: {
+        //           'selectedItemId': JSON.stringify(selectedItem),
+        //       },
+        //       success: function (response) {
+        //         console.log(response);
+        //     //  purchase-order-for-puchase-voucher-rm-create-update
+        //       },
+        //       error: function (error) {   
+        //           console.log(error);
+        //       }
+
+        // })
 
     })
 </script>
