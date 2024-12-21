@@ -2,7 +2,7 @@
 {% load static %}
 {% block body %}
 <div class="mt-2">
-    <div class="responsives">
+    <div class="responsives mb-3">
         <table class="table table-hover table-bordered table-striped">
             <thead class="name_absolute sticky-top">
                 <tr>
@@ -39,7 +39,7 @@
         </table>
     </div>
 
-    <div>
+    <div class="mt-2" >
         <button type="submit" class="newProductCreateBtn" id="checkboxSubmit" >Submit</button>
         {% if instance_exists_check %}
 
@@ -51,6 +51,7 @@
  
 </div>
 <script>
+
     document.getElementById('checkboxSubmit').addEventListener('click',function(){
         let selectedItem = {};
 

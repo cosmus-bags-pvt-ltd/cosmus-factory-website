@@ -4,8 +4,7 @@
 
 <form action="" method='POST' class="mt-4">
     {% csrf_token %}
-    <input type="hidden" name="" value="{{dict_with_data}}">
-    <div class="row">
+    <div class="row mb-3">
         <div class="col-lg-4">
             <div class="d-flex  mb-3">
                 <label for="id_po_no"  class="item-form">Po No :</label>
@@ -151,14 +150,6 @@
                 </tr>
                 
                 {% endif %}
-                
-
-
-
-
-
-
-                
                 {% endfor %}
             </tbody>
             <tbody>
@@ -192,7 +183,7 @@
                     <div class=" mb-3">
                         <label class="purchase-lable fw-bold">Gst <input type="number" name="voucher_gst" class="product_row" id="id_voucher_gst" value="{{master_form.instance.voucher_gst | default_if_none:''}}" maxlength="50" step=".01">% </label>
                         <span class="purchase-span">
-                            <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="updategst" id ="id_updategst" value="{{master_form.instance.GstValue | default_if_none:'0'}}" maxlength="50" step=".01" readonly >
+                            <input type="number" style="margin-left: 60px;" class="purchaseTableLabel-transport  purchase-amounts" name="updategst" id ="id_updategst" value="{{master_form.instance.GstValue | default_if_none:'0'}}" maxlength="50" step=".01" readonly >
                         </span>
                     </div>
                     <div class=" mb-3">
@@ -214,10 +205,7 @@
                         <span class="purchase-span"><input type="number" class="purchaseTableLabel-total purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
                     </div>
                 </div>
-            </div>
-            
-            
-            
+            </div> 
         </div>
           <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
     </div>
