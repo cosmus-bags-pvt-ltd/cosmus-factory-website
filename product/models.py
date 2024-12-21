@@ -494,7 +494,6 @@ class Ledger(models.Model):
     landline_no = models.BigIntegerField()
     bank_details =  models.TextField(blank = True)
     Debit_Credit =  models.CharField(choices = DEBIT_CREDIT ,max_length = 255, blank = True)
-    # E_mail = models.EmailField(max_length=255)
     created_date = models.DateTimeField(auto_now_add= True)
     modified_date_time = models.DateTimeField(auto_now= True)
 
@@ -1186,7 +1185,7 @@ class purchase_order_master_for_puchase_voucher_rm(models.Model):
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     payment_term = models.CharField(max_length=20, null=True, blank=True)
     fright_transport = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
-    # voucher_gst = models.IntegerField()
+    voucher_gst = models.IntegerField()
 
 
 class purchase_order_for_puchase_voucher_rm(models.Model):
