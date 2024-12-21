@@ -1158,7 +1158,7 @@ class finishedgoodsbinallocation(models.Model):
 class sales_voucher_master_finish_Goods(models.Model):
     sales_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
     buyer_inv_no = models.CharField(max_length = 100)
-    company_gst = models.IntegerField()
+    company_gst = models.CharField()
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)

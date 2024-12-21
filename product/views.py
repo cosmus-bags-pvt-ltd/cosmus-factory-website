@@ -2680,12 +2680,7 @@ def salesvouchercreateupdate(request,s_id=None):
     if request.method == "POST":
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        # if s_id:
-        #     formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        # else:
-        #     formset = salesvouchercreateformset(request.POST)
-
-
+        
         if not master_form.is_valid():
             print("Form Errors:", master_form.errors)
 
@@ -2694,6 +2689,7 @@ def salesvouchercreateupdate(request,s_id=None):
                 if not form.is_valid():
                     print("Form Errors:", form.errors)
 
+        
 
         if master_form.is_valid() and formset.is_valid():
             try:
@@ -2701,14 +2697,22 @@ def salesvouchercreateupdate(request,s_id=None):
                     master_form_instance = master_form.save(commit=False)
                     master_form_instance.save()
 
-                    formset.instance = master_form_instance
-                    formset.save()
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
+
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            form_instance = form.save(commit=False)
+                            form_instance.sales_voucher_master = master_form_instance
+                            form_instance.save()
 
                     return redirect('sales-voucher-list')
             except Exception as e:
                 print(e)
 
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name})
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name})
 
 
 
@@ -6432,33 +6436,7 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
         report_data_sorted = sorted(queryset_list, key = itemgetter('date'), reverse=False)
         
         
-        
-        
-        
-
-
-        
-        
-        
-
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
+  
         total_sku_qty = {}
        
         for i in report_data_sorted:
@@ -6535,6 +6513,8 @@ def rawmaterialestimationcreateupdate(request,pk=None):
                   'product_estimation_form': product_estimation_form, 
                   'product_all':product_all, 'godown_id':godown_id,
                   'instance_exists_check':instance_exists_check})
+
+
 
 
 def raw_material_estimation_popup(request, pk=None):
@@ -6720,7 +6700,7 @@ def labour_workin_approval_split(request,ref_id):
 
 
 def raw_material_estimation_calculate(request,u_id):
-    
+    print("in function")
     if u_id:
         
         try:
@@ -7020,7 +7000,7 @@ def raw_material_estimation_calculate(request,u_id):
 
         final_data = list(merged_data.values())
         
-        # print(final_data)
+        print(final_data)
 
 
         dataset_to_send = []
@@ -7063,7 +7043,7 @@ def raw_material_estimation_calculate(request,u_id):
                 'party_name' : p_name,
                 'mobile_no' : mobile,
             })
-        # print(dataset_to_send)
+        print(dataset_to_send)
         return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':dataset_to_send})
 
    
@@ -8552,7 +8532,7 @@ def session_data_test(request):
 
 def finished_goods_stock_all(request,pk=None):
     wareshouse_all = Finished_goods_warehouse.objects.all()
-    
+    button_value = None
     if pk:
         warehouse_data = Product_warehouse_quantity_through_table.objects.filter(product__PProduct_SKU = OuterRef('pk'),                     
                          warehouse__id = pk).values('quantity')     
@@ -8561,9 +8541,12 @@ def finished_goods_stock_all(request,pk=None):
             warehouse_data)).order_by('Product__Product_Name').select_related('PProduct_color')
 
     else:
-        finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
-            'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color') 
-
+        if button_value:
+            finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
+                'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color') 
+        else:
+            finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
+                'product_warehouse_quantity_through_table__quantity')).filter(total_warehouse_stock__isnull=False).order_by('Product__Product_Name').select_related('PProduct_color')
 
     return render(request,'finished_product/finishedgoodsstockall.html',{
                                 'finished_godown_all':finished_godown_all, 'wareshouse_all':wareshouse_all})
