@@ -29,7 +29,7 @@
                     <td>{{data.cutting_consumption}}</td>
                     <td>{{data.lwo_consumption}}</td>
                     <td>{{data.balance_stock}}</td>
-                    <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ data.id }}"></td>
+                    <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ data.item_id }}"></td>
                     <td>{{data.party_name| default_if_none:""}}</td>
                     <td>{{data.mobile_no| default_if_none:""}}</td>
                     <td></td>
@@ -40,7 +40,7 @@
     </div>
 
     <div>
-        <button type="submit" class="newProductCreateBtn" id="checkboxSubmit"><a href="{% url 'purchase-order-for-puchase-voucher-rm-create-update' %}">Submit</a></button>
+        <button type="submit" class="newProductCreateBtn" id="checkboxSubmit" >Submit</button>
         {% if instance_exists_check %}
 
         <button><a class="modal-btn" style = "text-decoration: none;" href="{% url 'raw-material-estimation-calculate-excel-download' product_estimation_form.instance.pk %}">Download Excel</a></button>
@@ -52,29 +52,17 @@
 </div>
 <script>
     document.getElementById('checkboxSubmit').addEventListener('click',function(){
-        const selectedItem = [];
+        let selectedItem = {};
 
         document.querySelectorAll('.purchaseCheckBox:checked').forEach((checkbox)=>{
             const id = checkbox.id;
             const value = parseInt(checkbox.value);
-            selectedItem.push(value);
+            selectedItem[id] = value;
         })
-        console.log(selectedItem)
-        
-        $.ajax({
-            url: '/purchaseorderforpuchasevoucherrmcreateupdate/',
-              method: 'GET',
-              data: {
-                  'selectedItemId': JSON.stringify(selectedItem),
-              },
-              success: function (response) {
-                console.log(response);
-              },
-              error: function (error) {   
-                  console.log(error);
-              }
+        var selectedValue =  JSON.stringify(selectedItem);
 
-        })
+        const url = `/purchaseorderforpuchasevoucherrmcreateupdate/?selectedItemId=${encodeURIComponent(selectedValue)}`;
+        window.location.href = url;
 
     })
 </script>

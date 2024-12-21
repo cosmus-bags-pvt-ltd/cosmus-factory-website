@@ -60,7 +60,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
                     CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseordermasterforpuchasevoucherrmform, cutting_room_form,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -2661,17 +2661,14 @@ def purchasevoucherdelete(request,pk):
 
 @login_required(login_url='login')
 def salesvouchercreateupdate(request,s_id=None):
-    # p_id = 
-    # party_name = Ledger.objects.all()
-    # product_info = PProduct_Creation.objects.get(Product = )
-    # sku=
-    # mrp=
-    # customer_price = 
+
+    party_name = Ledger.objects.all()
+
 
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
-        master_form = salesvouchermasterfinishGoodsForm(instance=voucher_instance)
-        formset = salesvoucherupdateformset(instance=voucher_instance)
+        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
+        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
     else:
         voucher_instance = None
@@ -2682,10 +2679,11 @@ def salesvouchercreateupdate(request,s_id=None):
 
     if request.method == "POST":
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
-        if s_id:
-            formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        else:
-            formset = salesvouchercreateformset(request.POST)
+        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+        # if s_id:
+        #     formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+        # else:
+        #     formset = salesvouchercreateformset(request.POST)
 
 
         if not master_form.is_valid():
@@ -6858,6 +6856,7 @@ def raw_material_estimation_calculate(request,u_id):
             if not any(item['material_name'] == material.material_name for item in material_data_with_values):
                 material_data_with_values.append(dict_to_apnd)
 
+        # print(material_data_with_values)
 
         list_to_send_for_cutting = []
         for key,value in sku_total_qty.items():
@@ -7021,13 +7020,14 @@ def raw_material_estimation_calculate(request,u_id):
 
         final_data = list(merged_data.values())
         
+        # print(final_data)
+
 
         dataset_to_send = []
         for dataset in final_data:
             try:
                 party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = dataset['material_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                 
-
                 if party_names: 
                     p_name = party_names.item_purchase_master.party_name.name
                     mobile = party_names.item_purchase_master.party_name.mobile_no
@@ -7048,9 +7048,12 @@ def raw_material_estimation_calculate(request,u_id):
 
             balance_stock = godown_stock - (cutting_consumption + lwo_consumption + total_consump)
             
+            item_id = get_object_or_404(Item_Creation,item_name = dataset['material_name'])
+
             # print(balance_stock)
             dataset_to_send.append({
                 'id':dataset['id'],
+                'item_id' : item_id.id,
                 'material_name':dataset['material_name'],
                 'total_consump':total_consump,
                 'cutting_consumption': cutting_consumption,
@@ -7064,13 +7067,6 @@ def raw_material_estimation_calculate(request,u_id):
         return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':dataset_to_send})
 
    
-
-
-
-
-
-
-
 
 
 
@@ -7233,6 +7229,7 @@ def product_purchase_voucher_create_update(request, pk=None):
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
 
         sku = request.GET.get('productName')
+        print(sku)
         pro = PProduct_Creation.objects.get(PProduct_SKU = sku)
         color = pro.PProduct_color.color_name
         gst = pro.Product.Product_GST.gst_percentage
@@ -8242,24 +8239,58 @@ def delete_bin_in_rack(request,bin_id):
 
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
+    selected_item_id = request.GET.get('selectedItemId')
+
     
+
     if p_id:
+
+        Purchaseorderforpuchasevoucherrmformset = inlineformset_factory(purchase_order_master_for_puchase_voucher_rm, purchase_order_for_puchase_voucher_rm, form=Purchaseorderforpuchasevoucherrmform, extra=0, can_delete=True)
+
         order_instance = purchase_order_master_for_puchase_voucher_rm.objects.get(id=p_id)
         master_form = Purchaseordermasterforpuchasevoucherrmform(instance=order_instance)
         formset = Purchaseorderforpuchasevoucherrmformsetupdate(instance=order_instance)
 
     else:
-        order_instance = None
-        master_form = Purchaseordermasterforpuchasevoucherrmform()
-        formset = Purchaseorderforpuchasevoucherrmformset()
+        if selected_item_id:
+            selected_item = json.loads(selected_item_id)
+
+            converted_str = [value for key,value in selected_item.items()]
+
+            list_with_data = []
+            for x in converted_str:
+
+                item_name_queryset = Item_Creation.objects.get(pk = x)
+                initial_data_dict = {
+                            'item_id' : item_name_queryset.id,
+                            'item_name': item_name_queryset.item_name,
+                            'Material_code':item_name_queryset.Material_code,
+                            'item_color':item_name_queryset.Item_Color.color_name,
+                            'item_unit':item_name_queryset.unit_name_item.unit_name,
+                            'item_gst':item_name_queryset.Item_Creation_GST.gst_percentage
+                        }
+                list_with_data.append(initial_data_dict)
+
+
+            Purchaseorderforpuchasevoucherrmformset = inlineformset_factory(purchase_order_master_for_puchase_voucher_rm, purchase_order_for_puchase_voucher_rm, form=Purchaseorderforpuchasevoucherrmform, extra=len(list_with_data), can_delete=True)
+
+            order_instance = None
+            master_form = Purchaseordermasterforpuchasevoucherrmform()
+            formset = Purchaseorderforpuchasevoucherrmformset(initial=list_with_data) 
+        else:
+            order_instance = None
+            master_form = Purchaseordermasterforpuchasevoucherrmform()
+            formset = Purchaseorderforpuchasevoucherrmformset()
 
     if request.method == 'POST':
+        print(request.POST)
         master_form = Purchaseordermasterforpuchasevoucherrmform(request.POST, instance=order_instance)
         formset = Purchaseorderforpuchasevoucherrmformset(request.POST, instance=order_instance)
 
         if master_form.is_valid() and formset.is_valid():
             master_form_instance = master_form.save(commit=False)
             master_form_instance.save()
+
 
             for form in formset.deleted_forms:
                 if form.instance.pk:
@@ -8276,131 +8307,6 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
             print(formset.errors)
         return redirect('purchase-order-for-puchase-voucher-rm-list')
     return render(request,'accounts/purchaseorderforpuchasevoucherrmcreateupdate.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
-
-
-
-
-
-
-def purchase_order_for_puchase_voucher_rm_create_update_from_pop_up(request):
-    selected_item_id = request.GET.get('selectedItemId')  # Get the string
-    
-    dict_with_data = None
-
-    if selected_item_id:
-        selected_item_list = json.loads(selected_item_id)
-        
-        item_name_queryset = raw_material_production_total.objects.filter(pk__in=selected_item_list)
-        print(item_name_queryset)
-
-        # Purchaseorderforpuchasevoucherrmformset = inlineformset_factory(
-        # purchase_order_master_for_puchase_voucher_rm, 
-        # purchase_order_for_puchase_voucher_rm, 
-        # fields=('item_name',), 
-        # extra=1, 
-        # can_delete=True
-        # )
-
-        
-        if item_name_queryset.exists():
-            dict_with_data = {}
-            for material_name in item_name_queryset:
-                raw_mat_name = material_name.item_name
-                item_data = Item_Creation.objects.filter(item_name = raw_mat_name).first()
-                
-                dict_with_data[raw_mat_name] = {
-                        'item_name': item_data.item_name,
-                        'Material_code': item_data.Material_code,
-                        'Item_Color': item_data.Item_Color.color_name if item_data.Item_Color else None,
-                        'GST_percentage': item_data.Item_Creation_GST.gst_percentage if item_data.Item_Creation_GST else None,
-                        'unit_name': item_data.unit_name_item.unit_name if item_data.unit_name_item else None
-                    }
-
-            return JsonResponse({'response': True,'dict_with_data':dict_with_data},status=200)
-
-    #     Purchaseorderforpuchasevoucherrmformset = inlineformset_factory(purchase_order_master_for_puchase_voucher_rm, purchase_order_for_puchase_voucher_rm, fields=('item_name',), extra=1, can_delete=True)
-
-    #     initial_data = list(dict_with_data.values())
-    #     formset = Purchaseorderforpuchasevoucherrmformset(queryset=purchase_order_for_puchase_voucher_rm.objects.none(),initial=initial_data)
-
-    #     for idx, form in enumerate(formset.forms):
-    #         if idx in dict_with_data:
-    #             form.initial = dict_with_data[idx]
-    # else:
-    #     dict_with_data = None
-    #     master_form = Purchaseordermasterforpuchasevoucherrmform()
-    #     formset = Purchaseorderforpuchasevoucherrmformset()
-
-    return render(request,'accounts/purchaseorderforpuchasevoucherrmcreateupdate.html',{'dict_with_data':dict_with_data})
-
-
-
-
-
-# from django.forms import inlineformset_factory
-# from django.http import JsonResponse
-# from django.shortcuts import render, redirect
-# import json
-
-# def purchase_order_for_puchase_voucher_rm_create_update_from_pop_up(request):
-#     selected_item_id = request.GET.get('selectedItemId')
-#     dict_with_data = {}
-
-#     # Step 1: Parse and process the dictionary data
-#     if selected_item_id:
-#         try:
-#             selected_item_list = json.loads(selected_item_id)
-#         except json.JSONDecodeError:
-#             return JsonResponse({'error': 'Invalid data format'}, status=400)
-
-#         # Query and populate the dictionary
-#         item_name_queryset = raw_material_production_total.objects.filter(pk__in=selected_item_list)
-#         for material_name in item_name_queryset:
-#             raw_mat_name = material_name.item_name
-#             item_data = Item_Creation.objects.filter(item_name=raw_mat_name).first()
-
-#             if item_data:
-#                 dict_with_data[raw_mat_name] = {
-#                     'item_name': item_data.id,  # Use the ID since item_name is a ForeignKey
-#                     'quantity': 0,  # Default value
-#                     'rate': 0,  # Default value
-#                 }
-#                 return JsonResponse({'response': True},status=200)
-            
-#     # Step 2: Create the formset dynamically based on the dictionary size
-#     PurchaseOrderFormset = inlineformset_factory(
-#         purchase_order_master_for_puchase_voucher_rm,
-#         purchase_order_for_puchase_voucher_rm,
-#         fields=('item_name', 'quantity', 'rate'),
-#         extra=len(dict_with_data),  # Number of forms equals the number of dictionary entries
-#         can_delete=True
-#     )
-
-#     if
-
-#     # Step 3: Prepopulate the formset with dictionary data
-#     if request.method == 'GET':
-#         # Convert the dictionary data into a list of initial data
-#         initial_data = list(dict_with_data.values())
-
-#         formset = PurchaseOrderFormset(
-#             queryset=purchase_order_for_puchase_voucher_rm.objects.none(),
-#             initial=initial_data  # Prepopulate forms with dictionary data
-#         )
-#     elif request.method == 'POST':
-#         formset = PurchaseOrderFormset(request.POST)
-#         if formset.is_valid():
-#             formset.save()
-#             return redirect('success_view')
-
-#     return render(
-#         request,
-#         'accounts/purchaseorderforpuchasevoucherrmcreateupdatepopup.html',
-#         {'formset': formset, 'dict_with_data': dict_with_data}
-#     )
-
-
-
 
 
 
