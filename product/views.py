@@ -8532,7 +8532,8 @@ def session_data_test(request):
 
 def finished_goods_stock_all(request,pk=None):
     wareshouse_all = Finished_goods_warehouse.objects.all()
-    button_value = None
+    button_value = request.GET.get('buttonValue')
+    # print(button_value)
     if pk:
         warehouse_data = Product_warehouse_quantity_through_table.objects.filter(product__PProduct_SKU = OuterRef('pk'),                     
                          warehouse__id = pk).values('quantity')     
@@ -8542,6 +8543,7 @@ def finished_goods_stock_all(request,pk=None):
 
     else:
         if button_value:
+            print(button_value)
             finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
                 'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color') 
         else:

@@ -11,7 +11,7 @@
             <option value="{% url 'finished-goods-stock-single' x.id %}">{{x.warehouse_name_finished}}</option>
             {% endfor %}
         </select>
-        <button class="package_btn ms-4" type="button" id="allStock" value="All_Stock">All Stock</button>
+        <button class="package_btn ms-4" type="button" id="allStock" value="True ">All Stock</button>
     </div>
     
 
@@ -28,9 +28,9 @@
             </tr>
         </thead>
         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-            {% if finished_godown_all %}
+         
                 {% for record in finished_godown_all %}
-                    {% if record.total_warehouse_stock != None %}
+                   
                    
                         <tr>
                             <td>{{ record.Product.Product_Name }}</td>
@@ -39,9 +39,9 @@
                             <td>{{ record.PProduct_color }}</td>
                             <td class="stockQty">{{ record.total_warehouse_stock | default_if_none:'0' }}</td>
                         </tr>
-                    {% endif %}
+                   
                 {% endfor %}
-            {% endif %}
+         
         </tbody>
     
     </table>
