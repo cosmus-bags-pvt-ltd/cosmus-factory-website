@@ -1379,6 +1379,10 @@ input[type=number] {
     max-height: 800px !important;
     overflow-y: auto;
 }
+.stock_responsive {
+    max-height: 500px !important;
+    overflow-y: auto;
+}
 .errorShow {
     position: absolute;
     align-items: center;
