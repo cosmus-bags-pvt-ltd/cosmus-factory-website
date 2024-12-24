@@ -253,7 +253,7 @@
        
     <div class="row" id="productTotal">
         <div class="col-lg-9">
-            <div class="ms-2">
+            <div class="ms-2 mb-5">
                 {% if product_pur_vouch_instance.total_qc_qty > 0 %}
                 <input readonly type="number" class="product_row" name="productRow" id="id_productRow" value="1">
                 <button style="display: none;" type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
@@ -261,6 +261,12 @@
                 <input  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
                 <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
                 {% endif %}
+            </div>
+            <div class="ms-2 mt-5">
+                <label for="id_Narration" class="purchase-lable fw-bold me-2">Narration :</label>
+                <textarea class="productpurchaseInvoice ps-2" name="Narration" id="id_Narration" value="" cols="50" rows="1">
+                </textarea>
+                
             </div>
         </div>
         <div class="col-lg-3">

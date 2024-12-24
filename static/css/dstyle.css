@@ -2042,6 +2042,17 @@ table>:not(caption)>*>*{
     outline: none;
 }
 
+.productqty-input{
+    width: 50px;
+    border-radius: 3px;
+    border: none;
+    padding-left: 6px;
+    height: 28px;
+    background-color: transparent;
+}
+.productqty-input:focus{
+    outline: none;
+}
 .productinput:focus{
     outline: none;
 }
@@ -2172,7 +2183,11 @@ table>:not(caption)>*>*{
 }
 
 
-
+/*===loading spinner===*/
+ /* Styling for invalid fields */
+ .is-invalid {
+    border: 2px solid red;
+}
 
 /*===product cart rating===*/
  @media screen and (max-width: 600px) {

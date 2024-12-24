@@ -94,15 +94,26 @@
             var balanceValue = parseInt(balanceQty.value) || 0;
             var cuttingValue = parseInt(cuttingQty.value) || 0;
             
-            if (checkAll.checked) {
-                balanceQty.setAttribute('data-original-balance', balanceValue);
-                elements.value = balanceValue;
+          
+            if(approveValue > 0){
+                if (checkAll.checked) {
+                elements.value = updateBalance;
                 balanceQty.value = 0;  // Reset balance to 0
             } else {
-                var originalBalanceValue = balanceQty.getAttribute('data-original-balance') || balanceValue;
                 elements.value = 0;  // Reset approved_qty to 0
-                balanceQty.value = originalBalanceValue;  // Restore balance value
+                balanceQty.value = updateBalance;  // Restore balance value
             }
+            }else{
+                if (checkAll.checked) {
+                
+                elements.value = cuttingValue;
+                balanceQty.value = 0;  // Reset balance to 0
+            } else {
+                elements.value = 0;  // Reset approved_qty to 0
+                balanceQty.value = cuttingValue;  // Restore balance value
+            }
+            }
+            
         });
     }
     
@@ -291,6 +302,12 @@ function submitButtoncheck() {
                 approveValueCheck();
                
             })
+        })
+
+        let checkboxData = document.getElementById('id_checkAll');
+        checkboxData.addEventListener('change',function(){
+            quantityCheck();
+            approveValueCheck();
         })
         document.getElementById('goodsReturnValue').addEventListener('submit',function(){
             approveValueCheck();

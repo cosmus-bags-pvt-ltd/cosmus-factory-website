@@ -24,8 +24,11 @@
                 <table class="table table-striped table-hover table-bordered">
                     <thead class="name_absolute sticky-top">
                         <tr>
-                            <th>Product Name</th>
+                            <th>No</th>
                             <th>Product SKU</th>
+                            <th>Ref No</th>
+                            <th>Model Name</th>
+                            <th>Color</th>
                             <th>Quantity</th>
                             <th>Difference Qty</th>
                             <th>QC Recieved QTY</th>
@@ -39,11 +42,14 @@
                         {% if form.instance.product_purchase_master.purchase_number %}
                     
                         <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-product_sku" id="id_{{form.prefix}}-product_sku" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-refNo" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
                             <td>
                                 <input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-Product_name_Value" id="id_{{form.prefix}}-Product_name_Value" value="{{ form.instance.product_name.Product.Product_Name }}" readonly>
                                 <input type="hidden" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}">
                             </td>
-                            <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-product_sku" id="id_{{form.prefix}}-product_sku" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_Color }}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input quantityTotal"  name="{{form.prefix}}-quantity_total" id="id_{{form.prefix}}-quantity_total" value="{{ form.instance.quantity_total|default_if_none:0 }}" readonly></td>
                             <td> <input type="number" class="productorderrawqty-input productInwordDiffernceQty" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input productInwordRecivedQty" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
@@ -52,12 +58,15 @@
                         {% elif form.instance.Finished_goods_Stock_TransferMasterinstance.voucher_no %}
                         
                         <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-stock_transfer_sku" id="id_{{form.prefix}}-stock_transfer_sku" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productShadeCutting_Material_input " name="{{form.prefix}}-refNo" id="id_{{form.prefix}}-refNo" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
                             <td>
                                 <input type="text" name="{{form.prefix}}-stock_transfer_name_value" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-stock_transfer_name_value" value="{{ form.instance.product.Product.Product_Name }}" readonly>
                                 <input type="hidden" name="{{form.prefix}}-product" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-product" value="{{ form.instance.product.PProduct_SKU }}">
                             </td>
 
-                            <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-stock_transfer_sku" id="id_{{form.prefix}}-stock_transfer_sku" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_Color }}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input quantityTotal" name="{{form.prefix}}-product_quantity_transfer" id="id_{{form.prefix}}-product_quantity_transfer" value="{{ form.instance.product_quantity_transfer |default_if_none:0 }}" readonly></td>
 
                             <td><input type="number" class="productorderrawqty-input productInwordDiffernceQty" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
@@ -73,23 +82,24 @@
             </div>
         </div>
         <div class="mb-3">
-            <h4 class="fw-bold d-inline">INWard Process</h4> <span id="responseMessage" class="mx-5 fw-bold"></span>
-            <div class="mb-2">
-                <label class="fw-bold">Scan S/N :</label>
-                <input type="text" name="scanned_serial_number" class="item-select" id="inwordSerialNo" style="margin-right: 50px;">
-
-
-                <label class="fw-bold">Manual S/N :</label>
-                <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
-                <button type="button"class="" id="manualAjaxButton">Fetch</button>
+            <h4 class="fw-bold d-inline ">INWard Process</h4> <span id="responseMessage" class="mx-5 fw-bold"></span>
+            <div class="mb-2 mt-2">
+                <label for="inwordSerialNo" class="fw-bold">Scan S/N :</label>
+                <input type="text" name="scanned_serial_number" class="item-select ms-3" id="inwordSerialNo">
             </div>
-            <!-- <span>OR</span> -->
-            <!-- <div>
-                <label class="fw-bold">Manual Serial No  :</label>
-                <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
-                <button type="button" class="btn btn-primary" id="manualAjaxButton">Send Request</button>
-            </div> -->
-            
+            <div class="d-flex ">
+                <div class="mb-2">
+                    <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
+                    <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
+                </div>
+                <div class="mb-2 ms-2">
+                    <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button>
+                    <label for="id_bin_Name" class="fw-bold ms-5">Bin :</label>
+                    <select  class="productSelect" name="product_bin" id="id_bin_Name">
+                    </select>
+                </div>
+            </div>
+                     
             <div class="row mb-3">
                 <div class="col-lg-7 " style="display:none" id="stockTransferList">
                     <table class="table table-striped table-hover table-bordered" >
@@ -99,7 +109,7 @@
                                 <th>SKU</th>
                                 <th>Color</th>
                                 <th>IMG</th>
-                                <th>BIN</th>
+                                <!-- <th >BIN</th> -->
                               
                             </tr>
                         </thead>
@@ -110,11 +120,11 @@
                                 <td><input name="product_sku" type="number" class="productSelect"  id="id_product_sku" readonly></td>
                                 <td><input name="product_color" type="text" class="productSelect"  id="id_product_color" readonly></td>
                                 <td>
-                                    <img id="productImgPreview" name="product_img" src="" alt="Product Image" style="width: 100px; height: 100px;">
+                                    <img id="productImgPreview" name="product_img" src="" alt="Product Image" style="width: 60px; height: 60px;">
                                </td>
-                                <td><select  class="productSelect" name="product_bin" id="id_bin_Name">
+                                <!-- <td><select  class="productSelect" name="product_bin" id="id_bin_Name">
                                     </select>
-                                </td>
+                                </td> -->
                                 
                             </tr>
                          
@@ -133,16 +143,26 @@
         <div>
             <div class="d-flex">
                 <h4 class="fw-bold">INWarded Product</h4>
-                <h5 class="fw-bold" style="margin-left: 384px;">Total : <span class="totalentries text-danger"></span></h5>
+                
             </div>
            
             <div class="row">
-                <div class="col-lg-7">
+                <div class="col-lg-9">
                     <table class="table table-striped table-hover table-bordered" id="inwordDateTable">
                         <thead class="name_absolute sticky-top">
                             <tr>
-                                <th>Product Name</th>
+                                <th colspan="6"></th>
+                                <th>Total :</th>
+                                <th><span class="totalentries text-danger"></span></th>
+                                <th colspan="3"></th>
+                            </tr>
+                            <tr>
+                                <th>No</th>
+                                <th>Ref No</th>
+                                <th>Model Name</th>
                                 <th>Product SKU</th>
+                                <th>Color</th>
+                                <th>Image</th>
                                 <th>Serial No</th>
                                 <th>Quantity</th>
                                 <th>QC Recieved QTY</th>
@@ -154,8 +174,12 @@
                             {% for entries in single_entries %}
                         
                             <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Ref_No }}" readonly></td>
                                 <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Product_Name }}" readonly></td>
                                 <td><input type="number" class="stockQrcode_input inwardedsku" value="{{ entries.product.PProduct_SKU }}" readonly></td>
+                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.PProduct_Color }}" readonly></td>
+                                <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_Img.url }}" alt="Product Image" style="width: 60px; height: 60px;"></td>
                                 <td><input type="text" class="stockQrcode_input" value="{{ entries.unique_serial_no }}" readonly></td>
                                 <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ entries.quantity_total|default_if_none:0 }}" readonly></td>
                                 <td><input type="number" class="productorderrawqty-input inwardedReceivedQty" value="1" readonly></td> 
