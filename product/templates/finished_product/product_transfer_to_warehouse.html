@@ -418,7 +418,7 @@
                         // Generate suggestions for matching options
                         filteredOptions.forEach(([key, value], index) => {
                             // Extract relevant fields
-                            const productName = value[0]; // Product name
+                            const productName = value[3]; // Product name
                             const productSKU = key; // SKU
                             const productColor = value[1];
                             const productQty = value[2];
@@ -452,7 +452,7 @@
 
                             if (item_value !== undefined) {
                             var selectedValue = searchedProductNameDic[item_value];
-                            var namevalueCheck = selectedValue[0];
+                            var namevalueCheck = selectedValue[3];
                           
                             var newNameValue = namevalueCheck + '-'+ item_value;
                   
@@ -573,7 +573,7 @@
                           indexbool = false;
                           if (item_value !== undefined) {
                             var selectedValue = searchedProductNameDic[item_value];
-                            var namevalueCheck = selectedValue[0]
+                            var namevalueCheck = selectedValue[3]
                             var newNameValue = namevalueCheck + '-'+ item_value;
             
                             $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product"]`).val(item_value);
@@ -672,7 +672,7 @@
                   // Generate suggestions for matching options
                   filteredOptions.forEach(([key, value], index) => {
                       // Extract relevant fields
-                      const productName = value[0]; // Product name
+                      const productName = value[3]; // Product name
                       const productSKU = key; // SKU
                       const productColor = value[1];
                       const productQty = value[2];
@@ -704,7 +704,7 @@
 
                       if (item_value !== undefined) {
                           var selectedValue = searchedProductNameDic[item_value];
-                          var namevalueCheck = selectedValue[0];
+                          var namevalueCheck = selectedValue[3];
                 
                           var newNameValue = namevalueCheck + '-' + item_value;
                           $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(newNameValue);
@@ -824,7 +824,7 @@
                           indexbool = false;
                           if (item_value !== undefined) {
                             var selectedValue = searchedProductNameDic[item_value];
-                            var namevalueCheck = selectedValue[0]
+                            var namevalueCheck = selectedValue[3]
                             var newNameValue = namevalueCheck + '-'+ item_value;
                            
                             $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product"]`).val(item_value);
