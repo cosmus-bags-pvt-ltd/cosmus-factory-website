@@ -21,10 +21,13 @@
         <thead class="name_absolute sticky-top">
             <tr>
                 <th>No</th>
-                <th>Purchase Voucher No</th>
+                <th>Date</th>
+                <th>Voucher No</th>
                 <th>Party Name</th>
                 <th>supplier_invoice_number</th>
+                <th>Total Qty</th>
                 <th>Grand Total</th>
+                <th>Remark</th>
                 <th>Edit</th>
                 <th>Delete</th>
             </tr>
@@ -34,11 +37,13 @@
             <tr>
               <input type="hidden" class="check_diffQty" value="{{record.check_diff_qty}}">
                 <td>{{forloop.counter}}</td>
+                <td>{{record.created_date}}</td>
                 <td>{{record.purchase_number}}</td>
                 <td>{{record.party_name.name}}</td>
                 <td>{{record.supplier_invoice_number}}</td>
+                <td>{{record.total_qty}}</td>
                 <td>{{record.grand_total}}</td>
-
+                <td>{{record.narration}}</td>
                 {% if record.check_diff_qty > 0 %}
                 <td><a href="{% url 'product-purchase-voucher-update' record.id %}"><i style="color:rgb(0, 0, 0)" class="fa-solid fa-eye px-1"></i></a></td>
                 {% else %}

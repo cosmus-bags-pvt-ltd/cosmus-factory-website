@@ -7234,6 +7234,7 @@ def product_purchase_voucher_create_update(request, pk=None):
     
 
     if request.method == 'POST':
+        print(request.POST)
         product_pur_vouch_form = product_purchase_voucher_master_form(request.POST,instance=product_pur_vouch_instance)
 
         product_purchase_voucher_items_formset_instance = product_purchase_voucher_items_formset(request.POST,instance=product_pur_vouch_instance)
@@ -7344,7 +7345,8 @@ def product_purchase_voucher_create_update(request, pk=None):
 @login_required(login_url='login')
 def product_purchase_voucher_list(request):
 
-    product_purchase_voucher_all = product_purchase_voucher_master.objects.all().annotate(check_diff_qty = Sum('product_purchase_voucher_items__qc_recieved_qty'))
+    product_purchase_voucher_all = product_purchase_voucher_master.objects.all().annotate(check_diff_qty = Sum('product_purchase_voucher_items__qc_recieved_qty'),total_qty = Sum('product_purchase_voucher_items__quantity_total'))
+
     return render(request,'finished_product/product_purchase_voucher_list.html',{'product_purchase_voucher_all':product_purchase_voucher_all})
 
 
@@ -7363,6 +7365,7 @@ def product_purchase_voucher_delete(request,pk):
 
 @login_required(login_url='login')
 def warehouse_product_transfer_create_and_update(request,pk=None):
+    
     products = PProduct_Creation.objects.all()
     godowns = Godown_finished_goods.objects.all()
     warehouses =Finished_goods_warehouse.objects.all()
@@ -7376,19 +7379,20 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
         godown_id = voucher_instance.source_warehouse.id
 
         filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID'))
         
         if filtered_product:
             dict_to_send = {}
 
             for query in filtered_product:
-
+                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
                 p_sku = query.get('product_color_name__PProduct_SKU')
                 product_name = query.get('product_color_name__Product__Product_Name')
+                product_model_name = query.get('product_color_name__Product__Model_Name')
                 color = query.get('product_color_name__PProduct_color__color_name')
                 qty = query.get('quantity')
                 
-                dict_to_send[p_sku] = [product_name,color,qty]
+                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no]
                 
                 
     else:
@@ -7568,19 +7572,20 @@ def product_transfer_to_warehouse_ajax(request):
 
         try:
             filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID'))
            
             if filtered_product:
                 dict_to_send = {}
 
                 for query in filtered_product:
-
+                    ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
                     p_sku = query.get('product_color_name__PProduct_SKU')
                     product_name = query.get('product_color_name__Product__Product_Name')
+                    product_model_name = query.get('product_color_name__Product__Model_Name')
                     color = query.get('product_color_name__PProduct_color__color_name')
                     qty = query.get('quantity')
                     
-                    dict_to_send[p_sku] = [product_name,color,qty]
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no]
                 
                 return JsonResponse({'filtered_product':dict_to_send})
             

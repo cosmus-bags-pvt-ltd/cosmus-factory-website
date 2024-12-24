@@ -37,7 +37,7 @@
             <div class="d-flex mb-3">
                 <div class="d-flex">
                     <label for="id_GST_numbers" class="me-2" >Finished godowns:</label>
-                    <select name="finished_godowns" required id="id_finished_godowns" class="item-select" disabled>
+                    <select name="finished_godowns" required id="id_finished_godowns" class="item-select" >
                         {% for warehouse in warehouses %}
                           <option value="{{ warehouse.pk }}">{{ warehouse.warehouse_name_finished }}</option>
                         {% endfor %}
@@ -46,16 +46,18 @@
                 <span id="purchaseError" class="error-messages"></span>
                 <div class="d-flex ms-3">
                     <label for="id_party_name" class="me-3" >Party A/C Name:</label>
-                    <select class="product2Select text-black" name="party_name" required id="id_party_name" disabled>
+                    <select class="product2Select text-black" name="party_name" required id="id_party_name" >
                         {% if product_pur_vouch_form.instance.id %}
                         <option value="{{product_pur_vouch_form.instance.party_name.id}}">{{product_pur_vouch_form.instance.party_name.name}}</option>
-                        {% elif not form.instance.id %}
-                        <option value=""></option>
-                        {% endif %}
-                        
+                        {% comment %} {% elif not form.instance.id %}
+                        <option value=""></option> {% endcomment %}
+                        {% else %}
+                        <option value="select party name" selected disabled>select party name</option>
                         {% for x in party_names %}
                         <option value="{{x.id}}">{{x.name}}</option>
                         {% endfor %}
+
+                        {% endif %}
                     </select>
                     <button disabled type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
                 </div>
@@ -114,13 +116,16 @@
                     <select class="product2Select" name="party_name" required id="id_party_name">
                         {% if product_pur_vouch_form.instance.id %}
                         <option value="{{product_pur_vouch_form.instance.party_name.id}}">{{product_pur_vouch_form.instance.party_name.name}}</option>
-                        {% elif not form.instance.id %}
-                        <option value=""></option>
-                        {% endif %}
+                        {% comment %} {% elif not form.instance.id %}
+                        <option value=""></option>{% endcomment %}
                         
+                        {% else %}
+                        <option value="select party name" selected disabled>select party name</option>
                         {% for x in party_names %}
                         <option value="{{x.id}}">{{x.name}}</option>
                         {% endfor %}
+
+                        {% endif %} 
                     </select>
                     <button type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
                 </div>
@@ -253,7 +258,7 @@
        
     <div class="row" id="productTotal">
         <div class="col-lg-9">
-            <div class="ms-2">
+            <div class="ms-2 mb-5">
                 {% if product_pur_vouch_instance.total_qc_qty > 0 %}
                 <input readonly type="number" class="product_row" name="productRow" id="id_productRow" value="1">
                 <button style="display: none;" type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
@@ -261,6 +266,11 @@
                 <input  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
                 <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
                 {% endif %}
+            </div>
+            <div class="ms-2 mt-5">
+                <label for="id_narration" class="purchase-lable fw-bold me-2">Narration :</label>
+                <input type="text" class="productpurchaseInvoice ps-2" name="narration" id="id_narration" value="{{product_pur_vouch_form.instance.narration | default_if_none:''}}">
+
             </div>
         </div>
         <div class="col-lg-3">

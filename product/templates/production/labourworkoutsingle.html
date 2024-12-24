@@ -171,7 +171,7 @@
                                 <td><input type="text"  class="productinput" name="{{form.prefix}}-material_color_shade" value="{{form.instance.material_color_shade}}" maxlength="255" id="id_{{form.prefix}}-material_color_shade"readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-rate" class="productorderrawqty-input" value="{{form.instance.rate}}" step="0.01" id="id_{{form.prefix}}-rate" readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-panha" class="productorderrawqty-input" value="{{form.instance.panha}}" step="0.01" id="id_{{form.prefix}}-panha" readonly></td>
-                                <td><input type="text" name="{{form.prefix}}-unit_value" class="productorderrawqty-input" value="{{form.instance.unit_value}}" step="0.01" id="id_{{form.prefix}}-unit_value" readonly></td>
+                                <td><input type="text" name="{{form.prefix}}-unit_value" class="productqty-input" value="{{form.instance.unit_value}}" step="0.01" id="id_{{form.prefix}}-unit_value" readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-units" class="productorderrawqty-input" value="{{form.instance.units}}" step="0.01" id="id_{{form.prefix}}-units" readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-g_total" class="productorderrawqty-input" value="{{form.instance.g_total}}" step="0.01" id="id_{{form.prefix}}-g_total"readonly ></td>
                                 <td><input type="number" name="{{form.prefix}}-g_total_combi" class="productorderrawqty-input" value="{{form.instance.g_total_combi}}" step="0.01" id="id_{{form.prefix}}-g_total_combi"readonly ></td>
@@ -191,7 +191,7 @@
                                 <td><input type="text"  class="productinput" name="{{form.prefix}}-material_color_shade" value="{{form.initial.material_color_shade}}" maxlength="255" id="id_{{form.prefix}}-material_color_shade" readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-rate" class="productorderrawqty-input" value="{{form.initial.rate}}" step="0.01" id="id_{{form.prefix}}-rate" readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-panha" class="productorderrawqty-input" value="{{form.initial.panha}}" step="0.01" id="id_{{form.prefix}}-panha" readonly></td>
-                                <td><input type="text" name="{{form.prefix}}-unit_value" class="productorderrawqty-input" value="{{form.initial.unit_value}}" step="0.01" id="id_{{form.prefix}}-unit_value" readonly></td>
+                                <td><input type="text" name="{{form.prefix}}-unit_value" class="productqty-input" value="{{form.initial.unit_value}}" step="0.01" id="id_{{form.prefix}}-unit_value" readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-units" class="productorderrawqty-input" value="{{form.initial.units}}" step="0.01" id="id_{{form.prefix}}-units" readonly></td>
                                 <td><input type="number" name="{{form.prefix}}-g_total" class="productorderrawqty-input" value="{{form.initial.g_total}}" step="0.01" id="id_{{form.prefix}}-g_total"readonly ></td>
                                 <td><input type="number" name="{{form.prefix}}-g_total_combi" class="productorderrawqty-input" value="{{form.initial.g_total_combi}}" step="0.01" id="id_{{form.prefix}}-g_total_combi"readonly ></td>
@@ -220,11 +220,11 @@
             <span class="text-danger ms-2 text-capitalize"> {{labour_work_out_child_form.instance.note | default_if_none:''}}</span>{{labour_work_out_child_form.instance.note | default_if_none:''}}</spa>
             {% endif %}
         </div>
-        <button type="submit" class="create-btn mt-3 mx-3" name="submit-form" value="submit" id="id_submitLabourWorkOut" data-bs-toggle="modal" data-bs-target="#exampleModal">Submit</button>
+        <button type="submit" class="create-btn mt-3 mx-3" name="submit-form" value="submit" id="id_submitLabourWorkOut" >Submit</button>
     </form>
 </div>
 
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-transparent border-0">
       <div class="modal-body justify-content-center text-center">
@@ -232,7 +232,7 @@
         </div>
         </div>
     </div> 
-</div>
+</div> -->
 <script>
 
 
@@ -317,7 +317,7 @@ function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
 </script>
 
 <script>
-document.body.appendChild(document.getElementById('exampleModal'));
+// document.body.appendChild(document.getElementById('exampleModal'));
  $(document).ready(function(){
 
         $('#id_challan_no').on('focusout',function(){
@@ -358,23 +358,23 @@ document.body.appendChild(document.getElementById('exampleModal'));
             }
             
         })
-        $('#labourWorkOutForm').off('submit').on('submit',function(){
-            var submitButton = $('#id_submitLabourWorkOut');
-            var forms = $('#exampleModal');
+        // $('#labourWorkOutForm').off('submit').on('submit',function(){
+        //     var submitButton = $('#id_submitLabourWorkOut');
+        //     var forms = $('#exampleModal');
     
-            submitButton.val('Loading...');
-            forms.show();
-        })
+        //     submitButton.val('Loading...');
+        //     // forms.show();
+        // })
     })
 
    
-    function labourApprovedQty() {
+function labourApprovedQty() {
     var totals = 0;
     var balanceQty = 0;
     var approveQty = 0;
     const ids = document.getElementById('id_labour_workout_cutting_items_set-0-id').value;
     const totalBalanceValue = document.getElementById('id_total_balance_pcs').value;
-    // console.log('totalBalanceValue', totalBalanceValue);
+
 
     if (ids !== "" || (ids == "" && totalBalanceValue == 0)) {
         const submitButton = document.getElementById('id_submitLabourWorkOut');
@@ -418,9 +418,7 @@ document.body.appendChild(document.getElementById('exampleModal'));
             document.getElementById('id_balanceQtys').value = balanceQty;
         });
     }else{
-    window.onload = function() {
-        document.forms[0].reset();
-    };
+
     }
 }
 
@@ -450,19 +448,18 @@ function updateBalanceAndProcessQty() {
         
         // Adjust the process value if it exceeds the balance view value
         if (processValue > balanceViewValue) {
-            totalProcess += balanceViewValue; // Add up the balanced quantity to total process
-            prcocessMainValue -= balanceViewValue; // Decrease the main process value by the balance view value
-            processed.value = balanceViewValue; // Set the processed value to the available balance
+            totalProcess += balanceViewValue; 
+            prcocessMainValue -= balanceViewValue; 
+            processed.value = balanceViewValue; 
             balanceMainValue.value = 0;
-            // Update the balanced value for the current row
-            balanced.value = 0; // No remaining balance if process quantity exceeds balance view
+    
+            balanced.value = 0; 
         } else {
-            totalProcess += processValue; // Accumulate process quantity if it's within the balance
-            var balance = balanceViewValue - processValue; // Update balance for the row
+            totalProcess += processValue; 
+            var balance = balanceViewValue - processValue; 
             
             balanced.value = balance;
             totalBalanceElement.value = balance;
-            //console.log('balance', balance)
         }
 
         // Update approved quantity
@@ -478,8 +475,7 @@ function updateBalanceAndProcessQty() {
         // Update total process quantity field
         totalProcessElement.value = totalProcess;
     }
-    //console.log('totalProcess', totalProcess);
-    // Update the main process value
+   
     prcocessMainValue = totalProcess; // Ensure prcocessMainValue reflects the total processed quantity
     document.getElementById('id_processQty').value = prcocessMainValue;
 }
@@ -612,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pendingQty = document.querySelectorAll('[name$="-processed_pcs"]');
     const submitButton = document.getElementById('id_submitLabourWorkOut')
     const forms = document.getElementById('labourWorkOutForm')
-      
+    const labourName = document.getElementById('id_labour_name') 
     pendingQty.forEach(function(el){
        
       el.addEventListener('input',function(){
@@ -623,12 +619,26 @@ document.addEventListener('DOMContentLoaded', function() {
         labourWorkOutCheck()
       })
     })
-
+    window.onload = function(){
+        var labourWorkOutId = document.getElementById('id_challan_no');
+        console.log(labourWorkOutId)
+        labourWorkOutId.focus();
+    }
+  
     forms.addEventListener("keydown", function (event) {
         if (event.key === "Enter" && event.target.type !== "submit") {
             event.preventDefault(); // Prevent form submission
         }
-        });
+    });
+
+    labourName.addEventListener("keydown", function (event) {
+        if (event.key === 'Tab') {
+                event.preventDefault(); 
+                labourName.blur(); 
+                let qty = document.querySelector('[name$="-processed_pcs"]');  
+                qty.focus();
+            }
+    })
         pendingQty.forEach((input, index) => {
             // Listen for keydown events on each Order Quantity input field
             input.addEventListener("keydown", function (event) {

@@ -502,23 +502,29 @@
             })
         })
         }else{
-            const stockData =$('#id_godownData').val();
-            console.log(typeof(stockData))
             var stockDataObject;
+            let stockData =$('#id_godownData').val();
+            console.log("stockData",stockData)
+            console.log("stockData",)
+           
+            let sanitizedData = JSON.stringify(stockData)
+            .replace(/'/g, '"')  // Replace single quotes with double quotes
+            .replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":')  // Add quotes around numeric keys
+            .replace(/"([^"]*?)"/g, (match, p1) => {  // Escape inner quotes within string values
+                return `"${p1.replace(/"/g, '\\"')}"`; // Escape internal quotes
+            })
+            .replace(/,(\s*[}\]])/g, '$1');  // Remove trailing commas before closing braces
+
+            console.log('Sanitized stockData:', sanitizedData);
+
+            // Step 2: Try parsing the sanitized data as JSON
             try {
-            // Fix single quotes and mismatched quotes in the JSON string
-                const sanitizedData = stockData
-                    .replace(/'/g, '"') // Replace single quotes with double quotes
-                    .replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":'); // Add quotes around numeric keys
-                
-                        console.log('Sanitized data:', sanitizedData);
-                    // Parse the sanitized JSON string
-                    stockDataObject = JSON.parse(sanitizedData);
-                    console.log('Parsed object:', stockDataObject);
-                } catch (error) {
-                    console.error('Error parsing stockData:', error);
-                }
-                        $(document).on('click input keyup focus keydown', 'input[name^="stock_name_"]', function () {
+                let parsedData = JSON.parse(sanitizedData);
+                console.log('Parsed Data:', parsedData);
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
+        $(document).on('click input keyup focus keydown', 'input[name^="stock_name_"]', function () {
                 itemName = $(this).closest('tr').find('select[name$="-item_shade_transfer"]').attr('name');
                 purchaseValue = itemName.split('-')[1];
                    

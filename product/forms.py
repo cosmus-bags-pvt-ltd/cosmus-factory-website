@@ -940,7 +940,7 @@ class product_purchase_voucher_master_form(forms.ModelForm):
         model = product_purchase_voucher_master
         fields = [
             'purchase_number','supplier_invoice_number', 'ledger_type', 'party_name',
-            'fright_transport','gross_total','grand_total','finished_godowns']
+            'fright_transport','gross_total','grand_total','finished_godowns','narration']
 
 
 class product_purchase_voucher_items_form(forms.ModelForm):

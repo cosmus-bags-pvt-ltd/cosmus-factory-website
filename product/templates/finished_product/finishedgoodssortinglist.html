@@ -9,14 +9,15 @@
                     <thead class="name_absolute sticky-top">
                         <tr>
                             <th>Purchase/Stock Trf No</th>
-                            <th>Date</th>
-                            <th>Status</th>
+                            <th>Create Date</th>
+                            <th>Last Update</th>
                             <th>Ship From</th>
                             <th>Ship To</th>
                             <th>Boxes</th>
                             <th>Dispatch QTY</th>
                             <th>Received QTY</th>
                             <th>Discrepancy QTY</th>
+                            <th>Status</th>
                             <th>Select Actions</th>
                             <th>Problems</th>
                         </tr>
@@ -30,13 +31,14 @@
                         <input type="hidden" value="{{records.id}}" class="recordId">
                         <td><span class="stockValue">Purchase</span>/<span class="voucher_no">{{records.purchase_number}}</span></td>
                         <td>{{records.created_date}}</td>
-                        <td>Status</td>
+                        <td>{{records.created_date}}</td>
                         <td>{{records.party_name.name}}</td>
                         <td>{{records.finished_godowns.warehouse_name_finished}}</td>
                         <td>BOX</td>
                         <td>{{records.total_recieved_qty}}</td>
                         <td>{{records.total_qc_qty}}</td>
                         <td>{{records.total_diff_qty}}</td>
+                        <td>{{records.status}}</td>
                         <td>{{records.actions}}</td>
                         <td></td>
                     </tr>

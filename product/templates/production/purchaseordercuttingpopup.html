@@ -95,27 +95,35 @@
             var rows = element.closest('tr');
             var balanceQty = rows.querySelector('[name$="-balance_pcs"]');
             var cuttingQty = rows.querySelector('[name$="-cutting_quantity"]');
+            var approvePcs = rows.querySelector('[name$="-approved_pcs_Value"]');
             var approveValue = parseInt(rows.querySelector('.approvedReadonlyhidden').value) || 0;
             var updateBalance = parseInt(rows.querySelector('[name$= "-updateBlance_pcs"]').value) || 0;
             var balanceValue = parseInt(balanceQty.value) || 0;
             var cuttingValue = parseInt(cuttingQty.value) || 0;
 
+            console.log('approveValue',approveValue)
+            console.log('updateBalance',updateBalance)
+            console.log('balanceValue',balanceValue)
+            console.log('cuttingValue',cuttingValue)
             if(approveValue > 0){
                 if (checkAll.checked) {
                    
                     element.value = updateBalance;
+                    approvePcs.value = updateBalance;
                     balanceQty.value = 0;
                 } else {
                     element.value = 0;
+                    approvePcs.value = 0;
                     balanceQty.value = updateBalance;
                 }
             }else{
                 if (checkAll.checked) {
-                    
+                    approvePcs.value = cuttingValue;
                     element.value = cuttingValue;
                     balanceQty.value = 0;
                 } else {
                     element.value = 0;
+                    approvePcs.value = 0;
                     balanceQty.value = cuttingValue;
                 }
             }
@@ -290,6 +298,11 @@ function quantityCheck() {
         document.getElementById('purchaseOderCutting').addEventListener('submit',function(){
             approveValueCheck();
         })
+        let checkboxData = document.getElementById('id_checkAll');
+        checkboxData.addEventListener('change',function(){
+            quantityCheck();
+            approveValueCheck();
+        })
 
     })
 
@@ -303,8 +316,8 @@ function quantityCheck() {
         console.log(dataFromParent)
         newTable.innerHTML = ''; // Clear previous table rows
 
-
-        dataFromParent.forEach(function(items, index) {
+        if(dataFromParent){
+            dataFromParent.forEach(function(items, index) {
             console.log(items)
               var approveDate = new Date(items.Approved_Date).toLocaleDateString(); // Format the date
               var approveName = items.Approved_Name || 'N/A';   // Default if undefined
@@ -337,7 +350,9 @@ function quantityCheck() {
               // Append the row to the table
               newTable.appendChild(row);
           });
-
+ 
+        }
+        
           document.getElementById('tApprovedQty').textContent = TotalApprove;
           document.getElementById('tBalanceQty').textContent = totalBalance;
 

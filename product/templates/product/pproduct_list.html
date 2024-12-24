@@ -43,7 +43,7 @@
           <td>{{ product.Model_Name | default_if_none:''}}
             {% if product.productdetails.first.PProduct_image %}
 
-            <img src="{{product.productdetails.first.PProduct_image.url }}" alt="img" style="width:40px;">
+            <img src="{{product.productdetails.first.PProduct_image.url }}" alt="img" style="width:35px; float: right;">
             
           {% endif %}
           </td>
