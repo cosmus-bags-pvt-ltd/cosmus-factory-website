@@ -8446,12 +8446,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             print(len(merged_data))
 
 
-            
-
-
-            
-            
-
         else:
 
             negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
