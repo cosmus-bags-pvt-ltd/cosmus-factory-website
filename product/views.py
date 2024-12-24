@@ -2662,8 +2662,7 @@ def purchasevoucherdelete(request,pk):
 @login_required(login_url='login')
 def salesvouchercreateupdate(request,s_id=None):
 
-    party_name = Ledger.objects.all()
-
+    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
 
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
@@ -7050,6 +7049,8 @@ def raw_material_estimation_calculate(request,u_id):
 
 
 
+
+
 def raw_material_estimate_delete(request,pk):
 
     try:
@@ -7062,6 +7063,9 @@ def raw_material_estimate_delete(request,pk):
         messages.error(request,f'Cannot delete {raw_material_estimation_instance.id} because it is referenced by other objects. {e}')
     return redirect('rawmaterial-estimation-list')
                 
+
+
+
 
 
 
@@ -8120,8 +8124,7 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
 
 
 def purchase_order_for_puchase_voucher_rm_list(request):
-
-    
+  
     order_list = purchase_order_master_for_puchase_voucher_rm.objects.all().order_by('po_no')
 
     negetive_stock_sellerwise = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
@@ -8140,6 +8143,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         negetive_stock_report = Item_Creation.objects.all().annotate(total_qty = Sum(
         'shades__godown_shades__quantity')).order_by('total_qty').select_related('Item_Color','Fabric_Group')
 
+
     elif filter_name == 'lowest' and filter_name != '':
         negetive_stock_report = Item_Creation.objects.all().annotate(total_qty = Sum(
         'shades__godown_shades__quantity')).order_by('-total_qty').select_related('Item_Color','Fabric_Group')
@@ -8157,15 +8161,322 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     elif less_Number:
         search_value = int(less_Number)
-        print(type(search_value))
+        
         negetive_stock_report = Item_Creation.objects.annotate(total_qty = Sum('shades__godown_shades__quantity')).filter(total_qty__lt = search_value).order_by('item_name').select_related('Item_Color','Fabric_Group')
 
 
     else:
         negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
 
+        negetive_stock_report_list = list(negetive_stock_report)
 
-    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number})
+        pending_ref_no_dict = {}
+        
+        pending_ref_no = purchase_order_to_product.objects.filter(process_quantity__gt=0)
+
+        for item in pending_ref_no:
+            ref_id = item.purchase_order_id.product_reference_number.Product_Refrence_ID
+            sku = item.product_id.PProduct_SKU
+            process_qty = item.process_quantity
+
+            if ref_id not in pending_ref_no_dict:
+                    pending_ref_no_dict[ref_id] = {}
+
+            current_quantity = pending_ref_no_dict[ref_id].get(sku, 0)
+            pending_ref_no_dict[ref_id][sku] = current_quantity + process_qty
+
+        
+        for product_reference_number, skus in pending_ref_no_dict.items():
+            total_quantity = sum(skus.values())
+            skus['total'] = total_quantity
+
+
+        print(pending_ref_no_dict)
+
+
+        purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = pending_ref_no_dict).prefetch_related('raw_materials')
+
+        
+
+        material_for_ref_id_list = []
+            
+        if purchase_orders:
+
+            material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = pending_ref_no_dict)
+
+            seen_material_names = set()
+
+            for material in material_for_ref_id_queryset:
+                ref_id = material.PProduct_pk.Product.Product_Refrence_ID
+                material_name = material.Item_pk.item_name
+                pro_sku = material.PProduct_pk.PProduct_SKU
+                pro_fab_grp = material.Item_pk.Fabric_nonfabric
+                panha_val = material.Item_pk.Panha
+                unit_val = material.Item_pk.Units
+                grand_total = material.grand_total
+                grand_total_combi = material.grand_total_combi
+                consumption = round(grand_total / (panha_val * unit_val),3)
+                consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
+                
+
+                if material_name not in seen_material_names:
+                    seen_material_names.add(material_name)
+                    
+                    set_production_data_dict = {'ref_id': material.PProduct_pk.Product.Product_Refrence_ID,
+                                                'material_name': material_name,
+                                                'pro_sku': pro_sku,
+                                                'pro_fab_grp' : pro_fab_grp,
+                                                'consumption' : consumption,
+                                                'consumtionCombi' : consumtionCombi
+                    }
+                    material_for_ref_id_list.append(set_production_data_dict)
+
+
+
+            cutting_consumption_list = []
+            for key,value in pending_ref_no_dict.items():
+                for sku,qty in value.items():
+                    for item in material_for_ref_id_list:
+                        if item['pro_sku'] == sku:
+                            total_consumption_value = qty * item['consumption']
+
+                            total_combi_consumption_value = qty * item['consumtionCombi']
+
+                            cutting_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                            dict_to_append = {
+                                'material_name': item['material_name'],
+                                'pro_sku': item['pro_sku'],
+                                'pro_fab_grp' : item['pro_fab_grp'],
+                                'cutting_consumption' : cutting_consumption            
+                            }
+
+                            cutting_consumption_list.append(dict_to_append)
+
+
+
+            # for lwo pending
+            pending_ref_no_dict_lwo = {}
+
+            pending_ref_no_lwo = product_to_item_labour_workout.objects.filter(processed_pcs__gt = 0)
+
+
+            for item in pending_ref_no_lwo:
+                ref_id = item.labour_workout.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID
+                sku = int(item.product_sku)
+                process_qty = item.processed_pcs
+
+                if ref_id not in pending_ref_no_dict_lwo:
+                        pending_ref_no_dict_lwo[ref_id] = {}
+
+                current_quantity = pending_ref_no_dict_lwo[ref_id].get(sku, 0)
+                pending_ref_no_dict_lwo[ref_id][sku] = current_quantity + process_qty
+
+        
+            for product_reference_number, skus in pending_ref_no_dict_lwo.items():
+                total_quantity = sum(skus.values())
+                skus['total'] = total_quantity
+
+
+            
+
+            material_for_ref_id_list_lwo = []
+
+            material_for_ref_id_queryset_lwo = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = pending_ref_no_dict_lwo)
+            
+            seen_material_names = set()
+
+            for material in material_for_ref_id_queryset_lwo:
+                ref_id = material.PProduct_pk.Product.Product_Refrence_ID
+                material_name = material.Item_pk.item_name
+                pro_sku = material.PProduct_pk.PProduct_SKU
+                pro_fab_grp = material.Item_pk.Fabric_nonfabric
+                panha_val = material.Item_pk.Panha
+                unit_val = material.Item_pk.Units
+                grand_total = material.grand_total
+                grand_total_combi = material.grand_total_combi
+                consumption = round(grand_total / (panha_val * unit_val),3)
+                consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
+                
+
+                if material_name not in seen_material_names:
+                    seen_material_names.add(material_name)
+                    
+                    set_production_data_dict = {'ref_id': material.PProduct_pk.Product.Product_Refrence_ID,
+                                                'material_name': material_name,
+                                                'pro_sku': pro_sku,
+                                                'pro_fab_grp' : pro_fab_grp,
+                                                'consumption' : consumption,
+                                                'consumtionCombi' : consumtionCombi
+                    }
+                    material_for_ref_id_list_lwo.append(set_production_data_dict)
+
+
+
+
+            lwo_consumption_list = []
+            for key,value in pending_ref_no_dict_lwo.items():
+                
+                for sku,qty in value.items():
+                    
+                    for item in material_for_ref_id_list_lwo:
+                        
+                        if item['pro_sku'] == sku and item['pro_fab_grp'] == 'Non Fabric':
+                            total_consumption_value = qty * item['consumption']
+
+                            total_combi_consumption_value = qty * item['consumtionCombi']
+
+                            lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                            dict_to_append = {
+                                'material_name': item['material_name'],
+                                'pro_sku': item['pro_sku'],
+                                'pro_fab_grp' : item['pro_fab_grp'],
+                                'lwo_consumption' : lwo_consumption           
+                            }
+
+                            lwo_consumption_list.append(dict_to_append)
+
+            
+
+            data_list = []
+
+            for x in lwo_consumption_list:
+                item_name = x['material_name']
+                matched = False
+
+                for i in cutting_consumption_list:
+                    if item_name == i['material_name']:
+                        matched = True
+                        dict_to_append = {
+                            'material_name': i['material_name'],
+                            'cutting_consumption': i['cutting_consumption'],
+                            'lwo_consumption': x['lwo_consumption'],
+                            
+                        }
+
+                        if dict_to_append not in data_list:  
+                            data_list.append(dict_to_append)
+                        break
+                if not matched:
+                    dict_to_append = {
+                            'material_name': i['material_name'],
+                            'cutting_consumption': i['cutting_consumption'],
+                            'lwo_consumption': x['lwo_consumption'],
+                            
+                        }
+                    if dict_to_append not in data_list:  
+                            data_list.append(dict_to_append)
+
+            for i in cutting_consumption_list:
+                if not any(d['material_name'] == i['material_name'] for d in data_list):
+                    data_list.append({
+                        'material_name': i['material_name'],
+                        'cutting_consumption': i['cutting_consumption'],
+                        'lwo_consumption': 0,
+                        
+                    })
+
+ 
+
+            #merge negetive_stock_report_list mean all data and data list
+
+            merged_data = []
+
+            for x in data_list:
+                item_name = x['material_name']
+                matched = False  
+                
+                for i in negetive_stock_report_list:
+                    if item_name == i.item_name:
+                        matched = True  
+                        
+                        dict_to_append = {
+                            'item_id' : i.id,
+                            'Material_code' : i.Material_code,
+                            'Item_Color':i.Item_Color.color_name,
+                            'Fabric_Group':i.Fabric_Group.fab_grp_name,
+                            'unit_name' : i.unit_name_item.unit_name,
+                            'material_name': i.item_name,
+                            'cutting_consumption': x['cutting_consumption'],
+                            'lwo_consumption': x['lwo_consumption'],
+                            'total_qty': i.total_qty if i.total_qty is not None else 0,
+                            'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption']))
+                        }
+
+                        if dict_to_append not in merged_data:  
+                            merged_data.append(dict_to_append)
+                        break  
+
+                if not matched:
+                    
+                    dict_to_append = {
+                        'item_id' : i.id,
+                        'Material_code' : i.Material_code,
+                        'Item_Color':i.Item_Color.color_name,
+                        'Fabric_Group':i.Fabric_Group.fab_grp_name,
+                        'unit_name' : i.unit_name_item.unit_name,
+                        'material_name': item_name,
+                        'cutting_consumption': x['cutting_consumption'],
+                        'lwo_consumption': x['lwo_consumption'],
+                        'total_qty': i.total_qty if i.total_qty is not None else 0,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) 
+                    }
+                    if dict_to_append not in merged_data:
+                        merged_data.append(dict_to_append)
+
+            
+            for i in negetive_stock_report_list:
+                if not any(d['material_name'] == i.item_name for d in merged_data):
+                    merged_data.append({
+                        'item_id' : i.id,
+                        'Material_code' : i.Material_code,
+                        'Item_Color':i.Item_Color.color_name,
+                        'Fabric_Group':i.Fabric_Group.fab_grp_name,
+                        'unit_name' : i.unit_name_item.unit_name,
+                        'material_name': i.item_name,
+                        'cutting_consumption': 0,
+                        'lwo_consumption': 0,
+                        'total_qty': i.total_qty if i.total_qty is not None else 0,
+                        'balance' : 0
+                    })
+
+            
+            print('merged_data -- ', merged_data)
+            print(len(merged_data))
+
+
+            
+
+
+            
+            
+
+        else:
+
+            negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
+
+            merged_data = []
+
+            for i in negetive_stock_report:
+                dict_to_append = {
+                        'item_id' : i.id,
+                        'Material_code' : i.Material_code,
+                        'Item_Color':i.Item_Color.color_name,
+                        'Fabric_Group':i.Fabric_Group.fab_grp_name,
+                        'unit_name' : i.unit_name_item.unit_name,
+                        'material_name': item_name,
+                        'cutting_consumption': 0,
+                        'lwo_consumption': 0,
+                        'total_qty': i.total_qty if i.total_qty is not None else 0,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-(0+0) 
+                    }
+
+                merged_data.append(dict_to_append)
+
+
+
+    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number,'merged_data':merged_data,})
 
 
 
@@ -8532,8 +8843,9 @@ def session_data_test(request):
 
 def finished_goods_stock_all(request,pk=None):
     wareshouse_all = Finished_goods_warehouse.objects.all()
-    button_value = request.GET.get('buttonValue')
-    # print(button_value)
+    
+    button_value = request.POST.get('All_stock')
+    
     if pk:
         warehouse_data = Product_warehouse_quantity_through_table.objects.filter(product__PProduct_SKU = OuterRef('pk'),                     
                          warehouse__id = pk).values('quantity')     
@@ -8541,17 +8853,17 @@ def finished_goods_stock_all(request,pk=None):
         finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Subquery(
             warehouse_data)).order_by('Product__Product_Name').select_related('PProduct_color')
 
-    else:
-        if button_value:
-            print(button_value)
-            finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
-                'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color') 
-        else:
-            finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
-                'product_warehouse_quantity_through_table__quantity')).filter(total_warehouse_stock__isnull=False).order_by('Product__Product_Name').select_related('PProduct_color')
+    elif button_value:
 
-    return render(request,'finished_product/finishedgoodsstockall.html',{
-                                'finished_godown_all':finished_godown_all, 'wareshouse_all':wareshouse_all})
+        
+        finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
+            'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color') 
+    else:
+
+        finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
+            'product_warehouse_quantity_through_table__quantity')).filter(total_warehouse_stock__isnull=False).order_by('Product__Product_Name').select_related('PProduct_color')
+
+    return render(request,'finished_product/finishedgoodsstockall.html',{'finished_godown_all':finished_godown_all, 'wareshouse_all':wareshouse_all})
 
 
 

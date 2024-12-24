@@ -11,7 +11,13 @@
             <option value="{% url 'finished-goods-stock-single' x.id %}">{{x.warehouse_name_finished}}</option>
             {% endfor %}
         </select>
-        <button class="package_btn ms-4" type="button" id="allStock" value="True ">All Stock</button>
+        
+
+        <form action="" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="All_stock" value="All_stock">
+            <button class="package_btn ms-4" type="submit" id="allStock">All Stock</button>
+        </form>
     </div>
     
 
@@ -53,21 +59,7 @@
         document.getElementById('id_warehouse_select').addEventListener('change',function(){
             changeValue() ;
         })
-        document.getElementById('allStock').addEventListener('click',function(){
-                var buttonValue = this.value;
-                console.log(buttonValue)
-                $.ajax({
-                    url: `{% url 'finished-goods-stock-all' %}`,
-                    type: 'GET',
-                    data:{
-                        "buttonValue":buttonValue,
-                    },
-                    success: function (response) {
-                        console.log(response)
-                    },
-
-                })
-        })
+        
         function stockQty(){
             var stockQty = document.querySelectorAll('.stockQty')
             stockQty.forEach(function(qty){
@@ -94,7 +86,3 @@
     
 
 {% endblock body %}
-
-
-
-

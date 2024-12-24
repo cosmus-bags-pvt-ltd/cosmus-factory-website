@@ -91,6 +91,7 @@
                                 <th>Units</th>
                                 <th>Cutting Pend QTY</th>
                                 <th>LWO Pend QTY</th>
+                                <th>Net Balance Stock</th>
                                 <th>Select</th>
                                 <th>Last Buying seller</th>
                                 <th>Mobile No</th>
@@ -98,19 +99,20 @@
                             </tr>
                         </thead>
                         <tbody class="mainTableList" style="max-height: 400px; overflow-y: auto;">
-                            {% for item in negetive_stock_report %}
+                            {% for item in merged_data %}
                             <tr>
                                 <input type="hidden" id="id_item_pk" value="{{item.id}}">
                                 <td>{{forloop.counter}}</td>
                                 <td>{{item.Material_code}}</td>
-                                <td>{{item.item_name}}</td>
-                                <td>{{item.Fabric_Group.fab_grp_name}}</td>
-                                <td>{{item.Item_Color.color_name}}</td>
-                                <td>{{item.total_qty | default_if_none:0}}</td>
-                                <td>{{item.Units}}</td>
-                                <td></td>
-                                <td></td>
-                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.id }}"></td>
+                                <td>{{item.material_name}}</td>
+                                <td>{{item.Fabric_Group}}</td>
+                                <td>{{item.Item_Color}}</td>
+                                <td>{{item.total_qty}}</td>
+                                <td>{{item.unit_name}}</td>
+                                <td>{{item.cutting_consumption}}</td>
+                                <td>{{item.lwo_consumption}}</td>
+                                <td>{{item.balance}}</td>
+                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.item_id }}"></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>

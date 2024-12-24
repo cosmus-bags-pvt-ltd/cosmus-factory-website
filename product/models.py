@@ -395,7 +395,7 @@ class Item_Creation(models.Model):
         return self.Item_Packing.packing_material
 
     def __str__(self):
-        return f"{self.item_name}--{self.Fabric_nonfabric}"
+        return f"{self.item_name}"
     
 #This
 class item_color_shade(models.Model):
