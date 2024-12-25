@@ -87,11 +87,11 @@
                
                     <input type="hidden" name="{{form.prefix}}-ids" value="{{form.instance.id}}" id="id_{{form.prefix}}-ids">
                       <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
-                      <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" readonly></td>
+                      <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product_Refrence_ID}}{% endif %}" readonly></td>
                       <td>
                           <div class="custom-dropdown-container">
                             <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" readonly> 
-                              <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Product_Name }} {{form.instance.product.PProduct_SKU}}{% endif %}" readonly> 
+                              <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Model_Name}}{% endif %}" readonly> 
                               <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice stock_input_name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
   
                                </div>
@@ -120,11 +120,11 @@
              
                     <input type="hidden" name="{{form.prefix}}-ids" value="{{form.instance.id}}" id="id_{{form.prefix}}-ids">
                     <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
-                    <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" readonly></td>
+                    <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly></td>
                     <td>
                         <div class="custom-dropdown-container">
                           <input  type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" > 
-                            <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Product_Name }} {{form.instance.product.PProduct_SKU}}{% endif %}"> 
+                            <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Model_Name}}{% endif %}"> 
                             <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice stock_input_name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
 
                              </div>
@@ -156,6 +156,10 @@
           {% else %}
           <button type="button" class="create-btn" id="addRowButton">Add +</button>
           {% endif %}
+          <div class="ms-2 mt-5">
+            <label for="id_narration" class="purchase-lable fw-bold me-2">Narration :</label>
+            <input type="text" class="productpurchaseInvoice ps-2" name="narration" id="id_narration" value="{{form.instance.narration | default_if_none:''}}">
+        </div>
       </div>
       {% if not voucher_instance.qc_all_qty > 0 %}
       <button type="submit" id="submitButtonStockTransfer" class="create-btn mt-4" name="save" value="Save">Submit</button>
@@ -422,6 +426,7 @@
                             const productSKU = key; // SKU
                             const productColor = value[1];
                             const productQty = value[2];
+
                             // Highlight matches in name, SKU, and color
                             const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
                             const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
@@ -460,12 +465,15 @@
                             
                                 const productColor = selectedValue[1]
                                 const productQty = selectedValue[2];
+                                const productRefNo = selectedValue[4];
                                 var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
                                 var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
                                 var productSkuInputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');                    
+                                var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');
                                 productcolorinput.value = productColor;
                                 // productQtyinputs.value = productQty ;
                                 productSkuInputs.value = item_value;
+                                productRefNoValue.value = productRefNo;
                             }
                         
                             suggestionsContainer.css('display', 'none');
@@ -584,9 +592,11 @@
                                 var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
                                 var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
                                 var productSkuInputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');                    
+                                var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');
                                 productcolorinput.value = productColor;
                                 // productQtyinputs.value = productQty ;
                                 productSkuInputs.value = item_value;
+                                productRefNoValue.value = selectedValue[4];
                             }
   
 
@@ -714,9 +724,11 @@
                           var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
                           var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
                         var productSku = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');
-                          productcolorinput.value = productColor;
+                        var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');  
+                        productcolorinput.value = productColor;
                         //   productQtyinputs.value = productQty;
                           productSku.value = item_value;
+                          productRefNoValue.value = selectedValue[4];
                       }
 
                       suggestionsContainer.css('display', 'none');
@@ -835,9 +847,11 @@
                                 var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
                                 var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
                                 var productSku = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');                   
+                                var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');
                                 productcolorinput.value = productColor;
                                 // productQtyinputs.value = productQty ;
                                 productSku.value = item_value;
+                                productRefNoValue.value = selectedValue[4];
                             
                             }
 

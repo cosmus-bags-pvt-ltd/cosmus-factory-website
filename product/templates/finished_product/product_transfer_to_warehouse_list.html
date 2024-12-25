@@ -38,7 +38,7 @@
             <td>{{ warehouse_product_transfer.source_warehouse.godown_name_finished }}</td>
             <td>{{ warehouse_product_transfer.destination_warehouse.warehouse_name_finished }}</td>
             <td>{{ warehouse_product_transfer.total_recieved_qty }}</td>
-            <td>{{ warehouse_product_transfer.remark }}</td>
+            <td>NOS</td>
             {% if warehouse_product_transfer.all_qc_qty > 0 %}
             <td><a href="{% url 'warehouse-product-transfer-update' warehouse_product_transfer.id %}"><span class="ps-3"><i class="fa-solid fa-eye"></i></span></a></td> 
             {% else %}

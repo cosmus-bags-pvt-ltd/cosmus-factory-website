@@ -507,7 +507,7 @@
             console.log("stockData",stockData)
             console.log("stockData",)
            
-            let sanitizedData = JSON.stringify(stockData)
+            let sanitizedData = stockData
             .replace(/'/g, '"')  // Replace single quotes with double quotes
             .replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":')  // Add quotes around numeric keys
             .replace(/"([^"]*?)"/g, (match, p1) => {  // Escape inner quotes within string values
