@@ -2084,9 +2084,9 @@ def stockTrasferRaw(request, pk=None):
         source_godown_items = item_godown_quantity_through_table.objects.filter(godown_name = raw_transfer_instance.source_godown.id)
         page_name = 'Edit Stock Transfer'
 
-        source_godown_items_dict = {x.Item_shade_name.items.id:x.Item_shade_name.items.item_name for x in source_godown_items}
+        source_godown_items_dict = {x.Item_shade_name.items.id : [x.Item_shade_name.items.item_name] for x in source_godown_items}
         
-        
+        # print(source_godown_items_dict)
         
     
     
@@ -2254,7 +2254,7 @@ def purchasevouchercreateupdate(request, pk = None):
                                   'item_gst_out':item_gst_out,'party_gst_no':party_gst_no,'item_m_code_out':item_m_code_out})
 
     if request.method == 'POST':
-        
+        print(request.POST)
         try:
             with transaction.atomic(): 
                 
@@ -6783,138 +6783,66 @@ def raw_material_estimation_calculate(request,u_id):
 
         purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = ref_id)
 
+        if purchase_orders:
 
+            sku_total_qty = {}
 
-        sku_total_qty = {}
+            po_id = []
+            for order in purchase_orders:
+                for x in order.p_o_to_products.all():
 
-        po_id = []
-        for order in purchase_orders:
-            for x in order.p_o_to_products.all():
+                    po_no = x.purchase_order_id.purchase_order_number
 
-                po_no = x.purchase_order_id.purchase_order_number
+                    if po_no not in po_id:
+                        po_id.append(po_no)
 
-                if po_no not in po_id:
-                    po_id.append(po_no)
+                    product_reference_number = x.purchase_order_id.product_reference_number.Product_Refrence_ID
+                    sku = x.product_id.PProduct_SKU
+                    process_quantity = x.process_quantity
 
-                product_reference_number = x.purchase_order_id.product_reference_number.Product_Refrence_ID
-                sku = x.product_id.PProduct_SKU
-                process_quantity = x.process_quantity
+                    
+                    if product_reference_number not in sku_total_qty:
+                        sku_total_qty[product_reference_number] = {}
 
-                
-                if product_reference_number not in sku_total_qty:
-                    sku_total_qty[product_reference_number] = {}
-
-                
-                current_quantity = sku_total_qty[product_reference_number].get(sku, 0)
-                sku_total_qty[product_reference_number][sku] = current_quantity + process_quantity
-
-        
-        for product_reference_number, skus in sku_total_qty.items():
-            total_quantity = sum(skus.values())
-            skus['total'] = total_quantity
-
-
-
-        ordered_raw_materials = purchase_order_for_raw_material_cutting_items.objects.filter(material_name__in=final_total_list,purchase_order_cutting__purchase_order_id__purchase_order_number__in = po_id)
-
-
-        material_data_with_values = []
-        for material in ordered_raw_materials:
-            
-            dict_to_apnd = {
-                'ref_no' : material.purchase_order_cutting.purchase_order_id.product_reference_number.Product_Refrence_ID,
-                'product_color': material.product_color,
-                'product_sku' : material.product_sku,
-                'material_name': material.material_name,
-                'fabric_type' : material.material_color_shade.items.Fabric_nonfabric,
-                'consumption': material.consumption,
-                'combi_consumption': material.combi_consumption
-            }
+                    
+                    current_quantity = sku_total_qty[product_reference_number].get(sku, 0)
+                    sku_total_qty[product_reference_number][sku] = current_quantity + process_quantity
 
             
-            if not any(item['material_name'] == material.material_name for item in material_data_with_values):
-                material_data_with_values.append(dict_to_apnd)
-
-        # print(material_data_with_values)
-
-        list_to_send_for_cutting = []
-        for key,value in sku_total_qty.items():
-
-            for data in material_data_with_values:
-
-                if data['ref_no'] == key:
-
-                    for k,v in value.items():
-
-                        sku_inside = str(k)
-                        if data['product_sku'] == sku_inside:
-
-                            total_consumption_value = v * data['consumption']
-
-                            total_combi_consumption_value = v * data['combi_consumption']
-
-                            total_consumption = total_consumption_value + total_combi_consumption_value
-
-                            dict_append = {
-                                'material_name':data['material_name'],
-                                'cutting_consumption' : total_consumption
-                            }
-
-                            if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
-                                list_to_send_for_cutting.append(dict_append)
+            for product_reference_number, skus in sku_total_qty.items():
+                total_quantity = sum(skus.values())
+                skus['total'] = total_quantity
 
 
-                        elif data['product_sku'] == 'Common Item':
-                            
-                            total_consumption_value = value['total'] * data['consumption']
 
-                            total_combi_consumption_value = value['total'] * data['combi_consumption']
-
-                            total_consumption = total_consumption_value + total_combi_consumption_value
-
-                            dict_append = {
-                                'material_name':data['material_name'],
-                                'cutting_consumption' : total_consumption
-                            }
-
-                            if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
-                                list_to_send_for_cutting.append(dict_append)
-                                
+            ordered_raw_materials = purchase_order_for_raw_material_cutting_items.objects.filter(material_name__in=final_total_list,purchase_order_cutting__purchase_order_id__purchase_order_number__in = po_id)
 
 
-        lwo_pending = product_to_item_labour_workout.objects.filter(labour_workout__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id)
-
-        sku_total_qty_lwo = {}
-
-        for x in lwo_pending:
-
-            product_reference_number = x.labour_workout.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID
-            sku = x.product_sku
-            process_quantity = x.pending_pcs
-
-            if product_reference_number not in sku_total_qty_lwo:
-                sku_total_qty_lwo[product_reference_number] = {}
+            material_data_with_values = []
+            for material in ordered_raw_materials:
                 
-            if sku not in sku_total_qty_lwo[product_reference_number]:
-                sku_total_qty_lwo[product_reference_number][sku] = process_quantity
+                dict_to_apnd = {
+                    'ref_no' : material.purchase_order_cutting.purchase_order_id.product_reference_number.Product_Refrence_ID,
+                    'product_color': material.product_color,
+                    'product_sku' : material.product_sku,
+                    'material_name': material.material_name,
+                    'fabric_type' : material.material_color_shade.items.Fabric_nonfabric,
+                    'consumption': material.consumption,
+                    'combi_consumption': material.combi_consumption
+                }
+
                 
-            else:
-                sku_total_qty_lwo[product_reference_number][sku] += process_quantity
+                if not any(item['material_name'] == material.material_name for item in material_data_with_values):
+                    material_data_with_values.append(dict_to_apnd)
 
-        for product_reference_number, skus in sku_total_qty_lwo.items():
-            total_quantity = sum(skus.values())
-            skus['total'] = total_quantity
+            # print(material_data_with_values)
 
+            list_to_send_for_cutting = []
+            for key,value in sku_total_qty.items():
 
-        list_to_send_for_lwo = []
+                for data in material_data_with_values:
 
-        for key,value in sku_total_qty_lwo.items():
-
-            for data in material_data_with_values:
-
-                if data['ref_no'] == key:
-
-                    if data['fabric_type'] == 'Non Fabric':
+                    if data['ref_no'] == key:
 
                         for k,v in value.items():
 
@@ -6929,11 +6857,11 @@ def raw_material_estimation_calculate(request,u_id):
 
                                 dict_append = {
                                     'material_name':data['material_name'],
-                                    'lwo_consumption' : total_consumption
+                                    'cutting_consumption' : total_consumption
                                 }
 
-                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
-                                    list_to_send_for_lwo.append(dict_append)
+                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
+                                    list_to_send_for_cutting.append(dict_append)
 
 
                             elif data['product_sku'] == 'Common Item':
@@ -6946,103 +6874,208 @@ def raw_material_estimation_calculate(request,u_id):
 
                                 dict_append = {
                                     'material_name':data['material_name'],
-                                    'lwo_consumption' : total_consumption
+                                    'cutting_consumption' : total_consumption
                                 }
 
-                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
-                                    list_to_send_for_lwo.append(dict_append)
+                                if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_cutting):
+                                    list_to_send_for_cutting.append(dict_append)
+                                    
+
+
+            lwo_pending = product_to_item_labour_workout.objects.filter(labour_workout__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id)
+
+            sku_total_qty_lwo = {}
+
+            for x in lwo_pending:
+
+                product_reference_number = x.labour_workout.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID
+                sku = x.product_sku
+                process_quantity = x.pending_pcs
+
+                if product_reference_number not in sku_total_qty_lwo:
+                    sku_total_qty_lwo[product_reference_number] = {}
+                    
+                if sku not in sku_total_qty_lwo[product_reference_number]:
+                    sku_total_qty_lwo[product_reference_number][sku] = process_quantity
+                    
+                else:
+                    sku_total_qty_lwo[product_reference_number][sku] += process_quantity
+
+            for product_reference_number, skus in sku_total_qty_lwo.items():
+                total_quantity = sum(skus.values())
+                skus['total'] = total_quantity
+
+
+            list_to_send_for_lwo = []
+
+            for key,value in sku_total_qty_lwo.items():
+
+                for data in material_data_with_values:
+
+                    if data['ref_no'] == key:
+
+                        if data['fabric_type'] == 'Non Fabric':
+
+                            for k,v in value.items():
+
+                                sku_inside = str(k)
+                                if data['product_sku'] == sku_inside:
+
+                                    total_consumption_value = v * data['consumption']
+
+                                    total_combi_consumption_value = v * data['combi_consumption']
+
+                                    total_consumption = total_consumption_value + total_combi_consumption_value
+
+                                    dict_append = {
+                                        'material_name':data['material_name'],
+                                        'lwo_consumption' : total_consumption
+                                    }
+
+                                    if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
+                                        list_to_send_for_lwo.append(dict_append)
+
+
+                                elif data['product_sku'] == 'Common Item':
+                                    
+                                    total_consumption_value = value['total'] * data['consumption']
+
+                                    total_combi_consumption_value = value['total'] * data['combi_consumption']
+
+                                    total_consumption = total_consumption_value + total_combi_consumption_value
+
+                                    dict_append = {
+                                        'material_name':data['material_name'],
+                                        'lwo_consumption' : total_consumption
+                                    }
+
+                                    if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
+                                        list_to_send_for_lwo.append(dict_append)
+                
+                        else:
+                            total_consumption = 0.00
+
+
+                            dict_append = {
+                                        'material_name':data['material_name'],
+                                        'lwo_consumption' : total_consumption
+                                    }
+
+                            if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
+                                list_to_send_for_lwo.append(dict_append)
+
+
+
+            merged_data = {}
+
             
-                    else:
-                        total_consumption = 0.00
-
-
-                        dict_append = {
-                                    'material_name':data['material_name'],
-                                    'lwo_consumption' : total_consumption
-                                }
-
-                        if not any(item['material_name'] == data['material_name'] for item in list_to_send_for_lwo):
-                            list_to_send_for_lwo.append(dict_append)
-
-
-
-        merged_data = {}
-
-        
-        for item in list_to_send_for_cutting:
-            material = item['material_name']
-            merged_data[material] = {
-                'material_name': material,
-                'cutting_consumption': item.get('cutting_consumption', decimal.Decimal('0.0')),
-                'lwo_consumption': decimal.Decimal('0.0')
-            }
-
-        
-        for item in list_to_send_for_lwo:
-            material = item['material_name']
-            if material in merged_data:
-                merged_data[material]['lwo_consumption'] = item.get('lwo_consumption', decimal.Decimal('0.0'))
-            else:
+            for item in list_to_send_for_cutting:
+                material = item['material_name']
                 merged_data[material] = {
                     'material_name': material,
-                    'cutting_consumption': decimal.Decimal('0.0'),
-                    'lwo_consumption': item.get('lwo_consumption', decimal.Decimal('0.0'))
+                    'cutting_consumption': item.get('cutting_consumption', decimal.Decimal('0.0')),
+                    'lwo_consumption': decimal.Decimal('0.0')
                 }
 
-        for item in response_dict:
-            material = item['item_name']
-            material_id = item['id']
-            if material in merged_data:
-                merged_data[material]['total_consump'] = item.get('total_consump', decimal.Decimal('0.0'))
-                merged_data[material]['godown_stock'] = item.get('godown_stock', decimal.Decimal('0.0'))
-                merged_data[material]['id'] = material_id
+            
+            for item in list_to_send_for_lwo:
+                material = item['material_name']
+                if material in merged_data:
+                    merged_data[material]['lwo_consumption'] = item.get('lwo_consumption', decimal.Decimal('0.0'))
+                else:
+                    merged_data[material] = {
+                        'material_name': material,
+                        'cutting_consumption': decimal.Decimal('0.0'),
+                        'lwo_consumption': item.get('lwo_consumption', decimal.Decimal('0.0'))
+                    }
 
-        final_data = list(merged_data.values())
-        
-        print(final_data)
+            for item in response_dict:
+                material = item['item_name']
+                material_id = item['id']
+                if material in merged_data:
+                    merged_data[material]['total_consump'] = item.get('total_consump', decimal.Decimal('0.0'))
+                    merged_data[material]['godown_stock'] = item.get('godown_stock', decimal.Decimal('0.0'))
+                    merged_data[material]['id'] = material_id
+
+            final_data = list(merged_data.values())
+            
+            # print(final_data)
 
 
-        dataset_to_send = []
-        for dataset in final_data:
-            try:
-                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = dataset['material_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+            dataset_to_send = []
+            for dataset in final_data:
+                try:
+                    party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = dataset['material_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+                    
+                    if party_names: 
+                        p_name = party_names.item_purchase_master.party_name.name
+                        mobile = party_names.item_purchase_master.party_name.mobile_no
+                    else:
+                        p_name = None
+                        mobile = None
+                    
+                except Exception as e:  
+                    print(f"Error occurred: {e}")
+                    p_name = None
+                    mobile = None
+
+
+                cutting_consumption = decimal.Decimal(dataset['cutting_consumption'])
+                lwo_consumption = decimal.Decimal(dataset['lwo_consumption'])
+                total_consump = decimal.Decimal(dataset['total_consump'])
+                godown_stock = decimal.Decimal(dataset['godown_stock'])
+
+                balance_stock = godown_stock - (cutting_consumption + lwo_consumption + total_consump)
                 
+                item_id = get_object_or_404(Item_Creation,item_name = dataset['material_name'])
+
+                # print(balance_stock)
+                dataset_to_send.append({
+                    'id':dataset['id'],
+                    'item_id' : item_id.id,
+                    'material_name':dataset['material_name'],
+                    'total_consump':total_consump,
+                    'cutting_consumption': cutting_consumption,
+                    'lwo_consumption': lwo_consumption,
+                    'godown_stock':godown_stock,
+                    'balance_stock': balance_stock,
+                    'party_name' : p_name,
+                    'mobile_no' : mobile,
+                })
+            # print(dataset_to_send)
+        else:
+            dataset_to_send = []
+            
+            
+            for x in response_dict:
+                
+                item = get_object_or_404(Item_Creation, item_name=x['item_name'])
+                
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+                    
                 if party_names: 
                     p_name = party_names.item_purchase_master.party_name.name
                     mobile = party_names.item_purchase_master.party_name.mobile_no
                 else:
                     p_name = None
                     mobile = None
-                
-            except Exception as e:  
-                print(f"Error occurred: {e}")
-                p_name = None
-                mobile = None
+
+                dict_to_apnd = {
+                    # 'id':dataset['id'],
+                    'item_id' : item.id,
+                    'material_name':item.item_name,
+                    'total_consump':x['total_consump'],
+                    'cutting_consumption': 0,
+                    'lwo_consumption': 0,
+                    'godown_stock': x['godown_stock'],
+                    'balance_stock': x['balance_stock'],
+                    'party_name' : p_name,
+                    'mobile_no' : mobile,
+                }
+
+                dataset_to_send.append(dict_to_apnd)
 
 
-            cutting_consumption = decimal.Decimal(dataset['cutting_consumption'])
-            lwo_consumption = decimal.Decimal(dataset['lwo_consumption'])
-            total_consump = decimal.Decimal(dataset['total_consump'])
-            godown_stock = decimal.Decimal(dataset['godown_stock'])
-
-            balance_stock = godown_stock - (cutting_consumption + lwo_consumption + total_consump)
-            
-            item_id = get_object_or_404(Item_Creation,item_name = dataset['material_name'])
-
-            # print(balance_stock)
-            dataset_to_send.append({
-                'id':dataset['id'],
-                'item_id' : item_id.id,
-                'material_name':dataset['material_name'],
-                'total_consump':total_consump,
-                'cutting_consumption': cutting_consumption,
-                'lwo_consumption': lwo_consumption,
-                'godown_stock':godown_stock,
-                'balance_stock': balance_stock,
-                'party_name' : p_name,
-                'mobile_no' : mobile,
-            })
-        print(dataset_to_send)
         return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':dataset_to_send})
 
    
@@ -7527,8 +7560,9 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 
 @login_required(login_url='login')
 def product_transfer_to_warehouse_list(request):
-    warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty')).order_by('voucher_no')
-    
+    warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('voucher_no')
+
+
     return render(request,'finished_product/product_transfer_to_warehouse_list.html',{'warehouse_product_transfer_list':warehouse_product_transfer_list})
 
 
