@@ -1033,12 +1033,10 @@ class finished_product_warehouse_bin(models.Model):
     def save(self, *args, **kwargs):
         
         if self.pk:
-
-            
+    
             current_instance = finished_product_warehouse_bin.objects.get(pk=self.pk)
             current_bin_size = current_instance.product_size_in_bin  
-            
-            
+             
             current_bin_count = self.finishedgoodsbinallocation_set.count()
 
             
@@ -1048,8 +1046,10 @@ class finished_product_warehouse_bin(models.Model):
                     f"as there are {current_bin_count} items currently in the bin."
                 )
 
-        
         super().save(*args, **kwargs)
+
+
+
 
 
 class Product_warehouse_quantity_through_table(models.Model):
@@ -1084,6 +1084,8 @@ class product_purchase_voucher_master(models.Model):
     updated_date = models.DateTimeField(auto_now = True)
     actions = models.CharField(max_length=20,choices=ACTIONS)
 
+    def __str__(self):
+        return self.purchase_number
 
 class product_purchase_voucher_items(models.Model):
     product_purchase_master = models.ForeignKey(product_purchase_voucher_master, on_delete=models.CASCADE)
@@ -1155,7 +1157,8 @@ class finishedgoodsbinallocation(models.Model):
         
         super().save(*args, ** kwargs)
 
-
+    def __str__(self):
+        return self.related_purchase_item.product_purchase_master.purchase_number
 
 class sales_voucher_master_finish_Goods(models.Model):
     sales_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)

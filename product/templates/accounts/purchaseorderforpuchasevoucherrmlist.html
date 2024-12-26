@@ -60,8 +60,8 @@
             <form action="" method="GET" id="filterForm">
                 <div class="">
                     <label>Sort by:</label>
-                    <button type="submit" class="filterButton" name="sort_name" value="lowest" ><i class="fa-solid fa-sort-up"></i></button>
-                    <button type="submit" class="filterButton" name="sort_name" value="highest" ><i class="fa-solid fa-sort-down"></i></button>        
+                    <button type="submit" class="filterButton" name="sort_name" value="highest" ><i class="fa-solid fa-sort-up"></i></button>
+                    <button type="submit" class="filterButton" name="sort_name" value="lowest" ><i class="fa-solid fa-sort-down"></i></button>        
                 </div>
             </form>
 
@@ -73,7 +73,8 @@
                     <label class="me-3 ms-3">Less Than:</label>
                     <input type="text" name="less_Number" id="id_lessNumber" class="purchase-input" value="{{ less_Number | default_if_none:''}}">
                     <button type="submit" class="filterButton" id="parentClick">Filter</button>
-                    <button type="submit" class="filterButton" id="" name='clear-filter'>clear</button>
+                    <button type="submit" class="filterButton" id="clear-filter" name='clear-filter'>clear</button>
+                    <div id="loader" style="display: none;">Loading...</div>
                 </div>
             </form>
         </div>
@@ -150,6 +151,18 @@
     </div>
 </div>
 <script>
+    const FabricGroup = document.querySelector("#id_Fabric_Group")
+    const lessNumber = document.querySelector("#id_lessNumber")
+    const clearFilter = document.querySelector("#clear-filter")
+    const loader = document.querySelector("#loader");
+    if (clearFilter) {
+        clearFilter.addEventListener('click', function() {
+            if (FabricGroup) FabricGroup.value = '';
+            if (lessNumber) lessNumber.value = '';
+            window.location.href = "{% url 'purchase-order-for-puchase-voucher-rm-list' %}"
+        });
+    }
+
     function redirectVoucher(){
         window.location.href = "{% url 'purchase-order-for-puchase-voucher-rm-create-update' %}"
     }
@@ -173,7 +186,7 @@
         toggleVisible("NegativeList_btn", "NegativeList");
         toggleVisible("set_production_btn", "set_production");
 
-
+    
         
         
     })

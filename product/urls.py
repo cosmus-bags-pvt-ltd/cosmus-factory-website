@@ -245,13 +245,15 @@ urlpatterns = [
     path('warehouseproducttransfercreate/', views.warehouse_product_transfer_create_and_update,name="warehouse-product-transfer-create"),
     path('warehouseproducttransferupdate/<int:pk>', views.warehouse_product_transfer_create_and_update,name="warehouse-product-transfer-update"),
     path('producttransfertowarehouseajax/', views.product_transfer_to_warehouse_ajax,name='product-transfer-to-warehouse-ajax'),
+    
+    
     #finished_goods
 
     path('finished-goods-stock-all/', views.finished_goods_stock_all, name = 'finished-goods-stock-all'),
     path('finished-goods-stock-all/<int:pk>', views.finished_goods_stock_all, name = 'finished-goods-stock-single'),
-
     path('productdynamicsearchajax/',views.productdynamicsearchajax,name = 'product-dynamic-search-ajax'),
-
+    path('scanproductqtylist/', views.scan_product_qty_list, name = 'scan-product-qty-list'),
+    path('scansingleproductlist/<int:ref_id>/', views.scan_single_product_list, name = 'scan-single-product-list'),
 
     #reports
     # path('stocktransferreport/',views.stocktransferreport, name = 'stock-transfer-report'),
@@ -299,6 +301,10 @@ urlpatterns = [
     path('warehousenavigator/',views.warehouse_navigator, name="warehouse-navigator"),
 
     path('processserialno/', views.process_serial_no,name="process-serial-no"),
+
+
+    
+
 
     # common Routes
     path('', views.dashboard , name = 'dashboard-main'),
