@@ -7,11 +7,11 @@
         <div class="mb-3">
             {% if voucher_type == 'purchase' %}
             <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
-            <input type="hidden" id="id_voucher_no" value="{{purchase_number}}">
+            <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
             <h5 class="fw-bold">Purchase No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
             {% elif voucher_type == 'transfer' %}
             <input type="hidden" value="transfer" name="voucher_type" id="id_voucher_type">
-            <input type="hidden" id="id_voucher_no" value="{{purchase_number}}">
+            <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
             <h5 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
 
             {% endif %}
@@ -39,17 +39,20 @@
 
                         {% for form in formset %}
                         {{form.id}}
+                     
                         {% if form.instance.product_purchase_master.purchase_number %}
                     
                         <tr>
+                            <input type="hidden" id="id_hiddenId" value="{{instance_id}}">
                             <td>{{ forloop.counter }}</td>
                             <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-product_sku" id="id_{{form.prefix}}-product_sku" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
-                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-refNo" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-refNo" value="{{ form.instance.product_name.Product.Product_Refrence_ID }}" readonly></td>
                             <td>
-                                <input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-Product_name_Value" id="id_{{form.prefix}}-Product_name_Value" value="{{ form.instance.product_name.Product.Product_Name }}" readonly>
+                                <input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-Product_name_Value" id="id_{{form.prefix}}-Product_name_Value" value="{{ form.instance.product_name.Product.Model_Name }}" readonly>
                                 <input type="hidden" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}">
                             </td>
-                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_Color }}" readonly></td>
+                            <td><input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_color.color_name }}" readonly></td>
+
                             <td><input type="number" class="productorderrawqty-input quantityTotal"  name="{{form.prefix}}-quantity_total" id="id_{{form.prefix}}-quantity_total" value="{{ form.instance.quantity_total|default_if_none:0 }}" readonly></td>
                             <td> <input type="number" class="productorderrawqty-input productInwordDiffernceQty" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input productInwordRecivedQty" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
@@ -58,15 +61,18 @@
                         {% elif form.instance.Finished_goods_Stock_TransferMasterinstance.voucher_no %}
                         
                         <tr>
+                            <input type="hidden" id="id_hiddenId" value="{{instance_id}}">
                             <td>{{ forloop.counter }}</td>
                             <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-stock_transfer_sku" id="id_{{form.prefix}}-stock_transfer_sku" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
-                            <td><input type="number" class="productShadeCutting_Material_input " name="{{form.prefix}}-refNo" id="id_{{form.prefix}}-refNo" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productShadeCutting_Material_input " name="{{form.prefix}}-refNo" id="id_{{form.prefix}}-refNo" value="{{ form.instance.product.Product.Product_Refrence_ID }}" readonly></td>
                             <td>
-                                <input type="text" name="{{form.prefix}}-stock_transfer_name_value" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-stock_transfer_name_value" value="{{ form.instance.product.Product.Product_Name }}" readonly>
+                                <input type="text" name="{{form.prefix}}-stock_transfer_name_value" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-stock_transfer_name_value" value="{{ form.instance.product.Product.Model_Name }}" readonly>
                                 <input type="hidden" name="{{form.prefix}}-product" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-product" value="{{ form.instance.product.PProduct_SKU }}">
                             </td>
 
-                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_Color }}" readonly></td>
+                            <td><input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product.PProduct_color.color_name }}" readonly></td>
+
+
                             <td><input type="number" class="productorderrawqty-input quantityTotal" name="{{form.prefix}}-product_quantity_transfer" id="id_{{form.prefix}}-product_quantity_transfer" value="{{ form.instance.product_quantity_transfer |default_if_none:0 }}" readonly></td>
 
                             <td><input type="number" class="productorderrawqty-input productInwordDiffernceQty" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
@@ -175,15 +181,26 @@
                         
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Ref_No }}" readonly></td>
-                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Product_Name }}" readonly></td>
+                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Product_Refrence_ID }}" readonly></td>
+                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Model_Name }}" readonly></td>
                                 <td><input type="number" class="stockQrcode_input inwardedsku" value="{{ entries.product.PProduct_SKU }}" readonly></td>
-                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.PProduct_Color }}" readonly></td>
-                                <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_Img.url }}" alt="Product Image" style="width: 60px; height: 60px;"></td>
+                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.PProduct_color.color_name }}" readonly></td>
+
+                                <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_image.url }}" alt="Product Image" style="width: 60px; height: 60px;"></td>
+
                                 <td><input type="text" class="stockQrcode_input" value="{{ entries.unique_serial_no }}" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ entries.quantity_total|default_if_none:0 }}" readonly></td>
+                                
+                                {% if entries.related_purchase_item.quantity_total %}
+                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ entries.related_purchase_item.quantity_total|default_if_none:0 }}" readonly></td>
+                                {% else %}
+                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ entries.related_transfer_record.product_quantity_transfer|default_if_none:0 }}" readonly></td>
+                                {% endif %}
+                                
+
                                 <td><input type="number" class="productorderrawqty-input inwardedReceivedQty" value="1" readonly></td> 
-                                <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}" readonly></td>  
+
+                                <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}" readonly></td> 
+                                 
                                 <td><button class="border-0 bg-transparent delete-btn" data-item-id="" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
                             </tr>
                             {% endfor %}
@@ -217,12 +234,25 @@
 <script>
      document.body.appendChild(document.getElementById('exampleModal'));
     document.addEventListener('DOMContentLoaded', function () {
+
+        
         const inwardSearch = document.getElementById('inwordSerialNo');
         const manualSearch = document.getElementById('id_manualSerialNo');
         const stockTable = document.getElementById('stockTransferList');
         const responseMessage = $('#responseMessage');
         const id_voucher_no = document.getElementById('id_voucher_no').value;
+        const instancId = parseInt(document.getElementById('id_hiddenId').value);
+        const voucherType = document.getElementById('id_voucher_type').value;
+        console.log(id_voucher_no)
 
+        $.ajax({
+            url: '/stocktransferinstancelistpopup/${instancId}/${voucherType}',
+            type: 'GET',
+            data: { 
+                'id_voucher_no':id_voucher_no,
+            },
+
+        })
         // Focus on input field and hide table initially for `inwordSerialNo`
         inwardSearch.focus();
         inwardSearch.addEventListener('input', function () {
@@ -244,14 +274,7 @@
             }
         });
 
-        $.ajax({
-            url: '/stocktransferinstancelistpopup/',
-            type: 'GET',
-            data: { 
-                'id_voucher_no':id_voucher_no,
-            },
-
-        })
+        
         calculateQty()
     });
     
