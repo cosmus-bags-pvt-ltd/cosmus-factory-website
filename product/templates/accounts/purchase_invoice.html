@@ -1374,13 +1374,7 @@ function inputCheck(){
 
         const itemNameInputsid = document.querySelectorAll('[name^="item_name_"]');
         const productInvoiceId = document.getElementById('id_purchase_voucher_items_set-0-id').value;
-        const productPartyName = document.getElementById('id_party_name');
-        
-        if(productInvoiceId !== ''){
-            productPartyName.disabled = true;
-        }else{
-            productPartyName.disabled = false;
-        }
+       
     // Loop through each input and add keydown event listener
     itemNameInputsid.forEach((input, index) => {
         input.addEventListener("keydown", function (event) {

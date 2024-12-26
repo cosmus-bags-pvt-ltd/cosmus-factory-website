@@ -9,9 +9,6 @@
     {% csrf_token %}
     <input type="hidden" id="id_godownData" value=" {{source_godown_items_dict|default_if_none:''}}">
    
-
-
-
     <div class="d-flex mb-2">
         <label for="id_voucher_no" class="">Voucher No:</label>
         {% if masterstockform.instance.pk %}
@@ -524,10 +521,10 @@
             } catch (error) {
                 console.error('Error parsing JSON:', error);
             }
-        $(document).on('click input keyup focus keydown', 'input[name^="stock_name_"]', function () {
-                itemName = $(this).closest('tr').find('select[name$="-item_shade_transfer"]').attr('name');
-                purchaseValue = itemName.split('-')[1];
-                   
+            $(document).on('click input keyup focus keydown', 'input[name^="stock_name_"]', function () {
+                    itemName = $(this).closest('tr').find('select[name$="-item_shade_transfer"]').attr('name');
+                    purchaseValue = itemName.split('-')[1];
+                    
             });
             $(document).on('input', 'input[name^="stock_name_"]', function (e) {
                 var StockValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
@@ -591,7 +588,7 @@
             })
             function handleSelection(StockValue, itemName, item_value) {
 
-                if (item_value !== undefined) {
+                if (item_value !== undefined && item_value !== '') {
                     var selectedValue = searchedItemNameDict[item_value];
                     var namevalueCheck = selectedValue.match(/[a-zA-Z\s().0-9]+/g).join('');
                     var newnameValue = namevalueCheck.replace(/[\.\s 0-9]+$/, '');
