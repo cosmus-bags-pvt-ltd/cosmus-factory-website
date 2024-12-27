@@ -1108,7 +1108,7 @@ class Finished_goods_Stock_TransferMaster(models.Model):
         ('Inward Process','Inward Process')
         ]
 
-    voucher_no = models.IntegerField(unique=True ,blank=False ,null=False)
+    voucher_no = models.CharField(unique=True ,blank=False ,null=False)
     source_warehouse = models.ForeignKey(Godown_finished_goods, on_delete=models.PROTECT , related_name='source_warehouse')
     destination_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT, related_name='destination_warehouse')
     created_date = models.DateTimeField(auto_now_add = True)

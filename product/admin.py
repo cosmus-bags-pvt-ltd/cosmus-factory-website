@@ -12,17 +12,18 @@ class PProductCreationInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     inlines = [PProductCreationInline]
 
-admin.site.register(Product, ProductAdmin)
+# admin.site.register(Product, ProductAdmin)
 
-admin.site.register(Color)
-admin.site.register(ProductImage)
-admin.site.register(MainCategory)
-admin.site.register(PProduct_Creation)
-admin.site.register(AccountGroup)
-admin.site.register(AccountSubGroup)
-admin.site.register(StockItem)
-admin.site.register(gst)
-admin.site.register(item_godown_quantity_through_table)
+# admin.site.register(Color)
+# admin.site.register(ProductImage)
+# admin.site.register(MainCategory)
+# admin.site.register(PProduct_Creation)
+# admin.site.register(AccountGroup)
+# admin.site.register(AccountSubGroup)
+# admin.site.register(StockItem)
+# admin.site.register(gst)
+# admin.site.register(item_godown_quantity_through_table)
+admin.site.register(Finished_goods_Stock_TransferMaster)
 
 
 
