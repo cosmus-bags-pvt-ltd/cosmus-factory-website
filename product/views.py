@@ -7974,7 +7974,7 @@ def add_zone_in_warehouse(request,id):
     form = finished_goods_warehouse_zone_form()
     zones = finished_goods_warehouse_zone.objects.filter(warehouse_finished_name = warehouse_id)
 
-    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'zones':zones,'warehouse_name':warehouse_name})
+    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'zones':zones,'warehouse_name':warehouse_name,'warehouses':warehouses})
 
 
 
