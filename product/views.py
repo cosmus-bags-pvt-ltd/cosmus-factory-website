@@ -7955,6 +7955,13 @@ def process_serial_no(request):
 def add_zone_in_warehouse(request,id):
     warehouse_id = get_object_or_404(Finished_goods_warehouse, id=id)
     warehouse_name = warehouse_id.warehouse_name_finished
+    warehouses = Finished_goods_warehouse.objects.filter(warehouse_name_finished = warehouse_name).prefetch_related('warehouses__zones__racks').all()
+
+    # print(warehouses)
+
+    # for warehouse in warehouses:
+    #     for zone in warehouse.warehouses.all():
+    #         print(zone.zone_name)
 
     if request.method == "POST":
         form = finished_goods_warehouse_zone_form(request.POST)
@@ -9673,15 +9680,18 @@ def finished_goods_sorting_list(request):
     finished_goods_purchase_voucher_instances = product_purchase_voucher_master.objects.all().annotate(
         total_recieved_qty= Sum('product_purchase_voucher_items__quantity_total'), 
         total_qc_qty=Sum('product_purchase_voucher_items__qc_recieved_qty'),
-        total_diff_qty = Sum('product_purchase_voucher_items__diffrence_qty')
+        total_diff_qty = Sum('product_purchase_voucher_items__diffrence_qty'),
+        total_boxex_qty = Sum('product_purchase_voucher_items__product_name__Product__Product_QtyPerBox')
         )
-
+    
 
     finished_goods_transfer_m_instances = Finished_goods_Stock_TransferMaster.objects.filter(transnfer_cancelled=False).annotate(
-        total_recieved_qty= Sum('finished_goods_transfer_records__product_quantity_transfer'), 
-        total_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),
-        total_diff_qty = Sum('finished_goods_transfer_records__diffrence_qty')
-        )   
+    total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer'), 
+    total_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),
+    total_diff_qty=Sum('finished_goods_transfer_records__diffrence_qty'),
+    total_boxex_qty=Sum('finished_goods_transfer_records__product__Product__Product_QtyPerBox')
+    )
+   
     
 
     finished_goods_all_records = list(finished_goods_purchase_voucher_instances) + list(finished_goods_transfer_m_instances)
