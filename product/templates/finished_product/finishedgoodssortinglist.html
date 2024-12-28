@@ -106,19 +106,19 @@
                 var statusCheck = row.querySelector('.stausCheck')
                 if(receivedQty === 0){
                     statusCheck.textContent = "Pending";
-                    statusCheck.style.color = "red";
                     statusCheck.classList.add('stock-btn')
+                    statusCheck.style.background = "linear-gradient(45deg, #E2484A, #963A3A)"
 
                 }else{
                     statusCheck.textContent = "Receiving";
-                    statusCheck.style.color = "green";
                     statusCheck.classList.add('stock-btn')
+                    statusCheck.style.background = "linear-gradient(45deg, #269dc7, #0a5f98)"
                 
                 }
                 if(totalQty === receivedQty){
                     statusCheck.textContent = "Closed"
-                    statusCheck.style.color = "grey";
                     statusCheck.classList.add('stock-btn')
+                    statusCheck.style.background = "linear-gradient(45deg, #CECECE, #E8E8E8)"
                 }
             })
         }

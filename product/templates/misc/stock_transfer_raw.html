@@ -502,19 +502,10 @@
             var stockDataObject;
             let stockData =$('#id_godownData').val();
             console.log("stockData",stockData)
-            console.log("stockData",)
-           
-            let sanitizedData = stockData
-            .replace(/'/g, '"')  // Replace single quotes with double quotes
-            .replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":')  // Add quotes around numeric keys
-            .replace(/(\d+):/g, '"$1":');
-
-            console.log('Sanitized stockData:', sanitizedData);
-
-            // Step 2: Try parsing the sanitized data as JSON
+    
             try {
-                let parsedData = JSON.parse(sanitizedData);
-                console.log('Parsed Data:', parsedData);
+                 stockDataObject = JSON.parse(stockData);
+                console.log('Parsed Data:', stockDataObject);
             } catch (error) {
                 console.error('Error parsing JSON:', error);
             }
