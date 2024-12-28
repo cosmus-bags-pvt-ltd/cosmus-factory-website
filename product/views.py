@@ -2088,8 +2088,10 @@ def stockTrasferRaw(request, pk=None):
         source_godown_items = item_godown_quantity_through_table.objects.filter(godown_name = raw_transfer_instance.source_godown.id)
         page_name = 'Edit Stock Transfer'
 
-        source_godown_items_dict = {x.Item_shade_name.items.id : [x.Item_shade_name.items.item_name] for x in source_godown_items}
+        source_godown_items_dict = {x.Item_shade_name.items.id : x.Item_shade_name.items.item_name for x in source_godown_items}
         
+        source_godown_items_dict_json = json.dumps(source_godown_items_dict)
+
         # print(source_godown_items_dict)
         
     
@@ -2130,7 +2132,7 @@ def stockTrasferRaw(request, pk=None):
             return redirect('stock-transfer-raw-list')
 
 
-    context = {'masterstockform':masterstockform,'formset':formset,'godowns':godowns,'source_godown_items':source_godown_items,'source_godown_items_dict':source_godown_items_dict,'page_name':page_name}
+    context = {'masterstockform':masterstockform,'formset':formset,'godowns':godowns,'source_godown_items':source_godown_items,'source_godown_items_dict':source_godown_items_dict_json,'page_name':page_name}
 
     return render(request,'misc/stock_transfer_raw.html', context=context)
 
@@ -6762,10 +6764,19 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     
                     diffrence_qty = total_po_qty - total_cutting_qty
-
                     
-                    godown_item_instance = item_godown_quantity_through_table.objects.get(Item_shade_name__items__item_name = key, godown_name=estimation_master_instance.raw_material_godown_id)
-                    godown_qty = godown_item_instance.quantity
+
+
+                    # godown_item_instance = item_godown_quantity_through_table.objects.get(Item_shade_name__items__item_name = key, godown_name = estimation_master_instance.raw_material_godown_id)
+                    # godown_qty = godown_item_instance.quantity
+
+                    godown_items = item_godown_quantity_through_table.objects.filter(
+                        Item_shade_name__items__item_name=key, 
+                        godown_name=estimation_master_instance.raw_material_godown_id
+                    )
+                    godown_qty = sum(item.quantity for item in godown_items)
+                    
+                    
 
                 except ObjectDoesNotExist:
                     godown_qty = 0
@@ -7050,6 +7061,8 @@ def raw_material_estimation_calculate(request,u_id):
                     'mobile_no' : mobile,
                 })
             # print(dataset_to_send)
+            for_excel = json.dumps(dataset_to_send, default=custom_serializer)
+            
         else:
             dataset_to_send = []
             
@@ -7067,6 +7080,8 @@ def raw_material_estimation_calculate(request,u_id):
                     p_name = None
                     mobile = None
 
+
+
                 dict_to_apnd = {
                     # 'id':dataset['id'],
                     'item_id' : item.id,
@@ -7081,11 +7096,21 @@ def raw_material_estimation_calculate(request,u_id):
                 }
 
                 dataset_to_send.append(dict_to_apnd)
+            for_excel = json.dumps(dataset_to_send, default=custom_serializer)
+
+        return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':dataset_to_send,'for_excel':for_excel})
 
 
-        return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data':dataset_to_send})
+
+
 
    
+def custom_serializer(obj):
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    if obj is None:
+        return None
+    raise TypeError("Type not serializable")
 
 
 
@@ -7109,39 +7134,36 @@ def raw_material_estimate_delete(request,pk):
 
 
 
+def raw_material_estimation_calculate_excel_download(request):
 
-def raw_material_estimation_calculate_excel_download(request,id):
-
-    estimation_master_instance = get_object_or_404(raw_material_production_estimation, pk = id)
-    response_dict = raw_material_production_total.objects.filter(raw_material_estination_master = estimation_master_instance).values('item_name','total_consump','godown_stock','balance_stock')
-
+    final_dict = request.GET.get('finalDic')
+    
+    data = json.loads(final_dict)
+    
     wb = Workbook()
     default_sheet = wb['Sheet']
     wb.remove(default_sheet)
-
     wb.create_sheet('Product Estimation')
     sheet1 = wb.worksheets[0]
-    headers =  ['item name','total consump','godown stock','balance stock']
+    headers = ['Item ID', 'Material Name', 'Total Consumption', 'Cutting Consumption', 'LWO Consumption', 'Godown Stock', 'Balance Stock', 'Party Name', 'Mobile No']
     sheet1.append(headers)
 
-    column_widths = [40, 20, 20, 20]
-    for col_num, width in enumerate(column_widths, start=1):
-        col_letter = sheet1.cell(row=1, column=col_num).column_letter
-        sheet1.column_dimensions[col_letter].width = width
+    for item in data:
+        sheet1.append([item.get('item_id'), item.get('material_name'), item.get('total_consump'),
+                       item.get('cutting_consumption'), item.get('lwo_consumption'), item.get('godown_stock'),
+                       item.get('balance_stock'), item.get('party_name'), item.get('mobile_no')])
+    
+    
+    file_output = BytesIO()
+    wb.save(file_output)
+    file_output.seek(0)  # Rewind to the beginning of the file
 
-    for row in response_dict:
-        sheet1.append([
-            row.get('item_name'),
-            row.get('total_consump'),
-            row.get('godown_stock'),
-            row.get('balance_stock'),
-        ])
-
-    fileoutput = BytesIO()
-    wb.save(fileoutput)
-    response = HttpResponse(fileoutput.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    # Return a binary response
+    response = HttpResponse(file_output.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="Product_Estimation.xlsx"'
+    
     return response
+
         
 
 
