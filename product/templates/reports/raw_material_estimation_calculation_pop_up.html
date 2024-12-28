@@ -3,6 +3,7 @@
 {% block body %}
 <div class="mt-2">
     <div class="responsives mb-3">
+        <input type="hidden" value="{{for_excel}}" id="finalDic">
         <table class="table table-hover table-bordered table-striped">
             <thead class="name_absolute sticky-top">
                 <tr>
@@ -41,11 +42,11 @@
 
     <div class="mt-2" >
         <button type="submit" class="newProductCreateBtn" id="checkboxSubmit" >Submit</button>
-        {% if instance_exists_check %}
+      
 
-        <button><a class="modal-btn" style = "text-decoration: none;" href="{% url 'raw-material-estimation-calculate-excel-download' product_estimation_form.instance.pk %}">Download Excel</a></button>
+        <button type="button" onclick= "downloadRawmaterial(this)" class="add_btn">Download Excel</button>
     
-    {% endif %}
+
     </div>
     
  
@@ -91,6 +92,67 @@
         })  
     }
     balanceQty()
+
+    {% comment %} function downloadRawmaterial(button) {
+        var finalDic = document.getElementById('finalDic').value;
+        console.log('finalDic', finalDic);
+
+        newDict = JSON.stringify(finalDic)
+
+        $.ajax({
+            url: "/rawmaterialestimationcalculateexceldownload/",
+            type: "GET",
+            data: {
+                "finalDic": newDict,
+            },
+           
+            success: function(response) {
+                console.log(response);
+            },
+           
+        });
+    } {% endcomment %}
+    
+
+
+    function downloadRawmaterial(button) {
+        var finalDic = document.getElementById('finalDic').value; // This should already be a valid JSON string
+        console.log('Raw finalDic value:', finalDic);
+    
+        try {
+            // Parse the string to ensure it's valid JSON
+            let parsedDic = JSON.parse(finalDic);
+            console.log('Parsed finalDic:', parsedDic);
+    
+            // Send data to the server
+            $.ajax({
+                url: "/rawmaterialestimationcalculateexceldownload/",
+                type: "GET",
+                data: {
+                    "finalDic": JSON.stringify(parsedDic), // Stringify the JSON object again for transmission
+                },
+                xhrFields: {
+                    responseType: 'arraybuffer' // Important to handle binary data
+                },
+                success: function(response) {
+                    // Create a Blob from the binary response
+                    var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    var link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "Product_Estimation.xlsx";  // Set the download filename
+                    link.click();  // Trigger the download
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error during download:", error);
+                }
+            });
+        } catch (e) {
+            console.error('Invalid JSON format in finalDic:', e.message);
+            alert('The provided data is not in valid JSON format.');
+        }
+    }
+    
+    
 </script>
 
 

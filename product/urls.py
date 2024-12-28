@@ -230,7 +230,7 @@ urlpatterns = [
 
     path('rawmaterialestimatedelete/<int:pk>',views.raw_material_estimate_delete,name= 'raw-material-estimate-delete'),
 
-    path('rawmaterialestimationcalculateexceldownload/<int:id>',views.raw_material_estimation_calculate_excel_download, name = 'raw-material-estimation-calculate-excel-download'),
+    path('rawmaterialestimationcalculateexceldownload/',views.raw_material_estimation_calculate_excel_download, name = 'raw-material-estimation-calculate-excel-download'),
 
 
     # product_purchase_voucher
