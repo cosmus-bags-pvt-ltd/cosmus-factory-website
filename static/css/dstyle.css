@@ -1159,15 +1159,7 @@ input[type=number] {
     top: 10px;
     left: 74px; 
 }
-/* 
-.unit_btn{
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 2px 7px;
-    margin: 2px 5px;
-    background: linear-gradient(45deg, #2ed8b6, #59e0c5);
-}
+
 /*=======Package group item======*/
 .package_btn{
     color: #fff;

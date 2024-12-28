@@ -108,11 +108,11 @@
                                 <td>{{item.material_name}}</td>
                                 <td>{{item.Fabric_Group}}</td>
                                 <td>{{item.Item_Color}}</td>
-                                <td>{{item.total_qty}}</td>
+                                <td class="totalQty">{{item.total_qty}}</td>
                                 <td>{{item.unit_name}}</td>
                                 <td>{{item.cutting_consumption}}</td>
                                 <td>{{item.lwo_consumption}}</td>
-                                <td>{{item.balance}}</td>
+                                <td class="balanceValue">{{item.balance}}</td>
                                 <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.item_id }}"></td>
                                 <td></td>
                                 <td></td>
@@ -228,7 +228,27 @@
         });
     });
     
-
+    function valueCheck(){
+        var balanceQty = document.querySelectorAll('.balanceValue');
+        var totalQty = document.querySelectorAll('.totalQty');
+        balanceQty.forEach(function(item){
+            var balancevalue = parseFloat(item.textContent);
+            if(balancevalue >= 0){
+                item.style.color = "green";
+            }else{
+                item.style.color = "red";
+            }
+        })
+        totalQty.forEach(function(item){
+            var godownQty = parseFloat(item.textContent);
+            if(godownQty >= 0){
+                item.style.color = "green"; 
+            }else{
+                item.style.color = "red";
+            }
+        })
+    }
+    valueCheck()
 </script>
 {% endblock body %}
 
