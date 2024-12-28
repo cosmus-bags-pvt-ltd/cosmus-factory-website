@@ -621,15 +621,15 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     window.onload = function(){
         var labourWorkOutId = document.getElementById('id_challan_no');
-        console.log(labourWorkOutId)
+        
         labourWorkOutId.focus();
     }
   
-    forms.addEventListener("keydown", function (event) {
-        if (event.key === "Enter" && event.target.type !== "submit") {
-            event.preventDefault(); // Prevent form submission
-        }
-    });
+    // forms.addEventListener("keydown", function (event) {
+    //     if (event.key === "Enter" && event.target.type !== "submit") {
+    //         event.preventDefault(); // Prevent form submission
+    //     }
+    // });
 
     labourName.addEventListener("keydown", function (event) {
         if (event.key === 'Tab') {

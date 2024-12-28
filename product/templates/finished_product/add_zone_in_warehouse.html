@@ -1,7 +1,7 @@
 {% extends 'product/base.html' %}
 {% load static %}
 {% block body %}
-    <div class="row mt-4">
+<div class="row mt-4">
         <div class="col-lg-5">
             <h2 class="fw-bold mb-3">{{ warehouse_name }}</h2>
           <form action="" method="POST" id="colorForm">
@@ -55,57 +55,155 @@
               </div>
             </div>
           </div>
+       
+        </div>
+
+      </div>
+      <div class="row mt-2">
+        {% for warehouse in warehouses %}
+        <button class="edit_btn fw-bold w-75" type="button" id="collapseExampleBtn" data-bs-toggle="collapse" aria-expanded="false" >
+          <img src="../../../static/images/distribution-center_18207949.png" width="25px">
+          <span class="ms-2 fw-bold">{{ warehouse.warehouse_name_finished }}</span><span style="padding-left: 365px;"><i class="fas fa-angle-right arrowBtn"></i></span>
+        </button>
+        <div class="collapse card w-75" id="collapseExample" style="display: none;">
+          <div>
+            {% for zone in warehouse.warehouses.all %}
+            <button class="product_btn w-100 mt-1 mb-2 collapseExamplezoneBtn" type="button">
+              <img src="../../../static/images/product_13271495.png" width="25px">
+              <span class="ms-2">{{ zone.zone_name }}</span><span style="padding-left: 360px;"><i class="fas fa-angle-right arrowBtn"></i></span>
+            </button>
+            <div class="collapseExamplezone" style="display: none;">
+              <table >
+                <tr class=" mainrawTable">
+                  {% for rack in zone.zones.all %}
+                  <th>
+                    <button class="btn btn-primary ms-3" type="button">
+                      <img src="../../../static/images/warehouse_5161243.png" width="25px">
+                      {{ rack.rack_name }}
+                    </button>
+                    <table class="table table-striped table-hover table-bordered ms-3" >
+                      {% for bin in rack.racks.all %}
+                      <tr>
+                        <td>
+                          <img src="../../../static/images/bin.jpeg" width="25px">
+                          <span class="ms-2">{{ bin.bin_name }}</span>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </table>
+                  </th>
+                  {% endfor %}
+                </tr>
+              </table>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
       
-          <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="modal-body-text">
-                  Are you sure you want to delete the zone is?
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
-                  <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
-                </div>
-              </div>
+ 
+
+    
+
+      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-body-text">
+              Are you sure you want to delete the zone is?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
+              <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
             </div>
           </div>
         </div>
       </div>
       
-      <script>
-        document.body.appendChild(document.getElementById('exampleModal'));
-        document.addEventListener("DOMContentLoaded", function () {
-          window.onload = function() {
-              document.getElementById("id_color_name").focus();
-          };
-        })
-        $(document).ready(function () {
-          $('#colorForm').on('submit', function () {
-            $('#submitButtoncreateColorUpdate').attr('disabled','disabled');
-          });
-          $('.delete-btn').click(function () {
-            var itemId = $(this).data('item-id');
-            var name = $(this).closest('tr').find('td').eq(1).text();
-            var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
-            $('#modal-body-text').html('Are you sure you want to delete the Zone is ' + coloredName + '?');
-            $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
-            $('#exampleModal').modal('show');
+<script>
+  document.body.appendChild(document.getElementById('exampleModal'));
+  document.addEventListener("DOMContentLoaded", function () {
+    window.onload = function() {
+      document.getElementById("id_zone_name").focus();
+    };
+  })
+
+$(document).ready(function () {
+  $('#colorForm').on('submit', function () {
+    $('#submitButtoncreateColorUpdate').attr('disabled','disabled');
+  });
+  
+  $('.delete-btn').click(function () {
+    var itemId = $(this).data('item-id');
+    var name = $(this).closest('tr').find('td').eq(1).text();
+    var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
+
+    $('#modal-body-text').html('Are you sure you want to delete the Zone is ' + coloredName + '?');
+    $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
+    $('#exampleModal').modal('show');
       
       
-          });
-      
-          // Confirm delete button click event
-          $('#confirmDeleteButton').click(function () {
-            var itemId = $(this).data('item-id');
-            // Redirect to delete view
-            window.location.href = '/deletezoneinwarehouse/' + itemId;
-          });
-        });
-      
-        
-      </script>
+  });
+    $('#confirmDeleteButton').click(function () {
+       var itemId = $(this).data('item-id');
+        window.location.href = '/deletezoneinwarehouse/' + itemId;
+      });
+ });
+    
+    
+ document.addEventListener("DOMContentLoaded", function () {
+  // Toggle warehouse visibility
+  document.querySelectorAll("#collapseExampleBtn").forEach((button) => {
+    button.addEventListener("click", function () {
+      const dataContainer = this.nextElementSibling; // Get the associated collapse container
+      const icon = this.querySelector(".arrowBtn");
+      if (dataContainer.style.display === "none" || !dataContainer.style.display) {
+        dataContainer.style.display = "block";
+        icon.classList.add("rotate");
+      } else {
+        dataContainer.style.display = "none";
+        icon.classList.remove("rotate");
+      }
+    });
+  });
+
+  // Event delegation for zones
+  document.querySelectorAll('.collapseExamplezoneBtn').forEach((button) => {
+  button.addEventListener("click", function () {
+    console.log('button clicked:', button);
+
+    // Locate the specific zone container related to the button
+    const zoneContainer = button.nextElementSibling; // Get the sibling element (zone container)
+    console.log('zoneContainer:', zoneContainer);
+    const icon = button.querySelector(".arrowBtn");
+    if (zoneContainer) {
+      // Hide other zone containers in the same warehouse
+      const siblingZones = button.closest("div").querySelectorAll(".collapseExamplezone");
+      siblingZones.forEach((zone) => {
+        if (zone !== zoneContainer) {
+          zone.style.display = "none"; // Hide other zones
+        }
+      });
+
+      // Toggle visibility of the clicked zone container
+      if (zoneContainer.style.display === "none" || !zoneContainer.style.display) {
+        zoneContainer.style.display = "block"; // Show the clicked zone
+        icon.classList.add("rotate");
+      } else {
+        zoneContainer.style.display = "none"; // Hide the clicked zone
+        icon.classList.remove("rotate");
+      }
+    }
+  });
+});
+
+
+});
+
+   
+</script>
 {% endblock body %}

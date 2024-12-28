@@ -1491,6 +1491,14 @@ input[type=number] {
     border-radius: 10px;
     
 }
+.product_btn {
+    background: linear-gradient(45deg, #9127c7, #67649f);
+    color: white;
+    padding: 4px 8px;
+    font-size: 19px;
+    border: none;
+    border-radius: 10px;
+}
 
 .sticky-top {
     position: sticky;
@@ -2183,11 +2191,6 @@ table>:not(caption)>*>*{
 }
 
 
-/*===loading spinner===*/
- /* Styling for invalid fields */
- .is-invalid {
-    border: 2px solid red;
-}
 
 /*===product cart rating===*/
  @media screen and (max-width: 600px) {
