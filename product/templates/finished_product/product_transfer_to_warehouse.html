@@ -134,7 +134,7 @@
                         <input type="text" value="{{form.instance.product_quantity_transfer|default_if_none:''}}" class="purchase-amount stock_qty" name="{{form.prefix}}-product_quantity_transfer" maxlength="200" id="id_{{form.prefix}}-product_quantity_transfer">
                     </td>
                     <td>
-                        <input type="text" value="NOS" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-mark" style="outline: none;" readonly>
+                        <input type="text" value="{{form.instance.product.Product.Product_UOM}}" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-mark" style="outline: none;" readonly>
                     </td>
                     <td>
                         <button class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-transnfer_cancelled_records" id="id_{{form.prefix}}-transnfer_cancelled_records" value="{{ form.instance.transnfer_cancelled_records }}"></i></button>
@@ -151,7 +151,7 @@
           {% endif %}
           <div class="ms-2 mt-5">
             <label for="id_narration" class="purchase-lable fw-bold me-2">Narration :</label>
-            <input type="text" class="productpurchaseInvoice ps-2" name="narration" id="id_narration" value="">
+            <input type="text" class="productpurchaseInvoice ps-2" name="narration" id="id_narration" value="{{form.instance.narration |default_if_none:''}}">
 
         </div>
      

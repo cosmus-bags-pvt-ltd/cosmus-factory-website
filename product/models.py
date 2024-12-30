@@ -39,12 +39,16 @@ class CompanyBaseModel(models.Model):
         super().save(*args, **kwargs)
 
 
+
+
 class MainCategory(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
     product_category_name = models.CharField(max_length = 250, unique = True)
 
     def __str__(self):
         return self.product_category_name   
+
+
 
 
 class SubCategory(models.Model):
