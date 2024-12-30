@@ -104,7 +104,10 @@
                           <input  type="text" value="{{form.instance.product_quantity_transfer|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity_transfer" maxlength="200" id="id_{{form.prefix}}-product_quantity_transfer" readonly>
                       </td>
                       <td>
-                          <input  type="text" value="NOS" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-mark" readonly style="outline: none;">
+                          <input  type="text" value="{{form.instance.product.Product.Product_UOM}}" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-amount stock_units" readonly>
+                      </td>
+                      <td>
+                          <input  type="text" value="{{form.instance.remarks|default_if_none:''}}" class="purchase-amount stock_remarks" name="{{form.prefix}}-remarks" maxlength="255" id="id_{{form.prefix}}-remarks" readonly>
                       </td>
                       <td>
                           <span class="delete-btn border-0 bg-transparent" style="cursor: pointer; display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-transnfer_cancelled_records" id="id_{{form.prefix}}-transnfer_cancelled_records" value="" readonly></i></span>
