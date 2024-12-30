@@ -88,7 +88,7 @@
         checkboxes.forEach(elements => {
             var rows = elements.closest('tr');
             var balanceQty = rows.querySelector('[name$="-pending_for_approval"]');
-            var cuttingQty = rows.querySelector('[name$="-L_work_out_pcs"]');
+            var cuttingQty = rows.querySelector('[name$="-return_pcs"]');
             var approveValue = parseInt(rows.querySelector('.approvedReadonlyhidden').value) || 0;
             var updateBalance = parseInt(rows.querySelector('[name$= "-pending_for_approval_pcs"]').value) || 0;
             var balanceValue = parseInt(balanceQty.value) || 0;

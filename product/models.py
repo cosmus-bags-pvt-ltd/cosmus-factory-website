@@ -1114,7 +1114,6 @@ class Finished_goods_Stock_TransferMaster(models.Model):
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
     transnfer_cancelled = models.BooleanField(default = False)
-    narration = models.CharField(max_length=255)
     actions = models.CharField(max_length=20, choices = ACTIONS)
 
 

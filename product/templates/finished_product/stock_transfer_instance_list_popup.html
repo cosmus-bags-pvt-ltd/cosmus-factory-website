@@ -128,9 +128,7 @@
                                 <td>
                                     <img id="productImgPreview" name="product_img" src="" alt="Product Image" style="width: 60px; height: 60px;">
                                </td>
-                                <!-- <td><select  class="productSelect" name="product_bin" id="id_bin_Name">
-                                    </select>
-                                </td> -->
+                            
                                 
                             </tr>
                          
@@ -243,8 +241,8 @@
         const id_voucher_no = document.getElementById('id_voucher_no').value;
         const instancId = parseInt(document.getElementById('id_hiddenId').value);
         const voucherType = document.getElementById('id_voucher_type').value;
-        console.log(id_voucher_no)
-
+   
+        const selectBin = document.getElementById('id_bin_Name')
         $.ajax({
             url: '/stocktransferinstancelistpopup/${instancId}/${voucherType}',
             type: 'GET',
@@ -255,13 +253,21 @@
         })
         // Focus on input field and hide table initially for `inwordSerialNo`
         inwardSearch.focus();
+
         inwardSearch.addEventListener('input', function () {
+            console.log(inwardSearch.value)
             inwardSearch.style.color = 'white';
             responseMessage.html(''); // Clear any previous messages
             if (inwardSearch.value) {
                 stockTable.style.display = "block";
                 manualSearch.value = ''; // Clear manual search if `inwordSerialNo` has input
-            }
+                inwardSearch.addEventListener('keydown',function(event){
+                    event.preventDefault();
+                    if(event.key === "Tab"){
+                        selectBin.focus();
+                    }
+                })
+                    }
         });
     
         // Add similar event listener for `id_manualSerialNo`

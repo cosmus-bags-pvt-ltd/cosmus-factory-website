@@ -2,7 +2,7 @@
 {% load static %}
 {% block body %}
 
-<div class="col-lg-10 mt-2">
+<div class="col-lg-10 mt-2 table-responsive">
     <table class="table table-hover table-bordered table-striped">
         <thead class="sticky-top name_absolute">
             <tr>
@@ -13,12 +13,13 @@
                 <th>Color</th>
                 <th>SKU ID</th>
                 <th>Total Rec As LWI</th> 
+                <th>QC Pending PCs</th>
                 <th>Total QC APP QTY</th>
                 <th>Sales</th>
                 <th>Total Qty</th> 
             </tr>
         </thead>
-        <tbody class="mainTableList">
+        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
             {% for query in product_queryset %}
             <tr class="text-nowrap">
                 <td>{{forloop.counter}}</td>
@@ -29,9 +30,10 @@
                 <td>{{query.Product.Model_Name}}</td>
                 <td>{{query.PProduct_color}}</td>
                 <td>{{query.PProduct_SKU}}</td>
-                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}">{{query.total_labour_workin_qty | default_if_none:0}}</a></button></td>
-                <td> <button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #10a7ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}">{{query.total_qty | default_if_none:0}}</a></button></td>
-                <td>0</td>
+                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}"><span class="totalLwiQty">{{query.total_labour_workin_qty | default_if_none:0}}</span></a></button></td>
+                <td class="QcpendingQty">0</td>
+                <td> <button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #10a7ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"> <span class="totalQty">{{query.total_qty | default_if_none:0}}</span></a></button></td>
+                <td></td>
                 <td class="toatlQty">{{query.total_qty | default_if_none:0}}</td>
             </tr>
             {% endfor %}
@@ -45,17 +47,20 @@
         var  totalqty = document.querySelectorAll('.toatlQty');
         totalqty.forEach(element => {
             var value = element.textContent;
-        
+            var totalLwi = parseInt(element.closest('tr').querySelector('.totalLwiQty').textContent);
+            var totaQty = parseInt(element.closest('tr').querySelector('.totalQty').textContent);
+            console.log(totalLwi)
             if(value > 0){
                 element.style.color = "green";
             }else{
                 element.style.color = "red";
             }
-
+            var QcPending = totalLwi - totaQty;
+            element.closest('tr').querySelector('.QcpendingQty').textContent = QcPending;
         });
     }
 
     
-    finshegoodsData();
+    totalValueCheck();
 </script>
 {% endblock %}
