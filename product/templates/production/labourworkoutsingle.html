@@ -319,7 +319,8 @@ function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
 <script>
 // document.body.appendChild(document.getElementById('exampleModal'));
  $(document).ready(function(){
-
+    var formId = $('#id_labour_workout_cutting_items_set-0-id').val();
+    if(formId === ''){
         $('#id_challan_no').on('focusout',function(){
             var challanNo = $(this).val();
             var challanId = $("#id_challan_no");
@@ -358,13 +359,21 @@ function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
             }
             
         })
-        // $('#labourWorkOutForm').off('submit').on('submit',function(){
-        //     var submitButton = $('#id_submitLabourWorkOut');
-        //     var forms = $('#exampleModal');
-    
-        //     submitButton.val('Loading...');
-        //     // forms.show();
-        // })
+        
+        $(document).on('focus','input[name$="-processed_pcs"]',function(){
+
+            $(this).val('');
+        })
+        $(document).on('focusout','input[name$="-processed_pcs"]',function(){
+
+            var value = $(this).val();
+            console.log(typeof(value))
+            if(value === ''){
+                $(this).val('0') 
+            }
+        })
+    }
+        
     })
 
    
@@ -610,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const forms = document.getElementById('labourWorkOutForm')
     const labourName = document.getElementById('id_labour_name') 
     pendingQty.forEach(function(el){
-       
+     
       el.addEventListener('input',function(){
          balanceQty();
         fabricQty();

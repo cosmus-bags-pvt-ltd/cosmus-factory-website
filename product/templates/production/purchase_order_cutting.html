@@ -305,7 +305,10 @@
 <script>
 // document.body.appendChild(document.getElementById('exampleModal'));
 $(document).ready(function(){
-        $('#id_raw_material_cutting_id').on('focusout',function(){
+    var newId = $('#id_purchase_order_to_product_cutting_set-0-id').val();
+    console.log(typeof(newId));
+        if(newId === ''){
+            $('#id_raw_material_cutting_id').on('focusout',function(){
             var cutting_number = $(this).val();
             var cutting_order = $("#id_raw_material_cutting_id");
             var errorElement = $('#cuttingError'); // The error message element
@@ -337,7 +340,22 @@ $(document).ready(function(){
 
             })
             
-        })
+            })
+           
+            $(document).on('focus','input[name$="-cutting_quantity"]',function(){
+
+                $(this).val('');
+            })
+            $(document).on('focusout','input[name$="-cutting_quantity"]',function(){
+                
+                var value = $(this).val();
+                console.log(typeof(value))
+                if(value === ''){
+                    $(this).val('0') 
+                }
+            })
+        }
+        
 
 
     })
@@ -411,6 +429,7 @@ function checkOnlyOne(checkbox) {
             const processQtyValue = parseFloat(processQty.value) || 0;
             const cuttingQtyValue = parseFloat(cuttingQty.value) || 0;
            
+
             if(cuttingQtyValue > processQtyValue){
 
                 document.getElementById('id_purchase_order_to_product_cutting_set-'+ i +'-cutting_quantity').value = 0;
@@ -707,9 +726,9 @@ function updateCuttingQuantity(finalTotal){
             }
             
         })
-
+        
         qty.forEach(element => {
-            
+          
             element.addEventListener('input', () => {
                 cuttingOrder();
                 updateCuttingQuantity();
@@ -762,16 +781,18 @@ function updateCuttingQuantity(finalTotal){
 
 <script>
    document.addEventListener("DOMContentLoaded", function () {
+    const forms = document.getElementById('id_purchase_order_to_product_cutting_set-0-id').value;
+    if(forms === ''){
         const form = document.getElementById("purchaseOrderForm");
         const submitButton = document.getElementById("id_submitPurchaseOrderCutting");
         //let modal = document.getElementById("exampleModal");
 
 
-        if (!form || !submitButton || !modal) {
-        console.error("Required elements are missing in the DOM.");
-        //modal.style.display = "none";
-        return; // Exit early if any element is missing
-        }
+        // if (!form || !submitButton || !modal) {
+        // console.error("Required elements are missing in the DOM.");
+        // //modal.style.display = "none";
+        // return; // Exit early if any element is missing
+        // }
 
         // Handle form submission
         form.addEventListener("submit", function (event) {
@@ -817,6 +838,8 @@ function updateCuttingQuantity(finalTotal){
             form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
             //modal.style.display = "block";
         });
+    }
+        
     });
 </script>
 {% endblock %}
