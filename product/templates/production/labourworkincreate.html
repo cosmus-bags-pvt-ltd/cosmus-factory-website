@@ -359,7 +359,7 @@
     var balancepc= 0;
     var issueValue = 0;
     var receivedValue = 0;
- 
+    console.log('labourId',labourId)
     if(labourId != ''){
         var totalReturn = document.querySelectorAll('[name$="-return_pcs"]');
         var refNo = document.getElementById('id_voucher_number');
@@ -392,8 +392,9 @@
 
     }else{
         var totalReturnPcs = document.querySelectorAll('[name$="-return_pcs"]');
-
+            
         totalReturnPcs.forEach(function(input){
+            
             var returnValue = parseInt(input.value) || 0;
             var row = input.closest('tr'); 
             var balance = parseInt(row.querySelector('input[name$="-pending_to_return_pcs"]').value) || 0;
@@ -453,7 +454,9 @@
     })
     document.body.appendChild(document.getElementById('exampleModal'));
     $(document).ready(function () {
-        $('#id_voucher_number').on('focusout', function () {
+        var formId = $('#id_l_w_in_products-0-id').val();
+        if(formId === ''){
+            $('#id_voucher_number').on('focusout', function () {
             var voucher_number = $(this).val();
             var new_order = $("#id_purchase_order_number");
             var errorElement = $('#labourWorkInError'); // The error message element
@@ -489,14 +492,25 @@
             }
             
         })
+        $(document).on('focus','[name$="-return_pcs"]',function(){
+            $(this).val('')
+        })
+        $(document).on('focusout','[name$="-return_pcs"]',function(){
+            var id = $(this).val();
+            if(id === ''){
+                $(this).val('0');
+            }
+        })
+        }
+        
 
-        $('labourWorkInForm').off('submit').on('submit', function () {
-            var $submitButton = $('#id_submitLabourWorkIn');  // The submit button
-            var originalButtonValue = $('#exampleModal');  // Store original button text
+        // $('labourWorkInForm').off('submit').on('submit', function () {
+        //     var $submitButton = $('#id_submitLabourWorkIn');  // The submit button
+        //     var originalButtonValue = $('#exampleModal');  // Store original button text
 
-            $submitButton.val('Loading...');
-            originalButtonValue.show();
-        });
+        //     $submitButton.val('Loading...');
+        //     originalButtonValue.show();
+        // });
     })
     window.addEventListener("pageshow", function(event) {
         if (event.persisted) {
@@ -504,14 +518,6 @@
         }
     });
 
-    window.addEventListener("popstate", function() {
-
-    var spinnerModalElement = document.getElementById('exampleModal');
-    var spinnerModal = bootstrap.Modal.getInstance(spinnerModalElement);
-   
-    if (spinnerModal) {
-      spinnerModal.hide();
-    }
-  });
+    
 </script>
 {% endblock %}

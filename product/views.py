@@ -7501,7 +7501,7 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
         godown_id = voucher_instance.source_warehouse.id
 
         filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM'))
         
         if filtered_product:
             dict_to_send = {}
@@ -7512,9 +7512,10 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
                 product_name = query.get('product_color_name__Product__Product_Name')
                 product_model_name = query.get('product_color_name__Product__Model_Name')
                 color = query.get('product_color_name__PProduct_color__color_name')
+                uom = query.get('product_color_name__Product__Product_UOM')
                 qty = query.get('quantity')
                 
-                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no]
+                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom]
                 
                 
     else:

@@ -154,7 +154,6 @@
           {% endif %}
           <div class="ms-2 mt-5">
             <label for="id_narration" class="purchase-lable fw-bold me-2">Narration :</label>
-            
             <input type="text" class="productpurchaseInvoice ps-2" name="narration" id="id_narration" value="{{form.instance.narration |default_if_none:''}}">
 
         </div>
@@ -236,7 +235,7 @@
                       const itemPerElement = newTable.querySelector('input[name^="stock_per_"]');
                       itemPerElement.id = `id_stock_per_${newFormCount}`;
                       itemPerElement.name = `stock_per_${newFormCount}`;
-                      itemPerElement.value = "NOS";
+                      itemPerElement.value = "";
   
                       const deleteElement = newTable.querySelector('.stock_deleteId[name^="finished_goods_transfer_records_set-"][name$="-transnfer_cancelled_records"]');
                       deleteElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-transnfer_cancelled_records`;
@@ -301,7 +300,7 @@
       });
       function editStockTransferProduct() {
         var forms = document.getElementById('id_finished_goods_transfer_records_set-TOTAL_FORMS').value;
-        console.log(forms)
+      
         for(var i=0; i<forms; i++){
             var stockId = document.getElementById('id_finished_goods_transfer_records_set-' + i +'-ids').value;
             var stockItemName = document.getElementById('id_finished_goods_transfer_records_set-'+ i+'-products');
@@ -461,14 +460,20 @@
                                 const productColor = selectedValue[1]
                                 const productQty = selectedValue[2];
                                 const productRefNo = selectedValue[4];
+                                const productunitNo = selectedValue[5] ;
+                                console.log('productunitNo'.productunitNo)
+
                                 var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
                                 var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
                                 var productSkuInputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');                    
                                 var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');
+                                var UnitsValue = document.getElementById('id_stock_per_' + purchaseValue );
                                 productcolorinput.value = productColor;
                                 // productQtyinputs.value = productQty ;
                                 productSkuInputs.value = item_value;
                                 productRefNoValue.value = productRefNo;
+                          
+                                UnitsValue.value = productunitNo;
                             }
                         
                             suggestionsContainer.css('display', 'none');
@@ -584,14 +589,20 @@
 
                                 const productColor = selectedValue[1];
                                 const productQty = selectedValue[2];
+                                const productRefId = selectedValue[4];
+                                const productUnit = selectedValue[5];
+
+
                                 var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
                                 var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
                                 var productSkuInputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');                    
                                 var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');
+                                var UnitsValue = document.getElementById('id_stock_per_' + purchaseValue );
                                 productcolorinput.value = productColor;
                                 // productQtyinputs.value = productQty ;
                                 productSkuInputs.value = item_value;
-                                productRefNoValue.value = selectedValue[4];
+                                productRefNoValue.value = productRefId;
+                                UnitsValue.value =productUnit;
                             }
   
 
@@ -707,24 +718,29 @@
                       $(this).closest('.custom-dropdown-container').find('[name$="-product"]').val(item_value)
                       $(this).addClass('selected').siblings().removeClass('selected');
 
-                      if (item_value !== undefined) {
+                        if (item_value !== undefined) {
                           var selectedValue = searchedProductNameDic[item_value];
                           var namevalueCheck = selectedValue[3];
                 
                           var newNameValue = namevalueCheck + '-' + item_value;
                           $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(namevalueCheck);
 
-                          const productColor = selectedValue[1]
-                          const productQty = selectedValue[2];
-                          var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
-                          var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
-                        var productSku = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');
-                        var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');  
-                        productcolorinput.value = productColor;
-                        //   productQtyinputs.value = productQty;
-                          productSku.value = item_value;
-                          productRefNoValue.value = selectedValue[4];
-                      }
+                            const productColor = selectedValue[1]
+                            const productQty = selectedValue[2];
+                            const productRef = selectedValue[4];
+                            const productUnits =selectedValue[5]
+                            console.log('productUnits',productUnits)
+                            var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
+                            var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
+                            var productSku = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');
+                            var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo'); 
+                            var UnitsValue = document.getElementById('id_stock_per_' + purchaseValue );
+                            productcolorinput.value = productColor;
+                            //   productQtyinputs.value = productQty;
+                            productSku.value = item_value;
+                            productRefNoValue.value = productRef;
+                            UnitsValue.value =  productUnits;
+                        }
 
                       suggestionsContainer.css('display', 'none');
 
@@ -839,15 +855,19 @@
                             
                                 const productColor = selectedValue[1];
                                 const productQty = selectedValue[2];
+                                const productRef = selectedValue[4];
+                                const productUnit = selectedValue[5];
+
                                 var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
                                 var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
                                 var productSku = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');                   
                                 var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');
+                                var UnitsValue = document.getElementById('id_stock_per_' + purchaseValue );
                                 productcolorinput.value = productColor;
                                 // productQtyinputs.value = productQty ;
                                 productSku.value = item_value;
-                                productRefNoValue.value = selectedValue[4];
-                            
+                                productRefNoValue.value = productRef;
+                                UnitsValue.value = productUnit;
                             }
 
 
