@@ -7647,6 +7647,8 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 
 
 
+
+
 @login_required(login_url='login')
 def product_transfer_to_warehouse_list(request):
     warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('voucher_no')
@@ -7695,7 +7697,7 @@ def product_transfer_to_warehouse_ajax(request):
 
         try:
             filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM'))
            
             if filtered_product:
                 dict_to_send = {}
@@ -7706,9 +7708,10 @@ def product_transfer_to_warehouse_ajax(request):
                     product_name = query.get('product_color_name__Product__Product_Name')
                     product_model_name = query.get('product_color_name__Product__Model_Name')
                     color = query.get('product_color_name__PProduct_color__color_name')
+                    uom = query.get('product_color_name__Product__Product_UOM')
                     qty = query.get('quantity')
                     
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no]
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom]
                 
                 return JsonResponse({'filtered_product':dict_to_send})
             
