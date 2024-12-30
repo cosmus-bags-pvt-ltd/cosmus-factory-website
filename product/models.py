@@ -1115,6 +1115,7 @@ class Finished_goods_Stock_TransferMaster(models.Model):
     voucher_no = models.CharField(unique=True ,blank=False ,null=False)
     source_warehouse = models.ForeignKey(Godown_finished_goods, on_delete=models.PROTECT , related_name='source_warehouse')
     destination_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT, related_name='destination_warehouse')
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
     transnfer_cancelled = models.BooleanField(default = False)
