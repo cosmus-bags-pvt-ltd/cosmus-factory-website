@@ -281,12 +281,14 @@ urlpatterns = [
 
 
     path('labourworkinapprovalsplit/<int:ref_id>', views.labour_workin_approval_split, name= 'labour-workin-approval-split'),
+    path('labourworkinpendingsplit/<int:ref_id>/', views.labour_workin_pending_split, name= 'labour-workin-pending-split'),
     
     path('lwoandlwireportvendorwise/', views.lwo_and_lwi_report_vendor_wise, name='lwo-and-lwi-report-vendor-wise'),
 
     # finished warehouse routes
     path('finishedgoodssortinglist/', views.finished_goods_sorting_list, name='finished-goods-sorting-list'),
     path('stocktransferinstancelistpopup/<int:id>/<str:voucher_type>/', views.stock_transfer_instance_list_and_recieve, name="stock-transfer-instance-list-popup"),
+    path('deletesigleentries/<int:e_id>/<str:voucher_type>/', views.delete_sigle_entries, name="delete-sigle-entries"),
 
     path('addzoneinwarehouse/<int:id>/', views.add_zone_in_warehouse, name="add-zone-in-warehouse"),
     path('editzoneinwarehouse/<int:zone_id>/', views.edit_zone_in_warehouse, name="edit-zone-in-warehouse"),
