@@ -92,11 +92,17 @@
                                     <th>Return QTY</th>
                                 </tr>
                             </thead>
-                            <tbody class="mainTableList">
+                            <tbody class="mainTableList ">
                               
                              
                             </tbody>
+                            <tbody class="mainTable tableTotal">
+                                
+                            </tbody>
+                            
                         </table>
+                       
+                        
                     </div>
                 </div>
                <div class="row">
@@ -148,15 +154,7 @@
 
     <button type="submit" value="Submit" class="create-btn" id="id_submit" style="display: none;">Submit</button>
 </form>
-<!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-transparent border-0">
-      <div class="modal-body justify-content-center text-center">
-        <img src="../../../static/images/Cosmus.png" alt="loading..." height="120px" width="120px" class="spinner_image">
-        </div>
-        </div>
-    </div> 
-</div> -->
+
 
 <script>
     //    document.body.appendChild(document.getElementById('exampleModal'));
@@ -237,7 +235,7 @@ $(document).ready(function () {
               
             },
             error:function(xhr){
-            // console.log(xhr.status + ": " + xhr.responseText);
+
                 if (xhr.status === 404 || xhr.status === 400) {
                   suggestions.css('display', 'block');
                   suggestions.empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
@@ -529,7 +527,8 @@ $(document).on('click', '.search-input',function(){
                 challanRows.find('#childId').val(childId);
                 challanRows.find('#id_total_balance_pcs').val(masterData.total_balance_pcs);
                 // Populate the table with formset data
-                var tableRows = $('#labourworkInTables tbody');
+                var tableRows = $('#labourworkInTables').find('.mainTableList');
+                
                 tableRows.empty();
                 tableRows.append('<input type="hidden" name="l_w_in_products-INITIAL_FORMS" value="0" id="id_l_w_in_products-INITIAL_FORMS">');
                 tableRows.append('<input type="hidden" name="l_w_in_products-MAX_NUM_FORMS" value="1000" id="id_l_w_in_products-MAX_NUM_FORMS">');
@@ -544,7 +543,7 @@ $(document).on('click', '.search-input',function(){
                     
                     newRow.append($('<td>').html('<input type="text" class="productinput" name="l_w_in_products-' + index + '-product_color" value="' + rowData.product_color + '" maxlength="100" id="id_l_w_in_products-' + index + '-product_color">'));
                     
-                    newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input" name="l_w_in_products-' + index + '-L_work_out_pcs" value="' + rowData.L_work_out_pcs + '" id="id_l_w_in_products-' + index + '-L_work_out_pcs">'));
+                    newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input" name="l_w_in_products-' + index + '-L_work_out_pcs" value="' + rowData.L_work_out_pcs + '" id="id_l_w_in_products-' + index + '-L_work_out_pcs" readonly>' ));
                     
                     newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input" name="l_w_in_products-' + index + '-total_recieved_qty" value="' + rowData.total_recieved_qty + '" id="id_l_w_in_products-' + index + '-total_recieved_qty" readonly> <input type="hidden" class="productorderrawqty-input" name="l_w_in_products-' + index + '-pending_to_return_pcs" value="' + rowData.pending_to_return_pcs + '" id="id_l_w_in_products-' + index + '-pending_to_return_pcs">'));
                     
@@ -558,42 +557,36 @@ $(document).on('click', '.search-input',function(){
                     // Append the new row to the table body
                     tableRows.append(newRow);
                 });
+                tableRows.find('input[name$="-return_pcs"]').first().focus();
+                var totalupdateRows =$('#labourworkInTables').find('.tableTotal')
+                totalupdateRows.empty()
+                    var totalRow =$('<tr class="fw-bold">');
+                        totalRow.append($('<td>').html('<span >Total :</span>'))
+                        totalRow.append($('<td>').html(''))
+                        totalRow.append($('<td>').html('<span id="totalLWoPic"></span>'))
+                        totalRow.append($('<td>').html('<span id="totalIssuePic"></span>'))
+                        totalRow.append($('<td>').html('<span id="totalBalancePic"></span>'))
+                        totalRow.append($('<td>').html('<span id="totalReturnPic"></span>'))
+                        totalupdateRows.append(totalRow) 
+                        
+                        
                 var tableGrNoQty = $('#grNoTotalQty tbody');
                 tableGrNoQty.empty();
                totalData.forEach(function(data, index){
                 var row = $('<tr>');
-                    console.log(data)
                     row.append($('<td>').text(data.voucher_number))
                     row.append($('<td>').text(data.total_return_pcs))
                     row.append($('<td>').text(data.total_approved_quantity))
 
                     tableGrNoQty.append(row)
                })
-               var returnValue = document.querySelectorAll('[name$="-return_pcs"]')
-               var labourCharge = document.getElementById('id_labour_charges')
-               returnValue.forEach((input,index)=>{
-                console.log(input)
-                input.blur();
-          
-                    const nextInput = returnValue[index + 1];
-                    console.log(nextInput)
-                    if (nextInput) {
-                        nextInput.focus();
-                    
-                    }else {
-                        // If it's the last input, focus the submit button
-                        labourCharge.focus();
-                    }
-                
-          
-                });
-
                 // Attach the event listener for input change after populating rows
+                
                 document.querySelectorAll('[name$="-return_pcs"]').forEach(function(element){
                     element.addEventListener('input', CalculateTotalValue);
-
+                   
                 });
-
+                inputCheck()
             },
             error: function (xhr, errmsg, err) {
                 console.log('Error sending value to the backend');
@@ -606,6 +599,8 @@ $(document).on('click', '.search-input',function(){
 function CalculateTotalValue() {
     var total = 0;
     var pendingPc = 0;
+    var actual =0;
+    var receive = 0;
     var table = document.querySelector('#labourworkInTables tbody');
     var totalReturnPcs = document.querySelectorAll('[name$="-return_pcs"]');
 
@@ -614,7 +609,8 @@ function CalculateTotalValue() {
             var row = input.closest('tr'); 
             var balance = parseInt(row.querySelector('input[name$="-pending_to_return_pcs"]').value) || 0;
             var BalanceActualValue = parseInt(row.querySelector('input[name$="-qty_to_compare"]').value) || 0;
-          
+            var issueQty = parseInt(row.querySelector('input[name$="-L_work_out_pcs"]').value) || 0;
+            var recivedQty = parseInt(row.querySelector('input[name$="-total_recieved_qty"]').value) || 0;
              if(returnValue > balance){
                 returnValue = 0;
                 input.value = 0;
@@ -623,13 +619,18 @@ function CalculateTotalValue() {
            
             var balanceQty = balance - returnValue;
             row.querySelector('input[name$="-qty_to_compare"]').value = balanceQty;
-
+            actual += issueQty
             total  += returnValue;
              pendingPc += balanceQty;
+             receive += recivedQty;
         })
 
     document.getElementById('id_total_return_pcs').value = total;
     document.getElementById('id_total_balance_pcs').value = pendingPc;
+    document.getElementById('totalReturnPic').textContent = total;
+    document.getElementById('totalBalancePic').textContent = pendingPc;
+    document.getElementById('totalLWoPic').textContent = actual;
+    document.getElementById('totalIssuePic').textContent = receive;
     CalculateAmount();
 }
 window.addEventListener("pageshow", function(event) {
@@ -644,40 +645,37 @@ window.addEventListener("pageshow", function(event) {
         
         labourWorkInId.focus();
     }
-    // function inputCheck(){
-    //         var labourWorkIn = document.getElementById('id_labour_name')
-    //         labourWorkIn.addEventListener('keydown',function(event){
-              
-    //             if(event.key === "Tab"){
-    //                 event.preventDefault();
-    //                 labourWorkIn.blur(); 
-    //                 var returnQty = document.querySelector('[name$="-return_pcs"]');
-    //                 returnQty.focus();
-    //             }
-    //         })
-    //         var returnQtyValue = document.querySelectorAll('[name$="-return_pcs"]');
-    //         var labourCharges = document.getElementById('id_labour_charges')
-    //         returnQtyValue.forEach((item,index)=>{
-    //             item.addEventListener("keydown", function (event) {
-    //             if (event.key === "Tab") {
-    //                 event.preventDefault(); // Prevent the default behavior of the Enter key
-    //                 item.blur(); // Optional: Remove focus to mimic submission for the row
-    //                 // Focus on the next Order Quantity input field, if available
-    //                 const nextInput = returnQtyValue[index + 1];
-    //                 console.log(nextInput)
-    //                 if (nextInput) {
-    //                     nextInput.focus();
-                    
-    //                 }else {
-    //                     // If it's the last input, focus the submit button
-    //                     labourCharges.focus();
-    //                 }
-    //             }
-    //         });
-    //         })
-    //     }
-    //     inputCheck()
+
     })
+    function inputCheck(){
+            var labourWorkIn = document.querySelector('[name$="-return_pcs"]')
+            labourWorkIn.addEventListener('focus',function(event){
+            
+                labourWorkIn.focus();
+             
+            })
+            var returnQtyValue = document.querySelectorAll('[name$="-return_pcs"]');
+            var labourCharges = document.getElementById('id_labour_charges')
+            returnQtyValue.forEach((item,index)=>{
+                item.addEventListener("keydown", function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); // Prevent the default behavior of the Enter key
+                    item.blur(); // Optional: Remove focus to mimic submission for the row
+                    // Focus on the next Order Quantity input field, if available
+                    const nextInput = returnQtyValue[index + 1];
+                    console.log(nextInput)
+                    if (nextInput) {
+                        nextInput.focus();
+                    
+                    }else {
+                        // If it's the last input, focus the submit button
+                        labourCharges.focus();
+                    }
+                }
+            });
+            })
+        }
+        // inputCheck()
 </script>
 
 {% endblock %}
