@@ -7702,6 +7702,8 @@ def product_transfer_to_warehouse_delete(request):
 def product_transfer_to_warehouse_ajax(request):
     
     godown_id = request.GET.get('godown_id')
+
+
     
     if godown_id:
 
@@ -7939,6 +7941,20 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
     return render(request, 'finished_product/stock_transfer_instance_list_popup.html',{'formset': formset,
                                                 'purchase_number':purchase_number,'voucher_type': voucher_type,
                                                 'completed_formset':completed_formset,'single_entries':entries})
+
+
+
+
+def delete_sigle_entries(request,e_id,voucher_type):
+    delete_instance = finishedgoodsbinallocation.objects.get(id = e_id)
+
+    if voucher_type == "purchase":
+        parent_id = delete_instance.related_purchase_item.product_purchase_master.id
+    else:
+        parent_id = delete_instance.related_transfer_record.Finished_goods_Stock_TransferMasterinstance.id
+    
+    delete_instance.delete()
+    return redirect(reverse('stock-transfer-instance-list-popup',args=[parent_id,voucher_type]))
 
 
 
@@ -8961,6 +8977,16 @@ def UniqueValidCheckAjax(request):
         model_name = labour_work_in_master
         col_name = 'voucher_number'
 
+    elif 'purchase_no' in searched_from:
+        searched_value = request.GET.get('purchase_no').strip()
+        model_name = product_purchase_voucher_master
+        col_name = 'purchase_number'
+
+    elif 'purchase_no' in searched_from:
+        searched_value = request.GET.get('purchase_no').strip()
+        model_name = Finished_goods_Stock_TransferMaster
+        col_name = 'voucher_no'
+    
     else:
         model_name = None
         searched_value = None

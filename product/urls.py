@@ -287,6 +287,7 @@ urlpatterns = [
     # finished warehouse routes
     path('finishedgoodssortinglist/', views.finished_goods_sorting_list, name='finished-goods-sorting-list'),
     path('stocktransferinstancelistpopup/<int:id>/<str:voucher_type>/', views.stock_transfer_instance_list_and_recieve, name="stock-transfer-instance-list-popup"),
+    path('deletesigleentries/<int:e_id>/<str:voucher_type>/', views.delete_sigle_entries, name="delete-sigle-entries"),
 
     path('addzoneinwarehouse/<int:id>/', views.add_zone_in_warehouse, name="add-zone-in-warehouse"),
     path('editzoneinwarehouse/<int:zone_id>/', views.edit_zone_in_warehouse, name="edit-zone-in-warehouse"),
