@@ -167,9 +167,10 @@
   
   <script>
      $(document).ready(function(){
-        $('#id_voucher_no').on('focusout',function(){
+        var forms = $("#id_finished_goods_transfer_records_set-0-id").val();
+        if(forms === ''){
+            $('#id_voucher_no').on('focusout',function(){
             var purchase_number = $(this).val();
-           console.log(purchase_number)
             var purchase = $("#id_voucher_no");
             var errorElement = $('#purchaseError'); // The error message element
             var submitForm = $('#submitButtonStockTransfer');
@@ -201,7 +202,9 @@
                 }
 
             })
-        })
+        }) 
+        } 
+       
 
         
     })

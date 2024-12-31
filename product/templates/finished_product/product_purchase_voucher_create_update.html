@@ -10,8 +10,9 @@
         {% csrf_token %}
         {% if product_pur_vouch_form.instance.id %}
         <div class="">
+           
             <div class="d-flex mb-3">
-                <span id="purchaseError" class="error-messages"></span>
+                
                 <div class="d-flex ">
                     <label for="id_purchase_number"  class="">Purchase No:</label>
                 
@@ -43,7 +44,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <span id="purchaseError" class="error-messages"></span>
+               
                 <div class="d-flex ms-3">
                     <label for="id_party_name" class="me-3" >Party A/C Name:</label>
                     <select class="product2Select text-black" name="party_name" required id="id_party_name" >
@@ -71,8 +72,9 @@
 
         {% elif not product_pur_vouch_form.instance.id %}
         <div class="">
+            <span id="purchaseError" class="error-messages"></span>
             <div class="d-flex mb-3">
-                <span id="purchaseError" class="error-messages"></span>
+               
                 <div class="d-flex ">
                     <label for="id_purchase_number"  class="me-1">Purchase No:</label>
                     
@@ -110,7 +112,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <span id="purchaseError" class="error-messages"></span>
+                
                 <div class="d-flex ms-3">
                     <label for="id_party_name" class="me-3" >Party A/C Name:</label>
                     <select class="product2Select" name="party_name" required id="id_party_name">
@@ -430,7 +432,9 @@ function getGstNo() {
 
 <script>
     $(document).ready(function(){
-        $('#id_purchase_number').on('focusout',function(){
+        var form = $('#id_product_purchase_voucher_items_set-0-id').val();
+        if(form === ''){
+            $('#id_purchase_number').on('focusout',function(){
             var purchase_number = $(this).val();
            console.log(purchase_number)
             var purchase = $("#id_purchase_number");
@@ -466,6 +470,8 @@ function getGstNo() {
             })
         })
    
+        }
+        
 //this ajax is for gst no 
         $(document).on('change', 'select[name^="party_name"]', function () {
 

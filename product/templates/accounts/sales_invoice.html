@@ -12,6 +12,7 @@
           <!-- <input type="text" class="item-select" name="" id="" value="Finish Goods" maxlength="255" readonly> -->
         </div>
         <div class="d-flex mb-3">
+          <span id="purchaseError" class="error-messages"></span>
           <div class="d-flex">
             <label for="" class="me-5">Sales No:</label>
             {% if master_form.instance.id %}
@@ -331,6 +332,44 @@ function getGstNo() {
 
 
 $(document).ready(function(){
+  var formsSale = $('#id_sales_voucher_finish_goods_set-0-id').val();
+    if(formsSale === ''){
+      $('#id_sales_no').on('focusout',function(){
+            var sales_no = $(this).val();
+            var purchase = $("#id_sales_no");
+            var errorElement = $('#purchaseError'); // The error message element
+            var submitForm = $('#parentFormClick');
+            $.ajax({
+                url: '/uniquevalidcheckajax/',
+                method: 'GET',
+                data: {
+                    'sales_no': sales_no,
+                    
+                },
+                success: function (data) {
+                    if(data.validation_flag === true){
+                       purchase.css('border', '1px solid red');
+                        errorElement.text('*Purchase number already exists');
+                        errorElement.show();
+                        submitForm.prop('disabled', true);
+                       
+                    }else {
+                        
+                        purchase.css('border', '1px solid black');
+                        errorElement.text('');
+                        errorElement.hide();
+                        submitForm.prop('disabled', false);
+                    }
+                   
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
+
+            })
+        })
+    }
+   
   $(document).on('change', 'select[name^="party_name"]', function () {
 
     const selected_party_name = $(this).val()
