@@ -5663,7 +5663,7 @@ def labourworkoutsingle(request, labour_workout_child_pk=None, pk=None):
 @login_required(login_url='login')
 def labour_workout_child_list(request, labour_master_pk):
     labour_work_out_master = labour_workout_master.objects.get(id=labour_master_pk)
-    labour_workout_child_instances = labour_workout_childs.objects.filter(labour_workout_master_instance = labour_master_pk)
+    labour_workout_child_instances = labour_workout_childs.objects.filter(labour_workout_master_instance = labour_master_pk).order_by('created_date')
     return render(request,'production/labourworkoutchilds.html', {'labour_master_pk':labour_master_pk,
                                                                   'labour_workout_child_instances':labour_workout_child_instances,
                                                                   'labour_work_out_master':labour_work_out_master,
@@ -5761,7 +5761,7 @@ def labourworkincreatelist(request,l_w_o_id):
 
     labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
 
-    labour_workin_instances = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(approved_Qty_total=Sum('l_w_in_products__approved_qty'),total_approved_pcs = Sum('l_w_in_products__approved_qty'),pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval'))
+    labour_workin_instances = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(approved_Qty_total=Sum('l_w_in_products__approved_qty'),total_approved_pcs = Sum('l_w_in_products__approved_qty'),pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval')).order_by('created_date')
 
     return render(request,'production/labour_work_in_list.html',{
                                             'labour_workout_child_instance':labour_workout_child_instance,
@@ -6705,6 +6705,45 @@ def labour_workin_approval_split(request,ref_id):
 
   
     return render(request,'finished_product/labourworkinapprovalsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list})
+
+
+
+
+def labour_workin_pending_split(request,ref_id):
+
+    queryset = labour_work_in_master.objects.filter(labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID = ref_id)
+
+    sku_list = [f'{sku.PProduct_SKU}-{sku.PProduct_color.color_name}' for sku in PProduct_Creation.objects.filter(Product__Product_Refrence_ID=ref_id)]
+
+    list_to_send = []
+    for query in queryset:
+        dict_to_append = {
+            'vendor_name' : query.labour_voucher_number.labour_name.name,
+            "grn_no" : query.voucher_number,
+            'challan_no' : query.labour_voucher_number.challan_no,
+            'pending_qty' : [],  
+        }
+        qty_dict = dict(query.l_w_in_products.all().values_list('product_sku','pending_for_approval'))
+
+        qty = {}
+
+        for sku in sku_list:
+
+            sku_name = int(sku.split('-')[0])
+
+            if sku_name in qty_dict:
+                qty[sku_name] = qty_dict[sku_name]
+
+            else:
+                qty[sku_name] = 0
+                
+            dict_to_append['pending_qty'] = qty
+        
+        list_to_send.append(dict_to_append)
+
+    return render(request,'finished_product/labourworkinpendingsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list})
+
+
 
 
 
@@ -8982,8 +9021,8 @@ def UniqueValidCheckAjax(request):
         model_name = product_purchase_voucher_master
         col_name = 'purchase_number'
 
-    elif 'purchase_no' in searched_from:
-        searched_value = request.GET.get('purchase_no').strip()
+    elif 'voucher_no' in searched_from:
+        searched_value = request.GET.get('voucher_no').strip()
         model_name = Finished_goods_Stock_TransferMaster
         col_name = 'voucher_no'
     
@@ -9485,10 +9524,12 @@ def allfinishedgoodsstockreport(request):
             total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
     
 
+    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
 
     product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
         'godown_colors__quantity'),total_labour_workin_qty = Subquery(
-            product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery) ).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+            product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery) ).order_by('Product__Model_Name').select_related('Product','PProduct_color')
     
 
     return render(request,'reports/allfinishedgoodsstockreport.html',{'product_queryset':product_queryset})
@@ -9497,7 +9538,8 @@ def allfinishedgoodsstockreport(request):
 
 
 
-def lwi_pending_report(request):
+def lwi_pending_report(request,ref_id):
+
     return render(request,'reports/lwipendingreport.html')
 
 
@@ -9513,6 +9555,8 @@ def qc_approved_model_wise_report(request,ref_id):
         product_instance = get_object_or_404(Product,Product_Refrence_ID=ref_id)
 
         all_sku = [f'{sku.PProduct_SKU}-{sku.PProduct_color}' for sku in product_instance.productdetails.all().order_by('PProduct_SKU')]
+
+        
         
         l_w_in_instances = labour_work_in_master.objects.filter(
             labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID=ref_id)
@@ -9576,7 +9620,7 @@ def qc_approved_model_wise_report(request,ref_id):
 
     return render(request, 'reports/qcapprovedmodelwisereport.html',{'product_instance':product_instance,
                                                                      'sorted_data':sorted_data,'all_sku':all_sku,
-                                                                     'consolidated_approval_dict':consolidated_approval_dict})
+                                                                     'consolidated_approval_dict':consolidated_approval_dict,'ref_id':ref_id})
 
 
 

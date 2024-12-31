@@ -281,6 +281,7 @@ urlpatterns = [
 
 
     path('labourworkinapprovalsplit/<int:ref_id>', views.labour_workin_approval_split, name= 'labour-workin-approval-split'),
+    path('labourworkinpendingsplit/<int:ref_id>/', views.labour_workin_pending_split, name= 'labour-workin-pending-split'),
     
     path('lwoandlwireportvendorwise/', views.lwo_and_lwi_report_vendor_wise, name='lwo-and-lwi-report-vendor-wise'),
 
