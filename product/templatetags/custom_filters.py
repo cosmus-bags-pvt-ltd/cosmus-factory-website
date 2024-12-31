@@ -17,3 +17,5 @@ def subtract_datestime(date1, date2):
         date1 = date1.date()
         return (date1 - date2).days  # Returns the difference in days
     return None
+
+

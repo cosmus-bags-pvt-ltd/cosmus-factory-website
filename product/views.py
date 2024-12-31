@@ -5760,7 +5760,9 @@ def cuttingroomqty(request):
 def labourworkincreatelist(request,l_w_o_id):
 
     labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
+
     labour_workin_instances = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(approved_Qty_total=Sum('l_w_in_products__approved_qty'),total_approved_pcs = Sum('l_w_in_products__approved_qty'),pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval'))
+
     return render(request,'production/labour_work_in_list.html',{
                                             'labour_workout_child_instance':labour_workout_child_instance,
                                             'labour_workin_instances':labour_workin_instances,
@@ -7126,6 +7128,7 @@ def raw_material_estimation_calculate(request,u_id):
                         dataset_to_send.append(dict_to_append)
 
             
+            
 
         if not purchase_orders and not lwo_pending:
             for x in response_dict:
@@ -7157,8 +7160,9 @@ def raw_material_estimation_calculate(request,u_id):
                 }
 
                 dataset_to_send.append(dict_to_apnd)
+        for_excel = json.dumps(dataset_to_send, default=custom_serializer)
 
-    return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data': dataset_to_send})
+    return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_data': dataset_to_send,'for_excel':for_excel})
 
 
 
@@ -7205,11 +7209,16 @@ def raw_material_estimation_calculate_excel_download(request):
     wb.remove(default_sheet)
     wb.create_sheet('Product Estimation')
     sheet1 = wb.worksheets[0]
-    headers = ['Item ID', 'Material Name', 'Total Consumption', 'Cutting Consumption', 'LWO Consumption', 'Godown Stock', 'Balance Stock', 'Party Name', 'Mobile No']
+    headers = ['Material Name', 'Total Consumption', 'Cutting Consumption', 'LWO Consumption', 'Godown Stock', 'Balance Stock', 'Party Name', 'Mobile No']
     sheet1.append(headers)
 
+    column_widths = [40, 20, 20, 20, 15, 15, 25, 15]
+    for i, width in enumerate(column_widths, start=1):
+        column_letter = get_column_letter(i)  
+        sheet1.column_dimensions[column_letter].width = width
+
     for item in data:
-        sheet1.append([item.get('item_id'), item.get('material_name'), item.get('total_consump'),
+        sheet1.append([item.get('material_name'), item.get('total_consump'),
                        item.get('cutting_consumption'), item.get('lwo_consumption'), item.get('godown_stock'),
                        item.get('balance_stock'), item.get('party_name'), item.get('mobile_no')])
     
@@ -7933,15 +7942,21 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
 
 
+
+
 def scan_product_qty_list(request):
     product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0)
 
     stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0)
+
+
     merged_queryset = chain(product_purchase_voucher, stock_transfer_voucher)
 
     merged_list = list(merged_queryset)
 
     return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list})
+
+
 
 
 def scan_single_product_list(request,ref_id):
@@ -9440,12 +9455,26 @@ def allfinishedgoodsstockreport(request):
             total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
 
 
+    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
+            total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+    
+
+
     product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
         'godown_colors__quantity'),total_labour_workin_qty = Subquery(
-            product_queryset_subquery)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+            product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery) ).order_by('Product__Model_Name').select_related('Product','PProduct_color')
     
 
     return render(request,'reports/allfinishedgoodsstockreport.html',{'product_queryset':product_queryset})
+
+
+
+
+
+def lwi_pending_report(request):
+    return render(request,'reports/lwipendingreport.html')
+
+
 
 
 

@@ -277,6 +277,8 @@ urlpatterns = [
     path('allfinishedgoodsstockreport/', views.allfinishedgoodsstockreport, name = 'all-finished-goods-stock-report'),
     path('finishedgoodsmodelwisereport/<int:ref_id>', views.finished_goods_model_wise_report, name = 'finished-goods-model-wise-report'),
     path('qcapprovedmodelwisereport/<int:ref_id>', views.qc_approved_model_wise_report, name = 'qc_approved-goods-model-wise-report'),
+    path('lwipendingreport', views.lwi_pending_report, name = 'lwi-pending-report'),
+
 
     path('labourworkinapprovalsplit/<int:ref_id>', views.labour_workin_approval_split, name= 'labour-workin-approval-split'),
     
