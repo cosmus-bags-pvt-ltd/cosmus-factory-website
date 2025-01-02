@@ -716,35 +716,79 @@ def definesubcategoryproduct(request, pk=None):
 def assign_bin_to_product(request):
     sub_category = []
     racks = []
+    formset = None 
+    sub_category_instance =None
+    rack_id = None
+
     
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         
         main_category = request.GET.get('mainProduct')
-
         zonename = request.GET.get('mainZone')
+        sub_category_instance = request.GET.get('subProduct')
+        rack_id = request.GET.get('rack')
 
+        print(f"main_category: {main_category}, zonename: {zonename}, sub_category_instance: {sub_category_instance}, rack_id: {rack_id}")
+
+       
         if main_category:
-            sub_category = SubCategory.objects.filter(product_main_category = main_category)
-            sub_category_data = [
-                {'id': sc.id, 'name': sc.product_sub_category_name} for sc in sub_category
-            ]
-            return JsonResponse({'sub_category_data':sub_category_data})
-        
+            sub_category = SubCategory.objects.filter(product_main_category=main_category)
+            sub_category_data = [{'id': sc.id, 'name': sc.product_sub_category_name} for sc in sub_category]
+            return JsonResponse({'sub_category_data': sub_category_data})
+
+       
         if zonename:
-            racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name = zonename)
+            racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zonename)
             racks_data = [{'id': rack.id, 'name': rack.rack_name} for rack in racks]
-            return JsonResponse({'racks_data':racks_data})
-        
+            return JsonResponse({'racks_data': racks_data})
+
     
+    if sub_category_instance and rack_id:
         
 
-    main_categories = MainCategory.objects.all()
+        
+        sub_category_and_bin_formset = modelformset_factory(
+            finished_product_warehouse_bin,
+            form=subcat_and_bin_form,
+            formset=FinishedProductWarehouseBinFormSet,
+            extra=0,
+            can_delete=False,
+        )
+
+        bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name=rack_id)
+
+        formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
+
+        print('formset --- ', formset)
+
+        formset_data = []
+        for form in formset:
+            form_data = {}
+            for field_name, field in form.fields.items():
+                form_data[field_name] = form[field_name].as_widget()
+            formset_data.append(form_data)
+        print(formset_data)
+        return JsonResponse({'formset_data': formset_data})
     
+    main_categories = MainCategory.objects.all()
     zones = finished_goods_warehouse_zone.objects.all()
 
-    
-    return render(request,'product/assignbintoproduct.html',{'main_categories':main_categories,'sub_category':sub_category, 
-                        'zones':zones})
+    return render(request, 'product/assignbintoproduct.html', {
+        'main_categories': main_categories,
+        'sub_category': sub_category,
+        'zones': zones,
+        
+    })
+
+
+
+
+
+
+
+
+
+
 
 
 
