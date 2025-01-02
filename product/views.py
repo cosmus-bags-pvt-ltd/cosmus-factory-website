@@ -9025,6 +9025,11 @@ def UniqueValidCheckAjax(request):
         searched_value = request.GET.get('voucher_no').strip()
         model_name = Finished_goods_Stock_TransferMaster
         col_name = 'voucher_no'
+
+    elif 'sales_no' in searched_from:
+        searched_value = request.GET.get('sales_no').strip()
+        model_name = sales_voucher_master_finish_Goods
+        col_name = 'sales_no'
     
     else:
         model_name = None
