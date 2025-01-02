@@ -657,7 +657,7 @@ def definesubcategoryproduct(request, pk=None):
     bin_queryset = finished_product_warehouse_bin.objects.all()
     
     formset = sub_category_and_bin_formset(queryset = bin_queryset, form_kwargs={'sub_cat_instance': instance}) 
-    
+   
     form = product_sub_category_form(instance = instance)
 
     if request.method == 'POST':
@@ -759,7 +759,7 @@ def assign_bin_to_product(request):
 
         formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
 
-        print('formset --- ', formset)
+     
 
         formset_data = []
         for form in formset:
