@@ -1046,7 +1046,7 @@ class finished_product_warehouse_bin(models.Model):
             
             if self.product_size_in_bin < current_bin_count:
                 raise ValueError(
-                    f"Cannot reduce bin size to {self.product_size_in_bin}, "
+                    f"Cannot reduce bin size to {self.product_size_in_bin},"
                     f"as there are {current_bin_count} items currently in the bin."
                 )
 

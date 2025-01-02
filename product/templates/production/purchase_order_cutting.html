@@ -306,7 +306,7 @@
 // document.body.appendChild(document.getElementById('exampleModal'));
 $(document).ready(function(){
     var newId = $('#id_purchase_order_to_product_cutting_set-0-id').val();
-    console.log(typeof(newId));
+
         if(newId === ''){
             $('#id_raw_material_cutting_id').on('focusout',function(){
             var cutting_number = $(this).val();
@@ -349,9 +349,11 @@ $(document).ready(function(){
             $(document).on('focusout','input[name$="-cutting_quantity"]',function(){
                 
                 var value = $(this).val();
-                console.log(typeof(value))
-                if(value === ''){
-                    $(this).val('0') 
+                console.log(value)
+                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                    $(this).val('0'); // Set to 0 if empty or invalid
+                } else {
+                    $(this).val(value); // Retain the entered value if valid
                 }
             })
         }
@@ -786,13 +788,6 @@ function updateCuttingQuantity(finalTotal){
         const form = document.getElementById("purchaseOrderForm");
         const submitButton = document.getElementById("id_submitPurchaseOrderCutting");
         //let modal = document.getElementById("exampleModal");
-
-
-        // if (!form || !submitButton || !modal) {
-        // console.error("Required elements are missing in the DOM.");
-        // //modal.style.display = "none";
-        // return; // Exit early if any element is missing
-        // }
 
         // Handle form submission
         form.addEventListener("submit", function (event) {
