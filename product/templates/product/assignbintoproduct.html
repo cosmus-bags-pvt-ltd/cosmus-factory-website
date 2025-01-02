@@ -193,7 +193,6 @@ $('#id_sub_category').on('change',function(){
   $('#id_rack').on('change',function(){
     
     var rack = $(this).val();
-    console.log('rack',rack)
   $.ajax({
     url : "/assignbintoproduct/",
     method : "GET",

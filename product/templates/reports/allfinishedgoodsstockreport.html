@@ -2,7 +2,7 @@
 {% load static %}
 {% block body %}
 
-<div class="col-lg-10 mt-2 table-responsive">
+<div class="col-lg-11 mt-2 responsive">
     <table class="table table-hover table-bordered table-striped">
         <thead class="sticky-top name_absolute">
             <tr>
@@ -32,8 +32,7 @@
                 <td>{{query.PProduct_SKU}}</td>
                 <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}">{{query.total_labour_workin_qty | default_if_none:0}}</a></button></td>
 
-                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #10a7ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}">{{query.total_labour_workin_pending_qty | default_if_none:0}}</a></button>
-                    </td>
+                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #ecca1b;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}">{{query.total_labour_workin_pending_qty | default_if_none:0}}</a></button></td>
 
                 <td> <button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #10a7ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}">
                     {{query.total_labour_workin_approve_qty | default_if_none:0}}</a></button></td>
