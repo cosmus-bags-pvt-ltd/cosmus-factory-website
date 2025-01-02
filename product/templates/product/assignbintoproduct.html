@@ -58,7 +58,14 @@
 
     <div class="d-flex mb-3">
         <label for="" class="item-form">Select Rack:</label>
-        <input type="text" class="product2Select" value="" name="" maxlength="255" required id="">
+        <select name="rack" id="id_rack" class="item-select">
+        
+          <option value=""></option>
+          {% for rack in rack %}
+          <option value="{{ rack.id }}">{{ rack.rack_name }}</option>
+          {% endfor %}
+
+      </select>  
     </div>
 
 
@@ -76,18 +83,24 @@
             <tbody class="mainTableList" id="checkboxTable">
             {{ formset.management_form }}
             {% for form in formset %}
-            {{form.id}}
-            <tr>
-                <td><input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-bin_name" value="{{form.instance.bin_name}}" maxlength="30" id="id_{{form.prefix}}-bin_name" readonly></td>
-                <td> <input type="number" class="purchase-amount" name="{{form.prefix}}-product_size_in_bin" value="{{form.instance.product_size_in_bin}}" id="id_{{form.prefix}}-product_size_in_bin"></td>
+            {% comment %} {{form.id}} {% endcomment %}
+                {{ form.as_p }}
+            {% comment %} <tr>
+                <td><input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-bin_name" value="" maxlength="30" id="id_{{form.prefix}}-bin_name" readonly></td>
+
+                <td> <input type="number" class="purchase-amount" name="{{form.prefix}}-product_size_in_bin" value="" id="id_{{form.prefix}}-product_size_in_bin"></td>
+
                 <td> 
-                <input type="checkbox" class="px-3" name="{{form.prefix}}-check_if_added_value" id="id_{{form.prefix}}-check_if_added_value" value="{{form.check_if_added.initial}}">
-                <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added" id="id_{{form.prefix}}-check_if_added" value="{{form.check_if_added.initial}}">
-                <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added_all" id="id_{{form.prefix}}-check_if_added_all" value="{{form.check_if_added_all.initial}}">
+                <input type="checkbox" class="px-3" name="{{form.prefix}}-check_if_added_value" id="id_{{form.prefix}}-check_if_added_value" value="">
+
+                <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added" id="id_{{form.prefix}}-check_if_added" value="">
+
+                <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added_all" id="id_{{form.prefix}}-check_if_added_all" value="">
+
                 <i style="display: none;" class="fa-solid fa-check-double fa-xl my-2 ms-2 iconClass text-danger"></i>
                 </td>
                 
-            </tr>
+            </tr> {% endcomment %}
             {% endfor %}
             </tbody>
         </table>
@@ -101,34 +114,49 @@
   </div>
   
 
+
+  <form action="">
+    <div id="formset-container"></div>
+
+  </form>
+
 <script>
 
   $(document).ready(function(){
 
-    $('#id_product_main_category').on('change',function(){
-  
-        var mainProduct = $(this).val();
-        console.log('mainProduct',mainProduct)
-      $.ajax({
-        url : "/assignbintoproduct/",
-        method : "GET",
-        data : {
-          "mainProduct":mainProduct,
-        },
-        success:function(response){
-            console.log(response)
-        },
-        error:function(error){
+    $('#id_product_main_category').on('change', function() {
+    var mainProduct = $(this).val();
 
+    $.ajax({
+        url: "/assignbintoproduct/",
+        method: "GET",
+        data: {
+            "mainProduct": mainProduct,
+        },
+        success: function(response) {
+            console.log('Response:', response);
+            var data =response.sub_category_data;
+            var subCategory = $('#id_sub_category');
+          
+            subCategory.empty();
+
+            subCategory.append('<option value="">Select Subcategory</option>');
+
+            // Append new options from the response
+            for (var i = 0; i < data.length; i++) {
+                subCategory.append('<option value="' + data[i].id + '">' + data[i].name + '</option>');
+            }
+        },
+        error: function(error) {
+            console.log('Error:', error);
         }
-      
-      })
-    })
+    });
+});
 
     $('#id_zone').on('change',function(){
   
       var mainZone = $(this).val();
-      console.log('zone',mainZone)
+   
     $.ajax({
       url : "/assignbintoproduct/",
       method : "GET",
@@ -137,6 +165,14 @@
       },
       success:function(response){
             console.log(response)
+            var rackData = response.racks_data;
+          var rack = $('#id_rack')
+          rack.empty();
+          rack.append('<option value="">Select Rack</option>')
+          for(var i= 0 ; i < rackData.length;i++){
+            rack.append('<option value ="' + rackData[i].id +'"> '+  rackData[i].name +'</option>')
+          }
+
       },
       error:function(error){
 
@@ -144,24 +180,96 @@
 
     })
 })
-// // $('#id_product_main_category').on('change',function(){
-  
-// //   var mainProduct = $(this).val();
-// // $.ajax({
-// //   url : "/assignbintoproduct/",
-// //   method : "GET",
-// //   data : {
-// //     "mainProduct":mainProduct,
-// //   },
-// //   success:function(response){
 
-// //   },
-// //   error:function(error){
 
-// //   }
+$('#id_sub_category').on('change',function(){
+    var rack = $('#id_rack').val();
+    var subProduct = $(this).val();
+    console.log('subProduct',subProduct)
 
-// // })
-// })
+    
+
+    $.ajax({
+      url : "/assignbintoproduct/",
+      method : "GET",
+      data : {
+        "subProduct":subProduct,
+        "rack" : rack,
+      },
+      success:function(response){
+
+      },
+      error:function(error){
+
+      }
+
+    })
+})
+
+
+
+{% comment %} $('#id_rack').on('change',function(){
+    
+    var rack = $(this).val();
+    console.log('rack',rack)
+  $.ajax({
+    url : "/assignbintoproduct/",
+    method : "GET",
+    data : {
+      "rack":rack,
+    },
+    success:function(response){
+
+    },
+    error:function(error){
+
+    }
+
+  })
+}) {% endcomment %}
+
+
+
+
+$('#id_rack').on('change', function() {
+    var rack = $(this).val();
+    var subProduct = $('#id_sub_category').val();
+
+    if (!subProduct) {
+        alert("Please select a subcategory first.");
+        return;
+    }
+
+    $.ajax({
+        url: "/assignbintoproduct/",
+        method: "GET",
+        data: {
+            "rack": rack,
+            "subProduct": subProduct,
+        },
+        success: function(response) {
+            const formsetContainer = document.getElementById('formset-container');
+            formsetContainer.innerHTML = '';  // Clear any existing forms
+
+            response.formset_data.forEach(form => {
+                const formDiv = document.createElement('div');
+                formDiv.classList.add('form-group');
+
+                for (const [fieldName, fieldHTML] of Object.entries(form)) {
+                    const fieldContainer = document.createElement('div');
+                    fieldContainer.innerHTML = fieldHTML;
+                    formDiv.appendChild(fieldContainer);
+                }
+
+                formsetContainer.appendChild(formDiv);
+            });
+        },
+        error: function(error) {
+            console.log("Error:", error);
+        }
+    });
+});
+
   })
 </script>
 
