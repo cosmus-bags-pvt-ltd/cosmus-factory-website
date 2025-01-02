@@ -58,12 +58,19 @@
 
     <div class="d-flex mb-3">
         <label for="" class="item-form">Select Rack:</label>
-        <input type="text" class="product2Select" value="" name="" maxlength="255" required id="">
+        <select name="rack" id="id_rack" class="item-select">
+        
+          <option value=""></option>
+          {% for rack in rack %}
+          <option value="{{ rack.id }}">{{ rack.rack_name }}</option>
+          {% endfor %}
+
+      </select>  
     </div>
 
 
 
-    <div class="mt-2">
+    <!-- <div class="mt-2">
         
         <table class="table table-bordered table-striped table-hover">
             <thead class="name_absolute">
@@ -92,7 +99,7 @@
             </tbody>
         </table>
 
-    </div>
+    </div> -->
 
 
       </div> 
@@ -105,30 +112,39 @@
 
   $(document).ready(function(){
 
-    $('#id_product_main_category').on('change',function(){
-  
-        var mainProduct = $(this).val();
-        console.log('mainProduct',mainProduct)
-      $.ajax({
-        url : "/assignbintoproduct/",
-        method : "GET",
-        data : {
-          "mainProduct":mainProduct,
-        },
-        success:function(response){
-            console.log(response)
-        },
-        error:function(error){
+    $('#id_product_main_category').on('change', function() {
+    var mainProduct = $(this).val();
 
+    $.ajax({
+        url: "/assignbintoproduct/",
+        method: "GET",
+        data: {
+            "mainProduct": mainProduct,
+        },
+        success: function(response) {
+            console.log('Response:', response);
+            var data =response.sub_category_data;
+            var subCategory = $('#id_sub_category');
+          
+            subCategory.empty();
+
+            subCategory.append('<option value="">Select Subcategory</option>');
+
+            // Append new options from the response
+            for (var i = 0; i < data.length; i++) {
+                subCategory.append('<option value="' + data[i].id + '">' + data[i].name + '</option>');
+            }
+        },
+        error: function(error) {
+            console.log('Error:', error);
         }
-      
-      })
-    })
+    });
+});
 
     $('#id_zone').on('change',function(){
   
       var mainZone = $(this).val();
-      console.log('zone',mainZone)
+   
     $.ajax({
       url : "/assignbintoproduct/",
       method : "GET",
@@ -137,6 +153,14 @@
       },
       success:function(response){
             console.log(response)
+            var rackData = response.racks_data;
+          var rack = $('#id_rack')
+          rack.empty();
+          rack.append('<option value="">Select Rack</option>')
+          for(var i= 0 ; i < rackData.length;i++){
+            rack.append('<option value ="' + rackData[i].id +'"> '+  rackData[i].name +'</option>')
+          }
+
       },
       error:function(error){
 
@@ -144,24 +168,47 @@
 
     })
 })
-// // $('#id_product_main_category').on('change',function(){
+
+
+$('#id_sub_category').on('change',function(){
   
-// //   var mainProduct = $(this).val();
-// // $.ajax({
-// //   url : "/assignbintoproduct/",
-// //   method : "GET",
-// //   data : {
-// //     "mainProduct":mainProduct,
-// //   },
-// //   success:function(response){
+      var subProduct = $(this).val();
+      console.log('subProduct',subProduct)
+    $.ajax({
+      url : "/assignbintoproduct/",
+      method : "GET",
+      data : {
+        "subProduct":subProduct,
+      },
+      success:function(response){
 
-// //   },
-// //   error:function(error){
+      },
+      error:function(error){
 
-// //   }
+      }
 
-// // })
-// })
+    })
+})  
+
+  $('#id_rack').on('change',function(){
+    
+    var rack = $(this).val();
+    console.log('rack',rack)
+  $.ajax({
+    url : "/assignbintoproduct/",
+    method : "GET",
+    data : {
+      "rack":rack,
+    },
+    success:function(response){
+
+    },
+    error:function(error){
+
+    }
+
+  })
+})
   })
 </script>
 
