@@ -82,10 +82,10 @@
                 </div>
             </div>
             <div class="col-lg-6 mt-3">
-                <div class="table-responsives">
+                <div class="">
 
                 
-                    <table class="table table-striped table-hover table-bordered tables">
+                    <table class="table table-striped table-hover table-bordered tables" id="labourworkoutTable" >
                         <thead class="text-nowrap name_absolute sticky-top">
                             <tr>
                                 <th>Product Sku</th>
@@ -95,7 +95,7 @@
                                 <th>Process Qty</th>
                             </tr>
                         </thead>
-                        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+                        <tbody class="mainTableList">
                             {{product_to_item_formset.management_form}}
                             {% for form in product_to_item_formset %}
                             {% if form.instance.id %}
@@ -360,17 +360,28 @@ function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
             
         })
         
-        $(document).on('focus','input[name$="-processed_pcs"]',function(){
+        $("#labourworkoutTable tbody").on('focus','input', function() {
+                // Find the closest row to the input being edited
 
-            $(this).val('');
-        })
+                var row = $(this).closest('tr');
+                console.log('row',row)
+                var qty = parseInt(row.find('input[name$="-processed_pcs"]').val());
+                if(qty=== 0){
+                    row.find('input[name$="-processed_pcs"]').val('');
+                }else if(qty >=0){
+                    row.find('input[name$="-processed_pcs"]').val(qty);
+                }
+               
+        });
         $(document).on('focusout','input[name$="-processed_pcs"]',function(){
-
-            var value = $(this).val();
-            console.log(typeof(value))
-            if(value === ''){
-                $(this).val('0') 
-            }
+                
+                var value = $(this).val();
+                console.log(value)
+                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                    $(this).val('0'); // Set to 0 if empty or invalid
+                } else {
+                    $(this).val(value); // Retain the entered value if valid
+                }
         })
     }
         

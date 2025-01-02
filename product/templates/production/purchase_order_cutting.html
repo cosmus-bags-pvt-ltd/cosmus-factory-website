@@ -102,7 +102,7 @@
             </div>
         </div>
         <div class="col-lg-6 mt-3">
-            <table class="table table-striped table-hover table-bordered tables" >
+            <table class="table table-striped table-hover table-bordered tables" id="cuttingtables">
                 <thead class="name_absolute text-nowrap sticky-top">
                     <tr class="cuttingValueid">
                         <th>Product Sku</th>
@@ -158,10 +158,10 @@
                         </td>
                         <td>
                             <input type="number" class="productorderrawqty-input" name="{{form.prefix}}-balance_quantity" value="{{form.initial.process_quantity | default_if_none:'0'}}" id="id_{{form.prefix}}-balance_quantity" readonly>
-                            <!-- <input type="hidden" class="productorderrawqty-input" name="{{form.prefix}}-balance_quantity_new" value="{{form.initial.process_quantity | default_if_none:'0'}}" id="id_{{form.prefix}}-balance_quantity_new" readonly> -->
+                           
                         </td>   
                         <td>
-                            <input type="number" class="productorderqty-input currentQty" name="{{form.prefix}}-cutting_quantity" value="{{form.initial.cutting_quantity | default_if_none:'0'}}" id="id_{{form.prefix}}-cutting_quantity">
+                            <input type="number" class="productorderqty-input currentQty" name="{{form.prefix}}-cutting_quantity" value="{{form.instance.cutting_quantity | default_if_none:''}}" id="id_{{form.prefix}}-cutting_quantity">
                         </td>
                     </tr>
                     
@@ -339,14 +339,20 @@ $(document).ready(function(){
                 }
 
             })
-            
-            })
-           
-            $(document).on('focus','input[name$="-cutting_quantity"]',function(){
+            $("#cuttingtables tbody").on('focus','input', function() {
+                // Find the closest row to the input being edited
 
-                $(this).val('');
-            })
-            $(document).on('focusout','input[name$="-cutting_quantity"]',function(){
+                var row = $(this).closest('tr');
+                console.log('row',row)
+                var qty = parseInt(row.find('input[name$="-cutting_quantity"]').val());
+                if(qty=== 0){
+                    row.find('input[name$="-cutting_quantity"]').val('');
+                }else if(qty >=0){
+                    row.find('input[name$="-cutting_quantity"]').val(qty);
+                }
+               
+            });
+             $(document).on('focusout','input[name$="-cutting_quantity"]',function(){
                 
                 var value = $(this).val();
                 console.log(value)
@@ -356,6 +362,11 @@ $(document).ready(function(){
                     $(this).val(value); // Retain the entered value if valid
                 }
             })
+
+            })
+           
+           
+           
         }
         
 

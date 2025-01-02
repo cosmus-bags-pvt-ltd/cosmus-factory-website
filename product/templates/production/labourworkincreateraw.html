@@ -677,5 +677,69 @@ window.addEventListener("pageshow", function(event) {
         }
         // inputCheck()
 </script>
+<script>
+  $(document).ready(function () {
+     var formId = $('#id_l_w_in_products-0-id').val();
+        console.log(formId)
+  
+        if(formId === undefined){
+            $('#id_voucher_number').on('focusout', function () {
+            var voucher_number = $(this).val();
+            var new_order = $("#id_purchase_order_number");
+            var errorElement = $('#labourWorkInError'); // The error message element
+            var submitButton = $('#id_submitLabourWorkIn');
+           
+                $.ajax({
+                url: '/uniquevalidcheckajax/',
+                method: 'GET',
+                data: {
+                    'voucher_number': voucher_number,
+                },
+                success: function (data) {
+                    if (data.validation_flag === true) {
+                        new_order.css('border', '1px solid red');
+                        errorElement.text('*New order number already exists');
+                        errorElement.show();
+                        submitButton.attr('disabled', 'disabled');
+                    } else {
+
+                        new_order.css('border', '1px solid black');
+                        errorElement.text('');
+                        errorElement.hide();
+                        submitButton.removeAttr('disabled');
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+
+            })
+            
+            
+            })
+            $(document).on('focus','input[name$="-return_pcs"]', function() {
+           
+           var qty = parseInt($(this).val());
+           if(qty === 0){
+               $(this).val('');
+           }else if(qty >=0){
+               $(this).val(qty);
+           }
+          
+        });
+        $(document).on('focusout','input[name$="-return_pcs"]',function(){
+                
+            var value = $(this).val();
+                
+            if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                $(this).val('0'); // Set to 0 if empty or invalid
+            } else {
+                $(this).val(value); // Retain the entered value if valid
+            }
+        })
+           }    
+        
+    })
+</script>
 
 {% endblock %}

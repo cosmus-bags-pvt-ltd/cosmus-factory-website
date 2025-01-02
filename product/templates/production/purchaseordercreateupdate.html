@@ -148,7 +148,8 @@
 <script>
     document.body.appendChild(document.getElementById('exampleModal'));
     $(document).ready(function(){
-        $('#id_purchase_order_number').on('focusout',function(){
+
+            $('#id_purchase_order_number').on('focusout',function(){
             var newOrdernumber = $(this).val();
             var new_order = $("#id_purchase_order_number");
             var errorElement = $('#purchaseCreateError'); // The error message element
@@ -188,6 +189,32 @@
             }
             
         })
+       
+        $("#productTable tbody").on('focus','input', function() {
+                // Find the closest row to the input being edited
+
+                var row = $(this).closest('tr');
+                console.log('row',row)
+                var qty = parseInt(row.find('input[name$="-order_quantity"]').val());
+                if(qty=== 0){
+                    row.find('input[name$="-order_quantity"]').val('');
+                }else if(qty >= 0){
+                    row.find('input[name$="-order_quantity"]').val(qty);
+                }
+               
+            });
+             $(document).on('focusout','input[name$="-order_quantity"]',function(){
+                
+                var value = $(this).val();
+                console.log(value)
+                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                    $(this).val('0'); // Set to 0 if empty or invalid
+                } else {
+                    $(this).val(value); // Retain the entered value if valid
+                }
+            })
+  
+        
         $(document).on('focus','.oderedValues' , function (){
              $(this).prop('readonly', false);
         });
@@ -203,20 +230,7 @@
             }
      
         })
-        $(document).on('focus','input[name$="-order_quantity"]',function(){
-            $(this).val('');
-
-        })
-        $(document).on('focusout','input[name$="-order_quantity"]',function(){
-            var value = $(this).val();
-                console.log(value)
-                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
-                    $(this).val('0'); // Set to 0 if empty or invalid
-                } else {
-                    $(this).val(value); // Retain the entered value if valid
-                }
-            
-        })
+        
 
     })
   
