@@ -716,7 +716,7 @@ def definesubcategoryproduct(request, pk=None):
 def assign_bin_to_product(request):
     sub_category = []
     racks = []
-    
+
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         
         main_category = request.GET.get('mainProduct')
@@ -735,13 +735,12 @@ def assign_bin_to_product(request):
             racks_data = [{'id': rack.id, 'name': rack.rack_name} for rack in racks]
             return JsonResponse({'racks_data':racks_data})
         
-    
-        
 
     main_categories = MainCategory.objects.all()
     
     zones = finished_goods_warehouse_zone.objects.all()
 
+    instance = SubCategory.objects.get(pk=pk)
     
     return render(request,'product/assignbintoproduct.html',{'main_categories':main_categories,'sub_category':sub_category, 
                         'zones':zones})
