@@ -32,7 +32,7 @@
 
     <div class="d-flex mb-3">
         <label for="id_product_sub_category_name" class="item-form">Sub Category:</label>
-        <select name="" id="" class="item-select">
+        <select name="sub_category" id="id_sub_category" class="item-select">
         
             <option value=""></option>
             {% for category in sub_category %}
@@ -116,7 +116,7 @@
           "mainProduct":mainProduct,
         },
         success:function(response){
-
+            console.log(response)
         },
         error:function(error){
 
@@ -136,7 +136,7 @@
         "mainZone":mainZone,
       },
       success:function(response){
-
+            console.log(response)
       },
       error:function(error){
 
