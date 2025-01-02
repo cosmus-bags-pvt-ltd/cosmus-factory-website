@@ -713,6 +713,32 @@ def definesubcategoryproduct(request, pk=None):
 
 
 
+def assign_bin_to_product(request):
+
+    zonename = None
+    
+  
+
+    main_categories = MainCategory.objects.all()
+    sub_category = SubCategory.objects.all()
+    zones = finished_goods_warehouse_zone.objects.all()
+
+    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name = zonename)
+
+    # sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
+    # form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
+    # bin_queryset = finished_product_warehouse_bin.objects.all()
+    
+    # # formset = sub_category_and_bin_formset(queryset = bin_queryset, form_kwargs={'sub_cat_instance': instance}) 
+    
+    form = product_sub_category_form()
+
+    # if request.method == 'POST':
+    #    pass
+    return render(request,'product/assignbintoproduct.html',{'main_categories':main_categories, 
+                        'sub_category':sub_category,'zones':zones,'form':form})
+
 
 
 @login_required(login_url='login')
@@ -9025,6 +9051,11 @@ def UniqueValidCheckAjax(request):
         searched_value = request.GET.get('voucher_no').strip()
         model_name = Finished_goods_Stock_TransferMaster
         col_name = 'voucher_no'
+
+    elif 'sales_no' in searched_from:
+        searched_value = request.GET.get('sales_no').strip()
+        model_name = sales_voucher_master_finish_Goods
+        col_name = 'sales_no'
     
     else:
         model_name = None

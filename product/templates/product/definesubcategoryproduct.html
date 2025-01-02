@@ -100,7 +100,11 @@
                {% for sub_cat in main_cat.subcategories.all %}
                 <tr>
                   <td>{{sub_cat.product_sub_category_name}}</td>
+
+                  
                   <td><a class="ps-2" href="{% url 'define-sub-category-update-product' sub_cat.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
+                  
+
                   <td><a class="ps-2" href="{% url 'define-sub-category-product-delete' sub_cat.id %}"><i class="fa-solid fa-trash text-danger px-2"></i></a></td>
                 </tr>
                 {% endfor %}
