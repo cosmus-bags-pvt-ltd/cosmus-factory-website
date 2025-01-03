@@ -2825,7 +2825,7 @@ def salesvouchercreateupdate(request,s_id=None):
         godown_id = voucher_instance.selected_godown.id
 
         filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
         
         if filtered_product:
             dict_to_send = {}
@@ -2839,8 +2839,11 @@ def salesvouchercreateupdate(request,s_id=None):
                 uom = query.get('product_color_name__Product__Product_UOM')
                 qty = query.get('quantity')
                 gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-                
-                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst]
+                mrp = query.get('product_color_name__Product__Product_MRP')
+                customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
+
+
+                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
 
 
     else:
@@ -7745,6 +7748,7 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
                 qty = query.get('quantity')
                 gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
                 
+                
                 dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst]
                 
                 
@@ -8549,6 +8553,8 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     negetive_stock_report_list = list(negetive_stock_report)
 
+    # print('negetive_stock_report_list --- ', negetive_stock_report_list)
+
     pending_ref_no_dict = {}
     
     pending_ref_no = purchase_order_to_product.objects.filter(process_quantity__gt=0)
@@ -8570,7 +8576,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         skus['total'] = total_quantity
 
 
-    # print(pending_ref_no_dict)
+    print('pending_ref_no_dict --- ', pending_ref_no_dict)
 
 
     purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = pending_ref_no_dict).prefetch_related('raw_materials')
