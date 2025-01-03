@@ -700,10 +700,10 @@ $(document).ready(function(){
             } catch (error) {
                 console.error('Error parsing stockData:', error);
             }
-        // $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {
-        //     itemName = $(this).closest('tr').find('input[name$="-product_quantity_transfer"]').attr('name');
-        //     purchaseValue = itemName.split('-')[1];
-        // });
+        $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {
+            itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
+            purchaseValue = itemName.split('-')[1];
+        });
 
         $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
           var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
@@ -728,7 +728,7 @@ $(document).ready(function(){
           function escapeRegExp(string) {
             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
           }
-          searchedProductNameDic = response.filtered_product; 
+          searchedProductNameDic = ProductDataObject; 
           console.log(searchedProductNameDic)
           const searchQuery = productnamevalue.toLowerCase();
           const searchTerms = searchQuery.split(/\s+/);
