@@ -53,7 +53,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
-                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_master_finish_Goods,
+                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods,
                     set_prod_item_part_name, shade_godown_items,
                     shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items)
 
@@ -2882,10 +2882,13 @@ def salesvouchercreateupdate(request,s_id=None):
                     for form in formset.deleted_forms:
                         if form.instance.pk:
                             product_name = form.instance.product_name
-                            print('name --- ',product_name)
-
                             product_qty = form.instance.quantity
-                            print('qty --- ',product_qty)
+                            
+                            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                            godown_qty_value.quantity = godown_qty_value.quantity + product_qty
+                            godown_qty_value.save()
+                            
                             form.instance.delete()
 
 
@@ -2895,10 +2898,44 @@ def salesvouchercreateupdate(request,s_id=None):
                             form_instance.sales_voucher_master = master_form_instance
                             form_instance.save()
 
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
 
+                            
+                            
+                            if form.has_changed():
 
-                    # if form.has_changed() and 'quantity' in form.changed_data():
+                                old_product_name = form.initial.get('product_name')
+                                old_product_quantity = form.initial.get('quantity')
+                                
+                                if old_product_quantity:
+                                    print("in single")
+                                    
 
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                                    difference =  product_qty - old_product_quantity
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity - difference
+                                    godown_qty_value.save()
+
+                            if form.has_changed() and 'product_name' in form.changed_data:
+
+                                if old_product_name and old_product_quantity:
+                                    print("in both")
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=old_product_name)
+
+                                    # difference =  product_qty - old_product_quantity
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity + old_product_quantity
+                                    godown_qty_value.save()
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity - old_product_quantity
+                                    godown_qty_value.save()
+                                
 
                     return redirect('sales-voucher-list')
             except Exception as e:
@@ -2919,6 +2956,19 @@ def salesvoucherlist(request):
 @login_required(login_url='login')
 def salesvoucherdelete(request,pk):
     sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
+    if sales_instance:
+        transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master = pk)
+
+        for i in transfer_records:
+            selected_godown = i.sales_voucher_master.selected_godown
+            product_name = i.product_name
+            product_quantity = i.quantity
+
+            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+            godown_qty_value.quantity = godown_qty_value.quantity + product_quantity
+            godown_qty_value.save()
+
     sales_instance.delete()
     return redirect('sales-voucher-list')
 
@@ -8558,6 +8608,11 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     pending_ref_no_dict = {}
     
     pending_ref_no = purchase_order_to_product.objects.filter(process_quantity__gt=0)
+
+    print('pending_ref_no -- ', pending_ref_no)
+
+    
+
 
     for item in pending_ref_no:
         ref_id = item.purchase_order_id.product_reference_number.Product_Refrence_ID
