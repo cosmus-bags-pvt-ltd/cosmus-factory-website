@@ -713,10 +713,80 @@ def definesubcategoryproduct(request, pk=None):
 
 
 
+# def assign_bin_to_product(request):
+#     sub_category = []
+#     racks = []
+    
+#     sub_category_instance =None
+#     rack_id = None
+
+    
+#     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        
+#         main_category = request.GET.get('mainProduct')
+#         zonename = request.GET.get('mainZone')
+#         sub_category_instance = request.GET.get('subProduct')
+#         rack_id = request.GET.get('rack')
+
+       
+#         if main_category:
+#             sub_category = SubCategory.objects.filter(product_main_category=main_category)
+#             sub_category_data = [{'id': sc.id, 'name': sc.product_sub_category_name} for sc in sub_category]
+#             return JsonResponse({'sub_category_data': sub_category_data})
+
+       
+#         if zonename:
+#             racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zonename)
+#             racks_data = [{'id': rack.id, 'name': rack.rack_name} for rack in racks]
+#             return JsonResponse({'racks_data': racks_data})
+
+
+    
+
+#     if sub_category_instance and rack_id:
+
+#         sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
+#         form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
+#         bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
+
+#         formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
+
+#     else:
+#         sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
+#         form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
+#         bin_queryset = finished_product_warehouse_bin.objects.all()
+
+#         formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
+
+
+#     main_categories = MainCategory.objects.all()
+#     zones = finished_goods_warehouse_zone.objects.all()
+
+#     return render(request, 'product/assignbintoproduct.html', {
+#         'main_categories': main_categories,
+#         'sub_category': sub_category,
+#         'zones': zones,
+#         'formset': formset,
+#     })
+
+
+
+
+
+
+
+
+
+
+
+
+
 def assign_bin_to_product(request):
     sub_category = []
     racks = []
-    formset = None 
+    formset = None
     sub_category_instance =None
     rack_id = None
 
@@ -727,8 +797,6 @@ def assign_bin_to_product(request):
         zonename = request.GET.get('mainZone')
         sub_category_instance = request.GET.get('subProduct')
         rack_id = request.GET.get('rack')
-
-        print(f"main_category: {main_category}, zonename: {zonename}, sub_category_instance: {sub_category_instance}, rack_id: {rack_id}")
 
        
         if main_category:
@@ -742,34 +810,35 @@ def assign_bin_to_product(request):
             racks_data = [{'id': rack.id, 'name': rack.rack_name} for rack in racks]
             return JsonResponse({'racks_data': racks_data})
 
+        if rack_id:
+            print("in rack")
+            sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
+            form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
+            bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
+
+            formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
     
-    if sub_category_instance and rack_id:
+
+    # if sub_category_instance and rack_id:
+
+    #     sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
+    #     form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
+    #     bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
+
+    #     formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
+
+    # else:
         
+    #     sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
+    #     form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
 
-        
-        sub_category_and_bin_formset = modelformset_factory(
-            finished_product_warehouse_bin,
-            form=subcat_and_bin_form,
-            formset=FinishedProductWarehouseBinFormSet,
-            extra=0,
-            can_delete=False,
-        )
+    #     bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = 15)
 
-        bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name=rack_id)
+    #     formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
 
-        formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
 
-        print('formset --- ', formset)
-
-        formset_data = []
-        for form in formset:
-            form_data = {}
-            for field_name, field in form.fields.items():
-                form_data[field_name] = form[field_name].as_widget()
-            formset_data.append(form_data)
-        print(formset_data)
-        return JsonResponse({'formset_data': formset_data})
-    
     main_categories = MainCategory.objects.all()
     zones = finished_goods_warehouse_zone.objects.all()
 
@@ -777,11 +846,8 @@ def assign_bin_to_product(request):
         'main_categories': main_categories,
         'sub_category': sub_category,
         'zones': zones,
-        
+        'formset': formset,
     })
-
-
-
 
 
 
@@ -2749,7 +2815,7 @@ def purchasevoucherdelete(request,pk):
 def salesvouchercreateupdate(request,s_id=None):
 
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-
+    godown_names = Godown_finished_goods.objects.all()
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
@@ -2766,6 +2832,8 @@ def salesvouchercreateupdate(request,s_id=None):
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
         
+        formset.forms = [form for form in formset.forms if form.has_changed()]
+
         if not master_form.is_valid():
             print("Form Errors:", master_form.errors)
 
@@ -2793,11 +2861,15 @@ def salesvouchercreateupdate(request,s_id=None):
                             form_instance.sales_voucher_master = master_form_instance
                             form_instance.save()
 
+
+                    # if form.has_changed() and 'quantity' in form.changed_data():
+
+
                     return redirect('sales-voucher-list')
             except Exception as e:
                 print(e)
 
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name})
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names})
 
 
 
@@ -7826,7 +7898,7 @@ def product_transfer_to_warehouse_ajax(request):
         try:
             filtered_product = list(product_godown_quantity_through_table.objects.filter(
             godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM'))
-           
+
             if filtered_product:
                 dict_to_send = {}
 
@@ -8996,17 +9068,18 @@ def productdynamicsearchajax(request):
             Q(PProduct_SKU__icontains=product_name_typed) |
             Q(PProduct_color__color_name__icontains=product_name_typed) |
             Q(Product__Product_Name__icontains=product_name_typed)
-        ).distinct().values('PProduct_SKU', 'PProduct_color__color_name', 
-                            'Product__Product_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice')
+        ).annotate(quantity=Subquery(product_godown_quantity_through_table.objects.filter(product_color_name=OuterRef('pk')).values('quantity'))).distinct().values('PProduct_SKU', 'PProduct_color__color_name', 
+                            'Product__Model_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice','quantity')
         
         if products.exists():
             product_searched_dict = {
                 product['PProduct_SKU']: [
-                    product.get('Product__Product_Name', ''),
+                    product.get('Product__Model_Name', ''),
                     product.get('PProduct_color__color_name', ''),
                     product.get('Product__Product_GST__gst_percentage', ''),
                     product.get('Product__Product_MRP', ''),
-                    product.get('Product__Product_SalePrice_CustomerPrice', '')
+                    product.get('Product__Product_SalePrice_CustomerPrice', ''),
+                    product.get('quantity', ''),
 
                 ] for product in products
             }

@@ -1159,7 +1159,20 @@ and then to each formset in FinishedProductWarehouseBinFormSet
 class salesvouchermasterfinishGoodsForm(forms.ModelForm):
     class Meta:
         model = sales_voucher_master_finish_Goods
-        fields = ['sales_no','buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total']
+        fields = ['sales_no','buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_godown']
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        last_item = sales_voucher_master_finish_Goods.objects.order_by('id').last()
+
+        if last_item:
+
+            self.fields['sales_no'].initial = last_item.id + 1
+        else:
+            self.fields['sales_no'].initial = 1
+
 
 
 class salesvoucherfinishGoodsForm(forms.ModelForm):
