@@ -2185,6 +2185,15 @@ table>:not(caption)>*>*{
     background: #000;
 }
 
+.totalApprPendingTotal{
+    color:rgb(232, 5, 107);
+    text-decoration: underline;
+ 
+}
+.input-error {
+    border: 2px solid red;
+    background-color: #ffe6e6;
+}
 
 
 /*===product cart rating===*/

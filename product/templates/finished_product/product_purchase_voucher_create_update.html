@@ -167,7 +167,7 @@
                                 <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
 
 
-                                <input type="text" readonly name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Product_Name}} {{forms.instance.product_name.PProduct_SKU}} {% endif %}" > 
+                                <input type="text" readonly name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" > 
 
                                 
                                 <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
@@ -206,7 +206,7 @@
                                 <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
 
 
-                                <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Product_Name}} {{forms.instance.product_name.PProduct_SKU}} {% endif %}" > 
+                                <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" > 
 
                                 
                                 <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
@@ -577,6 +577,7 @@ function getGstNo() {
                             const productName = value[0]; // Product name
                             const productSKU = key; // SKU
                             const productColor = value[1];
+                            const productQty = value[5];
                             // Highlight matches in name, SKU, and color
                             const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
                             const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
@@ -585,7 +586,7 @@ function getGstNo() {
                             // Add the suggestion to the container
                             suggestionsContainer.append(`
                                 <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
-                                    ${highlightedText}<span>${highlightedSKU}</span>&nbsp;<span>${highlightedColor}</span>
+                                   ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
                                 </div>
                             `);
                         });
@@ -619,7 +620,7 @@ function getGstNo() {
                 var namevalueCheck = selectedValue[0];
                 var newnameValue = namevalueCheck +''+item_value;
                 $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name"]`).val(item_value);
-                $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name_value"]`).val(newnameValue)
+                $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
                     const productColor = selectedValue[1];
                     const productGst = selectedValue[2];
                     var itemcolorinput = document.querySelector('#item_color_' + purchaseValue);
@@ -742,7 +743,7 @@ function getGstNo() {
                  var newnameValue = namevalueCheck + ' '+item_value;
 
                 $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name"]`).val(item_value);
-                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(newnameValue)
+                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck)
                     const productColor = selectedValue[1];
                     const productGst = selectedValue[2];
                     var itemcolorinput = document.querySelector('#item_color_' + purchasedata);

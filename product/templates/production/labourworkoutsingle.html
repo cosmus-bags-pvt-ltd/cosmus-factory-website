@@ -368,7 +368,7 @@ function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
                 var qty = parseInt(row.find('input[name$="-processed_pcs"]').val());
                 if(qty=== 0){
                     row.find('input[name$="-processed_pcs"]').val('');
-                }else if(qty >=0){
+                }else if(qty >0){
                     row.find('input[name$="-processed_pcs"]').val(qty);
                 }
                

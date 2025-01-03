@@ -44,7 +44,7 @@
 
 
     <div class="d-flex mb-3">
-        <label for="" class="item-form">Select Zone:</label>
+        <label for="" class="item-form">Zone:</label>
         <select name="zone" id="id_zone" class="item-select">
         
             <option value=""></option>
@@ -57,7 +57,7 @@
 
 
     <div class="d-flex mb-3">
-        <label for="" class="item-form">Select Rack:</label>
+        <label for="" class="item-form">Rack:</label>
         <select name="rack" id="id_rack" class="item-select">
         
           <option value=""></option>
@@ -114,120 +114,86 @@
 
   $(document).ready(function(){
 
-    $('#id_product_main_category').on('change', function() {
-    var mainProduct = $(this).val();
+     // Reusable function for AJAX requests
+     function fetchData(url, data, dropdownId, placeholderText) {
+        $.ajax({
+            url: url,
+            method: "GET",
+            data: data,
+            success: function (response) {
+                console.log('Response:', response);
 
-    $.ajax({
-        url: "/assignbintoproduct/",
-        method: "GET",
-        data: {
-            "mainProduct": mainProduct,
-        },
-        success: function(response) {
-            console.log('Response:', response);
-            var data =response.sub_category_data;
-            var subCategory = $('#id_sub_category');
-          
-            subCategory.empty();
+                var dropdown = $(dropdownId);
+                dropdown.empty();
+                dropdown.append(`<option value="">${placeholderText}</option>`);
 
-            subCategory.append('<option value="">Select Subcategory</option>');
-
-            // Append new options from the response
-            for (var i = 0; i < data.length; i++) {
-                subCategory.append('<option value="' + data[i].id + '">' + data[i].name + '</option>');
+                // Determine which data to use based on response structure
+                var responseData = response.sub_category_data || response.racks_data;
+                for (var i = 0; i < responseData.length; i++) {
+                    dropdown.append(`<option value="${responseData[i].id}">${responseData[i].name}</option>`);
+                }
+                
+            },
+            error: function (error) {
+                console.log('Error:', error);
             }
-        },
-        error: function(error) {
-            console.log('Error:', error);
+        });
+    }
+      $('#id_product_main_category').on('change', function () {
+        var mainProduct = $(this).val();
+        fetchData(
+          "/assignbintoproduct/",
+          { "mainProduct": mainProduct },
+          '#id_sub_category',
+          'Select Subcategory'
+        );
+      });
+
+      $('#id_zone').on('change', function () {
+        var mainZone = $(this).val();
+        fetchData(
+          "/assignbintoproduct/",
+          { "mainZone": mainZone },
+          '#id_rack',
+          'Select Rack'
+        );
+      })
+
+
+    function fetchProductData() {
+        var rack = $('#id_rack').val();
+        var subProduct = $('#id_sub_category').val();
+        var mainProduct = $('#id_product_main_category').val();
+        var mainZone = $('#id_zone').val();
+
+        if (!subProduct) {
+            alert("Please select a subcategory first.");
+            return;
         }
-    });
-});
 
-    $('#id_zone').on('change',function(){
-  
-      var mainZone = $(this).val();
-   
-    $.ajax({
-      url : "/assignbintoproduct/",
-      method : "GET",
-      data : {
-        "mainZone":mainZone,
-      },
-      success:function(response){
-          
-        var rackData = response.racks_data;
-        var rack = $('#id_rack')
-        rack.empty();
-        rack.append('<option value="">Select Rack</option>')
-        
-        for(var i= 0 ; i < rackData.length;i++){
-          rack.append('<option value ="' + rackData[i].id +'"> '+  rackData[i].name +'</option>')
-        }
-
-      },
-      error:function(error){
-        console.log(error)
-      }
-
-    })
-})
-
-
-$('#id_sub_category').on('change',function(){
-    var rack = $('#id_rack').val();
-    var subProduct = $(this).val();
-    var mainProduct = $('#id_product_main_category').val();
-    var mainZone = $('#id_zone').val()
-
-    $.ajax({
-      url : "/assignbintoproduct/",
-      method : "GET",
-      data : {
-        "subProduct":subProduct,
-        "rack" : rack,
-        "mainProduct":mainProduct,
-        "mainZone":mainZone
-      },
-      success:function(response){
-
-      },
-      error:function(error){
-
-      }
-
-    })
-})
-
-
-$('#id_rack').on('change', function() {
-    var rack = $(this).val();
-    var subProduct = $('#id_sub_category').val();
-    var mainProduct = $('#id_product_main_category').val();
-    var mainZone = $('#id_zone').val()
-
-
-    if (!subProduct) {
-        alert("Please select a subcategory first.");
-        return;
+        $.ajax({
+            url: "/assignbintoproduct/",
+            method: "GET",
+            data: {
+                "rack": rack,
+                "subProduct": subProduct,
+                "mainProduct": mainProduct,
+                "mainZone": mainZone
+            },
+            success: function (response) {
+                console.log("Response:", response);
+                // Add further response handling logic if needed
+            },
+            error: function (error) {
+                console.log("Error:", error);
+            }
+        });
     }
 
-    $.ajax({
-        url: "/assignbintoproduct/",
-        method: "GET",
-        data: {
-            "rack": rack,
-            "subProduct": subProduct,
-            "mainProduct":mainProduct,
-            "mainZone":mainZone
-        },
-        success: function(response) {
-            
-        },
-        error: function(error) {
-            console.log("Error:", error);
-        }
+    // Event handler for subcategory and rack change
+    $('#id_sub_category, #id_rack').on('change', function () {
+        fetchProductData();
     });
-});
 
   })
 </script>

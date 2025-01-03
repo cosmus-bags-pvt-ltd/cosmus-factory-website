@@ -9172,7 +9172,7 @@ def productdynamicsearchajax(request):
                     product.get('Product__Product_GST__gst_percentage', ''),
                     product.get('Product__Product_MRP', ''),
                     product.get('Product__Product_SalePrice_CustomerPrice', ''),
-                    product.get('quantity', ''),
+                    product.get('quantity', '') if product.get('quantity', '') else 0,
 
                 ] for product in products
             }
