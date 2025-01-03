@@ -2185,7 +2185,11 @@ table>:not(caption)>*>*{
     background: #000;
 }
 
-
+.totalApprPendingTotal{
+    color:rgb(232, 5, 107);
+    text-decoration: underline;
+ 
+}
 
 /*===product cart rating===*/
  @media screen and (max-width: 600px) {
