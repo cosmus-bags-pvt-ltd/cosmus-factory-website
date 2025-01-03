@@ -2832,7 +2832,7 @@ def salesvouchercreateupdate(request,s_id=None):
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
         
-        formset.forms = [form for form in formset.forms if form.has_changed()]
+        # formset.forms = [form for form in formset.forms if form.has_changed()]
 
         if not master_form.is_valid():
             print("Form Errors:", master_form.errors)
@@ -2849,9 +2849,18 @@ def salesvouchercreateupdate(request,s_id=None):
                 with transaction.atomic():
                     master_form_instance = master_form.save(commit=False)
                     master_form_instance.save()
+                    
+                    selected_godown = master_form_instance.selected_godown
+                    
+                    print(selected_godown)
 
                     for form in formset.deleted_forms:
                         if form.instance.pk:
+                            product_name = form.instance.product_name
+                            print('name --- ',product_name)
+
+                            product_qty = form.instance.quantity
+                            print('qty --- ',product_qty)
                             form.instance.delete()
 
 
@@ -2860,6 +2869,7 @@ def salesvouchercreateupdate(request,s_id=None):
                             form_instance = form.save(commit=False)
                             form_instance.sales_voucher_master = master_form_instance
                             form_instance.save()
+
 
 
                     # if form.has_changed() and 'quantity' in form.changed_data():
@@ -7698,7 +7708,7 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
         godown_id = voucher_instance.source_warehouse.id
 
         filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage'))
         
         if filtered_product:
             dict_to_send = {}
@@ -7711,8 +7721,9 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
                 color = query.get('product_color_name__PProduct_color__color_name')
                 uom = query.get('product_color_name__Product__Product_UOM')
                 qty = query.get('quantity')
+                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
                 
-                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom]
+                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst]
                 
                 
     else:
@@ -7896,7 +7907,7 @@ def product_transfer_to_warehouse_ajax(request):
 
         try:
             filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice','product_color_name__Product__Product_GST__gst_percentage'))
 
             if filtered_product:
                 dict_to_send = {}
@@ -7911,8 +7922,9 @@ def product_transfer_to_warehouse_ajax(request):
                     qty = query.get('quantity')
                     mrp = query.get('product_color_name__Product__Product_MRP')
                     customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
+                    gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
                     
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price]
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst]
                 
                 return JsonResponse({'filtered_product':dict_to_send})
             

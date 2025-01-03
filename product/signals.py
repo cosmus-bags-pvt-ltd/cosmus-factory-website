@@ -7,7 +7,7 @@ from .models import (Finished_goods_transfer_records, Ledger, PProduct_Creation,
                       account_credit_debit_master_table, godown_item_report_for_cutting_room,  item_purchase_voucher_master, 
                       item_godown_quantity_through_table,Item_Creation,item_color_shade, labour_workout_master, 
                       opening_shade_godown_quantity, product_2_item_through_table, product_godown_quantity_through_table, product_purchase_voucher_items, purchase_order, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_raw_material_cutting,
-                        purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, set_prod_item_part_name,
+                        purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, sales_voucher_finish_Goods, set_prod_item_part_name,
                           shade_godown_items)
 
 
@@ -486,6 +486,27 @@ def create_update_warehouse_stock_transfer(sender, instance, created, **kwargs):
 
     else:
         pass
+
+
+
+@receiver(post_save, sender=sales_voucher_finish_Goods)
+def sales_voucher_stock_minus(sender, instance, created, **kwargs):
+    product = instance.product_name
+    quantity = instance.quantity
+
+    master_instance = instance.sales_voucher_master
+    godown = master_instance.selected_godown
+
+    if created:
+        
+        godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown,product_color_name=product)
+        godown_qty_value.quantity = godown_qty_value.quantity - quantity
+        godown_qty_value.save()
+
+    else:
+        pass
+
+
 
 
 
