@@ -2816,11 +2816,33 @@ def salesvouchercreateupdate(request,s_id=None):
 
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
     godown_names = Godown_finished_goods.objects.all()
+    dict_to_send = None
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
+        godown_id = voucher_instance.selected_godown.id
+
+        filtered_product = list(product_godown_quantity_through_table.objects.filter(
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage'))
+        
+        if filtered_product:
+            dict_to_send = {}
+
+            for query in filtered_product:
+                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
+                p_sku = query.get('product_color_name__PProduct_SKU')
+                product_name = query.get('product_color_name__Product__Product_Name')
+                product_model_name = query.get('product_color_name__Product__Model_Name')
+                color = query.get('product_color_name__PProduct_color__color_name')
+                uom = query.get('product_color_name__Product__Product_UOM')
+                qty = query.get('quantity')
+                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
+                
+                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst]
+
+
     else:
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
@@ -2879,7 +2901,7 @@ def salesvouchercreateupdate(request,s_id=None):
             except Exception as e:
                 print(e)
 
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names})
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send})
 
 
 
@@ -8522,9 +8544,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     selected_fabric_grp = request.GET.get('Fabric_Group')
     less_Number = request.GET.get('less_Number')
 
-
-
-   
 
     negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
 
