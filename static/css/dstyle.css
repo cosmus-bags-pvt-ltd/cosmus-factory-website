@@ -2190,6 +2190,11 @@ table>:not(caption)>*>*{
     text-decoration: underline;
  
 }
+.input-error {
+    border: 2px solid red;
+    background-color: #ffe6e6;
+}
+
 
 /*===product cart rating===*/
  @media screen and (max-width: 600px) {
