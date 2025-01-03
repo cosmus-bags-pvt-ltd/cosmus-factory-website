@@ -7892,12 +7892,11 @@ def product_transfer_to_warehouse_ajax(request):
     godown_id = request.GET.get('godown_id')
 
 
-    
     if godown_id:
 
         try:
             filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM'))
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
 
             if filtered_product:
                 dict_to_send = {}
@@ -7910,8 +7909,10 @@ def product_transfer_to_warehouse_ajax(request):
                     color = query.get('product_color_name__PProduct_color__color_name')
                     uom = query.get('product_color_name__Product__Product_UOM')
                     qty = query.get('quantity')
+                    mrp = query.get('product_color_name__Product__Product_MRP')
+                    customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
                     
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom]
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price]
                 
                 return JsonResponse({'filtered_product':dict_to_send})
             
