@@ -28,7 +28,7 @@
 
     <div class="row">
         <div class="col-lg-7">
-            <table class="table table-striped table-hover table-bordered tables" id="cuttingTable">
+            <table class="table table-striped table-hover table-bordered tables" id="LabourWorkInTable">
                 <thead class="name_absolute text-nowrap">
                     <tr>
                         <th>Product Sku</th>
@@ -293,6 +293,7 @@ function submitButtoncheck() {
         quantityCheck()
         submitForm()
         let approve = document.querySelectorAll('input[name$="-approved_qty_value"]');
+        var submitButton = document.getElementById('goodsValueBtn');
         approve.forEach(function (element) {
             element.addEventListener('input', () => {
                 quantityCheck();
@@ -304,6 +305,25 @@ function submitButtoncheck() {
             })
         })
 
+        approve.forEach((input, index) => {
+            // Listen for keydown events on each Order Quantity input field
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); // Prevent the default behavior of the Enter key
+                    input.blur(); // Optional: Remove focus to mimic submission for the row
+                    // Focus on the next Order Quantity input field, if available
+                    const nextInput = approve[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    
+                    }else {
+                        // If it's the last input, focus the submit button
+                        submitButton.focus();
+                    }
+                }
+            });
+        });
+
         let checkboxData = document.getElementById('id_checkAll');
         checkboxData.addEventListener('change',function(){
             quantityCheck();
@@ -314,6 +334,30 @@ function submitButtoncheck() {
             submitButtoncheck();
         })
 
+    })
+
+    $(document).ready(function(){
+        $('#LabourWorkInTable tbody').find('input[name$="-approved_qty_value"]').first().focus();
+        $('#LabourWorkInTable tbody').on('focus','input',function(){
+            var row = $(this).closest('tr');
+            var qty = parseInt(row.find('input[name$="-approved_qty_value"]').val());
+            if(qty === 0){
+                row.find('input[name$="-approved_qty_value"]').val('')
+            }else if(qty > 0){
+                row.find('input[name$="-approved_qty_value"]').val(qty) 
+            }
+        })
+
+        $(document).on('focusout','input[name$="-approved_qty_value"]',function(){
+                
+                var value = $(this).val();
+                console.log(value)
+                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                    $(this).val('0'); // Set to 0 if empty or invalid
+                } else {
+                    $(this).val(value); // Retain the entered value if valid
+                }
+        })
     })
 
 </script>
