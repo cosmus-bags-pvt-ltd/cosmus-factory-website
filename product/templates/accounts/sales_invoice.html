@@ -14,13 +14,13 @@
         <div class="d-flex mb-3">
           <span id="purchaseError" class="error-messages"></span>
           <div class="d-flex">
-            <label for="" class="me-5">Sales No:</label>
+            <label for="id_sales_no" class="me-5">Sales No:</label>
             {% if master_form.instance.id %}
             <input type="text" class="item-select" name="sales_no" id="id_sales_no" value="{{master_form.instance.sales_no}}"
               maxlength="255" required readonly>
             {% elif not master_form.instance.id %}
             <input type="text" class="item-select" name="sales_no" id="id_sales_no"
-              value="{{master_form.sales_no.initial |default_if_none:''}}" maxlength="255" required>
+              value="{{master_form.sales_no.initial }}" maxlength="255" required>
             {% endif %}
           </div>
           <span id="SupplierError" class="error-messages"></span>
@@ -72,6 +72,24 @@
               readonly required>
           </div>
         </div>
+
+
+
+      <div class="d-flex">
+        <label for="id_selected_godown" class="me-3">Godown:</label>
+        <select class="product2Select text-black" name="selected_godown" required id="id_selected_godown">
+          {% if master_form.instance.id %}
+          <option value="{{master_form.instance.selected_godown.id}}">
+            {{master_form.instance.selected_godown.godown_name_finished}}</option>
+          {% else %}
+          <option value="" selected disabled>Select Godown</option>
+          {% for x in godown_names %}
+          <option value="{{x.id}}">{{x.godown_name_finished}}</option>
+          {% endfor %}
+          {% endif %}
+        </select>
+        <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+      </div>
 
     <table class="table table-striped table-hover table-responsive" id="salesTable">
       <thead class="name_absolute">
