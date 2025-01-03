@@ -57,8 +57,8 @@
             <td colspan="4"></td>
             <td colspan="2" class="fw-bold">Total Aproval Pending</td>
             {% for x in all_sku %}
-            
-            <td><a style="color:white; text-decoration: none; background-color: #f5239a; padding: 5px;" href="{% url 'labour-workin-pending-split' ref_id %}"><span class="totalApprovalPending fw-bold"></span></a></td>
+            <td><button class="border-0 rounded  mb-1 px-2" style="color:white; background-color: #f628eb;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workin-pending-split' ref_id %}"><span class="totalApprovalPending fw-bold"></span></a></button> </td>
+      
             {% endfor %}
           
             <td ><span class="grandTotalValue text-danger fw-bold"></span></td>

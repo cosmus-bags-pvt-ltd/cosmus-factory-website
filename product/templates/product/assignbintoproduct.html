@@ -75,9 +75,9 @@
         <table class="table table-bordered table-striped table-hover">
             <thead class="name_absolute">
                 <tr>
-                <th>Bin Name</th>
-                <th>Bin Size</th>
-                <th>checkBox</th>
+                  <th>Bin Name</th>
+                  <th>Bin Size</th>
+                  <th>checkBox</th>
                 </tr>
             </thead>
             <tbody class="mainTableList" id="checkboxTable">
@@ -154,18 +154,19 @@
         "mainZone":mainZone,
       },
       success:function(response){
-            console.log(response)
-            var rackData = response.racks_data;
-          var rack = $('#id_rack')
-          rack.empty();
-          rack.append('<option value="">Select Rack</option>')
-          for(var i= 0 ; i < rackData.length;i++){
-            rack.append('<option value ="' + rackData[i].id +'"> '+  rackData[i].name +'</option>')
-          }
+          
+        var rackData = response.racks_data;
+        var rack = $('#id_rack')
+        rack.empty();
+        rack.append('<option value="">Select Rack</option>')
+        
+        for(var i= 0 ; i < rackData.length;i++){
+          rack.append('<option value ="' + rackData[i].id +'"> '+  rackData[i].name +'</option>')
+        }
 
       },
       error:function(error){
-
+        console.log(error)
       }
 
     })
@@ -175,9 +176,8 @@
 $('#id_sub_category').on('change',function(){
     var rack = $('#id_rack').val();
     var subProduct = $(this).val();
-    console.log('subProduct',subProduct)
-
-    
+    var mainProduct = $('#id_product_main_category').val();
+    var mainZone = $('#id_zone').val()
 
     $.ajax({
       url : "/assignbintoproduct/",
@@ -185,6 +185,8 @@ $('#id_sub_category').on('change',function(){
       data : {
         "subProduct":subProduct,
         "rack" : rack,
+        "mainProduct":mainProduct,
+        "mainZone":mainZone
       },
       success:function(response){
 
@@ -197,33 +199,12 @@ $('#id_sub_category').on('change',function(){
 })
 
 
-
-{% comment %} $('#id_rack').on('change',function(){
-    
-    var rack = $(this).val();
-    console.log('rack',rack)
-  $.ajax({
-    url : "/assignbintoproduct/",
-    method : "GET",
-    data : {
-      "rack":rack,
-    },
-    success:function(response){
-
-    },
-    error:function(error){
-
-    }
-
-  })
-}) {% endcomment %}
-
-
-
-
 $('#id_rack').on('change', function() {
     var rack = $(this).val();
     var subProduct = $('#id_sub_category').val();
+    var mainProduct = $('#id_product_main_category').val();
+    var mainZone = $('#id_zone').val()
+
 
     if (!subProduct) {
         alert("Please select a subcategory first.");
@@ -236,23 +217,11 @@ $('#id_rack').on('change', function() {
         data: {
             "rack": rack,
             "subProduct": subProduct,
+            "mainProduct":mainProduct,
+            "mainZone":mainZone
         },
         success: function(response) {
-            const formsetContainer = document.getElementById('formset-container');
-            formsetContainer.innerHTML = '';  // Clear any existing forms
-
-            response.formset_data.forEach(form => {
-                const formDiv = document.createElement('div');
-                formDiv.classList.add('form-group');
-
-                for (const [fieldName, fieldHTML] of Object.entries(form)) {
-                    const fieldContainer = document.createElement('div');
-                    fieldContainer.innerHTML = fieldHTML;
-                    formDiv.appendChild(fieldContainer);
-                }
-
-                formsetContainer.appendChild(formDiv);
-            });
+            
         },
         error: function(error) {
             console.log("Error:", error);

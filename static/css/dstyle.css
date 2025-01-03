@@ -1511,6 +1511,10 @@ input[type=number] {
     overflow-y: auto;
     max-height: 600px;
 }
+.responsive {
+    overflow-y: auto;
+    max-height: 660px;
+}
 .product2create-btn{
     background-color: #3498db;
     color: white;
