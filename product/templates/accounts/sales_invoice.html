@@ -7,6 +7,7 @@
       <form class="mt-3" action="" method="POST" id="salesForm">
         {% csrf_token %}
         <div class="d-flex mb-2">
+          <input type="hidden" id="productSaleDate" value="{{dict_to_send}}">
           <label for="" class="me-3">Type:</label>
           <h5 class="text-danger fw-bold">Finish Goods</h5>
           <!-- <input type="text" class="item-select" name="" id="" value="Finish Goods" maxlength="255" readonly> -->
@@ -119,7 +120,7 @@
           <td> 
             <div class="custom-dropdown-container">
               <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
-              <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Product_Name}} {{forms.instance.product_name.PProduct_SKU}} {% endif %}" > 
+              <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" > 
               <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
                 
              
@@ -417,31 +418,31 @@ $(document).ready(function(){
 
 <script>
   $(document).ready(function () {
-         var searchedItemNameDict;
-          var enterPressed = false;
-          var itemName;
-          var purchaseValue;
-          // var productWerhouseid = $('#id_finished_goods_transfer_records_set-0-ids').val(); 
+    var searchedItemNameDict;
+    var enterPressed = false;
+    var itemName;
+    var purchaseValue;
+    var productWerhouseid = $('#id_finished_goods_transfer_records_set-0-ids').val(); 
 
-          $('#id_selected_godown').on('change',function(){
-            const godown_id = $(this).val();
-            console.log(godown_id)
-            $.ajax({
-              url:'/producttransfertowarehouseajax/',
-              method: "GET",
-              data:{
-                "godown_id":godown_id,
-              },
-              success: function(response){
-                console.log(response.filtered_product)
-                $('.search-input').empty();
+    if(productWerhouseid === ''){
+      $('#id_selected_godown').on('change',function(){
+        const godown_id = $(this).val();
+        
+        $.ajax({
+          url:'/producttransfertowarehouseajax/',
+          method: "GET",
+          data:{
+            "godown_id":godown_id,
+          },
+          success: function(response){
+            $('.search-input').empty();
 
-          $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
-           var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
-            var productnamevalue = $(this).val().trim();
-            var selectNameValue = `select_product_name_${purchaseValue}`;
-            var suggestionsContainer = $(`#${selectNameValue}`);
- 
+            $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
+              var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
+              var productnamevalue = $(this).val().trim();
+              var selectNameValue = `select_product_name_${purchaseValue}`;
+              var suggestionsContainer = $(`#${selectNameValue}`);
+  
                 if (productnamevalue === 'None') {
                     var selectNameValue = $(this).closest('tr').find('[name^="select_product_name_"]');
                         
@@ -454,97 +455,363 @@ $(document).ready(function(){
                     suggestionsContainer.css('display', 'block');
                 }
                 enterPressed = false;
-                
+                  
 
                 function escapeRegExp(string) {
-                            return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
-                        }
-                        searchedProductNameDic = response.filtered_product; 
-                        console.log(searchedProductNameDic)
-                        const searchQuery = productnamevalue.toLowerCase();
-                        const searchTerms = searchQuery.split(/\s+/);
-                        const convertStringData = searchTerms.toString();
+                  return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+                }
+                searchedProductNameDic = response.filtered_product; 
+                console.log(searchedProductNameDic)
+                const searchQuery = productnamevalue.toLowerCase();
+                const searchTerms = searchQuery.split(/\s+/);
+                const convertStringData = searchTerms.toString();
+            
+                const escapedTerms = searchTerms.map(escapeRegExp);
+
+                const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+
+                const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+
+                const filteredOptions = Object.entries(searchedProductNameDic).filter(
+                ([key, value]) => {
+                    const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
+                    const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
+                    const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
+                
+                    const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+  
+                    return normalizedKey.includes(normalizedQuery) ||
+                        normalizedProductName.includes(normalizedQuery) ||
+                        normalizedColor.includes(normalizedQuery);
+                });
+          
+                suggestionsContainer.empty();
+
+                // Generate suggestions for matching options
+                filteredOptions.forEach(([key, value], index) => {
+                    // Extract relevant fields
+                    const productName = value[3]; // Product name
+                    const productSKU = key; // SKU
+                    const productColor = value[1];
+                    const productQty = value[2];
+                    // Highlight matches in name, SKU, and color
+                    const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
+                    const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
+                    const highlightedColor = productColor.replace(regex, '<span class="highlight">$1</span>');
+
+                    // Add the suggestion to the container
+                    suggestionsContainer.append(`
+                        <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
+                            ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
+                        </div>
+                    `);
+                });
+                  
+          
+                suggestionsContainer.on('click', '.itemName-div', function(e) {
+                  var item_value = $(this).data('key');
+                  var itemNamevaluesCheck = $(this).text().trim();
+                  
+                  $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
+                  $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
+                  $(this).addClass('selected').siblings().removeClass('selected');
+
+                  if (item_value !== undefined) {
+                  
+                    var selectedValue = searchedProductNameDic[item_value];
+                    var namevalueCheck = selectedValue[3];
                     
-                        const escapedTerms = searchTerms.map(escapeRegExp);
-
-                        const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
-
-                        const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+                    $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val(item_value);
+                    $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
+                      const productColor = selectedValue[1];
+                      const productGst = selectedValue[8];
+                      const productmrp = selectedValue[6];
+                      const productPrice = selectedValue[7];
+                      var itemcolorinput = document.querySelector('#product_color_' + purchaseValue);
+                      var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst');
+                      var productSku = document.getElementById('product_Sku_'+purchaseValue)
+                      var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp') ;
+                      var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price')                 
+                          itemcolorinput.value = productColor;
+                          itemgstinputs.value = productGst ;
+                          productSku.value = item_value;
+                          mrp.value = productmrp;
+                          customPrice.value =productPrice;
+                  }
+                
+                  suggestionsContainer.css('display', 'none');
+                  
+                });
       
-                        const filteredOptions = Object.entries(searchedProductNameDic).filter(
-                        ([key, value]) => {
-                            const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
-                            const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
-                            const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
-                        
-                            const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
-           
-                            return normalizedKey.includes(normalizedQuery) ||
-                                normalizedProductName.includes(normalizedQuery) ||
-                                normalizedColor.includes(normalizedQuery);
-                        });
-         
-                        suggestionsContainer.empty();
-
-                        // Generate suggestions for matching options
-                        filteredOptions.forEach(([key, value], index) => {
-                            // Extract relevant fields
-                            const productName = value[3]; // Product name
-                            const productSKU = key; // SKU
-                            const productColor = value[1];
-                            const productQty = value[2];
-                            // Highlight matches in name, SKU, and color
-                            const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
-                            const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
-                            const highlightedColor = productColor.replace(regex, '<span class="highlight">$1</span>');
-
-                            // Add the suggestion to the container
-                            suggestionsContainer.append(`
-                                <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
-                                    ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
-                                </div>
-                            `);
-                        });
-                
-        
-        
-            suggestionsContainer.on('click', '.itemName-div', function(e) {
-                var item_value = $(this).data('key');
-                var itemNamevaluesCheck = $(this).text().trim();
-                
-                $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
-                $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
-                $(this).addClass('selected').siblings().removeClass('selected');
-
-                if (item_value !== undefined) {
-                  console.log(item_value)
-                var selectedValue = searchedProductNameDic[item_value];
-                var namevalueCheck = selectedValue[3];
-                
-                var newnameValue = namevalueCheck +''+item_value;
-                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val(item_value);
-                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
-                    const productColor = selectedValue[1];
-                    const productGst = selectedValue[2];
-                    const productmrp = selectedValue[6];
-                    const productPrice = selectedValue[7];
-                    var itemcolorinput = document.querySelector('#product_color_' + purchaseValue);
-                    var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst');
-                    var productSku = document.getElementById('product_Sku_'+purchaseValue)
-                    var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp') ;
-                    var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price')                 
-                        itemcolorinput.value = productColor;
-                        itemgstinputs.value = productGst ;
-                        productSku.value = item_value;
-                        mrp.value = productmrp;
-                        customPrice.value =productPrice;
-            }
-               
-                suggestionsContainer.css('display', 'none');
-                
             });
+
+            var index = 0; // Declare index outside of the event listener
+            var indexbool = true;
+
+            $(document).on('keydown', 'input[name$="-product_name_value"]', function(event) {
+            const $inputField = $(this);
+            const $dropdownOptions = $inputField.next('.product-name');
+            const $options = $dropdownOptions.find('.itemName-div');
+            const optionsCount = $options.length - 1;
+            const searchText = $inputField.val().trim();
+            const hiddenValue = $inputField.closest('.custom-dropdown-container').find(`#select_item_name_${purchaseValue}`);
+            if (searchText === '') {
+                index = 0;
+                return;
+            }
+            const newHeight = $inputField.offset();
+            const windowHeight = $(window).height();
+            const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
+      
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+
+                if (index <= optionsCount) {
+                
+                    const $selectedItem = $options.eq(index);
+                    const $nextItem = $selectedItem.next();
+                    const nameDataKey = $selectedItem.text();
+                    const nameKey = $selectedItem.data('key');
+
+                    $inputField.attr('data-key', nameKey);
+                
+                    $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                    const itemOffsetTop = $nextItem.position().top;
+                    const itemHeight = $nextItem.outerHeight();
+                    const selectScrollTop = $dropdownOptions.scrollTop();
+                    const selectHeight = $dropdownOptions.height();
+
+                    if (itemOffsetTop + itemHeight > selectHeight) {
+                        $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                    } else if (itemOffsetTop < 0) {
+                        $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                    }
+                    $selectedItem.addClass('selected');
+                    if (index !== optionsCount) {
+                        index += 1;
+                        indexbool = true;
+                    }
+                } else {
+                    index = 0;
+                }
+            }
+
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+
+                if (index != 0 && indexbool == true) {
+                    index -= 1;
+                }
+
+                if (index <= optionsCount) {
+                  
+                    const $selectedItem = $options.eq(index);
+                    const $prevItem = $selectedItem.prev();
+                    const nameDataKey = $selectedItem.text();
+                    const nameKey = $selectedItem.data('key');
+
+                    $inputField.attr('data-key', nameKey);
+                    
+                    $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                    
+                    const itemOffsetTop = $prevItem.position().top;
+                    const itemHeight = $prevItem.outerHeight();
+                    const selectScrollTop = $dropdownOptions.scrollTop();
+                    const selectHeight = $dropdownOptions.height();
+
+                    if (itemOffsetTop < 0) {
+                        $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                    } else if (itemOffsetTop + itemHeight > selectHeight) {
+                        $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                    }
+
+                    $selectedItem.addClass('selected');
+                } else {
+                    index = 0;
+                }
+            }
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const itemEnterValue = $(this);
+                const item_value = Number(itemEnterValue.attr('data-key'));
+                const purchasedata = itemEnterValue.closest('tr').find('[name^="product_color_"]').attr('name').match(/\d+/)[0];
+                console.log('purchasedata',purchasedata)
+                nameDataKey = '';
+                nameKey = '';
+                index = 0;
+                indexbool = false;
+                $dropdownOptions.css('display', 'none');
+                if (item_value !== undefined) {
+                    var selectedValue = searchedProductNameDic[item_value];
+                    
+                    var namevalueCheck = selectedValue[3];
+                
+                    $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val(item_value);
+                    $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
+                        const productColor = selectedValue[1];
+                        const productGst = selectedValue[8];
+                        const productmrp = selectedValue[6];
+                        const productPrice = selectedValue[7];
+                        var itemcolorinput = document.querySelector('#product_color_' + purchaseValue);
+                        var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst');
+                        var productSku = document.getElementById('product_Sku_'+purchaseValue)
+                        var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp') ;
+                        var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price')                 
+                            itemcolorinput.value = productColor;
+                            itemgstinputs.value = productGst ;
+                            productSku.value = item_value;
+                            mrp.value = productmrp;
+                            customPrice.value =productPrice;
+                            enterPressed = true;
+                        hiddenValue.css("display" ,"none");
+                        $inputField.blur();
+                }
+              
+                      }
+                      if (event.key === 'Tab' && enterPressed) {
+                      enterPressed = false; // Reset Enter key handling
+                      return true; // Allow default Tab behavior
+                  }
+            
+              });
+
+
+          },
+          error:function(error){
+            console.log(error)
+          }
+        })
+      })
+
+    }else{
+      var productSaleDate = $('#productSaleDate').val();
+      if(productSaleDate !== "None"){
+        var ProductDataObject;
         
+        try {
+        // Fix single quotes and mismatched quotes in the JSON string
+            const sanitizedData = productSaleDate
+                .replace(/'/g, '"') // Replace single quotes with double quotes
+                .replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":'); // Add quotes around numeric keys
+                ProductDataObject = JSON.parse(sanitizedData);
+
+            } catch (error) {
+                console.error('Error parsing stockData:', error);
+            }
+        // $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {
+        //     itemName = $(this).closest('tr').find('input[name$="-product_quantity_transfer"]').attr('name');
+        //     purchaseValue = itemName.split('-')[1];
+        // });
+
+        $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
+          var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
+          var productnamevalue = $(this).val().trim();
+          var selectNameValue = `select_product_name_${purchaseValue}`;
+          var suggestionsContainer = $(`#${selectNameValue}`);
+
+          if (productnamevalue === 'None') {
+              var selectNameValue = $(this).closest('tr').find('[name^="select_product_name_"]');
+                  
+              selectNameValue.css('display', 'none');
+              $(this).attr('data-key', '');
+              return;
+          }
+
+          if(!enterPressed){
+              suggestionsContainer.css('display', 'block');
+          }
+          enterPressed = false;
+            
+
+          function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+          }
+          searchedProductNameDic = response.filtered_product; 
+          console.log(searchedProductNameDic)
+          const searchQuery = productnamevalue.toLowerCase();
+          const searchTerms = searchQuery.split(/\s+/);
+          const convertStringData = searchTerms.toString();
+      
+          const escapedTerms = searchTerms.map(escapeRegExp);
+
+          const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+
+          const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+
+          const filteredOptions = Object.entries(searchedProductNameDic).filter(
+          ([key, value]) => {
+              const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
+              const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
+              const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
+          
+              const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+
+              return normalizedKey.includes(normalizedQuery) ||
+                  normalizedProductName.includes(normalizedQuery) ||
+                  normalizedColor.includes(normalizedQuery);
+          });
+    
+          suggestionsContainer.empty();
+
+          // Generate suggestions for matching options
+          filteredOptions.forEach(([key, value], index) => {
+              // Extract relevant fields
+              const productName = value[3]; // Product name
+              const productSKU = key; // SKU
+              const productColor = value[1];
+              const productQty = value[2];
+              // Highlight matches in name, SKU, and color
+              const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
+              const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
+              const highlightedColor = productColor.replace(regex, '<span class="highlight">$1</span>');
+
+              // Add the suggestion to the container
+              suggestionsContainer.append(`
+                  <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
+                      ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
+                  </div>
+              `);
+          });
+            
+    
+    
+          suggestionsContainer.on('click', '.itemName-div', function(e) {
+            var item_value = $(this).data('key');
+            var itemNamevaluesCheck = $(this).text().trim();
+            
+            $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
+            $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
+            $(this).addClass('selected').siblings().removeClass('selected');
+
+            if (item_value !== undefined) {
+            
+              var selectedValue = searchedProductNameDic[item_value];
+              var namevalueCheck = selectedValue[3];
+              
+              var newnameValue = namevalueCheck +''+item_value;
+              $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val(item_value);
+              $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
+                  const productColor = selectedValue[1];
+                  const productGst = selectedValue[8];
+                  const productmrp = selectedValue[6];
+                  const productPrice = selectedValue[7];
+                  var itemcolorinput = document.querySelector('#product_color_' + purchaseValue);
+                  var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst');
+                  var productSku = document.getElementById('product_Sku_'+purchaseValue)
+                  var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp') ;
+                  var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price')                 
+                      itemcolorinput.value = productColor;
+                      itemgstinputs.value = productGst ;
+                      productSku.value = item_value;
+                      mrp.value = productmrp;
+                      customPrice.value =productPrice;
+              }
         
+              suggestionsContainer.css('display', 'none');
+            
+            });
         });
 
         var index = 0; // Declare index outside of the event listener
@@ -653,7 +920,7 @@ $(document).ready(function(){
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val(item_value);
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
                     const productColor = selectedValue[1];
-                    const productGst = selectedValue[2];
+                    const productGst = selectedValue[8];
                     const productmrp = selectedValue[6];
                     const productPrice = selectedValue[7];
                     var itemcolorinput = document.querySelector('#product_color_' + purchaseValue);
@@ -671,27 +938,19 @@ $(document).ready(function(){
                     $inputField.blur();
             }
            
-        }
-        if (event.key === 'Tab' && enterPressed) {
-        enterPressed = false; // Reset Enter key handling
-        return true; // Allow default Tab behavior
+                  }
+                  if (event.key === 'Tab' && enterPressed) {
+                  enterPressed = false; // Reset Enter key handling
+                  return true; // Allow default Tab behavior
+                  }
+            
+              });
+
     }
-   
-     });
 
-
-              },
-              error:function(error){
-                console.log(error)
-              }
-            })
-          })
-
-        // This ajax request for a input type value send to the backend and show the product name 
+  }
         
-
-
-    })
+})
 </script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
