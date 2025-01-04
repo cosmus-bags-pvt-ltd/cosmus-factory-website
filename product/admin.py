@@ -30,6 +30,7 @@ class ProductAdmin(admin.ModelAdmin):
 # admin.site.register(purchase_order_to_product)
 admin.site.register(purchase_order_raw_material_cutting)
 admin.site.register(purchase_order_to_product_cutting)
+admin.site.register(finishedgoodsbinallocation)
 
 
 

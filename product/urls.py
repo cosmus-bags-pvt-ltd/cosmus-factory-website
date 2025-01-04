@@ -141,6 +141,7 @@ urlpatterns = [
 
 
     path('salesvouchercreateupdateforwarehouse/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
+    path('salesscanproductdynamicajax/', views.sales_scan_product_dynamic_ajax, name = 'sales-scan-product-dynamic-ajax'),
 
 
 

@@ -2955,6 +2955,7 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
 
     dict_to_send = None
 
+    
 
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
@@ -2971,12 +2972,57 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
         formset = salesvouchercreateformset()
         page_name = 'Create Sales Invoice'
 
+        
+            
+
+            
+
+            
+        
+            
+
+            
+            
 
     return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names,'dict_to_send':dict_to_send})
 
 
 
+def sales_scan_product_dynamic_ajax(request):
+    
+    try:
+        
+        serialNo = request.GET.get('serialNo')
+        warhouseId = request.GET.get('warhouseId')
 
+        if not serialNo:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+
+
+        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_MRP','product__Product__Product_SalePrice_CustomerPrice','product__Product__Product_GST__gst_percentage'))
+
+
+        if filtered_product:
+            dict_to_send = {}
+
+            for query in filtered_product:
+                p_sku = query.get('product__PProduct_SKU')
+                serial_no = query.get('unique_serial_no')
+                product_model_name = query.get('product__Product__Model_Name')
+                color = query.get('product__PProduct_color__color_name')
+                gst = query.get('product__Product__Product_GST__gst_percentage')
+                mrp = query.get('product__Product__Product_MRP')
+                customer_price = query.get('product__Product__Product_SalePrice_CustomerPrice')
+
+
+                dict_to_send[p_sku] = [product_model_name,color,serial_no,gst,mrp,customer_price]
+            
+            return JsonResponse({ 'products': dict_to_send}, status=200)
+        
+        return JsonResponse({'error': 'No items found.'}, status=404)
+    
+    except Exception as e:
+        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
 
 
 

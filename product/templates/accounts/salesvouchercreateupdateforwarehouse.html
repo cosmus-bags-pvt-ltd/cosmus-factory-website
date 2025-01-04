@@ -84,7 +84,7 @@
         <option value="{{master_form.instance.selected_warehouse.id}}">
           {{master_form.instance.selected_warehouse.warehouse_name_finished}}</option>
         {% else %}
-        <option value="" selected disabled>Select Warehouse</option>
+        {% comment %} <option value="" selected disabled>Select Warehouse</option> {% endcomment %}
         {% for x in warehouse_names %}
         <option value="{{x.id}}">{{x.warehouse_name_finished}}</option>
         {% endfor %}
@@ -355,17 +355,17 @@
             var warhouseId = $('#id_selected_warehouse').val();
             console.log('warhouseId',warhouseId)
             const response = await $.ajax({
-                url: '/salesvouchercreateupdateforwarehouse/',
+                url: '/salesscanproductdynamicajax/',
                 type: 'GET',
                 data: { 
-                    serialNo: serialNo, 
+                    'serialNo': serialNo, 
                    'warhouseId':warhouseId,
                  
                 },
             });
     
             // Populate fields
-            console.log(response.product_name)
+            console.log(response)
           
     
             return response;
