@@ -115,7 +115,7 @@
                                 <th>SKU</th>
                                 <th>Color</th>
                                 <th>IMG</th>
-                                <!-- <th >BIN</th> -->
+                            
                               
                             </tr>
                         </thead>
@@ -261,7 +261,6 @@
         inwardSearch.focus();
 
         inwardSearch.addEventListener('input', function () {
-            console.log(inwardSearch.value)
             inwardSearch.style.color = 'white';
             responseMessage.html(''); // Clear any previous messages
             if (inwardSearch.value) {
@@ -416,7 +415,6 @@
         $('#confirmDeleteButton').click(function(){
             var itemId = $(this).data('item-id');
             var data = $(this).data('item-key');
-            console.log(data)
             // Redirect to delete view
             window.location.href = '/deletesigleentries/' + itemId +'/'+ data;
         });
@@ -427,10 +425,9 @@
 
     var rows = document.querySelectorAll('#inwordDateTable .mainTableList tr');
     totalValue = 0;
-    // console.log(rows)
+   
     rows.forEach(function(row){
         var inwordQty = parseInt(row.querySelector('.inwardedReceivedQty').value);
-        // console.log('inwordQty',inwordQty)
         totalValue += inwordQty;
 
         document.querySelector('.totalentries').textContent = totalValue;
