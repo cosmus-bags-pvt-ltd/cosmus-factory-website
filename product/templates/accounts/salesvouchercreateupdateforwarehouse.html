@@ -270,122 +270,6 @@
 </div>
 
 <script>
-      $(document).ready(function () {
-        let debounceTimeout;
-    
-        // Handle input in inwordSerialNo
-        $('#inwordSerialNo').on('input', function () {
-            clearTimeout(debounceTimeout);
-    
-            // Clear id_manualSerialNo
-            const manual_serial = $('#id_manualSerialNo');
-            manual_serial.val('');
-    
-            // Prevent manual button functionality
-            const manualButton = $('#manualAjaxButton');
-            manualButton.prop('disabled', true);
-            
-            const responseMessage = $('#responseMessage');
-            responseMessage.html(''); // Clear any previous messages
-
-            const inputField = $(this);
-    
-            debounceTimeout = setTimeout(async function () {
-                let inputUrl = inputField.val();
-                let serialNo = '';
-    
-                // Extract serial number
-                if (inputUrl.includes('=')) {
-                    serialNo = inputUrl.split('=').pop();
-                    inputField.val(serialNo);
-                    inputField.css('color', 'black');
-                }
-    
-                if (serialNo) {
-                    try {
-                        const response = await sendSerialNumber(serialNo);
-                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
-                    } catch (error) {
-                        const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                        $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
-                    }
-                }
-            }, 500); // Debounce delay
-        });
-    
-        // Handle input in id_manualSerialNo
-        $('#id_manualSerialNo').on('input', function () {
-            // Clear inwordSerialNo
-            $('#inwordSerialNo').val('');
-    
-            // Enable manual button
-            const manualButton = $('#manualAjaxButton');
-            manualButton.prop('disabled', false); // Enable manual button
-
-            const responseMessage = $('#responseMessage');
-            responseMessage.html(''); // Clear any previous messages
-
-        });
-    
-        // Handle click on the normal button
-        $('#manualAjaxButton').on('click', async function () {
-            const manualSerialNo = $('#id_manualSerialNo').val();
-    
-            if (manualSerialNo) {
-                try {
-                    const response = await sendSerialNumber(manualSerialNo);
-                    $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
-                } catch (error) {
-                    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
-                }
-            } else {
-                $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
-            }
-        });
-    
-        // Function to send serial number to the backend
-        async function sendSerialNumber(serialNo) {
-            var warhouseId = $('#id_selected_warehouse').val();
-            const response = await $.ajax({
-                url: '/salesscanproductdynamicajax/',
-                type: 'GET',
-                data: { 
-                    'serialNo': serialNo, 
-                   'warhouseId':warhouseId,
-                 
-                },
-            });
-            
-            console.log(response.products[0])
-            var productResponse = response.products[0]
-            if (response.products[0] && response.products[0].length > 0) {
-              // Assuming the table row is dynamically identified
-              var tableRow = $('#salesTable .mainTableList tr').last(); // Adjust selector as needed
-              console.log(tableRow)
-              console.log(response.products[0][1])
-              // Map data to specific input fields
-              tableRow.find('[name$="-product_name"]').val(productResponse[0]); // Product Name
-              tableRow.find('[name$="-product_name_value"]').val(productResponse[1]); // Product Name
-              tableRow.find('[name^="product_color_"]').val(productResponse[2]); // Product Color
-              tableRow.find('[name^="product_Sku_"]').val(productResponse[0]); // Product Code
-              tableRow.find('[name$="-serial_no"]').val(productResponse[3]); // Quantity
-              tableRow.find('[name$="-mrp"]').val(productResponse[5]); // Price
-              tableRow.find('[name$="-sale_price"]').val(productResponse[6]); // Discount
-              tableRow.find('[name$="-gst"]').val(productResponse[4]); // Discount
-          } else {
-              console.error("No products data found in response.");
-          }
-            return response;
-        }
-
-
-        
-
-    });
-</script>
-
-<script>
   var popUpNewWindow = null;
 function openPurchasePartyPopup(button){
  openNewPopup(button, '{% url "ledger-popup-create" %}');
@@ -542,21 +426,146 @@ $(document).on('change', 'select[name^="party_name"]', function () {
 })
 })
 </script>
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
- const addButton= document.getElementById('manualAjaxButton');
- const tableBody = document.querySelector('#salesTable tbody'); // Clone the first row of the table
- 
- if(addButton && tableBody){
-     addButton.addEventListener('click', function() {
-         
-             let lastVisibleRow = null;
-             tableBody.querySelectorAll('tr').forEach(row => {
-                 if (window.getComputedStyle(row).display !== 'none') {
-                     lastVisibleRow = row;
-                 }
-         });
+      $(document).ready(function () {
+        let debounceTimeout;
+    
+        // Handle input in inwordSerialNo
+        $('#inwordSerialNo').on('input', function () {
+            clearTimeout(debounceTimeout);
+    
+            // Clear id_manualSerialNo
+            const manual_serial = $('#id_manualSerialNo');
+            manual_serial.val('');
+    
+            // Prevent manual button functionality
+            const manualButton = $('#manualAjaxButton');
+            manualButton.prop('disabled', true);
+            
+            const responseMessage = $('#responseMessage');
+            responseMessage.html(''); // Clear any previous messages
+
+            const inputField = $(this);
+    
+            debounceTimeout = setTimeout(async function () {
+                let inputUrl = inputField.val();
+                let serialNo = '';
+    
+                // Extract serial number
+                if (inputUrl.includes('=')) {
+                    serialNo = inputUrl.split('=').pop();
+                    inputField.val(serialNo);
+                    inputField.css('color', 'black');
+                }
+    
+                if (serialNo) {
+                    try {
+                        const response = await sendSerialNumber(serialNo);
+                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                      
+                    } catch (error) {
+                        const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                        $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    }
+                }
+            }, 500); // Debounce delay
+        });
+    
+        // Handle input in id_manualSerialNo
+        $('#id_manualSerialNo').on('input', function () {
+            // Clear inwordSerialNo
+            $('#inwordSerialNo').val('');
+    
+            // Enable manual button
+            const manualButton = $('#manualAjaxButton');
+            manualButton.prop('disabled', false); // Enable manual button
+
+            const responseMessage = $('#responseMessage');
+            responseMessage.html(''); // Clear any previous messages
+
+        });
+    
+        // Handle click on the normal button
+        $('#manualAjaxButton').on('click', async function () {
+            const manualSerialNo = $('#id_manualSerialNo').val();
+    
+            if (manualSerialNo) {
+                try {
+                    const response = await sendSerialNumber(manualSerialNo);
+                    $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                } catch (error) {
+                    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                }
+            } else {
+                $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
+            }
+        });
+
+      
+            
+        // Function to send serial number to the backend
+        async function sendSerialNumber(serialNo) {
+    var warehouseId = $('#id_selected_warehouse').val();
+    const tableBody = $('#salesTable .mainTableList');
+    let lastVisibleRow = tableBody.find('tr:visible').last();
+            // If the last row is filled, add a new row
+      
+    const response = await $.ajax({
+        url: '/salesscanproductdynamicajax/',
+        type: 'GET',
+        data: { 
+            'serialNo': serialNo, 
+            'warehouseId': warehouseId,
+        },
+    });
+
+    if (response.products && response.products.length > 0) {
+        const productResponse = response.products[0];
+
+    
+       
+        console.log('lastVisibleRow',lastVisibleRow)
+        // Map data to the inputs in the newly added row
+        lastVisibleRow.find('[name$="-product_name"]').val(productResponse[0]); // Product Name
+        lastVisibleRow.find('[name$="-product_name_value"]').val(productResponse[1]); // Product Name Value
+        lastVisibleRow.find('[name^="product_color_"]').val(productResponse[2]); // Product Color
+        lastVisibleRow.find('[name^="product_Sku_"]').val(productResponse[0]); // Product Code
+        lastVisibleRow.find('[name$="-serial_no"]').val(productResponse[3]); // Serial Number
+        lastVisibleRow.find('[name$="-mrp"]').val(productResponse[5]); // MRP
+        lastVisibleRow.find('[name$="-sale_price"]').val(productResponse[6]); // Sale Price
+        lastVisibleRow.find('[name$="-gst"]').val(productResponse[4]); // GST
+
+      
+       
+    } else {
+        console.error("No products data found in response.");
+        $('#responseMessage').html('<span class="text-danger">No product data found for the scanned serial number.</span>');
+    }
+    return response;
+}
+
+
+
+        
+
+    });
+
+  function addNewRow(){
+    const addButton= document.getElementById('manualAjaxButton');
+        const tableBody = document.querySelector('#salesTable tbody'); // Clone the first row of the table
+
+        function isLastRowFilled(lastVisibleRow) {
+        const requiredFields = lastVisibleRow.querySelectorAll('input');
+        return Array.from(requiredFields).every(field => field.value.trim() !== "");
+    }
+
+    let lastVisibleRow = null;
+    tableBody.querySelectorAll('tr').forEach(row => {
+        if (window.getComputedStyle(row).display !== 'none') {
+            lastVisibleRow = row;
+        }
+    });
 
          if (lastVisibleRow) {
              const formCountInput = document.getElementById("id_sales_voucher_finish_goods_set-TOTAL_FORMS");
@@ -674,12 +683,9 @@ document.addEventListener('DOMContentLoaded', function () {
              deleteRowData()
              inputCheck()
           
-     });
-     
- }else{
-     console.error("Could not find addFormButton or table body element.");
-
- }
+  
+  }
+ 
  function bindRowListeners(row) {
      const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
      const salePriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');;
@@ -700,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function () {
        saleSplInput.addEventListener('input',calculateTaxSummary);
      }
  }
- });
+
 
 
  function getVisibleRows() {
@@ -904,7 +910,6 @@ function calculateTotalAmount() {
        // GST numbers do not match: treat all as SGST (or IGST)
        taxSummary[gstRate].cgst += 0; // No CGST
        taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
-       console.log('test',(taxableValue * gstRate) / 100)
      }
     
    })
