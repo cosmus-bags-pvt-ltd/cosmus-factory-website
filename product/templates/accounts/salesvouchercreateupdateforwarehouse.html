@@ -137,14 +137,9 @@
       <tr>
         <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
         <td> 
-          <!-- <div class="custom-dropdown-container"> -->
             <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
-            <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" readonly > 
-            <!-- <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
-              
-           
-             </div> -->
-        <!-- </div>  -->
+            <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" readonly > 
+          
         </td>
         <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
 
@@ -184,7 +179,7 @@
     <tbody>
       <tr>
           <td class="text-center fw-bold" ><span>Total</span></td>
-          <td colspan="3"></td>
+          <td colspan="4"></td>
           <td> <input type="number" class="purchase-input" style="border: 1px solid red;" name="grand_quantity" id ="id_grand_quantity" value="" maxlength="50" step=".01" readonly></td>
           <td colspan="4"></td>
           <td><input type="number" class="purchase-amount" style="border: 1px solid red;"  name="grand_taxableAmount" id ="id_grand_taxableAmount" value="" maxlength="50" step=".01" readonly ></td>
@@ -351,9 +346,7 @@
     
         // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
-           console.log('serialNo',serialNo)
             var warhouseId = $('#id_selected_warehouse').val();
-            console.log('warhouseId',warhouseId)
             const response = await $.ajax({
                 url: '/salesscanproductdynamicajax/',
                 type: 'GET',
@@ -363,11 +356,26 @@
                  
                 },
             });
-    
-            // Populate fields
-            console.log(response)
-          
-    
+            
+            console.log(response.products[0])
+            var productResponse = response.products[0]
+            if (response.products[0] && response.products[0].length > 0) {
+              // Assuming the table row is dynamically identified
+              var tableRow = $('#salesTable .mainTableList tr').last(); // Adjust selector as needed
+              console.log(tableRow)
+              console.log(response.products[0][1])
+              // Map data to specific input fields
+              tableRow.find('[name$="-product_name"]').val(productResponse[0]); // Product Name
+              tableRow.find('[name$="-product_name_value"]').val(productResponse[1]); // Product Name
+              tableRow.find('[name^="product_color_"]').val(productResponse[2]); // Product Color
+              tableRow.find('[name^="product_Sku_"]').val(productResponse[0]); // Product Code
+              tableRow.find('[name$="-serial_no"]').val(productResponse[3]); // Quantity
+              tableRow.find('[name$="-mrp"]').val(productResponse[5]); // Price
+              tableRow.find('[name$="-sale_price"]').val(productResponse[6]); // Discount
+              tableRow.find('[name$="-gst"]').val(productResponse[4]); // Discount
+          } else {
+              console.error("No products data found in response.");
+          }
             return response;
         }
 
