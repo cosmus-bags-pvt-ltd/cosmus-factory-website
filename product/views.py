@@ -3003,7 +3003,7 @@ def sales_scan_product_dynamic_ajax(request):
 
 
         if filtered_product:
-            dict_to_send = {}
+            list_to_send = []
 
             for query in filtered_product:
                 p_sku = query.get('product__PProduct_SKU')
@@ -3015,9 +3015,9 @@ def sales_scan_product_dynamic_ajax(request):
                 customer_price = query.get('product__Product__Product_SalePrice_CustomerPrice')
 
 
-                dict_to_send[p_sku] = [product_model_name,color,serial_no,gst,mrp,customer_price]
+                list_to_send.append([p_sku,product_model_name,color,serial_no,gst,mrp,customer_price])
             
-            return JsonResponse({ 'products': dict_to_send}, status=200)
+            return JsonResponse({ 'products': list_to_send}, status=200)
         
         return JsonResponse({'error': 'No items found.'}, status=404)
     
