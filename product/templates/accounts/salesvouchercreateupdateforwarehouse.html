@@ -357,9 +357,9 @@
                 },
             });
             
-            console.log(response.products[0])
+            console.log(response)
             var productResponse = response.products[0]
-            if (response.products[0] && response.products[0].length > 0) {
+            if (productResponse && productResponse.length > 0) {
               // Assuming the table row is dynamically identified
               var tableRow = $('#salesTable .mainTableList tr').last(); // Adjust selector as needed
               console.log(tableRow)
