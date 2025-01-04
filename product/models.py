@@ -1171,7 +1171,7 @@ class sales_voucher_master_finish_Goods(models.Model):
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     selected_godown = models.ForeignKey(Godown_finished_goods, on_delete=models.PROTECT,null=True, blank=True)
-    # selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
@@ -1184,6 +1184,7 @@ class sales_voucher_master_finish_Goods(models.Model):
 class sales_voucher_finish_Goods(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_finish_Goods,on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
     spl_disct = models.IntegerField()
