@@ -2816,7 +2816,9 @@ def salesvouchercreateupdate(request,s_id=None):
 
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
     godown_names = Godown_finished_goods.objects.all()
+
     dict_to_send = None
+
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
@@ -2942,6 +2944,56 @@ def salesvouchercreateupdate(request,s_id=None):
                 print(e)
 
     return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send})
+
+
+
+
+
+def sales_voucher_create_update_for_warehouse(request,s_id=None):
+    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+    warehouse_names = Finished_goods_warehouse.objects.all()
+
+    dict_to_send = None
+
+    if s_id:
+        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
+        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
+        page_name = 'Edit Sales Invoice'
+        godown_id = voucher_instance.selected_warehouse.id
+
+        filtered_product = list(product_godown_quantity_through_table.objects.filter(
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
+        
+        if filtered_product:
+            dict_to_send = {}
+
+            for query in filtered_product:
+                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
+                p_sku = query.get('product_color_name__PProduct_SKU')
+                product_name = query.get('product_color_name__Product__Product_Name')
+                product_model_name = query.get('product_color_name__Product__Model_Name')
+                color = query.get('product_color_name__PProduct_color__color_name')
+                uom = query.get('product_color_name__Product__Product_UOM')
+                qty = query.get('quantity')
+                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
+                mrp = query.get('product_color_name__Product__Product_MRP')
+                customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
+
+
+                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
+    else:
+        voucher_instance = None
+        master_form = salesvouchermasterfinishGoodsForm()
+        formset = salesvouchercreateformset()
+        page_name = 'Create Sales Invoice'
+
+
+    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names,'dict_to_send':dict_to_send})
+
+
+
+
 
 
 
@@ -9329,7 +9381,7 @@ def finished_goods_stock_all(request,pk=None):
     else:
 
         finished_godown_all = PProduct_Creation.objects.annotate(total_warehouse_stock = Sum( 
-            'product_warehouse_quantity_through_table__quantity')).filter(total_warehouse_stock__isnull=False).order_by('Product__Product_Name').select_related('PProduct_color')
+            'product_warehouse_quantity_through_table__quantity')).order_by('Product__Product_Name').select_related('PProduct_color')
 
     return render(request,'finished_product/finishedgoodsstockall.html',{'finished_godown_all':finished_godown_all, 'wareshouse_all':wareshouse_all})
 
