@@ -2955,33 +2955,16 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
 
     dict_to_send = None
 
+
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
-        godown_id = voucher_instance.selected_warehouse.id
-
-        filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
+        warehouse_id = voucher_instance.selected_warehouse.id
+        print('warehouse_id',warehouse_id)
+  
         
-        if filtered_product:
-            dict_to_send = {}
-
-            for query in filtered_product:
-                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
-                p_sku = query.get('product_color_name__PProduct_SKU')
-                product_name = query.get('product_color_name__Product__Product_Name')
-                product_model_name = query.get('product_color_name__Product__Model_Name')
-                color = query.get('product_color_name__PProduct_color__color_name')
-                uom = query.get('product_color_name__Product__Product_UOM')
-                qty = query.get('quantity')
-                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-                mrp = query.get('product_color_name__Product__Product_MRP')
-                customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
-
-
-                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
     else:
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
