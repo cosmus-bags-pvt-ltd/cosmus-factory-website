@@ -10,7 +10,7 @@
         <input type="hidden" id="productSaleDate" value="{{dict_to_send}}">
         <label for="" class="me-3">Type:</label>
         <h5 class="text-danger fw-bold">Finish Goods</h5>
-        <!-- <input type="text" class="item-select" name="" id="" value="Finish Goods" maxlength="255" readonly> -->
+       
       </div>
       <div class="d-flex mb-3">
         <span id="purchaseError" class="error-messages"></span>
@@ -74,9 +74,10 @@
         </div>
       </div>
 
-
+    
 
     <div class="d-flex mb-3">
+    
       <label for="id_selected_godown" class="me-4">Warehouse:</label>
       <select class="item-select text-black ms-4" name="selected_warehouse" required id="id_selected_warehouse">
         {% if master_form.instance.id %}
@@ -89,7 +90,24 @@
         {% endfor %}
         {% endif %}
       </select>
+      <div> <span id="responseMessage" class="mx-2 fw-bold"></span></div>
     </div>
+    
+    <div class="mb-3">
+     
+      <div class="mb-2 mt-2">
+          <label for="inwordSerialNo" class="fw-bold">Scan S/N :</label>
+          <input type="text" name="scanned_serial_number" class="item-select ms-3" id="inwordSerialNo">
+      </div>
+      <div class="d-flex ">
+          <div class="mb-2">
+              <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
+              <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
+          </div>
+          <div class="mb-2 ms-2">
+              <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button>
+          </div>
+      </div>
 
   <table class="table table-striped table-hover table-responsive" id="salesTable">
     <thead class="name_absolute">
@@ -119,20 +137,20 @@
       <tr>
         <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
         <td> 
-          <div class="custom-dropdown-container">
+          <!-- <div class="custom-dropdown-container"> -->
             <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
-            <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" > 
-            <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
+            <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" readonly > 
+            <!-- <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
               
            
-             </div>
-        </div> 
+             </div> -->
+        <!-- </div>  -->
         </td>
         <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
 
         <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
 
-        <td><input type="text" name="serial_No_{{forloop.counter0}}" id="serial_No_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
+        <td><input type="text" name="{{forms.prefix}}-serial_no" id="id_{{forms.prefix}}-serial_no" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
 
         <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" ></td>
 
@@ -181,10 +199,6 @@
   
   <div class="row">
     <div class="col-lg-9">
-        <div class="ms-2">
-            <input type="number" class="product_row" name="productRow" id="id_productRow" value="1">
-            <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
-        </div>
         <div class="row">
           <div class="col-lg-10">
             <label class="fw-bold text-dark">Tax Summary :</label>
@@ -259,4 +273,789 @@
 
 
 </div>
+
+<script>
+      $(document).ready(function () {
+        let debounceTimeout;
+    
+        // Handle input in inwordSerialNo
+        $('#inwordSerialNo').on('input', function () {
+            clearTimeout(debounceTimeout);
+    
+            // Clear id_manualSerialNo
+            const manual_serial = $('#id_manualSerialNo');
+            manual_serial.val('');
+    
+            // Prevent manual button functionality
+            const manualButton = $('#manualAjaxButton');
+            manualButton.prop('disabled', true);
+            
+            const responseMessage = $('#responseMessage');
+            responseMessage.html(''); // Clear any previous messages
+
+            const inputField = $(this);
+    
+            debounceTimeout = setTimeout(async function () {
+                let inputUrl = inputField.val();
+                let serialNo = '';
+    
+                // Extract serial number
+                if (inputUrl.includes('=')) {
+                    serialNo = inputUrl.split('=').pop();
+                    inputField.val(serialNo);
+                    inputField.css('color', 'black');
+                }
+    
+                if (serialNo) {
+                    try {
+                        const response = await sendSerialNumber(serialNo);
+                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                    } catch (error) {
+                        const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                        $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    }
+                }
+            }, 500); // Debounce delay
+        });
+    
+        // Handle input in id_manualSerialNo
+        $('#id_manualSerialNo').on('input', function () {
+            // Clear inwordSerialNo
+            $('#inwordSerialNo').val('');
+    
+            // Enable manual button
+            const manualButton = $('#manualAjaxButton');
+            manualButton.prop('disabled', false); // Enable manual button
+
+            const responseMessage = $('#responseMessage');
+            responseMessage.html(''); // Clear any previous messages
+
+        });
+    
+        // Handle click on the normal button
+        $('#manualAjaxButton').on('click', async function () {
+            const manualSerialNo = $('#id_manualSerialNo').val();
+    
+            if (manualSerialNo) {
+                try {
+                    const response = await sendSerialNumber(manualSerialNo);
+                    $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                } catch (error) {
+                    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                }
+            } else {
+                $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
+            }
+        });
+    
+        // Function to send serial number to the backend
+        async function sendSerialNumber(serialNo) {
+           console.log('serialNo',serialNo)
+            var warhouseId = $('#id_selected_warehouse').val();
+            console.log('warhouseId',warhouseId)
+            const response = await $.ajax({
+                url: '/salesvouchercreateupdateforwarehouse/',
+                type: 'GET',
+                data: { 
+                    serialNo: serialNo, 
+                   'warhouseId':warhouseId,
+                 
+                },
+            });
+    
+            // Populate fields
+            console.log(response.product_name)
+          
+    
+            return response;
+        }
+
+
+        
+
+    });
+</script>
+
+<script>
+  var popUpNewWindow = null;
+function openPurchasePartyPopup(button){
+ openNewPopup(button, '{% url "ledger-popup-create" %}');
+}
+
+function openNewPopup(button, url){
+ if (popUpNewWindow === null || popUpNewWindow.closed) {
+     newPopUpwindow(button, url);
+ } else {
+
+     popUpNewWindow.focus();
+ }
+}
+
+function newPopUpwindow(button, path){
+ // Specify minimum height and width
+var minWidth = 1150; // minimum width
+var minHeight = 800; // minimum height
+
+$('body').addClass('popup-open');
+$('body').append('<div class="popup-overlay"></div>');
+
+// Open new page with specified dimensions
+popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
+ // Ensure only one event listener is attached
+
+ window.addEventListener('message', function(event){
+     if (event.data.message === 'close') {
+             $('body').removeClass('popup-open');
+             $('.popup-overlay').remove();
+             popUpNewWindow.close();
+             
+          }
+        });
+
+
+ // Listen for messages from the popup window
+ window.addEventListener('click', function(event) {
+ handleOutsideClick(event);
+});
+}
+function handleOutsideClick(event) {
+var popUpRect = document.querySelector('body').getBoundingClientRect();
+var clickX = event.clientX;
+var clickY = event.clientY;
+
+// Check if the click is outside the popup window
+if (
+ clickX > popUpRect.left || clickX <= popUpRect.right ||
+ clickY > popUpRect.top || clickY <= popUpRect.bottom
+) {
+
+ popUpNewWindow.focus();
+ 
+}
+
+}
+
+window.addEventListener('message', function(event) {
+ const data = event.data;
+ console.log(data.ledger_labour);
+ if (data.ledger_labour) {
+     populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
+ }
+});
+
+function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
+ const dropdown = $(dropdownSelector);
+ dropdown.empty();
+ dropdown.append('<option value="">' + defaultText + '</option>');
+
+ items.forEach(item => {
+     dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+ });
+}
+
+// This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
+function getGstNo() {
+ let partyGstValue = document.getElementById('id_GST_number').value;
+ let comapnyGst = document.getElementById('id_company_gst').value;
+
+     comapnyGst = comapnyGst.toString();
+     partyGstValue = partyGstValue.toString();
+
+ const newCompanyGst = comapnyGst.slice(0,2);
+ const newPartyGst = partyGstValue.slice(0,2);
+ return newCompanyGst === newPartyGst;
+}
+
+
+
+$(document).ready(function(){
+var formsSale = $('#id_sales_voucher_finish_goods_set-0-id').val();
+ if(formsSale === ''){
+   $('#id_sales_no').on('focusout',function(){
+         var sales_no = $(this).val();
+         var purchase = $("#id_sales_no");
+         var errorElement = $('#purchaseError'); // The error message element
+         var submitForm = $('#parentFormClick');
+         $.ajax({
+             url: '/uniquevalidcheckajax/',
+             method: 'GET',
+             data: {
+                 'sales_no': sales_no,
+                 
+             },
+             success: function (data) {
+                 if(data.validation_flag === true){
+                    purchase.css('border', '1px solid red');
+                     errorElement.text('*Sales number already exists');
+                     errorElement.show();
+                     submitForm.prop('disabled', true);
+                    
+                 }else {
+                     
+                     purchase.css('border', '1px solid black');
+                     errorElement.text('');
+                     errorElement.hide();
+                     submitForm.prop('disabled', false);
+                 }
+                
+             },
+             error: function (error) {   
+                 console.log(error);
+             }
+
+         })
+     })
+ }
+
+$(document).on('change', 'select[name^="party_name"]', function () {
+
+ const selected_party_name = $(this).val()
+ const int_selected_party_name = parseInt(selected_party_name)
+
+ $.ajax({
+     url: '/purchasevouchercreate/',
+     method: 'GET',
+     data: {
+         'selected_party_name': selected_party_name,
+     },
+     success: function (response) {
+         const party_gst_no_response = response.party_gst_no
+         const gst_no_input = document.getElementById('id_GST_number')
+         gst_no_input.value = party_gst_no_response
+         getGstNo()
+         calculateTotalAmount()
+   
+     },
+     error: function (xhr, errmsg, err) {
+         console.log('Error sending value to the backend');
+     }
+ })
+})
+})
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+ const addButton= document.getElementById('manualAjaxButton');
+ const tableBody = document.querySelector('#salesTable tbody'); // Clone the first row of the table
+ 
+ if(addButton && tableBody){
+     addButton.addEventListener('click', function() {
+         
+             let lastVisibleRow = null;
+             tableBody.querySelectorAll('tr').forEach(row => {
+                 if (window.getComputedStyle(row).display !== 'none') {
+                     lastVisibleRow = row;
+                 }
+         });
+
+         if (lastVisibleRow) {
+             const formCountInput = document.getElementById("id_sales_voucher_finish_goods_set-TOTAL_FORMS");
+            
+            
+                 const formCount = parseInt(formCountInput.value); 
+                 const formIndex = formCount;
+                 const lastRow = lastVisibleRow.cloneNode(true);
+                 lastRow.querySelectorAll("input select").forEach(function (e) {
+                     e.value = "";
+                 });
+
+                 // update the input name,id and value of the last row   
+                 const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
+                 rowElement.id = `rowNo_${formIndex}`;
+                 rowElement.name = `rowNo_${formIndex}`;
+                 rowElement.value = formIndex + 1 ;
+                 rowElement.style.border="none";
+
+                 const inputSelectElement = lastRow.querySelector('input[name$="-product_name"]');
+                 inputSelectElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name`;
+                 inputSelectElement.name = `sales_voucher_finish_goods_set-${formIndex}-product_name`;
+                 inputSelectElement.value="";
+
+                 const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
+                 inputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
+                 inputElement.name = `sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
+                 inputElement.value="";
+                 
+              
+         
+                 const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
+                 colorInputElement.id = `product_color_${formIndex}`;
+                 colorInputElement.name = `product_color_${formIndex}`;
+                 colorInputElement.value="";
+
+                 const skuInputElement = lastRow.querySelector('.purchase-amount[name^="product_Sku"]');
+                 skuInputElement.id = `product_Sku_${formIndex}`;
+                 skuInputElement.name = `product_Sku_${formIndex}`;
+                 skuInputElement.value="";
+
+                 const serialNoElement = lastRow.querySelector('input[name$="-serial_no"]');
+                 serialNoElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-serial_no`;
+                 serialNoElement.name = `sales_voucher_finish_goods_set-${formIndex}-serial_no`;
+                 serialNoElement.value = '';
+            
+                 const qunatityInputElement = lastRow.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
+                 qunatityInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-quantity`;
+                 qunatityInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-quantity`;
+                 qunatityInputElement.value="";
+
+                 const mrpInputElement = lastRow.querySelector('.sales-mrp[name^="sales_voucher_finish_goods_set-"][name$="-mrp"]');
+                 mrpInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-mrp`;
+                 mrpInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-mrp`;
+                 mrpInputElement.value="";
+
+                 const salesPriceInputElement = lastRow.querySelector('.sales_price[name$="-sale_price"]');
+                 salesPriceInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sale_price`;
+                 salesPriceInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-sale_price`;
+                 salesPriceInputElement.value="";
+
+                 const treadDiscInputElement = lastRow.querySelector('.sales-trade_disct[name$="-trade_disct"]');
+                 treadDiscInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
+                 treadDiscInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
+                 treadDiscInputElement.value="";
+
+                 const salesSplInputElement = lastRow.querySelector('.sales-spl_disct[name$="-spl_disct"]');
+                 salesSplInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
+                 salesSplInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
+                 salesSplInputElement.value="";
+
+                 const amountInputElement = lastRow.querySelector('.total-amount[name$="-amount"]');
+                 amountInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-amount`;
+                 amountInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-amount`;
+                 amountInputElement.value="";
+
+                 const gstElement = lastRow.querySelector('.purchase-gst[name$="-gst"]');
+                 gstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-gst`;
+                 gstElement.name = `sales_voucher_finish_goods_set-${formIndex}-gst`;
+                 gstElement.value="";
+                 
+                 
+                 const cgstElement = lastRow.querySelector('.purchase-cgst[name$="-cgst"]');
+                 cgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-cgst`;
+                 cgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-cgst`;
+                 cgstElement.value="";
+
+                 const sgstElement = lastRow.querySelector('.purchase-sgst[name$="-sgst"]');
+                 sgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sgst`;
+                 sgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-sgst`; 
+                 sgstElement.value="";
+
+                 const TotalAmountElement = lastRow.querySelector('.purchase-total[name$="-total_amount"]');
+                 TotalAmountElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-total_amount`;
+                 TotalAmountElement.name = `sales_voucher_finish_goods_set-${formIndex}-total_amount`;
+                 TotalAmountElement.value="";
+
+                 const deleteElement = lastRow.querySelector('input[name$="-DELETE"]');
+                 deleteElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-DELETE`;
+                 deleteElement.name = `sales_voucher_finish_goods_set-${formIndex}-DELETE`;
+                 deleteElement.value= "";
+
+                 formCountInput.value = formCount + 1; 
+                 tableBody.appendChild(lastRow);
+                 bindRowListeners(lastRow)
+                 calculateTaxSummary();
+             
+           
+            
+
+         }   
+          
+         calculateTotalAmount();
+             calculateOtherTotal();
+             deleteRowData()
+             inputCheck()
+          
+     });
+     
+ }else{
+     console.error("Could not find addFormButton or table body element.");
+
+ }
+ function bindRowListeners(row) {
+     const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
+     const salePriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');;
+     const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_finish_goods_set-"][name$="-trade_disct"]');
+     const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_finish_goods_set-"][name$="-spl_disct"]');
+     
+     if (quantityInput) {
+         quantityInput.addEventListener('input', calculateTotalAmount);
+     }
+     if (salePriceInput) {
+       salePriceInput.addEventListener('input', calculateTotalAmount);
+     }
+     if (saletreadInput) {
+       saletreadInput.addEventListener('input', calculateTotalAmount);
+     }
+     if (saleSplInput) {
+       saleSplInput.addEventListener('input', calculateTotalAmount);
+       saleSplInput.addEventListener('input',calculateTaxSummary);
+     }
+ }
+ });
+
+
+ function getVisibleRows() {
+ // Select all rows that are not hidden (excluding those with display: none)
+ const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
+ return visibleRows;
+}
+function deleteRowData(){
+ // Add click event listener to all delete buttons
+ document.querySelectorAll('.delete-btn').forEach(function (button) {
+ button.addEventListener('click', function () {
+     // Find all rows in the table
+     const rows =  getVisibleRows();
+     console.log(rows)
+     // Check if more than one row exists
+     if (rows.length > 1) {
+         // Find the row containing the clicked delete button
+         const row = this.closest('tr');
+
+         if (row) {
+             // Find the checkbox for deletion in the row
+             const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+
+             if (checkRow) {
+                 checkRow.checked = true; // Mark as checked
+                 checkRow.value = 'true'; // Set the value to 'true'
+
+                 // Optionally hide the row visually
+                 row.style.display = 'none';
+
+                 // Call functions to recalculate totals or perform other updates
+                 calculateTotalAmount();
+                 calculateOtherTotal();
+                 inputCheck();
+                 
+             } else {
+                 console.error("Checkbox for deletion not found in this row");
+             }
+         }
+     } else {
+         // If only one row remains, alert the user
+         alert('Cannot delete this row; at least one row must remain.');
+     }
+ });
+});
+
+
+};
+
+function calculateTotalAmount() {
+     let total = 0; 
+     let totalQty = 0;
+     let newGst =0;
+     let newCgst = 0;
+     let totalCgst =0;
+     let newSgst = 0;
+     let totalSgst =0;
+     let grandTotal = 0;
+     let grandTotalAmount = 0;
+     let newTotalAmount;
+     // Iterate through each row
+     const rows = Array.from(document.querySelectorAll('#salesbody tr'))
+     .filter(row => row.style.display !== 'none');
+   
+     rows.forEach(function(row) {
+         // Find the quantity, rate, and amount input fields for the current row
+         const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
+         const customPriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');
+         const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_finish_goods_set-"][name$="-trade_disct"]');
+         const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_finish_goods_set-"][name$="-spl_disct"]');
+         const amountInput = row.querySelector('.total-amount[name^="sales_voucher_finish_goods_set-"][name$="-amount"]');
+         const gstValue = row.querySelector('.purchase-gst[name^="sales_voucher_finish_goods_set-"][name$="-gst"]');
+         const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
+         const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
+         const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
+      
+         // Get the values of quantity and rate
+         const quantity = parseFloat(quantityInput.value);
+         const rate = parseFloat(customPriceInput.value);
+         const tradeamount = parseFloat(saletreadInput.value)
+         const splAmount = parseFloat(saleSplInput.value);
+         const gst = parseFloat(gstValue.value);
+        
+         // Calculate the amount for the current row
+         const amount = quantity * rate;
+         const tradeDisc = amount * tradeamount/100;
+         const newAmount = amount - tradeDisc;
+
+         const splDisc = newAmount * splAmount/100;
+         const addsplAmount = newAmount -splDisc;
+   
+         totalQty  += quantity;
+
+         // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst
+         if(getGstNo()){ 
+
+         newTotalAmount = addsplAmount / (1 + gst / 100);
+         const totalGst = addsplAmount - newTotalAmount;
+    
+         newCgst = totalGst / 2;
+         newSgst = totalGst / 2;
+        
+         cgstValue.value = isNaN(newCgst) ? '' : newCgst.toFixed(2);
+         sgstValue.value = isNaN(newSgst) ? '' : newSgst.toFixed(2);
+
+         totalCgst +=  newCgst;
+         totalSgst +=  newSgst;
+       
+         total += newTotalAmount; 
+         grandTotal = newTotalAmount + newCgst + newSgst;
+       
+       
+     
+        }else{
+         cgstValue.value = ''
+         newTotalAmount =  addsplAmount / (1 + gst / 100);
+         const totalIgst = addsplAmount - newTotalAmount;
+   
+         sgstValue.value = isNaN(totalIgst) ? '' : totalIgst.toFixed(2);
+         totalSgst += totalIgst;
+         total +=  newTotalAmount;  
+         grandTotal = newTotalAmount + totalIgst ;
+        
+     }
+         amountInput.value = isNaN(newTotalAmount) ? '' : newTotalAmount.toFixed(2);
+         totalAmountInput.value = isNaN(grandTotal) ? '' : grandTotal.toFixed(2); 
+       
+         grandTotalAmount += grandTotal; 
+        
+     }); 
+  
+         document.getElementById('id_grand_taxableAmount').value = isNaN(total) ? '' :total.toFixed(2);
+         document.getElementById('id_grand_quantity').value = isNaN(totalQty) ? '' :totalQty.toFixed(2);
+         document.getElementById('id_grand_cgst').value = isNaN(totalCgst) ? '' :totalCgst.toFixed(2);
+         document.getElementById('id_grand_sgst').value = isNaN(totalSgst) ? '' : totalSgst.toFixed(2);
+         document.getElementById('id_grand_amount').value =isNaN(grandTotalAmount) ? '' : grandTotalAmount.toFixed(2);   
+         calculateOtherTotal()   
+ }
+ // calculateTotalAmount()
+ function calculateOtherTotal(grandTotal) {
+
+      const grandTotals = parseFloat(document.getElementById('id_grand_amount').value);
+     
+       let  grossTotal = grandTotals;      
+ 
+     // Set the calculated gross total value to the gross total input field
+     document.getElementById('id_gross_total').value =isNaN(grossTotal) ? '' : grossTotal.toFixed(2);
+
+     const cashDiscount = parseInt(document.getElementById('id_cash_disct').value);
+   
+     const taxablevalue = parseFloat(document.getElementById('id_grand_taxableAmount').value);
+
+     let cashdisc = taxablevalue * cashDiscount / 100;
+
+     document.getElementById('id_cash_disct_value').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
+     const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
+
+     let finalTotal = grossTotal + cashdisc + frightTransport;
+
+     document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
+
+       
+     let finalTotals = Math.round(finalTotal)
+     let roundOff = finalTotals - finalTotal;
+
+     document.getElementById('id_round_off').value =isNaN(roundOff) ? '' : roundOff.toFixed(2);
+     // Set the calculated grand total value to the grand total input field
+     document.getElementById('id_grand_total').value = isNaN(finalTotals) ? '' : finalTotals.toFixed(2);
+ }
+ // Call the function initially to calculate total amount, GST, and grand total on page load
+  // Add onchange event handler to id_fright_transport
+  document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
+ document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
+ document.getElementById('id_cash_disct').addEventListener('input', calculateOtherTotal);
+ 
+ function calculateTaxSummary(){
+   const row = document.querySelectorAll('#salesbody tr')
+   const taxSummary = {}; 
+   const isGstMatching = getGstNo();
+
+   row.forEach(row => {
+     if (row.style.display === 'none') return; // Skip hidden rows
+     const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
+     const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
+ 
+     if (!taxSummary[gstRate]) {
+   // Initialize data for this GST rate
+       taxSummary[gstRate] = {
+         taxableValue: 0,
+         cgst: 0,
+         sgst: 0
+       };
+     }
+     taxSummary[gstRate].taxableValue += taxableValue;
+
+     if (isGstMatching) {
+       // GST numbers match: split equally into CGST and SGST
+       taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
+       taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
+     } else {
+       // GST numbers do not match: treat all as SGST (or IGST)
+       taxSummary[gstRate].cgst += 0; // No CGST
+       taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
+       console.log('test',(taxableValue * gstRate) / 100)
+     }
+    
+   })
+
+   const taxSummaryBody = document.querySelector('#taxSummary .mainTableList');
+    taxSummaryBody.innerHTML = ''; // Clear previous summary
+    let totalAmount = 0; // To calculate total amount
+    let totalTaxAmount = 0;
+    let totalcgstAmount = 0;
+    let totalsgstAmount = 0;
+
+
+    Object.keys(taxSummary).forEach(rate => {
+     const { taxableValue, cgst, sgst } = taxSummary[rate];
+     const total = taxableValue + cgst + sgst; // Total amount for this GST rate
+     totalAmount += total;
+     totalTaxAmount +=taxableValue;
+     totalcgstAmount += cgst;
+     totalsgstAmount += sgst;
+     let row;
+     if (isGstMatching) {
+       // GST numbers match: show both CGST and SGST rates
+       row = `
+         <tr>
+           <td>${taxableValue.toFixed(2)}</td>
+           <td>${rate / 2}%</td>
+           <td>${cgst.toFixed(2)}</td>
+           <td>${rate / 2}%</td>
+           <td>${sgst.toFixed(2)}</td>
+           <td>${total.toFixed(2)}</td>
+         </tr>
+       `;
+     } else {
+       // GST numbers do not match: show only SGST/IGST
+       row = `
+         <tr>
+           <td>${taxableValue.toFixed(2)}</td>
+           <td class="">0%</td>
+           <td  class="">0.00</td>
+           <td>${rate}%</td>
+           <td>${sgst.toFixed(2)}</td>
+           <td>${total.toFixed(2)}</td>
+         </tr>
+       `;
+     }
+
+     taxSummaryBody.insertAdjacentHTML('beforeend', row);
+   });
+   const totalRow = `
+   <tr class="Total">
+     <td class=" fw-bold">${totalTaxAmount.toFixed(2)}</td>
+     <td></td>
+     <td class=" fw-bold">${totalcgstAmount.toFixed(2)}</td>
+     <td></td>
+     <td class="fw-bold">${totalsgstAmount.toFixed(2)}</td>
+     <td class="fw-bold">${totalAmount.toFixed(2)}</td>
+   </tr>
+ `;
+ taxSummaryBody.insertAdjacentHTML('beforeend', totalRow);
+   }
+
+
+ document.addEventListener("DOMContentLoaded", function () {
+   calculateTaxSummary()
+ document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
+     input.addEventListener('input', function(){
+       calculateTotalAmount();
+       calculateOtherTotal();
+       // alertInput()
+     });
+   });
+     document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
+     input.addEventListener('input', function(){
+       calculateTaxSummary();
+       // alertInput()
+     });
+     });
+
+     const table = document.getElementById("salesTable");
+   const salesTotal = document.getElementById('saleTotal');
+
+   // Prevent Enter key from submitting the form inside table inputs
+   table.addEventListener("keydown", function (event) {
+       if (event.key === "Enter" && event.target.tagName === "INPUT") {
+           event.preventDefault(); // Prevent form submission
+
+       }
+   });
+   salesTotal.addEventListener("keydown", function (event) {
+       if (event.key === "Enter" && event.target.tagName === "INPUT") {
+           event.preventDefault(); // Prevent form submission
+           console.log(`Enter key prevented on input: ${event.target.id}`);
+
+       }
+   });
+  
+
+   inputCheck()
+ })
+ 
+ 
+ calculateTaxSummary()
+ calculateTotalAmount();
+ calculateOtherTotal();
+ deleteRowData()
+function inputCheck(){
+
+ const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
+ itemNameInputsid.forEach((input, index) => {
+ input.addEventListener("keydown", function (event) {
+
+     const closestRow = input.closest('tr');
+     const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
+     
+     console.log('allInputsInRow',allInputsInRow)
+         if(allInputsInRow === ''){
+             if (event.key === "Tab") {
+         event.preventDefault(); // Prevent default tab behavior
+
+         // Check if the current input has a value
+         if (input.value.trim() !== "") {
+             // If not the last input, move focus to the next row's item name
+             if (itemNameInputsid[index + 1]) {
+                 itemNameInputsid[index + 1].focus();
+             }
+         } else {
+             // If current input is empty, refocus on it
+             input.focus();
+         }
+     }
+     if (event.key === 'Enter') {
+         event.preventDefault(); // Prevent default Enter key behavior
+
+         // Find the current <td> containing this input
+         const currentTd = this.closest('td');
+             console.log('currentId',currentTd)
+         // Find the next <td> sibling
+         if (currentTd) {
+             const nextTd = currentTd.nextElementSibling;
+
+             // Check if next <td> exists and contains an input
+             if (nextTd) {
+                 const nextInput = nextTd.querySelector('input');
+                 if (nextInput) {
+                     nextInput.focus(); // Move focus to the next input
+                 }
+             }
+         }
+     }
+         }
+
+     
+ });
+ });
+ }
+
+
+inputCheck()
+
+</script>
+
 {% endblock body %}
