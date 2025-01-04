@@ -139,6 +139,11 @@ urlpatterns = [
     path('salesvoucherlist/', views.salesvoucherlist, name = 'sales-voucher-list'),
     path('salesvoucherdelete/<int:pk>/', views.salesvoucherdelete, name = 'sales-voucher-delete'),
 
+
+    path('salesvouchercreateupdateforwarehouse/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
+
+
+
     #subcategorys
     path('gstcreate/', views.gst_create_update, name = 'gst-create-list'),
     path('gstupdate/<int:pk>', views.gst_create_update, name = 'gst-update'),
