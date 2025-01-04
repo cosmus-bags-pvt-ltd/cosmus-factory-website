@@ -21,6 +21,7 @@ urlpatterns = [
     path('definesubcategoryupdateproduct/<int:pk>',views.definesubcategoryproduct, name= 'define-sub-category-update-product'),
 
     path('assignbintoproduct/',views.assign_bin_to_product, name= 'assign-bin-to-product'),
+    # path('assignbintoproductform/',views.assign_bin_to_product_form, name= 'assign-bin-to-product-form'),
 
     path('definesubcategoryproductdelete/<int:pk>',views.definesubcategoryproductdelete, name= 'define-sub-category-product-delete'),
 
