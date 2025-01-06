@@ -427,264 +427,194 @@ $(document).on('change', 'select[name^="party_name"]', function () {
 })
 </script>
 <script>
-      $(document).ready(function () {
-        let debounceTimeout;
-    
-        // Handle input in inwordSerialNo
-        $('#inwordSerialNo').on('input', function () {
-            clearTimeout(debounceTimeout);
-    
-            // Clear id_manualSerialNo
-            const manual_serial = $('#id_manualSerialNo');
-            manual_serial.val('');
-    
-            // Prevent manual button functionality
-            const manualButton = $('#manualAjaxButton');
-            manualButton.prop('disabled', true);
-            
-            const responseMessage = $('#responseMessage');
-            responseMessage.html(''); // Clear any previous messages
+$(document).ready(function () {
+    let debounceTimeout;
+    let lastVisibleRow = null;
 
-            const inputField = $(this);
-    
-            debounceTimeout = setTimeout(async function () {
-                let inputUrl = inputField.val();
-                let serialNo = '';
-    
-                // Extract serial number
-                if (inputUrl.includes('=')) {
-                    serialNo = inputUrl.split('=').pop();
-                    inputField.val(serialNo);
-                    inputField.css('color', 'black');
-                }
-    
-                if (serialNo) {
-                    try {
-                        const response = await sendSerialNumber(serialNo);
-                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
-                      
-                    } catch (error) {
-                        const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                        $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
-                    }
-                }
-            }, 500); // Debounce delay
-        });
-    
-        // Handle input in id_manualSerialNo
-        $('#id_manualSerialNo').on('input', function () {
-            // Clear inwordSerialNo
-            $('#inwordSerialNo').val('');
-    
-            // Enable manual button
-            const manualButton = $('#manualAjaxButton');
-            manualButton.prop('disabled', false); // Enable manual button
+    $('#inwordSerialNo').on('input', function () {
+        clearTimeout(debounceTimeout);
+        const manual_serial = $('#id_manualSerialNo');
+        manual_serial.val('');
 
-            const responseMessage = $('#responseMessage');
-            responseMessage.html(''); // Clear any previous messages
+        const manualButton = $('#manualAjaxButton');
+        manualButton.prop('disabled', true);
 
-        });
-    
-        // Handle click on the normal button
-        $('#manualAjaxButton').on('click', async function () {
-            const manualSerialNo = $('#id_manualSerialNo').val();
-    
-            if (manualSerialNo) {
+        const responseMessage = $('#responseMessage');
+        responseMessage.html(''); // Clear any previous messages
+
+        const inputField = $(this);
+
+        debounceTimeout = setTimeout(async function () {
+            let inputUrl = inputField.val();
+            let serialNo = '';
+
+            if (inputUrl.includes('=')) {
+                serialNo = inputUrl.split('=').pop();
+                inputField.val(serialNo);
+                inputField.css('color', 'black');
+            }
+
+            if (serialNo) {
                 try {
-                    const response = await sendSerialNumber(manualSerialNo);
+                    const response = await sendSerialNumber(serialNo);
                     $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                 } catch (error) {
                     const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
                     $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
                 }
-            } else {
-                $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
             }
-        });
-
-      
-            
-        // Function to send serial number to the backend
-        async function sendSerialNumber(serialNo) {
-    var warehouseId = $('#id_selected_warehouse').val();
-    const tableBody = $('#salesTable .mainTableList');
-    let lastVisibleRow = tableBody.find('tr:visible').last();
-            // If the last row is filled, add a new row
-      
-    const response = await $.ajax({
-        url: '/salesscanproductdynamicajax/',
-        type: 'GET',
-        data: { 
-            'serialNo': serialNo, 
-            'warehouseId': warehouseId,
-        },
+        }, 500);
     });
 
-    if (response.products && response.products.length > 0) {
-        const productResponse = response.products[0];
+    $('#id_manualSerialNo').on('input', function () {
+        $('#inwordSerialNo').val('');
 
-    
-       
-        console.log('lastVisibleRow',lastVisibleRow)
-        // Map data to the inputs in the newly added row
-        lastVisibleRow.find('[name$="-product_name"]').val(productResponse[0]); // Product Name
-        lastVisibleRow.find('[name$="-product_name_value"]').val(productResponse[1]); // Product Name Value
-        lastVisibleRow.find('[name^="product_color_"]').val(productResponse[2]); // Product Color
-        lastVisibleRow.find('[name^="product_Sku_"]').val(productResponse[0]); // Product Code
-        lastVisibleRow.find('[name$="-serial_no"]').val(productResponse[3]); // Serial Number
-        lastVisibleRow.find('[name$="-mrp"]').val(productResponse[5]); // MRP
-        lastVisibleRow.find('[name$="-sale_price"]').val(productResponse[6]); // Sale Price
-        lastVisibleRow.find('[name$="-gst"]').val(productResponse[4]); // GST
+        const manualButton = $('#manualAjaxButton');
+        manualButton.prop('disabled', false); // Enable manual button
 
-      
-       
-    } else {
-        console.error("No products data found in response.");
-        $('#responseMessage').html('<span class="text-danger">No product data found for the scanned serial number.</span>');
-    }
-    return response;
-}
-
-
-
-        
-
+        const responseMessage = $('#responseMessage');
+        responseMessage.html(''); // Clear any previous messages
     });
 
-  function addNewRow(){
-    const addButton= document.getElementById('manualAjaxButton');
-        const tableBody = document.querySelector('#salesTable tbody'); // Clone the first row of the table
-
-        function isLastRowFilled(lastVisibleRow) {
-        const requiredFields = lastVisibleRow.querySelectorAll('input');
-        return Array.from(requiredFields).every(field => field.value.trim() !== "");
-    }
-
-    let lastVisibleRow = null;
-    tableBody.querySelectorAll('tr').forEach(row => {
-        if (window.getComputedStyle(row).display !== 'none') {
-            lastVisibleRow = row;
+    $('#manualAjaxButton').on('click', async function () {
+        const manualSerialNo = $('#id_manualSerialNo').val();
+        if (manualSerialNo) {
+            try {
+                const response = await sendSerialNumber(manualSerialNo);
+                $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+            } catch (error) {
+                const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+            }
+        } else {
+            $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
         }
     });
 
-         if (lastVisibleRow) {
-             const formCountInput = document.getElementById("id_sales_voucher_finish_goods_set-TOTAL_FORMS");
-            
-            
-                 const formCount = parseInt(formCountInput.value); 
-                 const formIndex = formCount;
-                 const lastRow = lastVisibleRow.cloneNode(true);
-                 lastRow.querySelectorAll("input select").forEach(function (e) {
-                     e.value = "";
-                 });
+    async function sendSerialNumber(serialNo) {
+        const warehouseId = $('#id_selected_warehouse').val();
+        const tableBody = $('#salesTable .mainTableList');
+        lastVisibleRow = tableBody.find('tr:visible').last();
 
-                 // update the input name,id and value of the last row   
-                 const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
-                 rowElement.id = `rowNo_${formIndex}`;
-                 rowElement.name = `rowNo_${formIndex}`;
-                 rowElement.value = formIndex + 1 ;
-                 rowElement.style.border="none";
+        const response = await $.ajax({
+            url: '/salesscanproductdynamicajax/',
+            type: 'GET',
+            data: {
+                'serialNo': serialNo,
+                'warehouseId': warehouseId,
+            },
+        });
 
-                 const inputSelectElement = lastRow.querySelector('input[name$="-product_name"]');
-                 inputSelectElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name`;
-                 inputSelectElement.name = `sales_voucher_finish_goods_set-${formIndex}-product_name`;
-                 inputSelectElement.value="";
+        if (response.products && response.products.length > 0) {
+            const productResponse = response.products[0];
 
-                 const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
-                 inputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
-                 inputElement.name = `sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
-                 inputElement.value="";
-                 
-              
-         
-                 const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
-                 colorInputElement.id = `product_color_${formIndex}`;
-                 colorInputElement.name = `product_color_${formIndex}`;
-                 colorInputElement.value="";
+            if (isTableEmpty()) {
+                lastVisibleRow.find('[name$="-product_name"]').val(productResponse[0]);
+                lastVisibleRow.find('[name$="-product_name_value"]').val(productResponse[1]);
+                lastVisibleRow.find('[name^="product_color_"]').val(productResponse[2]);
+                lastVisibleRow.find('[name^="product_Sku_"]').val(productResponse[0]);
+                lastVisibleRow.find('[name$="-serial_no"]').val(productResponse[3]);
+                lastVisibleRow.find('[name$="-mrp"]').val(productResponse[5]);
+                lastVisibleRow.find('[name$="-sale_price"]').val(productResponse[6]);
+                lastVisibleRow.find('[name$="-gst"]').val(productResponse[4]);
+            } else {
+                addNewRow();
+                const newRow = $('.new-row:last');
+                newRow.find('[name$="-product_name"]').val(productResponse[0]);
+                newRow.find('[name$="-product_name_value"]').val(productResponse[1]);
+                newRow.find('[name^="product_color_"]').val(productResponse[2]);
+                newRow.find('[name^="product_Sku_"]').val(productResponse[0]);
+                newRow.find('[name$="-serial_no"]').val(productResponse[3]);
+                newRow.find('[name$="-mrp"]').val(productResponse[5]);
+                newRow.find('[name$="-sale_price"]').val(productResponse[6]);
+                newRow.find('[name$="-gst"]').val(productResponse[4]);
+            }
+        } else {
+            console.error("No products data found in response.");
+        }
 
-                 const skuInputElement = lastRow.querySelector('.purchase-amount[name^="product_Sku"]');
-                 skuInputElement.id = `product_Sku_${formIndex}`;
-                 skuInputElement.name = `product_Sku_${formIndex}`;
-                 skuInputElement.value="";
+        return response;
+    }
 
-                 const serialNoElement = lastRow.querySelector('input[name$="-serial_no"]');
-                 serialNoElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-serial_no`;
-                 serialNoElement.name = `sales_voucher_finish_goods_set-${formIndex}-serial_no`;
-                 serialNoElement.value = '';
-            
-                 const qunatityInputElement = lastRow.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
-                 qunatityInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-quantity`;
-                 qunatityInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-quantity`;
-                 qunatityInputElement.value="";
+    function isTableEmpty() {
+        let isEmpty = true;
 
-                 const mrpInputElement = lastRow.querySelector('.sales-mrp[name^="sales_voucher_finish_goods_set-"][name$="-mrp"]');
-                 mrpInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-mrp`;
-                 mrpInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-mrp`;
-                 mrpInputElement.value="";
+        $('#salesTable .mainTableList tr').each(function () {
+            if (!isRowEmpty($(this))) {
+                isEmpty = false;
+                return false;
+            }
+        });
 
-                 const salesPriceInputElement = lastRow.querySelector('.sales_price[name$="-sale_price"]');
-                 salesPriceInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sale_price`;
-                 salesPriceInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-sale_price`;
-                 salesPriceInputElement.value="";
+        return isEmpty;
+    }
 
-                 const treadDiscInputElement = lastRow.querySelector('.sales-trade_disct[name$="-trade_disct"]');
-                 treadDiscInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
-                 treadDiscInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
-                 treadDiscInputElement.value="";
+    function isRowEmpty(row) {
+        return row.find('input').toArray().every(input => !$(input).val());
+    }
 
-                 const salesSplInputElement = lastRow.querySelector('.sales-spl_disct[name$="-spl_disct"]');
-                 salesSplInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
-                 salesSplInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
-                 salesSplInputElement.value="";
+    function addNewRow() {
+        const tableBody = document.querySelector('#salesTable .mainTableList');
+        tableBody.querySelectorAll('tr').forEach(row => {
+            if (window.getComputedStyle(row).display !== 'none') {
+                lastVisibleRow = row;
+            }
+        });
 
-                 const amountInputElement = lastRow.querySelector('.total-amount[name$="-amount"]');
-                 amountInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-amount`;
-                 amountInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-amount`;
-                 amountInputElement.value="";
+        const formCountInput = document.getElementById("id_sales_voucher_finish_goods_set-TOTAL_FORMS");
+        const formCount = parseInt(formCountInput.value);
+        const formIndex = formCount;
+        const lastRow = lastVisibleRow.cloneNode(true);
+        lastRow.querySelectorAll("input select").forEach(function (e) {
+            e.value = "";
+        });
 
-                 const gstElement = lastRow.querySelector('.purchase-gst[name$="-gst"]');
-                 gstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-gst`;
-                 gstElement.name = `sales_voucher_finish_goods_set-${formIndex}-gst`;
-                 gstElement.value="";
-                 
-                 
-                 const cgstElement = lastRow.querySelector('.purchase-cgst[name$="-cgst"]');
-                 cgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-cgst`;
-                 cgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-cgst`;
-                 cgstElement.value="";
+        // Update the input name, id, and value of the last row
+        const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
+        rowElement.id = `rowNo_${formIndex}`;
+        rowElement.name = `rowNo_${formIndex}`;
+        rowElement.value = formIndex + 1;
+        rowElement.style.border = "none";
 
-                 const sgstElement = lastRow.querySelector('.purchase-sgst[name$="-sgst"]');
-                 sgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sgst`;
-                 sgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-sgst`; 
-                 sgstElement.value="";
+        const inputSelectElement = lastRow.querySelector('input[name$="-product_name"]');
+        inputSelectElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name`;
+        inputSelectElement.name = `sales_voucher_finish_goods_set-${formIndex}-product_name`;
+        inputSelectElement.value = "";
 
-                 const TotalAmountElement = lastRow.querySelector('.purchase-total[name$="-total_amount"]');
-                 TotalAmountElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-total_amount`;
-                 TotalAmountElement.name = `sales_voucher_finish_goods_set-${formIndex}-total_amount`;
-                 TotalAmountElement.value="";
+        const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
+        inputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
+        inputElement.name = `sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
+        inputElement.value = "";
 
-                 const deleteElement = lastRow.querySelector('input[name$="-DELETE"]');
-                 deleteElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-DELETE`;
-                 deleteElement.name = `sales_voucher_finish_goods_set-${formIndex}-DELETE`;
-                 deleteElement.value= "";
+        const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
+        colorInputElement.id = `product_color_${formIndex}`;
+        colorInputElement.name = `product_color_${formIndex}`;
+        colorInputElement.value = "";
 
-                 formCountInput.value = formCount + 1; 
-                 tableBody.appendChild(lastRow);
-                 bindRowListeners(lastRow)
-                 calculateTaxSummary();
-             
-           
-            
+        const skuInputElement = lastRow.querySelector('.purchase-amount[name^="product_Sku"]');
+        skuInputElement.id = `product_Sku_${formIndex}`;
+        skuInputElement.name = `product_Sku_${formIndex}`;
+        skuInputElement.value = "";
 
-         }   
-          
-         calculateTotalAmount();
-             calculateOtherTotal();
-             deleteRowData()
-             inputCheck()
-          
+        const serialNoElement = lastRow.querySelector('input[name$="-serial_no"]');
+        serialNoElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-serial_no`;
+        serialNoElement.name = `sales_voucher_finish_goods_set-${formIndex}-serial_no`;
+        serialNoElement.value = '';
+
+        formCountInput.value = formCount + 1;
+        tableBody.appendChild(lastRow);
+        bindRowListeners(lastRow);
+        calculateTaxSummary();
+        calculateTotalAmount();
+        calculateOtherTotal();
+        deleteRowData();
+        inputCheck();
+    }
+
+});
+
+ 
   
-  }
  
  function bindRowListeners(row) {
      const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
