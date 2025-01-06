@@ -2127,6 +2127,8 @@ def stockTrasferRaw(request, pk=None):
     print(request.POST)
     godowns = Godown_raw_material.objects.all()
     source_godown_items_dict = None
+    source_godown_items_dict_json = None
+
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         
         try:
@@ -2231,10 +2233,7 @@ def stockTrasferRaw(request, pk=None):
 
         # print(source_godown_items_dict)
         
-    
-    
-    
-    
+
 
     else:
         source_godown_items = None
