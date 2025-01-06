@@ -1094,7 +1094,7 @@ $(document).ready(function(){
                 calculateOtherTotal();
                 deleteRowData()
                 inputCheck()
-                // alertInput()
+               
 
             }   
              
@@ -1393,17 +1393,17 @@ $(document).ready(function(){
 
     document.addEventListener("DOMContentLoaded", function () {
       calculateTaxSummary()
-    document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
+      document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
         input.addEventListener('input', function(){
           calculateTotalAmount();
           calculateOtherTotal();
-          // alertInput()
+ 
         });
       });
         document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
         input.addEventListener('input', function(){
           calculateTaxSummary();
-          // alertInput()
+   
         });
         });
 
@@ -1425,7 +1425,9 @@ $(document).ready(function(){
           }
       });
      
-
+      window.onload = function() {
+            document.getElementById("id_sales_no").focus();
+        };
       inputCheck()
     })
     
