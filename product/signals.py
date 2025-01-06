@@ -489,6 +489,9 @@ def create_update_warehouse_stock_transfer(sender, instance, created, **kwargs):
 
 
 
+
+
+
 @receiver(post_save, sender=sales_voucher_finish_Goods)
 def sales_voucher_stock_minus(sender, instance, created, **kwargs):
     product = instance.product_name
@@ -503,7 +506,9 @@ def sales_voucher_stock_minus(sender, instance, created, **kwargs):
             godown_qty_value.quantity = godown_qty_value.quantity - quantity
             godown_qty_value.save()
         else:
-            pass
+            warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=product)
+            warehouse_qty_value.quantity = warehouse_qty_value.quantity - quantity
+            warehouse_qty_value.save()
     else:
         pass
 

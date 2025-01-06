@@ -2988,6 +2988,18 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
                     master_form_instance = master_form.save(commit=False)
                     master_form_instance.save()
                     
+                    selected_warehouse = master_form_instance.selected_warehouse
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+
+                            warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
+                            warehouse_qty_value.quantity = warehouse_qty_value.quantity + product_qty
+                            warehouse_qty_value.save()
+
+                            form.instance.delete()
 
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
@@ -2995,6 +3007,25 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
                             form_instance.sales_voucher_master = master_form_instance
                             form_instance.save()
 
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+
+                            if form.has_changed():
+
+                                old_product_name = form.initial.get('product_name')
+                                old_product_quantity = form.initial.get('quantity')
+                                
+                                if old_product_quantity:
+                                    print("in single")
+
+                                    warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
+
+                                    difference =  product_qty - old_product_quantity
+
+                                    warehouse_qty_value.quantity = warehouse_qty_value.quantity - difference
+                                    warehouse_qty_value.save()
+
+                                
                     return redirect('sales-voucher-list')
                 
             except Exception as e:
@@ -3002,6 +3033,9 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
 
 
     return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names,'dict_to_send':dict_to_send})
+
+
+
 
 
 
@@ -3015,7 +3049,13 @@ def sales_scan_product_dynamic_ajax(request):
         if not serialNo:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
-
+        if sales_voucher_finish_Goods.objects.filter(unique_serial_no=serialNo).exists():
+            
+            return JsonResponse(
+                {'error': f'The serial number "{serialNo}" already exists. Please enter a different one.'},
+                status=400
+            )
+        
         filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_MRP','product__Product__Product_SalePrice_CustomerPrice','product__Product__Product_GST__gst_percentage'))
 
 
@@ -3034,12 +3074,13 @@ def sales_scan_product_dynamic_ajax(request):
 
                 list_to_send.append([p_sku,product_model_name,color,serial_no,gst,mrp,customer_price])
             
-            return JsonResponse({ 'products': list_to_send}, status=200)
+            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
         
         return JsonResponse({'error': 'No items found.'}, status=404)
     
     except Exception as e:
         return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
+
 
 
 
@@ -5543,7 +5584,9 @@ def purchaseordercuttinglist(request,p_o_pk,prod_ref_no):
     p_o_cutting_order_all = purchase_order_raw_material_cutting.objects.filter(
         purchase_order_id = p_o_pk).select_related('purchase_order_id__ledger_party_name',
         'factory_employee_id').order_by('created_date')
+    
     Purchase_order_no = purchase_order.objects.get(id=p_o_pk)
+
     return render(request,'production/purchaseordercuttinglist.html', {'p_o_cutting_order_all':p_o_cutting_order_all, 'p_o_number':Purchase_order_no, 'prod_ref_no':prod_ref_no, 'p_o_pk':p_o_pk,'page_name':'Edit Cutting Order'})
 
 
@@ -8740,6 +8783,9 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = pending_ref_no_dict).prefetch_related('raw_materials')
 
     
+    pending = purchase_order_to_product_cutting.objects.filter(~Q(cutting_quantity=F('approved_pcs'))).values('product_sku','cutting_quantity')
+
+    print('pending = ',pending)
 
     material_for_ref_id_list = []
     merged_data = []    
