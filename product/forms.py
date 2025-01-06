@@ -1159,7 +1159,7 @@ and then to each formset in FinishedProductWarehouseBinFormSet
 class salesvouchermasterfinishGoodsForm(forms.ModelForm):
     class Meta:
         model = sales_voucher_master_finish_Goods
-        fields = ['sales_no','buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_godown']
+        fields = ['sales_no','buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_godown','selected_warehouse']
 
 
     def __init__(self, *args, **kwargs):
@@ -1178,7 +1178,7 @@ class salesvouchermasterfinishGoodsForm(forms.ModelForm):
 class salesvoucherfinishGoodsForm(forms.ModelForm):
     class Meta:
         model = sales_voucher_finish_Goods
-        fields = ['product_name','quantity','trade_disct','spl_disct']
+        fields = ['product_name','quantity','trade_disct','spl_disct','unique_serial_no']
 
 
 salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=1, can_delete=True)

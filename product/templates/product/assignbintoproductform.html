@@ -5,10 +5,8 @@
 <div class="row mt-4">
   <div class="col-lg-6 mt-2">
    
-    <form action="{% url 'assign-bin-to-product' %}" method="POST" id="subCategoryForm">
+    <form action="{% url 'assign-bin-to-product-form' %}" method="POST" id="subCategoryForm">
       {% csrf_token %}
-
-      
       <div class="d-flex mb-3">
         <label for="id_product_main_category" class="item-form">Main Category:</label>
         <select name="product_main_category" id="id_product_main_category" class="item-select">
@@ -27,8 +25,6 @@
         </select>
 
       </div>
-
-
 
 
 
