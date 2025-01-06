@@ -428,7 +428,7 @@ $(document).on('change', 'select[name^="party_name"]', function () {
 <script>
 $(document).ready(function () {
     let debounceTimeout;
-    let lastVisibleRow = null;
+ 
 
     $('#inwordSerialNo').on('input', function () {
         clearTimeout(debounceTimeout);
@@ -490,68 +490,84 @@ $(document).ready(function () {
         }
     });
 
-    function sendSerialNumber(serialNo) {
-        const warehouseId = $('#id_selected_warehouse').val();
-        const tableBody = $('#salesTable .mainTableList');
-        lastVisibleRow = tableBody.find('tr:visible').last();
+    function populateRow(row, productResponse) {
+    row.find('[name$="-product_name"]').val(productResponse[0]);
+    row.find('[name$="-product_name_value"]').val(productResponse[1]);
+    row.find('[name^="product_color_"]').val(productResponse[2]);
+    row.find('[name^="product_Sku_"]').val(productResponse[0]);
+    row.find('[name$="-unique_serial_no"]').val(productResponse[3]);
+    row.find('[name$="-mrp"]').val(productResponse[5]);
+    row.find('[name$="-sale_price"]').val(productResponse[6]);
+    row.find('[name$="-gst"]').val(productResponse[4]);
+}
 
-        const response = $.ajax({
+async function sendSerialNumber(serialNo) {
+    const warehouseId = $('#id_selected_warehouse').val();
+    console.log('warehouseId',warehouseId)
+    try {
+        const response = await $.ajax({
             url: '/salesscanproductdynamicajax/',
             type: 'GET',
             data: {
-                'serialNo': serialNo,
-                'warehouseId': warehouseId,
+                serialNo: serialNo,
+                warehouseId: warehouseId,
             },
         });
 
         if (response.products && response.products.length > 0) {
             const productResponse = response.products[0];
+            console.log('productResponse',productResponse)
+            const tableBody = $('#salesTable .mainTableList');
+            // const lastVisibleRow = tableBody.find('tr:visible').last();
 
-            // if (isTableEmpty()) {
-            //     lastVisibleRow.find('[name$="-product_name"]').val(productResponse[0]);
-            //     lastVisibleRow.find('[name$="-product_name_value"]').val(productResponse[1]);
-            //     lastVisibleRow.find('[name^="product_color_"]').val(productResponse[2]);
-            //     lastVisibleRow.find('[name^="product_Sku_"]').val(productResponse[0]);
-            //     lastVisibleRow.find('[name$="-serial_no"]').val(productResponse[3]);
-            //     lastVisibleRow.find('[name$="-mrp"]').val(productResponse[5]);
-            //     lastVisibleRow.find('[name$="-sale_price"]').val(productResponse[6]);
-            //     lastVisibleRow.find('[name$="-gst"]').val(productResponse[4]);
-            // } else {
+            let rowToPopulate = null;
+
+            // Find the first empty row
+            tableBody.find('tr').each(function () {
+                const row = $(this);
+                const inputField = row.find('[name$="-product_name_value"]');
+                console.log('inputField',inputField)
+                if (inputField.val().trim() === "") {
+                    rowToPopulate = row;
+                    return false; // Break the loop
+                }
+            });
+
+            if (rowToPopulate) {
+              console.log('empty row',rowToPopulate)
+                // Populate the first empty row
+                populateRow(rowToPopulate, productResponse);
+            } else {
+                // Add a new row and populate it
+                console.log('create row',rowToPopulate)
                 addNewRow();
-                const newRow = $('.new-row:last');
-                newRow.find('[name$="-product_name"]').val(productResponse[0]);
-                newRow.find('[name$="-product_name_value"]').val(productResponse[1]);
-                newRow.find('[name^="product_color_"]').val(productResponse[2]);
-                newRow.find('[name^="product_Sku_"]').val(productResponse[0]);
-                newRow.find('[name$="-serial_no"]').val(productResponse[3]);
-                newRow.find('[name$="-mrp"]').val(productResponse[5]);
-                newRow.find('[name$="-sale_price"]').val(productResponse[6]);
-                newRow.find('[name$="-gst"]').val(productResponse[4]);
-            // }
+                const newRow = tableBody.find('tr').last();;
+                populateRow(newRow, productResponse);
+            }
         } else {
             console.error("No products data found in response.");
         }
+        
 
         return response;
+    } catch (error) {
+        console.error("Error sending serial number:", error);
+        throw error;
     }
+}
 
-    // function isTableEmpty() {
-    //     let isEmpty = true;
+    function isTableEmpty() {
+      console.log($('#salesTable .mainTableList tr').toArray().every(row => isRowEmpty($(row))))
+    return $('#salesTable .mainTableList tr').toArray().every(row => isRowEmpty($(row)));
+      }
 
-    //     $('#salesTable .mainTableList tr').each(function () {
-    //       console.log(this)
-    //         if (!isRowEmpty($(this))) {
-    //             isEmpty = false;
-    //             return false;
-    //         }
-    //     });
+      function isRowEmpty(row) {
+          return row.find('td :input').filter(function () {
+            console.log('test',$(this).val().trim() )
+              return $(this).val().trim() !== "";
+          }).length === 0;
+      }
 
-    //     return isEmpty;
-    // }
-
-    // function isRowEmpty(row) {
-    //     return row.find('input').toArray().every(input => !$(input).val());
-    // }
 
     function addNewRow() {
         const tableBody = document.querySelector('#salesTable .mainTableList');
@@ -597,10 +613,66 @@ $(document).ready(function () {
         skuInputElement.name = `product_Sku_${formIndex}`;
         skuInputElement.value = "";
 
-        const serialNoElement = lastRow.querySelector('input[name$="-serial_no"]');
-        serialNoElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-serial_no`;
-        serialNoElement.name = `sales_voucher_finish_goods_set-${formIndex}-serial_no`;
+        const serialNoElement = lastRow.querySelector('input[name$="-unique_serial_no"]');
+        serialNoElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-unique_serial_no`;
+        serialNoElement.name = `sales_voucher_finish_goods_set-${formIndex}-unique_serial_no`;
         serialNoElement.value = '';
+
+        const qunatityInputElement = lastRow.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
+        qunatityInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-quantity`;
+        qunatityInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-quantity`;
+        qunatityInputElement.value="";
+
+        const mrpInputElement = lastRow.querySelector('.sales-mrp[name^="sales_voucher_finish_goods_set-"][name$="-mrp"]');
+        mrpInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-mrp`;
+        mrpInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-mrp`;
+        mrpInputElement.value="";
+
+        const salesPriceInputElement = lastRow.querySelector('.sales_price[name$="-sale_price"]');
+        salesPriceInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sale_price`;
+        salesPriceInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-sale_price`;
+        salesPriceInputElement.value="";
+
+        const treadDiscInputElement = lastRow.querySelector('.sales-trade_disct[name$="-trade_disct"]');
+        treadDiscInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
+        treadDiscInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
+        treadDiscInputElement.value="";
+
+        const salesSplInputElement = lastRow.querySelector('.sales-spl_disct[name$="-spl_disct"]');
+        salesSplInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
+        salesSplInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
+        salesSplInputElement.value="";
+
+        const amountInputElement = lastRow.querySelector('.total-amount[name$="-amount"]');
+        amountInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-amount`;
+        amountInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-amount`;
+        amountInputElement.value="";
+
+        const gstElement = lastRow.querySelector('.purchase-gst[name$="-gst"]');
+        gstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-gst`;
+        gstElement.name = `sales_voucher_finish_goods_set-${formIndex}-gst`;
+        gstElement.value="";
+        
+        
+        const cgstElement = lastRow.querySelector('.purchase-cgst[name$="-cgst"]');
+        cgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-cgst`;
+        cgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-cgst`;
+        cgstElement.value="";
+
+        const sgstElement = lastRow.querySelector('.purchase-sgst[name$="-sgst"]');
+        sgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sgst`;
+        sgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-sgst`; 
+        sgstElement.value="";
+
+        const TotalAmountElement = lastRow.querySelector('.purchase-total[name$="-total_amount"]');
+        TotalAmountElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-total_amount`;
+        TotalAmountElement.name = `sales_voucher_finish_goods_set-${formIndex}-total_amount`;
+        TotalAmountElement.value="";
+
+        const deleteElement = lastRow.querySelector('input[name$="-DELETE"]');
+        deleteElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-DELETE`;
+        deleteElement.name = `sales_voucher_finish_goods_set-${formIndex}-DELETE`;
+        deleteElement.value= "";
 
         formCountInput.value = formCount + 1;
         tableBody.appendChild(lastRow);

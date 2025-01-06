@@ -389,7 +389,7 @@
     
             const binSelect = $('#id_bin_Name');
             binSelect.empty(); // Clear existing options
-    
+           
             response.bin_to_dict.forEach(bin => {
                 binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
             });
