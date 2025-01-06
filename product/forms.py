@@ -943,6 +943,23 @@ class product_purchase_voucher_master_form(forms.ModelForm):
             'fright_transport','gross_total','grand_total','finished_godowns','narration']
 
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        last_item = product_purchase_voucher_master.objects.order_by('id').last()
+
+        if last_item:
+
+            self.fields['purchase_number'].initial = last_item.id + 1
+        else:
+            self.fields['purchase_number'].initial = 1
+
+
+
+
+
+
+
 class product_purchase_voucher_items_form(forms.ModelForm):
     class Meta:
         model = product_purchase_voucher_items
