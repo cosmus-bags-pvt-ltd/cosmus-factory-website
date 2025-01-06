@@ -458,7 +458,7 @@ $(document).ready(function () {
                     const response = await sendSerialNumber(serialNo);
                     $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                 } catch (error) {
-                    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                    const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
                     $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
                 }
             }
@@ -482,7 +482,7 @@ $(document).ready(function () {
                 const response = await sendSerialNumber(manualSerialNo);
                 $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
             } catch (error) {
-                const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
                 $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
             }
         } else {
