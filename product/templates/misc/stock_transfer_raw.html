@@ -14,7 +14,7 @@
         {% if masterstockform.instance.pk %}
         <input value="{{masterstockform.instance.voucher_no}}" class="item-select mx-3" type="number" name="voucher_no" id="id_voucher_no" readonly>
         {% elif not masterstockform.instance.pk %}
-        <input value="{{masterstockform.instance.voucher_no}}" required class="item-select mx-3" type="number" name="voucher_no" id="id_voucher_no">
+        <input value="{{masterstockform.voucher_no.initial}}" required class="item-select mx-3" type="number" name="voucher_no" id="id_voucher_no">
         {% endif %}
         <div>
             <label for="" class="item-form">Source Godown:</label>

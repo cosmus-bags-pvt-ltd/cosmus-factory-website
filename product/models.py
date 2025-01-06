@@ -623,6 +623,8 @@ class item_purchase_voucher_master(models.Model):
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
+
+
 #This
 class purchase_voucher_items(models.Model):
     item_purchase_master = models.ForeignKey(item_purchase_voucher_master, on_delete = models.CASCADE)
@@ -633,6 +635,8 @@ class purchase_voucher_items(models.Model):
     deleted_directly = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
+
+
 
 
 class shade_godown_items(models.Model):

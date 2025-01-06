@@ -15,7 +15,7 @@
                 
                 <div class="d-flex ">
                     <label for="id_purchase_number"  class="">Purchase No:</label>
-                
+                    
                     <input type="text" class="item-select" name="purchase_number" id ="id_purchase_number" value="{{product_pur_vouch_form.instance.purchase_number}}" maxlength="255" required readonly>
                 </div>
                 <span id="SupplierError" class="error-messages"></span>
@@ -78,7 +78,7 @@
                 <div class="d-flex ">
                     <label for="id_purchase_number"  class="me-1">Purchase No:</label>
                     
-                    <input type="text" class="item-select" name="purchase_number" id ="id_purchase_number" value="{{product_pur_vouch_form.instance.purchase_number}}" maxlength="255" required>
+                    <input type="text" class="item-select" name="purchase_number" id ="id_purchase_number" value="{{product_pur_vouch_form.purchase_number.initial}}" maxlength="255" required>
                     
                     
                 </div>

@@ -442,6 +442,9 @@ class item_purchase_voucher_master_form(forms.ModelForm):
         else:
             self.fields['purchase_number'].initial = 1
 
+
+
+
 purchase_voucher_items_formset = inlineformset_factory(item_purchase_voucher_master, purchase_voucher_items, fields=('item_shade', 'quantity_total','rate','amount'), extra=1)
 purchase_voucher_items_formset_update = inlineformset_factory(item_purchase_voucher_master, purchase_voucher_items, fields=('item_shade', 'quantity_total','rate','amount'), extra=0)
 purchase_voucher_items_godown_formset = inlineformset_factory(purchase_voucher_items,shade_godown_items, fields = ('godown_id','quantity','rate','amount'),extra=0)
@@ -628,9 +631,24 @@ purchase_order_raw_product_qty_cutting_formset = inlineformset_factory(purchase_
 
 
 class raw_material_stock_trasfer_master_form(forms.ModelForm):
-        class Meta:
-            model = RawStockTransferMaster
-            fields = ['voucher_no','source_godown','destination_godown']
+
+    class Meta:
+        model = RawStockTransferMaster
+        fields = ['voucher_no','source_godown','destination_godown']
+
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        last_item = RawStockTransferMaster.objects.order_by('voucher_no').last()
+
+        if last_item:
+
+            self.fields['voucher_no'].initial = last_item.voucher_no + 1
+        else:
+            self.fields['voucher_no'].initial = 1
+
+
+
 
 raw_material_stock_trasfer_items_formset = inlineformset_factory(RawStockTransferMaster,RawStockTrasferRecords,fields=['item_shade_transfer','item_quantity_transfer','remarks'], extra=1, can_delete=True)
 
@@ -841,6 +859,7 @@ class labour_workin_master_form(forms.ModelForm):
         else:
             self.fields['voucher_number'].initial = 1
 
+
     
     def clean(self):
         super().clean()
@@ -975,11 +994,29 @@ product_purchase_voucher_items_formset_update = inlineformset_factory(product_pu
                                                                 form = product_purchase_voucher_items_form, extra=0, can_delete=True)
 
 
+
+
+
 class Finished_goods_Stock_TransferMaster_form(forms.ModelForm):
     class Meta:
         model = Finished_goods_Stock_TransferMaster
         fields = ['voucher_no','source_warehouse','destination_warehouse','narration']
 
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        last_i = Finished_goods_Stock_TransferMaster.objects.order_by('id').last()
+        
+
+        if last_i:
+
+            self.fields['voucher_no'].initial = last_i.id + 1
+
+        else:
+            
+            self.fields['voucher_no'].initial = 1
+        
 
 
 
@@ -1129,6 +1166,8 @@ class FinishedProductWarehouseBinFormSet(BaseModelFormSet):
                 
                 except finished_product_warehouse_bin.DoesNotExist:
                     continue
+
+
 
 
 class Purchaseordermasterforpuchasevoucherrmform(forms.ModelForm):
