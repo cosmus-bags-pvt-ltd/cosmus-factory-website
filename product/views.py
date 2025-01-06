@@ -8311,14 +8311,13 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
             messages.error(request,f'Exception Occoured - {e}')
             return redirect(reverse('stock-transfer-instance-list-popup', args=[id,selected_voucher_type]))
 
-    
-
-    
 
     
     return render(request, 'finished_product/stock_transfer_instance_list_popup.html',{'formset': formset,
                                                 'purchase_number':purchase_number,'voucher_type': voucher_type,
                                                 'completed_formset':completed_formset,'single_entries':entries})
+
+
 
 
 
@@ -8419,6 +8418,9 @@ def process_serial_no(request):
                             'products_in_bin':products_in_bin}
                         bin_to_dict.append(dict_to_append)
 
+                    print('bin_to_dict ---- ' , bin_to_dict)
+
+                    
                     return JsonResponse({'product_name':product_name, 'product_sku': product_sku,
                                     'bin_to_dict':bin_to_dict,
                                     'product_color' : product_color,'product_image':product_image, 
