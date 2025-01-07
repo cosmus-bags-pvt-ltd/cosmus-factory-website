@@ -7185,8 +7185,6 @@ def raw_material_estimation_calculate(request,u_id):
                     godown_qty = godown_item_instance.quantity
 
 
-
-
                 except ObjectDoesNotExist:
                     godown_qty = 0
 
@@ -7249,7 +7247,90 @@ def raw_material_estimation_calculate(request,u_id):
 
         lwo_pending = product_to_item_labour_workout.objects.filter(labour_workout__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id)
 
+        pending_ref_no_complete = purchase_order_to_product_cutting.objects.filter(~Q(cutting_quantity=F('approved_pcs')),purchase_order_cutting_id__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id,purchase_order_cutting_id__cutting_cancelled = False)
+
+        print('pending_ref_no_complete --- ', pending_ref_no_complete)
+        print(len(pending_ref_no_complete))
+
+
+        sku_total_qty = {}
+
+        for order in purchase_orders:
+            for x in order.p_o_to_products.all():
+
+                product_reference_number = x.purchase_order_id.product_reference_number.Product_Refrence_ID
+                sku = x.product_id.PProduct_SKU
+                process_quantity = x.process_quantity
+
+                
+                if product_reference_number not in sku_total_qty:
+                    sku_total_qty[product_reference_number] = {}
+
+
+                current_quantity = sku_total_qty[product_reference_number].get(sku, 0)
+                sku_total_qty[product_reference_number][sku] = current_quantity + process_quantity
+
         
+        for product_reference_number, skus in sku_total_qty.items():
+            total_quantity = sum(skus.values())
+            skus['total'] = total_quantity
+
+        print('sku_total_qty --- ', sku_total_qty)
+
+
+
+
+        pending_ref_no_dict_complete = {}
+
+        for item in pending_ref_no_complete:
+            ref_id = item.purchase_order_cutting_id.purchase_order_id.product_reference_number.Product_Refrence_ID
+            sku = int(item.product_sku)
+            process_qty = item.cutting_quantity if item.balance_pcs == 0 else item.balance_pcs
+            # print(type(ref_id))
+            # print(type(sku))
+            if ref_id not in pending_ref_no_dict_complete:
+                pending_ref_no_dict_complete[ref_id] = {}
+
+            current_quantity = pending_ref_no_dict_complete[ref_id].get(sku, 0)
+            pending_ref_no_dict_complete[ref_id][sku] = current_quantity + process_qty
+
+        
+        for product_reference_number, skus in pending_ref_no_dict_complete.items():
+            total_quantity = sum(skus.values())
+            skus['total'] = total_quantity
+
+        print('pending_ref_no_dict_complete --- ', pending_ref_no_dict_complete)
+
+
+        pending_complete_merged_dict = {}
+
+        for key in sku_total_qty:
+            pending_complete_merged_dict[key] = {}
+            if key in pending_ref_no_dict_complete:
+                # Both dictionaries contain this key
+                for inner_key in sku_total_qty[key]:
+                    if inner_key in pending_ref_no_dict_complete[key]:
+                        # Sum values if the inner key exists in both
+                        pending_complete_merged_dict[key][inner_key] = sku_total_qty[key][inner_key] + pending_ref_no_dict_complete[key][inner_key]
+                    else:
+                        # Take value from the first dictionary if not in the second
+                        pending_complete_merged_dict[key][inner_key] = sku_total_qty[key][inner_key]
+                for inner_key in pending_ref_no_dict_complete[key]:
+                    if inner_key not in sku_total_qty[key]:
+                        # Take value from the second dictionary if not in the first
+                        pending_complete_merged_dict[key][inner_key] = pending_ref_no_dict_complete[key][inner_key]
+            else:
+                # Key exists only in the first dictionary
+                pending_complete_merged_dict[key] = sku_total_qty[key]
+
+        for key in pending_ref_no_dict_complete:
+            if key not in pending_complete_merged_dict:
+                # Add keys that exist only in the second dictionary
+                pending_complete_merged_dict[key] = pending_ref_no_dict_complete[key]
+
+
+        print('pending_complete_merged_dict --- ', pending_complete_merged_dict)
+
 
         dataset_to_send = []
 
@@ -7257,34 +7338,20 @@ def raw_material_estimation_calculate(request,u_id):
 
         list_to_send_for_lwo = []
 
+
+        
+
+
+
+
+
         if purchase_orders:
 
             print("in single")
 
-            sku_total_qty = {}
             
 
-            for order in purchase_orders:
-                for x in order.p_o_to_products.all():
 
-                    product_reference_number = x.purchase_order_id.product_reference_number.Product_Refrence_ID
-                    sku = x.product_id.PProduct_SKU
-                    process_quantity = x.process_quantity
-
-                    
-                    if product_reference_number not in sku_total_qty:
-                        sku_total_qty[product_reference_number] = {}
-
-
-                    current_quantity = sku_total_qty[product_reference_number].get(sku, 0)
-                    sku_total_qty[product_reference_number][sku] = current_quantity + process_quantity
-
-            
-            for product_reference_number, skus in sku_total_qty.items():
-                total_quantity = sum(skus.values())
-                skus['total'] = total_quantity
-
-            
             
 
             for key,value in sku_total_qty.items():
@@ -8784,7 +8851,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     for item in pending_ref_no_complete:
         ref_id = item.purchase_order_cutting_id.purchase_order_id.product_reference_number.Product_Refrence_ID
         sku = int(item.product_sku)
-        process_qty = item.cutting_quantity
+        process_qty = item.cutting_quantity if item.balance_pcs == 0 else item.balance_pcs
         # print(type(ref_id))
         # print(type(sku))
         if ref_id not in pending_ref_no_dict_complete:
@@ -8887,7 +8954,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             grand_total_combi = material.grand_total_combi
             consumption = round(grand_total / (panha_val * unit_val),3)
             consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            
+            common_unique = material.common_unique
 
             if material_name not in seen_material_names:
                 seen_material_names.add(material_name)
@@ -8897,7 +8964,8 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                             'pro_sku': pro_sku,
                                             'pro_fab_grp' : pro_fab_grp,
                                             'consumption' : consumption,
-                                            'consumtionCombi' : consumtionCombi
+                                            'consumtionCombi' : consumtionCombi,
+                                            'common_unique' : common_unique
                 }
                 material_for_ref_id_list.append(set_production_data_dict)
 
@@ -8907,10 +8975,27 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         for key,value in pending_complete_merged_dict.items():
             for sku,qty in value.items():
                 for item in material_for_ref_id_list:
-                    if item['pro_sku'] == sku:
+                    if item['pro_sku'] == sku and item['common_unique'] == True:
                         total_consumption_value = qty * item['consumption']
 
                         total_combi_consumption_value = qty * item['consumtionCombi']
+
+                        cutting_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                        dict_to_append = {
+                            'material_name': item['material_name'],
+                            'pro_sku': item['pro_sku'],
+                            'pro_fab_grp' : item['pro_fab_grp'],
+                            'cutting_consumption' : cutting_consumption            
+                        }
+
+                        cutting_consumption_list.append(dict_to_append)
+
+                    elif item['pro_sku'] == sku and item['common_unique'] == False:
+
+                        total_consumption_value = value['total'] * item['consumption']
+
+                        total_combi_consumption_value = value['total'] * item['consumtionCombi']
 
                         cutting_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
 
@@ -8944,7 +9029,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             grand_total_combi = material.grand_total_combi
             consumption = round(grand_total / (panha_val * unit_val),3)
             consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            
+            common_unique = material.common_unique
 
             if material_name not in seen_material_names:
                 seen_material_names.add(material_name)
@@ -8954,12 +9039,13 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                             'pro_sku': pro_sku,
                                             'pro_fab_grp' : pro_fab_grp,
                                             'consumption' : consumption,
-                                            'consumtionCombi' : consumtionCombi
+                                            'consumtionCombi' : consumtionCombi,
+                                            'common_unique' : common_unique
                 }
                 material_for_ref_id_list_for_lwo.append(set_production_data_dict)
 
-        print('material_for_ref_id_queryset_for_low --- ', material_for_ref_id_list_for_lwo)
-        print(len(material_for_ref_id_list_for_lwo))
+        # print('material_for_ref_id_queryset_for_low --- ', material_for_ref_id_list_for_lwo)
+        # print(len(material_for_ref_id_list_for_lwo))
 
         lwo_consumption_list = []
 
@@ -8969,21 +9055,44 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                 
                 for item in material_for_ref_id_list_for_lwo:
                     
-                    if item['pro_sku'] == sku and item['pro_fab_grp'] == 'Non Fabric':
-                        total_consumption_value = qty * item['consumption']
+                    if item['pro_sku'] == sku and item['common_unique'] == True:
 
-                        total_combi_consumption_value = qty * item['consumtionCombi']
+                        if item['pro_fab_grp'] == 'Non Fabric':
 
-                        lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+                            total_consumption_value = qty * item['consumption']
 
-                        dict_to_append = {
-                            'material_name': item['material_name'],
-                            'pro_sku': item['pro_sku'],
-                            'pro_fab_grp' : item['pro_fab_grp'],
-                            'lwo_consumption' : lwo_consumption           
-                        }
+                            total_combi_consumption_value = qty * item['consumtionCombi']
 
-                        lwo_consumption_list.append(dict_to_append)
+                            lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                            dict_to_append = {
+                                'material_name': item['material_name'],
+                                'pro_sku': item['pro_sku'],
+                                'pro_fab_grp' : item['pro_fab_grp'],
+                                'lwo_consumption' : lwo_consumption           
+                            }
+
+                            lwo_consumption_list.append(dict_to_append)
+
+                    elif item['pro_sku'] == sku and item['common_unique'] == False:
+
+                        if item['pro_fab_grp'] == 'Non Fabric':
+
+                            total_consumption_value = value['total'] * item['consumption']
+
+                            total_combi_consumption_value = value['total'] * item['consumtionCombi']
+
+                            lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                            dict_to_append = {
+                                'material_name': item['material_name'],
+                                'pro_sku': item['pro_sku'],
+                                'pro_fab_grp' : item['pro_fab_grp'],
+                                'lwo_consumption' : lwo_consumption           
+                            }
+
+                            lwo_consumption_list.append(dict_to_append)
+
 
 
 
@@ -9122,7 +9231,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             grand_total_combi = material.grand_total_combi
             consumption = round(grand_total / (panha_val * unit_val),3)
             consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            
+            common_unique = material.common_unique
 
             if material_name not in seen_material_names:
                 seen_material_names.add(material_name)
@@ -9132,7 +9241,8 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                             'pro_sku': pro_sku,
                                             'pro_fab_grp' : pro_fab_grp,
                                             'consumption' : consumption,
-                                            'consumtionCombi' : consumtionCombi
+                                            'consumtionCombi' : consumtionCombi,
+                                            'common_unique' : common_unique
                 }
                 material_for_ref_id_list.append(set_production_data_dict)
 
@@ -9142,10 +9252,27 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         for key,value in pending_complete_merged_dict.items():
             for sku,qty in value.items():
                 for item in material_for_ref_id_list:
-                    if item['pro_sku'] == sku:
+                    if item['pro_sku'] == sku and item['common_unique'] == True:
                         total_consumption_value = qty * item['consumption']
 
                         total_combi_consumption_value = qty * item['consumtionCombi']
+
+                        cutting_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                        dict_to_append = {
+                            'material_name': item['material_name'],
+                            'pro_sku': item['pro_sku'],
+                            'pro_fab_grp' : item['pro_fab_grp'],
+                            'cutting_consumption' : cutting_consumption            
+                        }
+
+                        cutting_consumption_list.append(dict_to_append)
+
+                    elif item['pro_sku'] == sku and item['common_unique'] == False:
+
+                        total_consumption_value = value['total'] * item['consumption']
+
+                        total_combi_consumption_value = value['total'] * item['consumtionCombi']
 
                         cutting_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
 
@@ -9225,7 +9352,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             grand_total_combi = material.grand_total_combi
             consumption = round(grand_total / (panha_val * unit_val),3)
             consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            
+            common_unique = material.common_unique
 
             if material_name not in seen_material_names:
                 seen_material_names.add(material_name)
@@ -9235,7 +9362,8 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                             'pro_sku': pro_sku,
                                             'pro_fab_grp' : pro_fab_grp,
                                             'consumption' : consumption,
-                                            'consumtionCombi' : consumtionCombi
+                                            'consumtionCombi' : consumtionCombi,
+                                            'common_unique' : common_unique
                 }
                 material_for_ref_id_list.append(set_production_data_dict)
 
@@ -9247,23 +9375,45 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for sku,qty in value.items():
                 
-                for item in material_for_ref_id_list:
+                for item in material_for_ref_id_list_for_lwo:
                     
-                    if item['pro_sku'] == sku and item['pro_fab_grp'] == 'Non Fabric':
-                        total_consumption_value = qty * item['consumption']
+                    if item['pro_sku'] == sku and item['common_unique'] == True:
 
-                        total_combi_consumption_value = qty * item['consumtionCombi']
+                        if item['pro_fab_grp'] == 'Non Fabric':
 
-                        lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+                            total_consumption_value = qty * item['consumption']
 
-                        dict_to_append = {
-                            'material_name': item['material_name'],
-                            'pro_sku': item['pro_sku'],
-                            'pro_fab_grp' : item['pro_fab_grp'],
-                            'lwo_consumption' : lwo_consumption           
-                        }
+                            total_combi_consumption_value = qty * item['consumtionCombi']
 
-                        lwo_consumption_list.append(dict_to_append)
+                            lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                            dict_to_append = {
+                                'material_name': item['material_name'],
+                                'pro_sku': item['pro_sku'],
+                                'pro_fab_grp' : item['pro_fab_grp'],
+                                'lwo_consumption' : lwo_consumption           
+                            }
+
+                            lwo_consumption_list.append(dict_to_append)
+
+                    elif item['pro_sku'] == sku and item['common_unique'] == False:
+
+                        if item['pro_fab_grp'] == 'Non Fabric':
+
+                            total_consumption_value = value['total'] * item['consumption']
+
+                            total_combi_consumption_value = value['total'] * item['consumtionCombi']
+
+                            lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+
+                            dict_to_append = {
+                                'material_name': item['material_name'],
+                                'pro_sku': item['pro_sku'],
+                                'pro_fab_grp' : item['pro_fab_grp'],
+                                'lwo_consumption' : lwo_consumption           
+                            }
+
+                            lwo_consumption_list.append(dict_to_append)
 
         # print('lwo_consumption_list --- ', lwo_consumption_list)
 
