@@ -159,9 +159,9 @@
     })
   })
   function ledgerGstRequired(){
-        var gst  = document.getElementById('id_Gst_no').value;
-        var newGst = gst.length;
-        var gstErrors = document.getElementById('gstError');
+        const gst  = document.getElementById('id_Gst_no').value;
+        let newGst = gst.length;
+        const gstErrors = document.getElementById('gstError');
         if(newGst < 15){
             document.getElementById('id_Gst_no').required = true;
             gstErrors.textContent = "Please enter a valid GST number (at least 15 characters).";
@@ -173,83 +173,80 @@
 
    
   }
-  //ledgerGstRequired();
-  var popUpWindow = null;
+  
+  let popUpWindow = null;
   function openLedgerTypePopup(button){
     openPopup(button, '{% url "ledger-Types-create-popup" %}');
   }
 
-function openPopup(button, url) {
-  if (popUpWindow === null || popUpWindow.closed) {
-    newPopUpwindow(button, url);
-  } else {
-  
-    popUpWindow.focus();
+  function openPopup(button, url) {
+    if (popUpWindow === null || popUpWindow.closed) {
+      newPopUpwindow(button, url);
+    } else {
+    
+      popUpWindow.focus();
+    }
   }
-}
 
-function newPopUpwindow(button, path) {
-  // Specify minimum height and width
-  var minWidth = 800; // minimum width
-  var minHeight = 600; // minimum height
+  function newPopUpwindow(button, path) {
+    // Specify minimum height and width
+    const minWidth = 800; // minimum width
+    const minHeight = 600; // minimum height
 
-  $('body').addClass('popup-open');
-  $('body').append('<div class="popup-overlay"></div>');
+    $('body').addClass('popup-open');
+    $('body').append('<div class="popup-overlay"></div>');
 
-  // Open new page with specified dimensions
-  popUpWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-    // Ensure only one event listener is attached
+    // Open new page with specified dimensions
+    popUpWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
+      // Ensure only one event listener is attached
+    
+      window.addEventListener('message', function(event){
+          if (event.data.message === 'close') {
+                  $('body').removeClass('popup-open');
+                  $('.popup-overlay').remove();
+                  popUpWindow.close();
+              }
+            });
+
+            
+      // Listen for messages from the popup window
+      window.addEventListener('click', function(event) {
+      handleOutsideClick(event);
+    });
+
+  }
+  function handleOutsideClick(event) {
+
+    var popUpRect = document.querySelector('body').getBoundingClientRect();
+    var clickX = event.clientX;
+    var clickY = event.clientY;
+    
+      // Check if the click is outside the popup window
+      if (clickX > popUpRect.left || clickX <= popUpRect.right || clickY > popUpRect.top || clickY <= popUpRect.bottom) {
+      
+        popUpWindow.focus();
+        
+      }
+    
+  }
+
+  window.addEventListener('message', function(event) {
+      const data = event.data;
   
-    window.addEventListener('message', function(event){
-        if (event.data.message === 'close') {
-                $('body').removeClass('popup-open');
-                $('.popup-overlay').remove();
-                popUpWindow.close();
-             }
-           });
-
-          
-    // Listen for messages from the popup window
-    window.addEventListener('click', function(event) {
-    handleOutsideClick(event);
+      if (data.ledger_type) {
+          populateDropdownLedgerTypes(data.ledger_type, '#id_types', 'type_name', 'Select Name');
+      }
   });
 
-}
-function handleOutsideClick(event) {
+  function populateDropdownLedgerTypes(items, dropdownSelector, valueKey, defaultText) {
+      const dropdown = $(dropdownSelector);
+      dropdown.empty();
+      dropdown.append('<option value="">' + defaultText + '</option>');
 
-  var popUpRect = document.querySelector('body').getBoundingClientRect();
-  var clickX = event.clientX;
-  var clickY = event.clientY;
-   
-    // Check if the click is outside the popup window
-    if (
-      clickX > popUpRect.left || clickX <= popUpRect.right ||
-      clickY > popUpRect.top || clickY <= popUpRect.bottom
-    ) {
-     
-      popUpWindow.focus();
-      
-    }
-   
-}
-
-window.addEventListener('message', function(event) {
-    const data = event.data;
- 
-    if (data.ledger_type) {
-        populateDropdownLedgerTypes(data.ledger_type, '#id_types', 'type_name', 'Select Name');
-    }
-});
-
-function populateDropdownLedgerTypes(items, dropdownSelector, valueKey, defaultText) {
-    const dropdown = $(dropdownSelector);
-    dropdown.empty();
-    dropdown.append('<option value="">' + defaultText + '</option>');
-
-    items.forEach(item => {
-        dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
-    });
-}
+      items.forEach(item => {
+          dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+      });
+  }
 </script>
 {% endblock body %}
 

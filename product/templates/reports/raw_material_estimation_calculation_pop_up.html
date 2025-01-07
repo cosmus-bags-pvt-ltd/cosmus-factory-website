@@ -42,11 +42,7 @@
 
     <div class="mt-2" >
         <button type="submit" class="newProductCreateBtn" id="checkboxSubmit" >Submit</button>
-      
-
         <button type="button" onclick= "downloadRawmaterial(this)" class="add_btn">Download Excel</button>
-    
-
     </div>
     
  
@@ -93,19 +89,12 @@
     }
     balanceQty()
 
-   
-    
-
-
     function downloadRawmaterial(button) {
         var finalDic = document.getElementById('finalDic').value; // This should already be a valid JSON string
-        console.log('Raw finalDic value:', finalDic);
-    
+
         try {
             // Parse the string to ensure it's valid JSON
             let parsedDic = JSON.parse(finalDic);
-            console.log('Parsed finalDic:', parsedDic);
-    
             // Send data to the server
             $.ajax({
                 url: "/rawmaterialestimationcalculateexceldownload/",
@@ -133,8 +122,7 @@
             alert('The provided data is not in valid JSON format.');
         }
     }
-    
-    
+     
 </script>
 
 

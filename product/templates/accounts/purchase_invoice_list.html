@@ -26,7 +26,7 @@
         <th>Grand Total</th>
         <th>Edit</th>
         <th>Delete</th>
-        <!-- <th>View</th> -->
+
       </tr>
     </thead>
     <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -39,7 +39,7 @@
         <td>{{invoice.grand_total}}</td>
         <td><a  href="{% url 'purchase-voucher-update' invoice.id %}" ><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
         <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ invoice.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
-        <!-- <td><a href="#"><i class="fa-solid fa-eye"></i></a></td> -->
+      
       </tr>
       {% endfor %}
     </tbody>

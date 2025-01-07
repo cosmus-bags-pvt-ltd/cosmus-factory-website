@@ -170,11 +170,12 @@ function valueCheck() {
     var final = 0; 
     estimateValues.forEach(element => {
         const estimatedata = parseFloat(element.value) || 0
-        final += estimatedata;
         const row = element.closest('tr');
         const newvalue = parseFloat( document.getElementById('id_processTotal').value)
         const totalQty = parseInt(document.getElementById('id_product_Qty').value);
         const balance = parseFloat(document.getElementById('id_BalancePrevious_Qty').value);
+        
+        final += estimatedata;
         if (totalQty < final) {
             row.querySelector('input[name$="-estimate_qty"]').value = 0;
             calculateRawData();

@@ -10,9 +10,6 @@
       <h4 class="ms-5">Fabric Group - <span class="text-danger text-bold text-capitalize">{{Fabric_grp_name.fab_grp_name}}</span></h4>
       {% endif %}
     </div>
- 
-
-
     <div class="">
       <table class="table table-striped table-hover table-bordered">
     
@@ -101,7 +98,7 @@
     })
   }
 
-  function TotalShadeValueCalculation() {
+function TotalShadeValueCalculation() {
             // Get all shade rows within the table body
     const rows = document.querySelectorAll('.mainTableList tr');
 
@@ -120,15 +117,12 @@
           }
       });
 
-  }
+}
 
-
-   // Call the function on page load
-   document.addEventListener('DOMContentLoaded', function() {
-
-            TotalShadeValueCalculation();
-            totalValueCal()
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    TotalShadeValueCalculation();
+    totalValueCal()
+});
 
 
 </script>

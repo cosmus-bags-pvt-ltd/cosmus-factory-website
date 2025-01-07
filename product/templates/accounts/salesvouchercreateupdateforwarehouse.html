@@ -78,7 +78,7 @@
 
     <div class="d-flex mb-3">
       <label for="id_selected_warehouse" class="me-4">Warehouse:</label>
-      <select class="item-select text-black ms-4" name="selected_warehouse" required id="id_selected_warehouse">
+      <select class="item-select text-black" name="selected_warehouse" required id="id_selected_warehouse">
         {% if master_form.instance.id %}
         <option value="{{master_form.instance.selected_warehouse.id}}">
           {{master_form.instance.selected_warehouse.warehouse_name_finished}}</option>
@@ -89,19 +89,23 @@
         {% endfor %}
         {% endif %}
       </select>
-      <div> <span id="responseMessage" class="mx-2 fw-bold"></span></div>
+      
     </div>
     
     <div class="mb-3">
+     <div class="d-flex">
+      <div class="mb-2">
+        <label for="inwordSerialNo" class="fw-bold me-2">Scan S/N :</label>
+        <input type="text" name="scanned_serial_number" class="item-select ms-4" id="inwordSerialNo">
+    </div>
+      <div class=""> 
+        <span id="responseMessage" class="ms-3 fw-bold"></span></div>
+     </div>
      
-      <div class="mb-2 mt-2">
-          <label for="inwordSerialNo" class="fw-bold">Scan S/N :</label>
-          <input type="text" name="scanned_serial_number" class="item-select ms-3" id="inwordSerialNo">
-      </div>
       <div class="d-flex ">
           <div class="mb-2">
               <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
-              <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
+              <input type="text" name="manual_serial_number" class="item-select ms-3" id="id_manualSerialNo">
           </div>
           <div class="mb-2 ms-2">
               <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button>
@@ -686,9 +690,6 @@ async function sendSerialNumber(serialNo) {
 
 });
 
- 
-  
- 
  function bindRowListeners(row) {
      const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
      const salePriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');;
@@ -977,22 +978,22 @@ function calculateTotalAmount() {
 
  document.addEventListener("DOMContentLoaded", function () {
    calculateTaxSummary()
- document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
+  document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
      input.addEventListener('input', function(){
        calculateTotalAmount();
        calculateOtherTotal();
-       // alertInput()
+
      });
    });
      document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
      input.addEventListener('input', function(){
        calculateTaxSummary();
-       // alertInput()
+    
      });
      });
 
-     const table = document.getElementById("salesTable");
-   const salesTotal = document.getElementById('saleTotal');
+    const table = document.getElementById("salesTable");
+    const salesTotal = document.getElementById('saleTotal');
 
    // Prevent Enter key from submitting the form inside table inputs
    table.addEventListener("keydown", function (event) {
@@ -1008,8 +1009,10 @@ function calculateTotalAmount() {
 
        }
    });
-  
-
+   
+   window.onload = function() {
+            document.getElementById("id_sales_no").focus();
+        };
    inputCheck()
  })
  
@@ -1018,57 +1021,89 @@ function calculateTotalAmount() {
  calculateTotalAmount();
  calculateOtherTotal();
  deleteRowData()
+
 function inputCheck(){
 
- const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
- itemNameInputsid.forEach((input, index) => {
- input.addEventListener("keydown", function (event) {
+  const inwordscan = document.getElementById('inwordSerialNo');
+  const manualScan = document.getElementById('id_manualSerialNo');
+  const qtyValues = document.querySelectorAll('[name$="-quantity"]')
+  inwordscan.addEventListener('keydown',function(event){
+    if(event.key === "Tab"){
+      event.preventDefault();
+      var table = document.querySelectorAll('#salesTable .mainTableList tr');
+      table.forEach(function(row){
+        var qty = row.querySelector('[name$="-quantity"]')
+        var qtyvalue = qty.value;
+        if(qtyvalue === ''){
+          qty.focus()
+        }
+      }) 
+    }
+  })
 
-     const closestRow = input.closest('tr');
-     const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
-     
-     console.log('allInputsInRow',allInputsInRow)
-         if(allInputsInRow === ''){
-             if (event.key === "Tab") {
-         event.preventDefault(); // Prevent default tab behavior
+  manualScan.addEventListener('keydown',function(event){
+    if(event.key === "Tab"){
+      event.preventDefault();
+      var table = document.querySelectorAll('#salesTable .mainTableList tr');
+      table.forEach(function(row){
+        var qty = row.querySelector('[name$="-quantity"]')
+        var qtyvalue = qty.value;
+        if(qtyvalue === ''){
+          qty.focus()
+        }
+   
+      })
+      
+    }
+   
+  })
 
-         // Check if the current input has a value
-         if (input.value.trim() !== "") {
-             // If not the last input, move focus to the next row's item name
-             if (itemNameInputsid[index + 1]) {
-                 itemNameInputsid[index + 1].focus();
-             }
-         } else {
-             // If current input is empty, refocus on it
-             input.focus();
-         }
-     }
-     if (event.key === 'Enter') {
-         event.preventDefault(); // Prevent default Enter key behavior
 
-         // Find the current <td> containing this input
-         const currentTd = this.closest('td');
-             console.log('currentId',currentTd)
-         // Find the next <td> sibling
-         if (currentTd) {
-             const nextTd = currentTd.nextElementSibling;
+    
+    qtyValues.forEach((input, index) => {
+      input.addEventListener("keydown", function (event) {
 
-             // Check if next <td> exists and contains an input
-             if (nextTd) {
-                 const nextInput = nextTd.querySelector('input');
-                 if (nextInput) {
-                     nextInput.focus(); // Move focus to the next input
-                 }
-             }
-         }
-     }
-         }
+        const closestRow = input.closest('tr');
+        const allInputsInRow = closestRow.querySelector('[name$="-quantity"]').value;
+    
+          if(allInputsInRow === ''){
+            if (event.key === "Tab") {
+              event.preventDefault(); // Prevent default tab behavior
 
-     
- });
- });
- }
+                // Check if the current input has a value
+                if (input.value.trim() !== "") {
+                    // If not the last input, move focus to the next row's item name
+                    if (itemNameInputsid[index + 1]) {
+                        itemNameInputsid[index + 1].focus();
+                    }
+                } else {
+                    // If current input is empty, refocus on it
+                    input.focus();
+                }
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default Enter key behavior
 
+                // Find the current <td> containing this input
+                const currentTd = this.closest('td');
+                    console.log('currentId',currentTd)
+                // Find the next <td> sibling
+                if (currentTd) {
+                    const nextTd = currentTd.nextElementSibling;
+
+                    // Check if next <td> exists and contains an input
+                    if (nextTd) {
+                        const nextInput = nextTd.querySelector('input');
+                        if (nextInput) {
+                            nextInput.focus(); // Move focus to the next input
+                        }
+                    }
+                }
+            }
+          }
+      });
+    });
+}
 
 inputCheck()
 

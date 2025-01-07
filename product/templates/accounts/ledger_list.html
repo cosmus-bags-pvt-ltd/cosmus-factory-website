@@ -29,27 +29,27 @@
           <th>GST No</th>
           <th>Edit</th>
           <th>Delete</th>
-          <!-- <th>View</th> -->
+   
         
         </tr>
-        </thead>
-        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+      </thead>
+      <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
         
-          {% for ledger in ledgers %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ledger.name}}</td>
-            <td>{{ledger.short_name}}</td>
-            <td>{{ledger.vendor_code}}</td>
-            <td>{{ledger.account_sub_group_ledger}}</td>
-            <td>{{ledger.types.type_name}}</td>
-            <td>{{ledger.Gst_no}}</td>
-            <td> <a href=" {% url 'ledger-update' ledger.id %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
-            <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ ledger.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
-            <!-- <td><a href=""><i class="fa-solid fa-eye px-2"></i></a></td> -->
-          </tr>
-          {% endfor %}
-        </tbody>
+        {% for ledger in ledgers %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ledger.name}}</td>
+          <td>{{ledger.short_name}}</td>
+          <td>{{ledger.vendor_code}}</td>
+          <td>{{ledger.account_sub_group_ledger}}</td>
+          <td>{{ledger.types.type_name}}</td>
+          <td>{{ledger.Gst_no}}</td>
+          <td> <a href=" {% url 'ledger-update' ledger.id %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
+          <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ ledger.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
+        
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
   </div>
   
