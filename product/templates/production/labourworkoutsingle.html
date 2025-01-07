@@ -123,14 +123,17 @@
                             {% endif %}
                             {% endfor %}
                         </tbody>
+                        <tbody>
+                            <tr>
+                                <td><span class="text-danger">Total:</span></td>
+                                <td></td>
+                                <td><input type="number" class="productorderqty-input text-danger" name="OrderQty" id="id_OderQty" value="{{form.instance.number_of_pieces}}" readonly></td>
+                                <td><input type="number" class="productorderqty-input text-danger " name="balanceQtys" id="id_balanceQtys" value=""  readonly></td>
+                                <td> <input type="number" class="productorderqty-input text-danger " name="processQty" id="id_processQty" value="" readonly></td>
+                            </tr>
+                        </tbody>
                     </table>
-                    <div class="d-flex pb-2">
-                        <label for="id_OderQty" class="text-danger">Total:</label>
-                        <input type="number" class="productorderqty-input text-danger" name="OrderQty" id="id_OderQty" value="{{form.instance.number_of_pieces}}" style="margin-left: 232px;" readonly>
-                        <input type="number" class="productorderqty-input text-danger " name="balanceQtys" id="id_balanceQtys" value="" style="margin-left: 60px;" readonly>
-                        <input type="number" class="productorderqty-input text-danger " name="processQty" id="id_processQty" value="" style="margin-left: 47px;" readonly>
-                    
-                    </div>
+                  
                 </div>
             </div>
              
@@ -360,11 +363,11 @@ function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
             
         })
         
-        $("#labourworkoutTable tbody").on('focus','input', function() {
+        $("#labourworkoutTable .mainTableList").on('focus','input', function() {
                 // Find the closest row to the input being edited
 
                 var row = $(this).closest('tr');
-                console.log('row',row)
+              
                 var qty = parseInt(row.find('input[name$="-processed_pcs"]').val());
                 if(qty=== 0){
                     row.find('input[name$="-processed_pcs"]').val('');
@@ -499,7 +502,7 @@ function updateBalanceAndProcessQty() {
     prcocessMainValue = totalProcess; // Ensure prcocessMainValue reflects the total processed quantity
     document.getElementById('id_processQty').value = prcocessMainValue;
 }
-
+updateBalanceAndProcessQty()
 function labourworkoutBalanceQty(){
     var totalforms = document.getElementById('id_labour_workout_cutting_items_set-TOTAL_FORMS').value;
 
@@ -601,6 +604,7 @@ function labourWorkOutCheck(){
     }
    
 }
+labourWorkOutCheck()
     function balanceQty(){
         var totalforms = document.getElementById('id_labour_workout_cutting_items_set-TOTAL_FORMS').value;
 

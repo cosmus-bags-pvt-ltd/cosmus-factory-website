@@ -1,12 +1,11 @@
 
-
 {% extends 'product/base.html' %}
-
+{% load static %}
 {% block body %}
 
-    <div class="mt-4  mb-3 d-flex">
-        <h4>Reference No - <span class="text-danger text-bold text-capitalize">{{product_instance.Product_Refrence_ID}}</span></h4>
-        <h4 class="ms-3">Model Name - <span class="text-danger text-bold text-capitalize">{{product_instance.Model_Name}}</span></h4>
+    <div class="mt-3  mb-2 d-flex">
+        <h5>Reference No - <span class="text-danger text-bold text-capitalize">{{product_instance.Product_Refrence_ID}}</span></h5>
+        <h5 class="ms-3">Model Name - <span class="text-danger text-bold text-capitalize">{{product_instance.Model_Name}}</span></h5>
         <div class="d-flex ms-3">
             <label>Images :</label>
             {% for record in product_instance.productdetails.all %}
@@ -82,73 +81,63 @@
     </div>
     
     
-    <script>
+<script>
         
-        document.addEventListener('DomContendLoadered',function(){
-     
-            totalValueCalculation();
-        })
-        
+document.addEventListener('DOMContentLoaded', totalValueCalculation);
     
-        function totalValueCalculation() {
-        var mainTable = document.querySelectorAll('.mainTableList tr');
-        var previousClosingQty = 0;
+function totalValueCalculation() {
+    let previousClosingQty = 0;
+    let lawInValue = 0;
+    let repairInValue = 0;
+    let saleValue = 0;
+    let repairOutValue = 0;
 
-        var lawInValue = 0;
-        var repairInValue = 0;
-        var saleValue = 0;
-        var repairOutValue = 0;
-    
-        mainTable.forEach((element, index) => {
-            var inwordQtyElement = element.querySelector('.inwardLwIn');
-            var inwordValueElement = element.querySelector('.inwardRepairIn');
-            var outwordQtyElement = element.querySelector('.outwardSale');
-            var outwordValueElement = element.querySelector('.outwardRepairOut');
-            
-            // Validate elements and extract values
-            var inwordQty = inwordQtyElement ? parseFloat(inwordQtyElement.textContent.trim()) || 0 : 0;
-            var inwordValue = inwordValueElement ? parseFloat(inwordValueElement.textContent.trim()) || 0 : 0;
-            var outwordQty = outwordQtyElement ? parseFloat(outwordQtyElement.textContent.trim()) || 0 : 0;
-            var outwordValue = outwordValueElement ? parseFloat(outwordValueElement.textContent.trim()) || 0 : 0;
-    
-            var closeQtyElement = element.querySelector('.closingQty');
-     
-    
-            // Calculate closing quantities and values
-            if ((inwordQty > 0 && inwordValue >= 0) || (inwordQty > 0 && inwordValue == 0)) {
-                previousClosingQty += inwordQty;
-                lawInValue += inwordQty;
-                repairInValue += inwordValue;
-            } else if ((outwordQty > 0 && outwordValue >= 0) || (outwordQty > 0 && outwordValue == 0)) {
-                previousClosingQty -= outwordQty;
-                saleValue -= outwordQty;
-                repairOutValue -= outwordValue;
-            }
-    
-            // Set the calculated closing values to the current row
-      
-            if (closeQtyElement) closeQtyElement.textContent = previousClosingQty.toFixed(2);
-            
-        });
-    
-        // Update the total quantity and value on the page
-        var totalQtyElement = document.getElementById('TotalQty');
-        var LwInqty = document.getElementById('TotalLwin');
-        var RepairInqty = document.getElementById('TotalReapirIn');
-        var Saleqty = document.getElementById('TotalSale');
-        var RepairOutqty = document.getElementById('TotalRepairOut');
-        if(LwInqty) LwInqty.textContent = lawInValue.toFixed(2);
-        if(RepairInqty) RepairInqty.textContent = repairInValue.toFixed(2);
-        if(Saleqty) Saleqty.textContent = saleValue.toFixed(2);
-        if(RepairOutqty) RepairOutqty.textContent = repairOutValue.toFixed(2);
-    
-        if (totalQtyElement) totalQtyElement.textContent = previousClosingQty.toFixed(2);
-      
-    }
-    
-    
+    const mainTable = document.querySelectorAll('.mainTableList tr');
+    const totalQtyElement = document.getElementById('TotalQty');
+    const LwInqty = document.getElementById('TotalLwin');
+    const RepairInqty = document.getElementById('TotalReapirIn');
+    const Saleqty = document.getElementById('TotalSale');
+    const RepairOutqty = document.getElementById('TotalRepairOut');
+
+    mainTable.forEach((element, index) => {
+        const inwordQtyElement = element.querySelector('.inwardLwIn');
+        const inwordValueElement = element.querySelector('.inwardRepairIn');
+        const outwordQtyElement = element.querySelector('.outwardSale');
+        const outwordValueElement = element.querySelector('.outwardRepairOut');
+        const closeQtyElement = element.querySelector('.closingQty');
+        // Validate elements and extract values
+        const inwordQty = parseFloat(inwordQtyElement?.textContent.trim()) || 0;
+        const inwordValue = parseFloat(inwordValueElement?.textContent.trim()) || 0;
+        const outwordQty = parseFloat(outwordQtyElement?.textContent.trim()) || 0;
+        const outwordValue = parseFloat(outwordValueElement?.textContent.trim()) || 0;
         
-        totalValueCalculation()
+        // Calculate closing quantities and values
+        if ((inwordQty > 0 && inwordValue >= 0) || (inwordQty > 0 && inwordValue == 0)) {
+            previousClosingQty += inwordQty;
+            lawInValue += inwordQty;
+            repairInValue += inwordValue;
+        } else if ((outwordQty > 0 && outwordValue >= 0) || (outwordQty > 0 && outwordValue == 0)) {
+            previousClosingQty -= outwordQty;
+            saleValue -= outwordQty;
+            repairOutValue -= outwordValue;
+        }
+    
+        if (closeQtyElement) closeQtyElement.textContent = previousClosingQty.toFixed(2);
+        
+    });
+
+    // Update the total quantity and value on the page
+
+    if(LwInqty) LwInqty.textContent = lawInValue.toFixed(2);
+    if(RepairInqty) RepairInqty.textContent = repairInValue.toFixed(2);
+    if(Saleqty) Saleqty.textContent = saleValue.toFixed(2);
+    if(RepairOutqty) RepairOutqty.textContent = repairOutValue.toFixed(2);
+
+    if (totalQtyElement) totalQtyElement.textContent = previousClosingQty.toFixed(2);
+      
+}
+
+totalValueCalculation()
     </script>
     {% endblock %}
     

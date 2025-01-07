@@ -111,7 +111,7 @@
                         <th>Processed Qty</th>
                         <th>Balance Qty</th>
                         <th>Cutting Qty 
-                            <!-- <input type="checkbox" class="mx-1" id="id_cuttingchekbox" onclick="cuttingcheckboxValue(this)"> -->
+                            <input type="checkbox" class="mx-1" id="id_cuttingchekbox" name="cuttingchekbox" value="">
                         </th>
                     </tr>
                 </thead>
@@ -169,14 +169,18 @@
                     {% endfor %}
                 
                 </tbody>
+                <tbody>
+                    <tr class="">
+                        <td><span class="text-danger fw-bold">Total:</span></td>
+                        <td></td>
+                        <td><input type="number" class="productorderrawqty-input text-danger" name="OrderQty" id="id_OderQty" value="{{form.instance.number_of_pieces}}" readonly></td>
+                        <td><input type="number" class="productorderrawqty-input text-danger" name="processQty" id="id_processQty" value="0"  readonly></td>
+                        <td><input type="number" class="productorderrawqty-input text-danger" name="balanceQty" id="id_balanceQty" value="0" readonly></td>
+                        <td><input type="number" class="productorderrawqty-input text-danger" name="cuttingTotal" id="id_cuttingTotal" value="0" readonly></td>
+                    </tr>
+                </tbody>
             </table>
-            <div class="d-flex pb-2">
-                <label for="id_OderQty" class="text-danger">Total:</label>
-                <input type="number" class="productorderqty-input text-danger" name="OrderQty" id="id_OderQty" value="{{form.instance.number_of_pieces}}" style="margin-left: 182px;" readonly>
-                <input type="number" class="productorderqty-input text-danger " name="processQty" id="id_processQty" value="0" style="margin-left: 25px;" readonly>
-                <input type="number" class="productorderqty-input text-danger " name="balanceQty" id="id_balanceQty" value="0" style="margin-left: 48px;" readonly>
-                <input type="number" class="productorderqty-input text-danger " name="cuttingTotal" id="id_cuttingTotal" value="0" style="margin-left: 35px;" readonly> 
-            </div>
+            
         </div>
     </div>
     <div class="row mt-2">
@@ -339,7 +343,7 @@ $(document).ready(function(){
                 }
 
             })
-            $("#cuttingtables tbody").on('focus','input', function() {
+            $("#cuttingtables .mainTableList").on('focus','input', function() {
                 // Find the closest row to the input being edited
 
                 var row = $(this).closest('tr');
@@ -375,7 +379,7 @@ $(document).ready(function(){
 document.addEventListener('DOMContentLoaded', function() {
     var checkboxRows = document.querySelectorAll('.checkBox-row');
     var colorSearch = document.querySelectorAll('.color_Shades');
-
+    var cuttingcheckBox = document.getElementById('id_cuttingchekbox')
     colorSearch.forEach(function(el) {
     var shadeValue = el.textContent.trim(); // Trim to remove any extra whitespace
     if (shadeValue > 0) {
@@ -394,7 +398,47 @@ document.addEventListener('DOMContentLoaded', function() {
         var cutting_order = document.getElementById("id_raw_material_cutting_id");
         cutting_order.focus();
     }
+    cuttingcheckBox.addEventListener('change',cuttingcheckboxValue)
     
+    function cuttingcheckboxValue(){
+        var cuttingCheckboxs = document.querySelectorAll('[name$= "-cutting_quantity"]');
+        cuttingCheckboxs.forEach(item =>{
+            var row = item.closest('tr');
+            var balanceQTy = row.querySelector('[name$="-balance_quantity"]');
+            var cuttingQty = parseInt(item.value) || 0;
+            var processQty = row.querySelector('[name$= "-process_quantity"]') ;
+            var balanceValue = parseInt(balanceQTy.value) || 0;
+            var processValue = parseInt(processQty.value) || 0;
+            console.log()
+                if(cuttingQty  > 0){
+                    if (cuttingcheckBox.checked) {
+                        item.value = processQty;
+                        balanceQTy.value = 0;
+                    } else {
+                        item.value = 0;
+                        balanceQTy.value = processQty;
+                    }
+                }else{
+                    if (cuttingcheckBox.checked) {
+                        item.value = balanceValue;
+                        balanceQTy.value = 0;
+                    } else {
+                        item.value = 0;
+                        balanceQTy.value = cuttingQty;
+                    }
+                }
+                
+                cuttingOrder()
+                processValueCheck()
+                cuttingBalanceQty()
+                updateCuttingQuantity();
+                processValueQty();
+                cuttingBalanceQty()
+                balanceQty();
+        })
+
+    }
+
 });
 
 function processValueCheck(){
@@ -421,6 +465,7 @@ function checkOnlyOne(checkbox) {
         }
     });
 }
+
 
 
  function cuttingOrder(){
@@ -639,7 +684,7 @@ function updateCuttingQuantity(finalTotal){
             const newProcessValue = parseFloat(processed_qty.value);
             const  balanceViewQty = actualQty - newProcessValue;
             const balanceData = document.getElementById('id_balanceView_qty');
-
+            const cuttingBox = document.getElementById('id_cuttingchekbox')
             rowMaterial.readOnly = true;
             cuttingMaster.disabled = true;
             rowMaterial.style.border = "none";
@@ -653,7 +698,7 @@ function updateCuttingQuantity(finalTotal){
             processed_qty.style.border = "none";
             processed_qty.style.outline = "none";
             processed_qty.style.backgroundColor = "transparent";
-
+            cuttingBox.disabled = true;
 
             document.getElementById('id_submitPurchaseOrderCutting').style.display = "none";
 

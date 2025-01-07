@@ -101,8 +101,6 @@ function approvedGoodsReturn(button){
 
     var minWidth = 800; // minimum width
     var minHeight = 600;
-
-
     // this will generate http://127.0.0.1:8000/ 
     var baseUrl = "{{ request.scheme }}://{{ request.get_host }}/";
     popupPage = window.open(baseUrl + path + goodsId, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');

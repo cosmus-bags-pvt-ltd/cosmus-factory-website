@@ -520,9 +520,7 @@ randomValue();
             var jsonData = $(`#purchase_voucher_items_set-${purchaseValue}-jsonDataInputquantity`).val();
             var uniqueValue = $(`#item_unique_id_${purchaseValue}`).val();
         
-            console.log('purchaseData',purchaseData)
-            console.log('jsonData',jsonData)
-            console.log('uniqueValue',uniqueValue)
+          
             if (nameValue === 'None') {
                 var selectNameValue = $(this).closest('tr').find('[name^="select_item_name_"]');
                     
@@ -611,7 +609,7 @@ randomValue();
                 var newData = $('#purchase_voucher_items_set-' + purchaseValue + '-jsonDataInputquantity').val();
                 var itemShade = $('#input_item_shade_' + purchaseValue);
                 var itemShadeValue = $('#purchase_voucher_items_set-' + purchaseValue + '-old_item_shade_for_dropdown_change').val();
-                console.log('item_valueClick',item_value)
+               
                 $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
                 $(this).addClass('selected').siblings().removeClass('selected');
 
@@ -628,8 +626,15 @@ randomValue();
           event.preventDefault();
             var  selectName = $(this).closest('tr').find('[id^="select_item_name_"]').attr('id');
              var selectItem = $(`#${selectName}`);
-            selectItem.css("display" ,"none");
-                      
+             var purchaseData = $(`#purchase_voucher_items_set-${purchaseValue}-popupData`).val();
+            var jsonData = $(`#purchase_voucher_items_set-${purchaseValue}-jsonDataInputquantity`).val();
+      
+            if(purchaseData !== '' &&  jsonData !== ''){
+                $(this).attr('readonly',true)
+            }else{
+                $(this).removeAttr('readonly') 
+            }
+            selectItem.css("display" ,"none");            
         })
 
         var index = 0; // Declare index outside of the event listener
@@ -752,18 +757,14 @@ randomValue();
         function handleSelection(purchaseValue,itemName, item_value) {
 
             if (item_value !== undefined || item_value !== "") {
-                var selectedValue = searchedItemNameDict[item_value];
-                console.log('item_value',item_value)
-                
-                var namevalueCheck = selectedValue.match(/[a-zA-Z\s().0-9]+/g).join('');
+                var selectedValue = searchedItemNameDict[item_value];  
 
+                var namevalueCheck = selectedValue.match(/[a-zA-Z\s().0-9]+/g).join('');
                 var numberValue = selectedValue.match(/-?\d+(\.\d+)?/g)[0];
                 var newnameValue = namevalueCheck.replace(/[\.\s 0-9]+$/, '');
-                var valueKey = namevalueCheck + ' ' + numberValue ;
                     
                 $(`input[name^="item_name_${purchaseValue}"]`).val(newnameValue);
-                console.log('newnameValue',newnameValue)
-
+            
                 $.ajax({
                     url: '/purchasevouchercreate/',
                     method: 'GET',
@@ -918,49 +919,30 @@ randomValue();
                     primary_id = null
                 }
             }   
-            if (selectedShade !== "" && primary_id !== null ) {
+            if (selectedShade !== "" && (primary_id !== null || uniqueIdValue !== "")) {
                 if (popupWindow === null || popupWindow.closed) { // Check if no popup is open or the existing one is closed
                     
+                    // Prepare the AJAX data dynamically based on conditions
+                    let ajaxData = {
+                        'selected_shade': selectedShade,
+                        'prefix_id': prefix_id
+                    };
+
+                    // Add specific parameters based on the condition
+                    if (primary_id !== null) {
+                        ajaxData['purchase_id'] = primary_id;
+                    } else if (uniqueIdValue !== "") {
+                        ajaxData['unique_invoice_row_id'] = uniqueIdValue;
+                    }
+
+                    // Make the AJAX request
                     $.ajax({
-                        // Use Django URL name to fetch the URL dynamically
-                        url: '{% url "purchasevoucher-createpopup-ajax" %}',
+                        url: '{% url "purchasevoucher-createpopup-ajax" %}', // Use Django URL name
                         method: 'GET',
-                            data: {
-                            'selected_shade': selectedShade,
-                            'purchase_id': primary_id,
-                            'prefix_id':prefix_id, 
-            
-                        },
-                        success: function (response) {
-                            popupWindow = window.open(response.popup_url, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-                            
-                        },
-                        error: function (xhr, errmsg, err) {
-                           console.log('Error getting popup URL');
-                        }
-                    });
-                } else {
-                    // If a popup window is already open, notify the user or take appropriate action
-                    console.log('A popup window is already open');
-                }
-                    
-            }else if (uniqueIdValue !== "" && selectedShade !== "" ) {
-                if (popupWindow === null || popupWindow.closed) { // Check if no popup is open or the existing one is closed
-                   
-                    $.ajax({
-                        // Use Django URL name to fetch the URL dynamically
-                        url: '{% url "purchasevoucher-createpopup-ajax" %}',
-                        method: 'GET',
-                        data: {
-                            'selected_shade': selectedShade,
-                            'unique_invoice_row_id': uniqueIdValue,
-                            'prefix_id':prefix_id,
-                                    
-                        },
+                        data: ajaxData,
                         success: function (response) {
                             // Open the dynamic URL received from the server
                             popupWindow = window.open(response.popup_url, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-                    
                         },
                         error: function (xhr, errmsg, err) {
                             console.log('Error getting popup URL');
@@ -970,8 +952,7 @@ randomValue();
                     // If a popup window is already open, notify the user or take appropriate action
                     console.log('A popup window is already open');
                 }
-            }
-                
+            }    
         }
     });
 </script>
@@ -1072,7 +1053,6 @@ randomValue();
         // Set the calculated grand total value to the grand total input field
         document.getElementById('id_grand_total').value = isNaN(finalTotals) ? '' : finalTotals.toFixed(2);
     }
-    // Call the function initially to calculate total amount, GST, and grand total on page load
  
     // Add onchange event handler to id_fright_transport
     document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
@@ -1080,7 +1060,7 @@ randomValue();
      
     
     // Event listener for the add row button
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
     const addButton= document.getElementById('addRowButton');
     const tableBody = document.querySelector('#myTable tbody'); // Clone the first row of the table
     
@@ -1125,7 +1105,6 @@ randomValue();
                     
                     const oldShadeElement = lastRow.querySelector('[id^="input_item_shade_"]');
                     oldShadeElement.id = `input_item_shade_${formIndex}`;
-                    //oldShadeElement.name =  `input_item_shade_${formIndex}`;
                     oldShadeElement.textContent="";
                     oldShadeElement.style.display = 'none';
 
@@ -1253,15 +1232,14 @@ randomValue();
     // Select all rows that are not hidden (excluding those with display: none)
     const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
     return visibleRows;
-}
+    }
    function deleteRowData(){
     // Add click event listener to all delete buttons
     document.querySelectorAll('.delete-btn').forEach(function (button) {
     button.addEventListener('click', function () {
         // Find all rows in the table
         const rows =  getVisibleRows();
-        console.log(rows)
-        // Check if more than one row exists
+
         if (rows.length > 1) {
             // Find the row containing the clicked delete button
             const row = this.closest('tr');
@@ -1274,10 +1252,8 @@ randomValue();
                     checkRow.checked = true; // Mark as checked
                     checkRow.value = 'true'; // Set the value to 'true'
 
-                    // Optionally hide the row visually
                     row.style.display = 'none';
 
-                    // Call functions to recalculate totals or perform other updates
                     calculateTotalAmount();
                     calculateOtherTotal();
                     inputCheck();
@@ -1372,10 +1348,9 @@ randomValue();
 
 function inputCheck(){
 
-        const itemNameInputsid = document.querySelectorAll('[name^="item_name_"]');
-        const productInvoiceId = document.getElementById('id_purchase_voucher_items_set-0-id').value;
+    const itemNameInputsid = document.querySelectorAll('[name^="item_name_"]');
+    const productInvoiceId = document.getElementById('id_purchase_voucher_items_set-0-id').value;
        
-    // Loop through each input and add keydown event listener
     itemNameInputsid.forEach((input, index) => {
         input.addEventListener("keydown", function (event) {
 

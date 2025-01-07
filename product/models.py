@@ -1188,7 +1188,7 @@ class sales_voucher_master_finish_Goods(models.Model):
 class sales_voucher_finish_Goods(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_finish_Goods,on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
-    unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
+    unique_serial_no = models.CharField(max_length=25, unique=True, blank=True, null=True)
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
     spl_disct = models.IntegerField()

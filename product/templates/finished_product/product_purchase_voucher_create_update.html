@@ -319,7 +319,7 @@
     </form>
 </div>
 
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-transparent border-0">
       <div class="modal-body justify-content-center text-center">
@@ -327,17 +327,17 @@
         </div>
         </div>
     </div> 
-</div>
+</div> -->
 
 
 <!--This script use for party name add which use in ledger create popup-->
 <script>
-      document.body.appendChild(document.getElementById('exampleModal'));
-      $('#newForm').off('submit').on('submit', function(e) {
-            var $submitButton = $('#id_submitPurchaseOrderCutting');  // The submit button
-            var originalButtonValue = $('#exampleModal');  // Store original button text
-            originalButtonValue.show();
-        });
+    //   document.body.appendChild(document.getElementById('exampleModal'));
+    //   $('#newForm').off('submit').on('submit', function(e) {
+    //         var $submitButton = $('#id_submitPurchaseOrderCutting');  // The submit button
+    //         var originalButtonValue = $('#exampleModal');  // Store original button text
+    //         originalButtonValue.show();
+    //     });
 
     var popUpNewWindow = null;
 function openPurchasePartyPopup(button){
@@ -381,25 +381,20 @@ function newPopUpwindow(button, path){
   });
 }
 function handleOutsideClick(event) {
-var popUpRect = document.querySelector('body').getBoundingClientRect();
-var clickX = event.clientX;
-var clickY = event.clientY;
- 
-  // Check if the click is outside the popup window
-  if (
-    clickX > popUpRect.left || clickX <= popUpRect.right ||
-    clickY > popUpRect.top || clickY <= popUpRect.bottom
-  ) {
-   
-    popUpNewWindow.focus();
+    var popUpRect = document.querySelector('body').getBoundingClientRect();
+    var clickX = event.clientX;
+    var clickY = event.clientY;
     
-  }
+    // Check if the click is outside the popup window
+    if (clickX > popUpRect.left || clickX <= popUpRect.right ||
+    clickY > popUpRect.top || clickY <= popUpRect.bottom) {
+        popUpNewWindow.focus();
+    }
 
 }
 
 window.addEventListener('message', function(event) {
     const data = event.data;
-    console.log(data.ledger_labour);
     if (data.ledger_labour) {
         populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
     }
@@ -418,12 +413,12 @@ function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) 
 // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
 function getGstNo() {
     let partyGstValue = document.getElementById('id_GST_number').value;
-    let comapnyGst = document.getElementById('id_company_GST_numbers').value;
+    let companyGst = document.getElementById('id_company_GST_numbers').value;
 
-        comapnyGst = comapnyGst.toString();
+        companyGst = companyGst.toString();
         partyGstValue = partyGstValue.toString();
 
-    const newCompanyGst = comapnyGst.slice(0,2);
+    const newCompanyGst = companyGst.slice(0,2);
     const newPartyGst = partyGstValue.slice(0,2);
     return newCompanyGst === newPartyGst;
 }
@@ -545,7 +540,6 @@ function getGstNo() {
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
                         searchedProductNameDic = response.products; 
-                        console.log(searchedProductNameDic)
                         const searchQuery = productnamevalue.toLowerCase();
                         const searchTerms = searchQuery.split(/\s+/);
                         const convertStringData = searchTerms.toString();
@@ -766,7 +760,7 @@ function getGstNo() {
 
 
 
-    })
+})
 </script>
 
 
@@ -1063,7 +1057,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Prevent Enter key from submitting the form inside table inputs
     table.addEventListener("keydown", function (event) {
-        if (event.key === "Enter" && event.target.tagName === "INPUT" && target.type === "checkbox") {
+        if (event.key === "Enter" && event.target.tagName === "INPUT") {
             event.preventDefault(); // Prevent form submission
             console.log(`Enter key prevented on input: ${event.target.id}`);
         
