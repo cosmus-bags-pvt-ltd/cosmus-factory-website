@@ -410,23 +410,23 @@ document.addEventListener('DOMContentLoaded', function() {
             var balanceValue = parseInt(balanceQTy.value) || 0;
             var processValue = parseInt(processQty.value) || 0;
             console.log()
-                if(cuttingQty  > 0){
-                    if (cuttingcheckBox.checked) {
-                        item.value = processQty;
-                        balanceQTy.value = 0;
-                    } else {
-                        item.value = 0;
-                        balanceQTy.value = processQty;
-                    }
-                }else{
-                    if (cuttingcheckBox.checked) {
-                        item.value = balanceValue;
-                        balanceQTy.value = 0;
-                    } else {
-                        item.value = 0;
-                        balanceQTy.value = cuttingQty;
-                    }
-                }
+            if (cuttingcheckBox.checked) {
+            if (cuttingQty > 0) {
+                item.value = processValue;
+                balanceQTy.value = 0;
+            } else {
+                item.value = balanceValue;
+                balanceQTy.value = 0;
+            }
+        } else {
+            if (cuttingQty > 0) {
+                balanceQTy.value = processValue;
+                item.value = 0;
+            } else {
+                item.value = 0;
+                balanceQTy.value = cuttingQty;
+            }
+        }
                 
                 cuttingOrder()
                 processValueCheck()
