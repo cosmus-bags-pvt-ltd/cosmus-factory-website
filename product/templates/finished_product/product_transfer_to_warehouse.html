@@ -82,7 +82,7 @@
                   {% if voucher_instance.qc_all_qty > 0 %}
                   {{form.id}}
                   <tr>
-               
+                    
                     <input type="hidden" name="{{form.prefix}}-ids" value="{{form.instance.id}}" id="id_{{form.prefix}}-ids">
                       <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
                       <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>
@@ -115,7 +115,7 @@
                   {% else %}
                   {{form.id}}
                   <tr>
-             
+                    
                     <input type="hidden" name="{{form.prefix}}-ids" value="{{form.instance.id}}" id="id_{{form.prefix}}-ids">
                     <td><span id="id_stock_{{forloop.counter0}}">{{forloop.counter}}</span></td>
                     <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly style="outline:none"></td>
