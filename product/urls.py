@@ -264,7 +264,9 @@ urlpatterns = [
     path('finished-goods-stock-all/<int:pk>', views.finished_goods_stock_all, name = 'finished-goods-stock-single'),
     path('productdynamicsearchajax/',views.productdynamicsearchajax,name = 'product-dynamic-search-ajax'),
     path('scanproductqtylist/', views.scan_product_qty_list, name = 'scan-product-qty-list'),
-    path('scansingleproductlist/<int:ref_id>/', views.scan_single_product_list, name = 'scan-single-product-list'),
+    path('warehousestock/', views.warehouse_stock, name = 'warehouse-stock'),
+    path('scansingleproductlist/<int:sku>/', views.scan_single_product_list, name = 'scan-single-product-list'),
+    path('modelnamewisepurchasetransferreport/<int:sku>/', views.model_name_wise_purchase_transfer_report, name = 'model-name-wise-purchase-transfer-report'),
 
     #reports
     # path('stocktransferreport/',views.stocktransferreport, name = 'stock-transfer-report'),
