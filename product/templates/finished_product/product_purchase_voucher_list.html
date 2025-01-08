@@ -43,7 +43,7 @@
                 <td>{{record.supplier_invoice_number}}</td>
                 <td>{{record.total_qty}}</td>
                 <td>{{record.grand_total}}</td>
-                <td>{{record.narration}}</td>
+                <td>{{record.narration |default_if_none:''}}</td>
                 {% if record.check_diff_qty > 0 %}
                 <td><a href="{% url 'product-purchase-voucher-update' record.id %}"><i style="color:rgb(0, 0, 0)" class="fa-solid fa-eye px-1"></i></a></td>
                 {% else %}

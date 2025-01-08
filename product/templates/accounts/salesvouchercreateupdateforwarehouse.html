@@ -148,7 +148,7 @@
 
         <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
 
-        <td><input type="text" name="{{forms.prefix}}-unique_serial_no" id="id_{{forms.prefix}}-unique_serial_no" value="{{forms.instance.unique_serial_no}}" class="purchase-amount" readonly></td>
+        <td><input type="text" name="{{forms.prefix}}-unique_serial_no" id="id_{{forms.prefix}}-unique_serial_no" value="{{forms.instance.unique_serial_no |default_if_none:''}}" class="purchase-amount" readonly></td>
 
         <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" ></td>
 
