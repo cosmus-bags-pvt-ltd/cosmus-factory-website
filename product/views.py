@@ -8462,13 +8462,147 @@ def scan_product_qty_list(request):
 
 
 
-def scan_single_product_list(request,ref_id):
-    instance_entries = finishedgoodsbinallocation.objects.filter(product__Product__Product_Refrence_ID = ref_id)
+def warehouse_stock(request):
+
+    purchase_sales_quantity_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
     
+    product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty')))
+
+
+    transfer_sales_quantity_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
+
+
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.all().values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
+
+    
+    merged_list = []
+
+    for x in product_purchase_voucher:
+        purchase_sku = x['product_name__PProduct_SKU']
+        total = 0
+        for y in stock_transfer_voucher:
+            if purchase_sku == y['product__PProduct_SKU']:
+                total = x['total_quantity'] + y['total_quantity']
+                
+                dict_to_append = {
+                    'ref_id':x['product_name__Product__Product_Refrence_ID'],
+                    'model_name':x['product_name__Product__Model_Name'],
+                    'color':x['product_name__PProduct_color__color_name'],
+                    'product_sku': purchase_sku,
+                    'total':total,
+                    'total_sale':x['total_sale'],
+                    'total_inward':x['total_inward'] + y['total_inward'],
+                    'total_balance':x['total_balance'] + y['total_balance'],
+                    'inward_minus_sales': (x['total_inward'] + y['total_inward']) - x['total_sale']
+                }
+                merged_list.append(dict_to_append)
+                break
+
+
+    for x in product_purchase_voucher:
+        if not any(d['product_sku'] == x['product_name__PProduct_SKU'] for d in merged_list):     
+            dict_to_append = {
+                    'ref_id':x['product_name__Product__Product_Refrence_ID'],
+                    'model_name':x['product_name__Product__Model_Name'],
+                    'color':x['product_name__PProduct_color__color_name'],
+                    'product_sku': x['product_name__PProduct_SKU'],
+                    'total':x['total_quantity'],
+                    'total_sale':x['total_sale'],
+                    'total_inward':x['total_inward'],
+                    'total_balance':x['total_balance'],
+                    'inward_minus_sales': (x['total_inward'] if x['total_inward'] else 0) -  (x['total_sale'] if x['total_sale'] else 0)
+                }
+            merged_list.append(dict_to_append)
+
+
+    for y in stock_transfer_voucher:
+        if not any(d['product_sku'] == y['product__PProduct_SKU'] for d in merged_list):     
+            dict_to_append = {
+                    'ref_id':y['product__Product__Product_Refrence_ID'],
+                    'model_name':y['product__Product__Model_Name'],
+                    'color':y['product__PProduct_color__color_name'],
+                    'product_sku': y['product__PProduct_SKU'],
+                    'total':y['total_quantity'],
+                    'total_sale': y['total_sale'] if y['total_sale'] else 0,
+                    'total_inward':y['total_inward'] if y['total_inward'] else 0,
+                    'total_balance':y['total_balance'],
+                    'inward_minus_sales': (y['total_inward'] if y['total_inward'] else 0) -  (y['total_sale'] if y['total_sale'] else 0)
+                }
+            merged_list.append(dict_to_append)
+
+
+    print('merged_list -- ', merged_list)
+
+    return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list})
+
+
+
+
+
+
+def scan_single_product_list(request,sku):
+    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku)
     return render(request,'finished_product/scan_single_product_list.html',{'instance_entries':instance_entries})
 
 
 
+
+
+
+def model_name_wise_purchase_transfer_report(request,sku):
+
+    purchase_instance = product_purchase_voucher_items.objects.filter(product_name__PProduct_SKU = sku)
+
+    transfer_instance = Finished_goods_transfer_records.objects.filter(product__PProduct_SKU = sku)    
+
+
+    merge_list = []
+
+    for item in purchase_instance:
+
+        model_name = item.product_name.Product.Model_Name
+        ref_no = item.product_name.Product.Product_Refrence_ID
+
+
+        dict_to_append = {
+            'instance_id':item.product_purchase_master.id,
+            'date':item.created_date,
+            'voucher_no':item.product_purchase_master.purchase_number,
+            'voucher_type':item.product_purchase_master.ledger_type,
+            'party_name':item.product_purchase_master.party_name.name,
+            'model_name':item.product_name.Product.Model_Name,
+            'color':item.product_name.PProduct_color.color_name,
+            'pro_sku':item.product_name.PProduct_SKU,
+            'total_qty':item.quantity_total,
+        }
+        print(dict_to_append)
+        merge_list.append(dict_to_append)
+
+    
+    for item in transfer_instance:
+
+        model_name = item.product.Product.Model_Name
+        ref_no = item.product.Product.Product_Refrence_ID
+
+        dict_to_append = {
+            'instance_id':item.Finished_goods_Stock_TransferMasterinstance.id,
+            'date':item.created_date,
+            'voucher_no':item.Finished_goods_Stock_TransferMasterinstance.voucher_no,
+            'voucher_type':"Transfer",
+            'party_name':item.Finished_goods_Stock_TransferMasterinstance.source_warehouse.godown_name_finished,
+            'model_name':item.product.Product.Model_Name,
+            'color':item.product.PProduct_color.color_name,
+            'pro_sku':item.product.PProduct_SKU,
+            'total_qty':item.product_quantity_transfer,
+        }
+
+        merge_list.append(dict_to_append)
+
+    list_to_send = sorted(merge_list, key = itemgetter('date'))
+
+
+
+    return render(request,'finished_product/modelnamewisepurchasetransferreport.html',{'purchase_instance':purchase_instance,'list_to_send':list_to_send,'model_name':model_name,'ref_no':ref_no})
 
 
 
@@ -8823,7 +8957,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     print('pending_ref_no -- ', pending_ref_no)
 
-    pending_ref_no_complete = purchase_order_to_product_cutting.objects.filter(~Q(cutting_quantity=F('approved_pcs')))
+    pending_ref_no_complete = purchase_order_to_product_cutting.objects.filter(~Q(cutting_quantity=F('approved_pcs')),purchase_order_cutting_id__cutting_cancelled = False)
     
 
     
@@ -9336,6 +9470,9 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     #ONLY IF LWO PENDING
     elif pending_ref_no_dict_lwo:
         print("in only lwo")
+
+        print('pending_ref_no_dict_lwo -- ', pending_ref_no_dict_lwo)
+
         material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = pending_ref_no_dict_lwo)
         
 
@@ -9365,9 +9502,9 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                             'consumtionCombi' : consumtionCombi,
                                             'common_unique' : common_unique
                 }
-                material_for_ref_id_list.append(set_production_data_dict)
+                material_for_ref_id_list_for_lwo.append(set_production_data_dict)
 
-
+        print('material_for_ref_id_list_for_lwo -- ', material_for_ref_id_list_for_lwo)
 
         lwo_consumption_list = []
 
@@ -9375,47 +9512,51 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for sku,qty in value.items():
                 
+                
                 for item in material_for_ref_id_list_for_lwo:
                     
-                    if item['pro_sku'] == sku and item['common_unique'] == True:
+                    if item['pro_fab_grp'] == 'Non Fabric':
+                    
+                        if item['pro_sku'] == sku and item['common_unique'] == True:
+                            
+                            if item['pro_fab_grp'] == 'Non Fabric':
+                            
 
-                        if item['pro_fab_grp'] == 'Non Fabric':
+                                total_consumption_value = qty * item['consumption']
 
-                            total_consumption_value = qty * item['consumption']
+                                total_combi_consumption_value = qty * item['consumtionCombi']
 
-                            total_combi_consumption_value = qty * item['consumtionCombi']
+                                lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
 
-                            lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+                                dict_to_append = {
+                                    'material_name': item['material_name'],
+                                    'pro_sku': item['pro_sku'],
+                                    'pro_fab_grp' : item['pro_fab_grp'],
+                                    'lwo_consumption' : lwo_consumption           
+                                }
 
-                            dict_to_append = {
-                                'material_name': item['material_name'],
-                                'pro_sku': item['pro_sku'],
-                                'pro_fab_grp' : item['pro_fab_grp'],
-                                'lwo_consumption' : lwo_consumption           
-                            }
+                                lwo_consumption_list.append(dict_to_append)
 
-                            lwo_consumption_list.append(dict_to_append)
+                        elif item['pro_sku'] == sku and item['common_unique'] == False:
 
-                    elif item['pro_sku'] == sku and item['common_unique'] == False:
+                            if item['pro_fab_grp'] == 'Non Fabric':
 
-                        if item['pro_fab_grp'] == 'Non Fabric':
+                                total_consumption_value = value['total'] * item['consumption']
 
-                            total_consumption_value = value['total'] * item['consumption']
+                                total_combi_consumption_value = value['total'] * item['consumtionCombi']
 
-                            total_combi_consumption_value = value['total'] * item['consumtionCombi']
+                                lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
 
-                            lwo_consumption = round(total_consumption_value + total_combi_consumption_value, 3)
+                                dict_to_append = {
+                                    'material_name': item['material_name'],
+                                    'pro_sku': item['pro_sku'],
+                                    'pro_fab_grp' : item['pro_fab_grp'],
+                                    'lwo_consumption' : lwo_consumption           
+                                }
 
-                            dict_to_append = {
-                                'material_name': item['material_name'],
-                                'pro_sku': item['pro_sku'],
-                                'pro_fab_grp' : item['pro_fab_grp'],
-                                'lwo_consumption' : lwo_consumption           
-                            }
+                                lwo_consumption_list.append(dict_to_append)
 
-                            lwo_consumption_list.append(dict_to_append)
-
-        # print('lwo_consumption_list --- ', lwo_consumption_list)
+        print('lwo_consumption_list --- ', lwo_consumption_list)
 
         for x in lwo_consumption_list:
             item_name = x['material_name']
