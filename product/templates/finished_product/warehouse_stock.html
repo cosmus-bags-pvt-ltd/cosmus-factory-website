@@ -26,21 +26,15 @@
             <tr>
                 <td>{{forloop.counter}}</td>
                 <td><img id="productImgPreview" name="product_img" src="{{data.product_name.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
-                <td class="refNo">{{data.ref_id}}</td>
+                <td>{{data.ref_id}}</td>
                 <td>{{data.model_name}}</td>
                 <td>{{data.color}}</td>
                 <td>{{data.product_sku}}</td>
-
-                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'model-name-wise-purchase-transfer-report' data.product_sku %}">{{data.total}}</a></button></td>
-
-                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'scan-single-product-list' data.product_sku %}">{{data.total_inward}}</a></button></td>
-                
+                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #bb43dc;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'model-name-wise-purchase-transfer-report' data.product_sku %}">{{data.total}}</a></button></td>
+                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'scan-single-product-list' data.product_sku %}">{{data.total_inward}}</a></button></td>  
                 <td>{{data.total_balance}}</td>
-
-                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="">{{data.total_sale}}</a></button></td>
-
-                <td>{{data.inward_minus_sales}}</td>
-                
+                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #4dc3ce;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="">{{data.total_sale}}</a></button></td>
+                <td>{{data.inward_minus_sales}}</td> 
              </tr>
             {% endfor %}
       
@@ -48,27 +42,4 @@
     </table>
 </div>
 
-
-<script>
-{% comment %} function finshedGoodsScanList(){
-    var rows = document.querySelectorAll('.mainTableList tr')
-    rows.forEach(function (row){
-        row.style.cursor = 'pointer'
-    
-        row.addEventListener('click',function(event){
-            event.preventDefault();
-            var recordId = parseInt(row.querySelector('.refNo').textContent);
-          
-
-            console.log(recordId)
-       
-            
-           
-            window.location.href = "/scansingleproductlist/" + recordId;
-            
-        })
-    })
-}
-finshedGoodsScanList(); {% endcomment %}
-</script>
 {% endblock body %}
