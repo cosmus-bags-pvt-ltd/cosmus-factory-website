@@ -267,6 +267,7 @@ urlpatterns = [
     path('warehousestock/', views.warehouse_stock, name = 'warehouse-stock'),
     path('scansingleproductlist/<int:sku>/', views.scan_single_product_list, name = 'scan-single-product-list'),
     path('modelnamewisepurchasetransferreport/<int:sku>/', views.model_name_wise_purchase_transfer_report, name = 'model-name-wise-purchase-transfer-report'),
+    path('modelnamewisepurchasetransfersalesreport/<int:sku>/', views.model_name_wise_purchase_transfer_sales_report, name = 'model-name-wise-purchase-transfer-sales-report'),
 
     #reports
     # path('stocktransferreport/',views.stocktransferreport, name = 'stock-transfer-report'),

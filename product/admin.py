@@ -25,8 +25,9 @@ class ProductAdmin(admin.ModelAdmin):
 # admin.site.register(item_godown_quantity_through_table)
 # admin.site.register(purchase_order_raw_material_cutting)
 # admin.site.register(purchase_order_to_product)
-admin.site.register(purchase_order_to_product_cutting)
+# admin.site.register(purchase_order_to_product_cutting)
 # admin.site.register(product_to_item_labour_workout)
+admin.site.register(product_2_item_through_table)
 
 
 
