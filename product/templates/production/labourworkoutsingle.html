@@ -92,7 +92,7 @@
                                 <th>Color</th>
                                 <th>Approved Qty</th>
                                 <th>Balance Qty</th>
-                                <th>Process Qty</th>
+                                <th>Process Qty  <input type="checkbox" class="mx-1" id="id_labourWorkOutCheckbox" name="labourWorkOutCheckbox" value=""></th>
                             </tr>
                         </thead>
                         <tbody class="mainTableList">
@@ -237,86 +237,82 @@
     </div> 
 </div> -->
 <script>
-
-
-
-
     var popUpWindow = null;
-function openlabourPopup(button){
-    openNewPopup(button, '{% url "ledger-popup-create" %}');
-}
-
-function openNewPopup(button, url){
-    if (popUpWindow === null || popUpWindow.closed) {
-    newPopUpwindow(button, url);
-  } else {
-  
-    popUpWindow.focus();
-  }
-}
-
-function newPopUpwindow(button, path){
-    // Specify minimum height and width
-  var minWidth = 1150; // minimum width
-  var minHeight = 800; // minimum height
-
-  $('body').addClass('popup-open');
-  $('body').append('<div class="popup-overlay"></div>');
-
-  // Open new page with specified dimensions
-  popUpWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-    // Ensure only one event listener is attached
-  
-    window.addEventListener('message', function(event){
-        if (event.data.message === 'close') {
-                $('body').removeClass('popup-open');
-                $('.popup-overlay').remove();
-                popUpWindow.close();
-                
-             }
-           });
-
-
-    // Listen for messages from the popup window
-    window.addEventListener('click', function(event) {
-    handleOutsideClick(event);
-  });
-}
-function handleOutsideClick(event) {
-
-var popUpRect = document.querySelector('body').getBoundingClientRect();
-var clickX = event.clientX;
-var clickY = event.clientY;
- 
-  // Check if the click is outside the popup window
-  if (
-    clickX > popUpRect.left || clickX <= popUpRect.right ||
-    clickY > popUpRect.top || clickY <= popUpRect.bottom
-  ) {
-   
-    popUpWindow.focus();
-    
-  }
-
-}
-
-window.addEventListener('message', function(event) {
-    const data = event.data;
-    console.log(data);
-    if (data.ledger_labour) {
-        populateDropdown(data.ledger_labour, '#id_labour_name', 'name', 'Select Name');
+    function openlabourPopup(button){
+        openNewPopup(button, '{% url "ledger-popup-create" %}');
     }
-});
 
-function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
-    const dropdown = $(dropdownSelector);
-    dropdown.empty();
-    dropdown.append('<option value="">' + defaultText + '</option>');
+    function openNewPopup(button, url){
+        if (popUpWindow === null || popUpWindow.closed) {
+        newPopUpwindow(button, url);
+    } else {
+    
+        popUpWindow.focus();
+    }
+    }
 
-    items.forEach(item => {
-        dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+    function newPopUpwindow(button, path){
+        // Specify minimum height and width
+        var minWidth = 1150; // minimum width
+        var minHeight = 800; // minimum height
+
+        $('body').addClass('popup-open');
+        $('body').append('<div class="popup-overlay"></div>');
+
+        // Open new page with specified dimensions
+        popUpWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
+            // Ensure only one event listener is attached
+        
+            window.addEventListener('message', function(event){
+                if (event.data.message === 'close') {
+                        $('body').removeClass('popup-open');
+                        $('.popup-overlay').remove();
+                        popUpWindow.close();
+                        
+                    }
+                });
+
+
+            // Listen for messages from the popup window
+            window.addEventListener('click', function(event) {
+            handleOutsideClick(event);
+        });
+    }
+    function handleOutsideClick(event) {
+
+    var popUpRect = document.querySelector('body').getBoundingClientRect();
+    var clickX = event.clientX;
+    var clickY = event.clientY;
+    
+    // Check if the click is outside the popup window
+    if (
+        clickX > popUpRect.left || clickX <= popUpRect.right ||
+        clickY > popUpRect.top || clickY <= popUpRect.bottom
+    ) {
+    
+        popUpWindow.focus();
+        
+    }
+
+    }
+
+    window.addEventListener('message', function(event) {
+        const data = event.data;
+        console.log(data);
+        if (data.ledger_labour) {
+            populateDropdown(data.ledger_labour, '#id_labour_name', 'name', 'Select Name');
+        }
     });
-}
+
+    function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
+        const dropdown = $(dropdownSelector);
+        dropdown.empty();
+        dropdown.append('<option value="">' + defaultText + '</option>');
+
+        items.forEach(item => {
+            dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+        });
+    }
 </script>
 
 <script>
@@ -389,7 +385,49 @@ function populateDropdown(items, dropdownSelector, valueKey, defaultText) {
     }
         
     })
+    document.addEventListener('DOMContentLoaded', function() {
 
+        var checkBoxLwo = document.getElementById('id_labourWorkOutCheckbox')
+       
+    checkBoxLwo.addEventListener('change',changeLabourOutValue)
+
+        function changeLabourOutValue(){
+        var lwoCheckboxs = document.querySelectorAll('[name$="-processed_pcs"]');
+        console.log('lwoCheckboxs',lwoCheckboxs)
+        lwoCheckboxs.forEach(item =>{
+            var row = item.closest('tr');
+            var balanceQTy = row.querySelector('[name$="-balance_pcs"]');
+            var cuttingQty = parseInt(item.value) || 0;
+            var processQty = row.querySelector('[name$= "-pending_pcs"]') ;
+            var balanceValue = parseInt(balanceQTy.value) || 0;
+            var processValue = parseInt(processQty.value) || 0;
+ 
+            if (checkBoxLwo.checked) {
+                if (cuttingQty > 0) {
+                    item.value = processValue;
+                    balanceQTy.value = 0;
+                } else {
+                    item.value = balanceValue;
+                    balanceQTy.value = 0;
+                }
+            } else {
+            if (cuttingQty > 0) {
+                balanceQTy.value = processValue;
+                item.value = 0;
+            } else {
+                item.value = 0;
+                balanceQTy.value = cuttingQty;
+            }
+        }
+                
+        })
+        balanceQty();
+        fabricQty();
+        updateBalanceAndProcessQty();
+        labourworkoutBalanceQty();
+        labourWorkOutCheck()
+    }
+    });
    
 function labourApprovedQty() {
     var totals = 0;
@@ -406,7 +444,7 @@ function labourApprovedQty() {
         const totalApprove = document.getElementById('id_total_approved_pcs');
         const totalProcessed = document.getElementById('id_total_process_pcs');
         const totalBalance = document.getElementById('id_total_balance_pcs');
-
+        const checkbox = document.getElementById('id_labourWorkOutCheckbox')
         challanNo.readOnly = true;
         challanNo.style.backgroundColor = 'transparent';
         challanNo.style.border = 'none';
@@ -420,7 +458,8 @@ function labourApprovedQty() {
         submitButton.style.display = 'none';
         labourname.disabled = true;
         labourname.style.backgroundColor = 'transparent';
-
+        checkbox.disabled = true;
+        
         const processQty = document.querySelectorAll('[name$="-processed_pcs"]');
         processQty.forEach(function (element) {
             element.readOnly = true;
@@ -430,6 +469,7 @@ function labourApprovedQty() {
 
             const row = element.closest('tr');
             const approvedQty = parseInt(element.value) || 0;
+            console.log('approvedQty',approvedQty)
             const aproveValue = parseInt(row.querySelector('[name$="-pending_pcs"]').value) || 0;
             const balanceValue = parseInt(row.querySelector('[name$="-balance_pcs"]').value) || 0;
 
@@ -445,7 +485,7 @@ function labourApprovedQty() {
     }
 }
 
-labourApprovedQty()
+
     
 function updateBalanceAndProcessQty() {
     var approve = 0;
@@ -502,7 +542,7 @@ function updateBalanceAndProcessQty() {
     prcocessMainValue = totalProcess; // Ensure prcocessMainValue reflects the total processed quantity
     document.getElementById('id_processQty').value = prcocessMainValue;
 }
-updateBalanceAndProcessQty()
+
 function labourworkoutBalanceQty(){
     var totalforms = document.getElementById('id_labour_workout_cutting_items_set-TOTAL_FORMS').value;
 
@@ -524,7 +564,7 @@ function labourworkoutBalanceQty(){
         }
     }
 }
-labourworkoutBalanceQty()
+
    function fabricQty(totalValues) {
     let totalFabric = 0;
     const processQty = document.querySelectorAll('[name$="-processed_pcs"]');
@@ -604,7 +644,7 @@ function labourWorkOutCheck(){
     }
    
 }
-labourWorkOutCheck()
+
     function balanceQty(){
         var totalforms = document.getElementById('id_labour_workout_cutting_items_set-TOTAL_FORMS').value;
 
@@ -633,6 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitButton = document.getElementById('id_submitLabourWorkOut')
     const forms = document.getElementById('labourWorkOutForm')
     const labourName = document.getElementById('id_labour_name') 
+   
     pendingQty.forEach(function(el){
      
       el.addEventListener('input',function(){
@@ -648,13 +689,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         labourWorkOutId.focus();
     }
-  
-    // forms.addEventListener("keydown", function (event) {
-    //     if (event.key === "Enter" && event.target.type !== "submit") {
-    //         event.preventDefault(); // Prevent form submission
-    //     }
-    // });
-
+    
     labourName.addEventListener("keydown", function (event) {
         if (event.key === 'Tab') {
                 event.preventDefault(); 
@@ -681,10 +716,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+        
         submitButton.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
             forms.submit(); // Trigger form submission
         }
+
+        
         });
     labourApprovedQty()
     labourWorkOutCheck()

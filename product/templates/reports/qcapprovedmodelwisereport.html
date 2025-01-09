@@ -54,8 +54,8 @@
          </tr>
         {% endfor %}
         <tr>
-            <td colspan="4"></td>
-            <td colspan="2"><span class="fw-bold" style="color: #f628eb;">Total Appr Pending = </span><span class="totalApprPendingTotal fw-bold rounded-1"></span> </td>
+            <td colspan="3"></td>
+            <td colspan="3"><span class="fw-bold text-end" style="color: #f628eb;">Total Appr Pending = </span><span class="totalApprPendingTotal fw-bold rounded-1"></span> </td>
             {% for x in all_sku %}
             <td><button class="border-0 rounded  mb-1 px-2" style="color:white; background-color: #f628eb;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workin-pending-split' ref_id %}"><span class="totalApprovalPending fw-bold"></span></a></button> </td>
       
