@@ -89,7 +89,7 @@
                                     <th>Issue QTY</th>
                                     <th>Received QTY</th>
                                     <th>Balance QTY</th>
-                                    <th>Return QTY</th>
+                                    <th>Return QTY <input type="checkbox" class="mx-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>
                                 </tr>
                             </thead>
                             <tbody class="mainTableList ">
@@ -157,6 +157,46 @@
 
 
 <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+var checkBoxLwI = document.getElementById('id_labourWorkInCheckbox')
+
+checkBoxLwI.addEventListener('change',changeLabourInValue)
+
+function changeLabourInValue(){
+var lwiCheckboxs = document.querySelectorAll('[name$="-return_pcs"]');
+console.log('lwiCheckboxs',lwiCheckboxs)
+lwiCheckboxs.forEach(item =>{
+    var row = item.closest('tr');
+    var balanceQTy = row.querySelector('[name$="-qty_to_compare"]');
+    var cuttingQty = parseInt(item.value) || 0;
+    var processQty = row.querySelector('[name$= "-total_recieved_qty"]') ;
+    var balanceValue = parseInt(balanceQTy.value) || 0;
+    var processValue = parseInt(processQty.value) || 0;
+
+    if (checkBoxLwI.checked) {
+        if (cuttingQty > 0) {
+            item.value = processValue;
+            balanceQTy.value = 0;
+        } else {
+            item.value = balanceValue;
+            balanceQTy.value = 0;
+        }
+    } else {
+    if (cuttingQty > 0) {
+        balanceQTy.value = processValue;
+        item.value = 0;
+    } else {
+        item.value = 0;
+        balanceQTy.value = cuttingQty;
+    }
+}
+        
+})
+CalculateTotalValue();
+}
+});
     //    document.body.appendChild(document.getElementById('exampleModal'));
     document.getElementById("id_other_charges").addEventListener('input', CalculateAmount);
     document.getElementById("id_labour_charges").addEventListener('input', CalculateAmount);

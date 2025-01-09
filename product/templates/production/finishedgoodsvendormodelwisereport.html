@@ -51,10 +51,10 @@
                     {% endfor %}
                 </tbody>
                 <tbody class="mainTableList">
-                    <tr>
-                        <td  colspan="3" class="text-end"><b>Balance Pcs for LWI</b></td>
+                    <tr class="balanceRow">
+                        <td  colspan="3" class="text-end" style="color: #f628eb;"><b>Balance for LWI = <span class="totalBalance"></span></b></td>
                         {% for key, val in result_dict.items %}
-                        <td class="fw-bold" >{{ val }}</td>  
+                        <td ><span class="fw-bold balance rounded px-2" style="color:white; background-color: #f628eb; ">{{ val }}</span></td>  
                         {% endfor %}
                     </tr>
                 </tbody>
@@ -71,7 +71,9 @@
     var rows = document.querySelectorAll('.finshgoodRow');
     var headers = document.querySelectorAll('.finshHeader');
     var lwoElements = document.querySelectorAll('.finishLwo');
-
+    var balancevalue = document.querySelectorAll('.balance')
+    var total = 0;
+  
     headers.forEach(function(header, index) {
         if (index % 2 === 0) {
             header.classList.add('bg-c-green');
@@ -84,7 +86,10 @@
 
     rows.forEach(function(row) {
         var finishLwiElements = row.querySelectorAll('.finishLwi');
+        
+    
         finishLwiElements.forEach(function(finishLwi, index) {
+           
             if (index % 2 === 0) {
                 finishLwi.style.backgroundColor = 'rgb(141, 228, 211)';
             } else {
@@ -92,6 +97,15 @@
             }
         });
     });
+  
+    balancevalue.forEach((row)=>{
+        var value = parseInt(row.textContent)
+        
+        total += value
+    
+        document.querySelector('.totalBalance').textContent = total;
+    })
+   
 }
 colorChanges()
 

@@ -126,7 +126,7 @@
                                 <th>Issue QTY</th>
                                 <th>Received QTY</th>
                                 <th>Balance QTY</th>
-                                <th>Return QTY</th>   
+                                <th>Return QTY <input type="checkbox" class="mx-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>   
                             </tr>
                         </thead>
                         <tbody class="mainTableList">
@@ -256,14 +256,57 @@
     </div> 
 </div> -->
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+    
+
+    
+    });
 document.addEventListener("DOMContentLoaded", function () {
-    formSubmit();
-    CalculateAmount();
-    totalValueCheck();
-    approveValueCheck();
+   
     var submitButton = document.getElementById('id_submitLabourWorkIn');
     var forms = document.getElementById('labourWorkInForm')
     var return_qty = document.querySelectorAll('[name$="-return_pcs"]')
+    var checkBoxLwI = document.getElementById('id_labourWorkInCheckbox')
+    var checkBoxLwI = document.getElementById('id_labourWorkInCheckbox')
+
+    checkBoxLwI.addEventListener('change',changeLabourInValue)
+
+    function changeLabourInValue(){
+        var lwiCheckboxs = document.querySelectorAll('[name$="-return_pcs"]');
+
+        lwiCheckboxs.forEach(item =>{
+            var row = item.closest('tr');
+            var balanceQTy = row.querySelector('[name$="-qty_to_compare"]');
+            var cuttingQty = parseInt(item.value) || 0;
+            var processQty = row.querySelector('[name$= "-total_recieved_qty"]');
+            var balanceValue = parseInt(balanceQTy.value) || 0;
+            var processValue = parseInt(processQty.value) || 0;
+
+            if (checkBoxLwI.checked) {
+                if (cuttingQty > 0) {
+                    item.value = processValue;
+                    balanceQTy.value = 0;
+                } else {
+                    item.value = balanceValue;
+                    balanceQTy.value = 0;
+                }
+            } else {
+            if (cuttingQty > 0) {
+                balanceQTy.value = processValue;
+                item.value = 0;
+            } else {
+                item.value = 0;
+                balanceQTy.value = cuttingQty;
+            }
+        }
+                
+        })
+        
+        formSubmit();
+        totalValueCheck();  
+        CalculateAmount();
+    }
     forms.addEventListener("keydown", function (event) {
         if (event.key === "Enter" && event.target.type !== "submit") {
             event.preventDefault(); // Prevent form submission
@@ -289,6 +332,10 @@ document.addEventListener("DOMContentLoaded", function () {
             forms.submit(); // Trigger form submission
         }
         });
+        formSubmit();
+    CalculateAmount();
+    totalValueCheck();
+    approveValueCheck();
   })
 
   function totalValueCheck(){
