@@ -31,9 +31,11 @@
                 <td>{{data.color}}</td>
                 <td>{{data.product_sku}}</td>
                 <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #bb43dc;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'model-name-wise-purchase-transfer-report' data.product_sku %}">{{data.total}}</a></button></td>
-                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'scan-single-product-list' data.product_sku %}">{{data.total_inward}}</a></button></td>  
+
+                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'scan-single-product-list' data.product_sku %}">{{data.total_inward}}</a></button></td>
+
                 <td>{{data.total_balance}}</td>
-                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #4dc3ce;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="">{{data.total_sale}}</a></button></td>
+                <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #4dc3ce;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'model-name-wise-purchase-transfer-sales-report' data.product_sku %}">{{data.total_sale}}</a></button></td>
                 <td>{{data.inward_minus_sales}}</td> 
              </tr>
             {% endfor %}
