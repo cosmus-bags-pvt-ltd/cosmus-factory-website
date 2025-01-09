@@ -524,13 +524,13 @@
                         if (item_value !== undefined) {
                             var selectedValue = searchedProductNameDic[item_value];
                             var namevalueCheck = selectedValue[3];
-                            
-                            var newNameValue = namevalueCheck + '-'+ item_value;
+                            const productQty = selectedValue[2];
+                            var newNameValue = namevalueCheck + '                             '+ productQty;
                     
-                                $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(namevalueCheck);
+                                $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(newNameValue);
                             
                                 const productColor = selectedValue[1]
-                                const productQty = selectedValue[2];
+                               
                                 const productRefNo = selectedValue[4];
                                 const productunitNo = selectedValue[5] ;
                                 console.log('productunitNo'.productunitNo)
@@ -655,14 +655,15 @@
                         indexbool = false;
                         if (item_value !== undefined) {
                         var selectedValue = searchedProductNameDic[item_value];
-                        var namevalueCheck = selectedValue[3]
-                        var newNameValue = namevalueCheck + '-'+ item_value;
+                        var namevalueCheck = selectedValue[3];
+                        const productQty = selectedValue[2];
+                        var newNameValue = namevalueCheck + '                             '+ productQty;
         
                         $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product"]`).val(item_value);
-                        $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(namevalueCheck);
+                        $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(newNameValue);
 
                             const productColor = selectedValue[1];
-                            const productQty = selectedValue[2];
+                            
                             const productRefId = selectedValue[4];
                             const productUnit = selectedValue[5];
 
