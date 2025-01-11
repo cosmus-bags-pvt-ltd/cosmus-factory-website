@@ -7631,8 +7631,6 @@ def raw_material_estimation_calculate(request,u_id):
 
                     po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i['item_name']).exists()
 
-                    
-
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
                     if party_names: 
@@ -7789,7 +7787,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = get_object_or_404(purchase_order_for_puchase_voucher_rm, item_name=x['item_name'])
+                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -7813,6 +7811,7 @@ def raw_material_estimation_calculate(request,u_id):
                             'balance_stock': x['balance_stock'],
                             'party_name' : p_name,
                             'mobile_no' : mobile,
+                            'po_exist':po_exist
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -7949,7 +7948,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = get_object_or_404(purchase_order_for_puchase_voucher_rm, item_name=x['item_name'])
+                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -7971,6 +7970,7 @@ def raw_material_estimation_calculate(request,u_id):
                             'balance_stock': x['balance_stock'],
                             'party_name' : p_name,
                             'mobile_no' : mobile,
+                            'po_exist':po_exist
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -7995,7 +7995,7 @@ def raw_material_estimation_calculate(request,u_id):
                               
                 item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                po_exist = get_object_or_404(purchase_order_for_puchase_voucher_rm, item_name=x['item_name'])
+                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
                 
                 party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
