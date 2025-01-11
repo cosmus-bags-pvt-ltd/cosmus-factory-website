@@ -36,7 +36,7 @@
 
                 <td> <button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #10a7ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}">
                     {{query.total_labour_workin_approve_qty | default_if_none:0}}</a></button></td>
-                <td></td>
+                <td>{{query.total_sales_qty | default_if_none:0}}</td>
                 <td class="toatlQty">{{query.total_qty | default_if_none:0}}</td>
             </tr>
             {% endfor %}
