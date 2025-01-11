@@ -9,6 +9,8 @@
                 <tr>
                     <th>No</th>
                     <th>Product Name</th>
+                    {% comment %} <th>SKU</th> {% endcomment %}
+                    <th>Color</th>
                     <th>Total Consump</th>
                     <th>Cutting Pend Qty</th>
                     <th>LWO Pend QTY</th>
@@ -21,10 +23,12 @@
                 </tr>
             </thead>
             <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;"> 
-                {% for data in  final_data %}
+                {% for data in final_data %}
                 <tr>
                     <td>{{forloop.counter}}</td>
                     <td class="text-nowrap">{{data.material_name}}</td>
+                    {% comment %} <td>{{data.product_sku}}</td> {% endcomment %}
+                    <td>{{data.color}}</td>
                     <td>{{data.total_consump}}</td>
                     <td><span>{{data.cutting_consumption}}</span></td>
                     <td><span>{{data.lwo_consumption}}</span></td>
@@ -33,7 +37,7 @@
                     <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ data.item_id }}"></td>
                     <td>{{data.party_name| default_if_none:""}}</td>
                     <td>{{data.mobile_no| default_if_none:""}}</td>
-                    <td></td>
+                    <td>{{data.po_exist}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
