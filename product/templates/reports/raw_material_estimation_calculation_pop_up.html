@@ -34,10 +34,11 @@
                     <td><span>{{data.lwo_consumption}}</span></td>
                     <td><span class="godownStock">{{data.godown_stock}}</span></td>
                     <td><span class="balanceStock">{{data.balance_stock}}</span></td>
-                    <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ data.item_id }}"></td>
+                    <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ data.item_id }}">
+                        <input type="hidden" value="{{data.po_exist}}" class="dataexitsValue"></td>
                     <td>{{data.party_name| default_if_none:""}}</td>
                     <td>{{data.mobile_no| default_if_none:""}}</td>
-                    <td>{{data.po_exist}}</td>
+                    <td></td>
                 </tr>
                 {% endfor %}
             </tbody>
