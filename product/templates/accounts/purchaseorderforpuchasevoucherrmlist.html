@@ -113,7 +113,12 @@
                                 <td>{{item.cutting_consumption}}</td>
                                 <td>{{item.lwo_consumption}}</td>
                                 <td class="balanceValue">{{item.balance}}</td>
+                                {% if item.po_exist %}
+                                <td><i class="fa-solid fa-check-double fa-xl text-danger" ></i></td>
+                                {% else %}
                                 <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.item_id }}"></td>
+                                {% endif %}
+                                
                                 <td></td>
                                 <td></td>
                                 <td></td>
