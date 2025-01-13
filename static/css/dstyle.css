@@ -1580,6 +1580,7 @@ input[type=number] {
     padding-left: 5px; 
     height: 33px; 
     outline: none;
+    background-color: transparent;
 }
 
 table>:not(caption)>*>*{

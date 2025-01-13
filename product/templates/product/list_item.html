@@ -113,7 +113,7 @@ the input field will be pre-filled with that value when the page is loaded. -->
               <td style="width: 5%;">{{item.Unit_Name}}</td>
               <td>{{item.Units}}</td>
               <td>{{item.Panha}}</td>
-              <td><a href="{% url 'item-edit' item.id %}"><span><i class="fa-solid fa-pen-to-square"></i></span></a></td>
+              <td><a class="editItem" href="{% url 'item-edit' item.id %}"><span><i class="fa-solid fa-pen-to-square"></i></span></a></td>
               <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ item.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
             </tr>
             {% endfor %}
@@ -204,6 +204,26 @@ document.getElementById('file-input').addEventListener('change', function() {
   });
 });
 
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Select all edit and delete buttons
+  const editButtons = document.querySelectorAll(".editItem");
+  const deleteButtons = document.querySelectorAll(".delete-btn");
+
+  // Prevent event propagation for edit buttons
+  editButtons.forEach(button => {
+    button.addEventListener("click", function (event) {
+      event.stopPropagation(); // Prevents the click from affecting the parent row
+    });
+  });
+
+  // Prevent event propagation for delete buttons
+  deleteButtons.forEach(button => {
+    button.addEventListener("click", function (event) {
+      event.stopPropagation(); // Prevents the click from affecting the parent row
+    });
+  });
+})
 
 </script>
 

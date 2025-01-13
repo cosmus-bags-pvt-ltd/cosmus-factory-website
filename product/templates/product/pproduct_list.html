@@ -84,7 +84,7 @@
           <td>{{ product.Product_MRP | default_if_none:''}}</td>
           <td>{{ product.Product_BulkPrice | default_if_none:''}}</td>
           <td style="width: 8%;">{{ product.Product_Status| default_if_none:'' }}</td>
-          <td><a href="{% url 'edit_production_product' product.Product_Refrence_ID %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
+          <td><a class="editProduct" href="{% url 'edit_production_product' product.Product_Refrence_ID %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
           <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ product.Product_Refrence_ID }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
         </tr>
         {% endfor %}
@@ -186,6 +186,26 @@
   row.addEventListener('click', function() {
     // Toggle the expanded class on the clicked row
     this.classList.toggle('expanded');
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Select all edit and delete buttons
+  const editButtons = document.querySelectorAll(".editProduct");
+  const deleteButtons = document.querySelectorAll(".delete-btn");
+
+  // Prevent event propagation for edit buttons
+  editButtons.forEach(button => {
+    button.addEventListener("click", function (event) {
+      event.stopPropagation(); // Prevents the click from affecting the parent row
+    });
+  });
+
+  // Prevent event propagation for delete buttons
+  deleteButtons.forEach(button => {
+    button.addEventListener("click", function (event) {
+      event.stopPropagation(); // Prevents the click from affecting the parent row
+    });
   });
 });
 

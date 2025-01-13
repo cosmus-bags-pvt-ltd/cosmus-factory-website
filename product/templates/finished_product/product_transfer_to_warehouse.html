@@ -438,7 +438,7 @@
                     itemName = $(this).closest('tr').find('input[name$="-product_quantity_transfer"]').attr('name');
                     purchaseValue = itemName.split('-')[1];
                             
-            });
+                });
                 $(document).on('input', 'input[name$="-products"]', function(e) {
                     var StockValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
                     var nameValue = $(this).val().trim();
@@ -484,7 +484,6 @@
                     });
         
                     suggestionsContainer.empty();
-                    console.log(filteredOptions)
                     // Generate suggestions for matching options
                     filteredOptions.forEach(([key, value], index) => {
                         // Extract relevant fields

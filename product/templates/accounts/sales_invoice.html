@@ -116,7 +116,7 @@
         {% for forms in formset %}
         {{ forms.id }}
         <tr>
-          <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
+          <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
           <td> 
             <div class="custom-dropdown-container">
               <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
@@ -422,6 +422,7 @@ $(document).ready(function(){
     var enterPressed = false;
     var itemName;
     var purchaseValue;
+    var filterProducts;
     var productWerhouseid = $('#id_sales_voucher_finish_goods_set-0-id').val(); 
 
     if(productWerhouseid === ''){
@@ -432,7 +433,7 @@ $(document).ready(function(){
     }else{
       var productSaleDate = $('#productSaleDate').val();
       if(productSaleDate !== "None"){
-        var filterProducts;
+       
         
         try {
         
@@ -440,14 +441,18 @@ $(document).ready(function(){
             sanitizedData = sanitizedData.replace(/Decimal\("([\d.]+)"\)/g, '$1');
             sanitizedData = sanitizedData.replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":');
             filterProducts = JSON.parse(sanitizedData);
-            handleSalesProduct(filterProducts)
+            if(filterProducts)handleSalesProduct(filterProducts)
+        
         } catch (error) {
             console.error('Error parsing stockData:', error);
+           
         }
       }
     }
 
     function handleGodownIdAjax(godown_id){
+      if (!godown_id) return;
+      resetInputs();
       $.ajax({
           url:'/producttransfertowarehouseajax/',
           method: "GET",
@@ -456,132 +461,149 @@ $(document).ready(function(){
           },
           success: function(response){
             console.log(response)
-            const filterProducts = response.filtered_product;
+            filterProducts = {}
+           filterProducts = response.filtered_product;
             handleSalesProduct(filterProducts)
+           
           },
           error : function(error){
             console.log(error)
+            filterProducts = {}
+            handleSalesProduct(filterProducts)
+            resetInputs()
           }
       })
     }
     
+    function resetInputs() {
+            $('.productpurchaseInvoice').val('');
+            $('.s-suggestion-container').hide().empty();
+            $('[name^="select_product_name_"]').empty();
+            $('.purchase-input, .purchase-amount, .purchase-mark').val('');
+        }
     function handleSalesProduct(filterProducts){
-
-      $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {
+      if (filterProducts || Object.keys(filterProducts).length === 0) {
+        $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {
             itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
             purchaseValue = itemName.split('-')[1];
         });
 
-      $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
-        var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
-        var productnamevalue = $(this).val().trim();
-        var selectNameValue = `select_product_name_${purchaseValue}`;
-        var suggestionsContainer = $(`#${selectNameValue}`);
-        suggestionsContainer.empty();
-        if (productnamevalue === 'None' || productnamevalue === '') {
-            var selectNameValue = $(this).closest('tr').find('[name^="select_product_name_"]');
-                
-            selectNameValue.css('display', 'none').empty();
-            $(this).attr('data-key', '');
-            return;
-        }
-
-        if(!enterPressed){
-            suggestionsContainer.css('display', 'block');
-        }
-        enterPressed = false;
-            
-
-        function escapeRegExp(string) {
-          return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
-        }
-        searchedProductNameDic = filterProducts; 
-        const searchQuery = productnamevalue.toLowerCase();
-        const searchTerms = searchQuery.split(/\s+/);
-        const convertStringData = searchTerms.toString();
-        const escapedTerms = searchTerms.map(escapeRegExp);
-        const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
-        const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
-
-        const filteredOptions = Object.entries(searchedProductNameDic).filter(
-         ([key, value]) => {
-            const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
-            const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
-            const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
-        
-            const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
-
-            return normalizedKey.includes(normalizedQuery) ||
-                normalizedProductName.includes(normalizedQuery) ||
-                normalizedColor.includes(normalizedQuery);
-        });
-    
+        $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
+          var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
+          var productnamevalue = $(this).val().trim();
+          var selectNameValue = `select_product_name_${purchaseValue}`;
+          var suggestionsContainer = $(`#${selectNameValue}`);
           suggestionsContainer.empty();
-
-        // Generate suggestions for matching options
-        filteredOptions.forEach(([key, value], index) => {
-            // Extract relevant fields
-            const productName = value[3]; // Product name
-            const productSKU = key; // SKU
-            const productColor = value[1];
-            const productQty = value[2];
-            // Highlight matches in name, SKU, and color
-            const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
-            const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
-            const highlightedColor = productColor.replace(regex, '<span class="highlight">$1</span>');
-
-            // Add the suggestion to the container
-            suggestionsContainer.append(`
-                <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
-                    ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
-                </div>
-            `);
-        });
+          if (productnamevalue === 'None' || productnamevalue === '') {
+              var selectNameValue = $(this).closest('tr').find('[name^="select_product_name_"]');
                   
-          
-        suggestionsContainer.on('click', '.itemName-div', function(e) {
-          var item_value = $(this).data('key');
-          var itemNamevaluesCheck = $(this).text().trim();
-          
-          $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
-          $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
-          $(this).addClass('selected').siblings().removeClass('selected');
-
-          if (item_value !== undefined) {
-              // Clear old values
-              $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val('');
-              $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val('');
-              $('#product_color_' + purchaseValue).val('');
-              $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst').val('');
-              $('#product_Sku_' + purchaseValue).val('');
-              $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp').val('');
-              $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val('');
-
-              // Set new values
-              var selectedValue = searchedProductNameDic[item_value];
-              const namevalueCheck = selectedValue[3];
-              const productQty = selectedValue[2];
-              const productColor = selectedValue[1];
-              const productGst = selectedValue[8];
-              const productmrp = selectedValue[6];
-              const productPrice = selectedValue[7];
-              const newNameValue = namevalueCheck + '                             '+ productQty;
-              const newGst = productGst + ' % '       
-            
-              $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val(item_value);
-              $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val(newNameValue);
-              $('#product_color_' + purchaseValue).val(productColor);
-              $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst').val(newGst);
-              $('#product_Sku_' + purchaseValue).val(item_value);
-              $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp').val(productmrp);
-              $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val(productPrice);
+              selectNameValue.css('display', 'none').empty();
+              $(this).attr('data-key', '');
+              return;
           }
 
-        
-          suggestionsContainer.css('display', 'none');
+          if(!enterPressed){
+              suggestionsContainer.css('display', 'block');
+          }
+          enterPressed = false;
+              
+
+          function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+          }
+          searchedProductNameDic = filterProducts; 
+          const searchQuery = productnamevalue.toLowerCase();
+          const searchTerms = searchQuery.split(/\s+/);
+          const convertStringData = searchTerms.toString();
+          const escapedTerms = searchTerms.map(escapeRegExp);
+          const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+          const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+
+          const filteredOptions = Object.entries(searchedProductNameDic).filter(
+          ([key, value]) => {
+              const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
+              const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
+              const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
           
-        });
-    });
+              const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+
+              return normalizedKey.includes(normalizedQuery) ||
+                  normalizedProductName.includes(normalizedQuery) ||
+                  normalizedColor.includes(normalizedQuery);
+          });
+      
+            suggestionsContainer.empty();
+
+          // Generate suggestions for matching options
+          filteredOptions.forEach(([key, value], index) => {
+              // Extract relevant fields
+              const productName = value[3]; // Product name
+              const productSKU = key; // SKU
+              const productColor = value[1];
+              const productQty = value[2];
+              // Highlight matches in name, SKU, and color
+              const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
+              const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
+              const highlightedColor = productColor.replace(regex, '<span class="highlight">$1</span>');
+
+              // Add the suggestion to the container
+              suggestionsContainer.append(`
+                  <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
+                      ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
+                  </div>
+              `);
+          });
+                    
+          if(filteredOptions == ''){
+            suggestionsContainer.show();
+            suggestionsContainer.empty();
+            suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+          }
+          suggestionsContainer.on('click', '.itemName-div', function(e) {
+            var item_value = $(this).data('key');
+            var itemNamevaluesCheck = $(this).text().trim();
+            
+            $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
+            $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
+            $(this).addClass('selected').siblings().removeClass('selected');
+
+            if (item_value !== undefined) {
+                // Clear old values
+                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val('');
+                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val('');
+                $('#product_color_' + purchaseValue).val('');
+                $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst').val('');
+                $('#product_Sku_' + purchaseValue).val('');
+                $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp').val('');
+                $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val('');
+
+                // Set new values
+                var selectedValue = searchedProductNameDic[item_value];
+                const namevalueCheck = selectedValue[3];
+                const productQty = selectedValue[2];
+                const productColor = selectedValue[1];
+                const productGst = selectedValue[8];
+                const productmrp = selectedValue[6];
+                const productPrice = selectedValue[7];
+                const newNameValue = namevalueCheck + '                             '+ productQty;
+                const newGst = productGst + ' % '       
+              
+                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name"]`).val(item_value);
+                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-product_name_value"]`).val(newNameValue);
+                $('#product_color_' + purchaseValue).val(productColor);
+                $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-gst').val(newGst);
+                $('#product_Sku_' + purchaseValue).val(item_value);
+                $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp').val(productmrp);
+                $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val(productPrice);
+            }
+
+          
+            suggestionsContainer.css('display', 'none');
+            
+          });
+      });
+      }
+      
         
 
     var index = 0; // Declare index outside of the event listener
@@ -1082,7 +1104,7 @@ $(document).ready(function(){
           // GST numbers do not match: treat all as SGST (or IGST)
           taxSummary[gstRate].cgst += 0; // No CGST
           taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
-          console.log('test',(taxableValue * gstRate) / 100)
+          
         }
        
       })
@@ -1280,10 +1302,9 @@ $(document).ready(function(){
         if(qty){
             qty.addEventListener('keydown', function (event) {
                 if (event.key === "Tab") {
-                    event.preventDefault(); // Prevent default tabbing behavior
-                    console.log('test',qty.value)
+                    event.preventDefault();
                     if (qty.value === '') {
-                        // If rate is empty, focus on the rate field itself
+             
                         qty.focus();
                     } else if(tredDisc) {
                        
