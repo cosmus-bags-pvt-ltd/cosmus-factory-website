@@ -20,7 +20,10 @@ urlpatterns = [
     path('definesubcategoryproduct/',views.definesubcategoryproduct, name= 'define-sub-category-product'),
     path('definesubcategoryupdateproduct/<int:pk>',views.definesubcategoryproduct, name= 'define-sub-category-update-product'),
 
-    path('assignbintoproduct/',views.assign_bin_to_product, name= 'assign-bin-to-product'),
+    path('assignbintoproductajax/',views.assign_bin_to_product_ajax, name= 'assign-bin-to-product-ajax'),
+    path('savebintosubcategory/<int:sub_id>/',views.save_bin_to_subcategory, name= 'save-bin-to-subcategory'),
+    path('updatebintosubcategory/<int:sub_id>/<int:r_id>/',views.update_bin_to_subcategory, name= 'update-bin-to-subcategory'),
+    path('subcategorybinlist/',views.subcategory_bin_list, name= 'subcategory-bin-list'),
     # path('assignbintoproductform/',views.assign_bin_to_product_form, name= 'assign-bin-to-product-form'),
 
     path('definesubcategoryproductdelete/<int:pk>',views.definesubcategoryproductdelete, name= 'define-sub-category-product-delete'),

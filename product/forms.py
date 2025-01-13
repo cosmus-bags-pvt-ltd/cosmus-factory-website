@@ -1168,6 +1168,8 @@ class FinishedProductWarehouseBinFormSet(BaseModelFormSet):
                     continue
 
 
+sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
 
 
 class Purchaseordermasterforpuchasevoucherrmform(forms.ModelForm):
