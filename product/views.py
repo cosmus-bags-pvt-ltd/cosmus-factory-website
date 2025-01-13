@@ -825,7 +825,7 @@ def assign_bin_to_product_ajax(request):
 
         main_categories = MainCategory.objects.exclude(pk = product_main_category_id)
         zones = finished_goods_warehouse_zone.objects.exclude(pk = zone_id)
-        
+
     return render(request, 'product/assignbintoproduct.html', {'formset':formset,'main_categories': main_categories,'zones': zones,'product_main_category_id':product_main_category_id,'post_data': post_data})
 
 
@@ -8941,16 +8941,31 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
 
 
-def delete_sigle_entries(request,e_id,voucher_type):
-    delete_instance = finishedgoodsbinallocation.objects.get(id = e_id)
+def delete_sigle_entries(request, e_id, voucher_type):
+    try:
+        delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
 
-    if voucher_type == "purchase":
-        parent_id = delete_instance.related_purchase_item.product_purchase_master.id
-    else:
-        parent_id = delete_instance.related_transfer_record.Finished_goods_Stock_TransferMasterinstance.id
-    
-    delete_instance.delete()
-    return redirect(reverse('stock-transfer-instance-list-popup',args=[parent_id,voucher_type]))
+        if voucher_type == "purchase":
+            related_purchase_item = delete_instance.related_purchase_item
+            if related_purchase_item:  # Check if related_purchase_item exists
+                parent_id = related_purchase_item.product_purchase_master.id
+            else:
+                raise ValueError("No related purchase item found.")
+        else:
+            related_transfer_record = delete_instance.related_transfer_record
+            if related_transfer_record:  # Check if related_transfer_record exists
+                parent_id = related_transfer_record.Finished_goods_Stock_TransferMasterinstance.id
+            else:
+                raise ValueError("No related transfer record found.")
+
+        delete_instance.delete()
+        return redirect(reverse('stock-transfer-instance-list-popup', args=[parent_id, voucher_type]))
+
+    except finishedgoodsbinallocation.DoesNotExist:
+        return redirect(reverse('error-page'))  # Redirect to an error page or handle it appropriately
+    except Exception as e:
+        print(f"Error in delete_single_entries: {e}")
+        return redirect(reverse('error-page'))
 
 
 
