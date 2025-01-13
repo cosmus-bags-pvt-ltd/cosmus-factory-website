@@ -81,7 +81,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset)
 
 
 logger = logging.getLogger('product_views')
@@ -774,21 +774,22 @@ def definesubcategoryproduct(request, pk=None):
 
 
 
-def assign_bin_to_product(request):
+def assign_bin_to_product_ajax(request):
     sub_category = []
     racks = []
     formset = None
-    sub_category_instance =None
+    sub_category_instance = None
     rack_id = None
+    post_data = None
 
-    main_categories = MainCategory.objects.all()
-    zones = finished_goods_warehouse_zone.objects.all()
 
     product_main_category_id = request.POST.get('product_main_category')
     sub_category_id = request.POST.get('sub_category')
     zone_id = request.POST.get('zone')
     rack_id = request.POST.get('rack')
-
+    
+    main_categories = MainCategory.objects.all()
+    zones = finished_goods_warehouse_zone.objects.all()
     
     
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
@@ -810,44 +811,170 @@ def assign_bin_to_product(request):
             return JsonResponse({'racks_data': racks_data})
         
     if rack_id:
-        sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
-
         bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
 
         formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category})
 
-        if request.method == "POST":
-            product_main_category = MainCategory.objects.get(pk = product_main_category_id)
-            sub_category_single = SubCategory.objects.get(pk = sub_category_id)
-            zone = finished_goods_warehouse_zone.objects.get(pk = zone_id)
-            rack = finished_goods_warehouse_racks.objects.get(pk = rack_id)
+    if request.method == "POST":
+        post_data = {
+                    'product_main_category': MainCategory.objects.get(pk = product_main_category_id),
+                    'sub_category': SubCategory.objects.get(pk = sub_category_id),
+                    'zone': finished_goods_warehouse_zone.objects.get(pk = zone_id),
+                    'rack': finished_goods_warehouse_racks.objects.get(pk = rack_id),
+                }
 
-    return render(request, 'product/assignbintoproduct.html', {'formset':formset,'main_categories': main_categories,'zones': zones,'product_main_category_id':product_main_category_id})
-
-
-
-
-
-
-# def assign_bin_to_product_form(request):
-#     product_main_category_id = request.POST.get('product_main_category')
-#     sub_category_id = request.POST.get('sub_category')
-#     zone_id = request.POST.get('zone')
-#     rack_id = request.POST.get('rack')
+        main_categories = MainCategory.objects.exclude(pk = product_main_category_id)
+        zones = finished_goods_warehouse_zone.objects.exclude(pk = zone_id)
+        
+    return render(request, 'product/assignbintoproduct.html', {'formset':formset,'main_categories': main_categories,'zones': zones,'product_main_category_id':product_main_category_id,'post_data': post_data})
 
 
 
-#     if rack_id:
-#         sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
 
-#         bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
 
-#         formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category})
+def save_bin_to_subcategory(request,sub_id):
 
-#     return render(request, 'product/assignbintoproductform.html',{'formset':formset,'product_main_category':product_main_category,'sub_category':sub_category,'zone':zone,'rack_id':rack_id
-                                                                  
-#                                                                   })
+    if sub_id:
+        instance = SubCategory.objects.get(pk=sub_id)
+        title = 'Update'
+        message = 'updated'
+        page_name = 'Edit Sub Category'
+    else:
+        instance = None
+        title = 'Create'
+        message = 'created'
+        page_name = 'Create Sub Category'
 
+    if request.method == 'POST':
+        try:
+
+            formset = sub_category_and_bin_formset(request.POST, form_kwargs={'sub_cat_instance': instance})
+            
+            if formset.is_valid():
+                
+                
+                for form in formset:
+                    
+                    if form.cleaned_data.get('check_if_added_all') != False:
+                        
+                        if form.cleaned_data.get('check_if_added') == True:
+                            formset_instance = form.save(commit=False)
+                            formset_instance.sub_catergory_id = instance
+                            formset_instance.save()
+
+                        elif form.cleaned_data.get('check_if_added') == False :
+                            formset_instance = form.save(commit=False)
+                            formset_instance.sub_catergory_id = None
+                            formset_instance.save()
+
+                if message == 'created':
+                    messages.success(request,'Sub-Category created sucessfully')
+
+                if message == 'updated':
+                    messages.success(request,'Sub-Category updated sucessfully')
+            
+                return redirect('subcategory-bin-list')
+            
+            else:
+                print(formset.non_form_errors())
+                
+                logger.error(formset.non_form_errors)
+        
+        except Exception as e:
+            print(formset.non_form_errors())
+            print(e)
+            messages.error(request,f'An Exception occoured - {e}')
+
+    return render(request, 'product/assignbintoproduct.html')
+
+
+
+
+
+def update_bin_to_subcategory(request,sub_id,r_id):
+    if sub_id:
+        instance = SubCategory.objects.get(pk=sub_id)
+        title = 'Update'
+        message = 'updated'
+        page_name = 'Edit Sub Category'
+    else:
+        instance = None
+        title = 'Create'
+        message = 'created'
+        page_name = 'Create Sub Category'
+
+    # main_categories = MainCategory.objects.all()
+    zones = finished_goods_warehouse_zone.objects.all()
+    
+    bins_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = r_id)
+
+    formset = sub_category_and_bin_formset(queryset=bins_queryset, form_kwargs={'sub_cat_instance': instance})
+
+    main_cate = MainCategory.objects.get(subcategories__id = sub_id)
+    sub_cate = SubCategory.objects.get(pk = sub_id)
+    rack = finished_goods_warehouse_racks.objects.get(pk = r_id)
+    zone = rack.zone_finished_name
+
+    
+
+    post_data = {
+                'product_main_category': main_cate,
+                'sub_category': sub_cate,
+                'rack': rack,
+                'zone': zone,
+                    }
+
+    if request.method == 'POST':
+        try:
+
+            formset = sub_category_and_bin_formset(request.POST, form_kwargs={'sub_cat_instance': instance})
+            
+            if formset.is_valid():
+                
+                
+                for form in formset:
+                    
+                    if form.cleaned_data.get('check_if_added_all') != False:
+                        
+                        if form.cleaned_data.get('check_if_added') == True:
+                            formset_instance = form.save(commit=False)
+                            formset_instance.sub_catergory_id = instance
+                            formset_instance.save()
+
+                        elif form.cleaned_data.get('check_if_added') == False :
+                            formset_instance = form.save(commit=False)
+                            formset_instance.sub_catergory_id = None
+                            formset_instance.save()
+
+                if message == 'created':
+                    messages.success(request,'Sub-Category created sucessfully')
+
+                if message == 'updated':
+                    messages.success(request,'Sub-Category updated sucessfully')
+            
+                return redirect('subcategory-bin-list')
+            
+            else:
+                print(formset.non_form_errors())
+                
+                logger.error(formset.non_form_errors)
+        
+        except Exception as e:
+            print(formset.non_form_errors())
+            print(e)
+            messages.error(request,f'An Exception occoured - {e}')
+
+    return render(request, 'product/assignbintoproduct.html',{'formset':formset,'post_data':post_data,'zones': zones})
+
+
+
+
+
+def subcategory_bin_list(request):
+    # subcategories = SubCategory.objects.prefetch_related('sub_categories').all()
+    subcategories = finished_product_warehouse_bin.objects.filter(sub_catergory_id__isnull = False)
+
+    return render(request, 'product/subcategorybinlist.html',{'subcategories': subcategories})
 
 
 
