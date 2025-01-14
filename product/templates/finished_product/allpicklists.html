@@ -2,9 +2,15 @@
 {% load static %}
 {% block body %}
 
+<a href="{% url 'create-update-picklist' %}">create</a>
+
 {% for picklist in all_picklists %}
-    {{ picklist.picklist_no }}
+    {% for product in picklist.picklist_products_list.all %}
+        {{ product.product.Product.Model_Name }}
     <a href="{% url 'create-update-picklist' picklist.id %}">Edit</a>
+    {% endfor %}
 {% endfor %}
+
+
     
 {% endblock body %}

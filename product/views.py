@@ -11764,4 +11764,11 @@ def create_update_picklist(request,p_id=None):
 
 def all_picklists_list(request):
     all_picklists = Picklist_voucher_master.objects.all()
-    return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
+
+    for i in all_picklists:
+        first_ins = i.picklist_products_list.all()
+        print(first_ins)
+    
+    
+    
+    return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists,'first_ins':first_ins})
