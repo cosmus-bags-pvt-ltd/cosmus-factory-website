@@ -38,7 +38,7 @@ import requests
 
 from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
-                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Product,
+                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_voucher_master, Product,
                     Product2SubCategory, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, StockItem,
                     SubCategory, Unit_Name_Create, account_credit_debit_master_table, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
@@ -59,7 +59,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
-                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, ProductCreateSkuFormsetCreate,
+                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
                     ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
@@ -81,7 +81,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset,picklistcreateformset)
 
 
 logger = logging.getLogger('product_views')
@@ -713,63 +713,7 @@ def definesubcategoryproduct(request, pk=None):
 
 
 
-# def assign_bin_to_product(request):
-#     sub_category = []
-#     racks = []
-    
-#     sub_category_instance =None
-#     rack_id = None
 
-    
-#     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        
-#         main_category = request.GET.get('mainProduct')
-#         zonename = request.GET.get('mainZone')
-#         sub_category_instance = request.GET.get('subProduct')
-#         rack_id = request.GET.get('rack')
-
-       
-#         if main_category:
-#             sub_category = SubCategory.objects.filter(product_main_category=main_category)
-#             sub_category_data = [{'id': sc.id, 'name': sc.product_sub_category_name} for sc in sub_category]
-#             return JsonResponse({'sub_category_data': sub_category_data})
-
-       
-#         if zonename:
-#             racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zonename)
-#             racks_data = [{'id': rack.id, 'name': rack.rack_name} for rack in racks]
-#             return JsonResponse({'racks_data': racks_data})
-
-
-    
-
-#     if sub_category_instance and rack_id:
-
-#         sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
-#         form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
-
-#         bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
-
-#         formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
-
-#     else:
-#         sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
-#         form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
-
-#         bin_queryset = finished_product_warehouse_bin.objects.all()
-
-#         formset = sub_category_and_bin_formset(queryset=bin_queryset, form_kwargs={'sub_cat_instance': sub_category_instance})
-
-
-#     main_categories = MainCategory.objects.all()
-#     zones = finished_goods_warehouse_zone.objects.all()
-
-#     return render(request, 'product/assignbintoproduct.html', {
-#         'main_categories': main_categories,
-#         'sub_category': sub_category,
-#         'zones': zones,
-#         'formset': formset,
-#     })
 
 
 
@@ -8973,15 +8917,28 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 def scan_product_qty_list(request):
     product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0)
-
     stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0)
-
-
     merged_queryset = chain(product_purchase_voucher, stock_transfer_voucher)
-
     merged_list = list(merged_queryset)
 
     return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list})
+
+
+
+
+
+
+def scan_product_list(request,pk,v_type):
+    
+    if v_type == "purchase":
+
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk)
+
+    elif v_type == "transfer":
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk)
+
+    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries})
+
 
 
 
@@ -9255,12 +9212,10 @@ def process_serial_no(request):
                         product_suggested_bins = finished_product_warehouse_bin.objects.filter(sub_catergory_id = records)
                         bins_related_to_product.append(product_suggested_bins)
                     
-                    
-                    
-                    
+
 
                     flatterned_bins_related_to_product_list = list(chain.from_iterable(bins_related_to_product))
-                    
+                    print('flatterned_bins_related_to_product_list -- ', flatterned_bins_related_to_product_list)
                     bin_to_dict = []
                     
                     for qs in flatterned_bins_related_to_product_list:
@@ -11754,3 +11709,59 @@ def warehouse_navigator(request):
 
 
 
+def create_update_picklist(request,p_id=None):
+
+    if p_id:
+        voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
+        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
+        formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
+    else:
+        voucher_instance = None
+        master_form  = Picklistvouchermasterform()
+        formset = picklistcreateformset()
+
+    
+    if request.method == "POST":
+        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
+        formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.c_user = request.user
+                    master_form_instance.save()
+
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            form_instance = form.save(commit=False)
+                            form_instance.picklist_master_instance = master_form_instance
+                            form_instance.save()
+                    return redirect('all-picklists-list')
+                
+            except Exception as e:
+                print(e)
+
+
+
+    return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
+
+
+
+
+def all_picklists_list(request):
+    all_picklists = Picklist_voucher_master.objects.all()
+    return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})

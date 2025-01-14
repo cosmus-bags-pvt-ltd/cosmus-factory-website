@@ -148,7 +148,10 @@ urlpatterns = [
     path('salesvouchercreateupdateforwarehouse/<int:s_id>/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
     path('salesscanproductdynamicajax/', views.sales_scan_product_dynamic_ajax, name = 'sales-scan-product-dynamic-ajax'),
 
-
+    #picklist
+    path('createupdatepicklist/',views.create_update_picklist , name = 'create-update-picklist'),
+    path('createupdatepicklist/<int:p_id>/',views.create_update_picklist , name = 'create-update-picklist'),
+    path('allpicklistslist/',views.all_picklists_list , name = 'all-picklists-list'),
 
     #subcategorys
     path('gstcreate/', views.gst_create_update, name = 'gst-create-list'),
@@ -267,6 +270,7 @@ urlpatterns = [
     path('finished-goods-stock-all/<int:pk>', views.finished_goods_stock_all, name = 'finished-goods-stock-single'),
     path('productdynamicsearchajax/',views.productdynamicsearchajax,name = 'product-dynamic-search-ajax'),
     path('scanproductqtylist/', views.scan_product_qty_list, name = 'scan-product-qty-list'),
+    path('scanproductlist/<int:pk>/<str:v_type>/', views.scan_product_list, name = 'scan-product-list'),
     path('warehousestock/', views.warehouse_stock, name = 'warehouse-stock'),
     path('scansingleproductlist/<int:sku>/', views.scan_single_product_list, name = 'scan-single-product-list'),
     path('modelnamewisepurchasetransferreport/<int:sku>/', views.model_name_wise_purchase_transfer_report, name = 'model-name-wise-purchase-transfer-report'),

@@ -22,16 +22,34 @@
         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
             
             {% for data in merged_list %}
+            
             <tr>
+                
                 <td>{{forloop.counter}}</td>
-                <td><img id="productImgPreview" name="product_img" src="{{data.product_name.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
-                <td class="refNo">{{data.product_name.Product.Product_Refrence_ID}}</td>
-                <td>{{data.product_name.Product.Model_Name}}</td>
-                <td>{{data.product_name.PProduct_color.color_name}}</td>
-                <td>{{data.product_name.PProduct_SKU}}</td>
-                <td>{{data.quantity_total}}</td>
-                <td>{{data.qc_recieved_qty}}</td>
-                <td>{{data.diffrence_qty}}</td>
+                {% if data.product_purchase_master.ledger_type == 'purchase(product)' %}
+                    <input type="hidden" class="pro_id" value="{{data.id}}">
+                    <input type="hidden" class="ledger_type" value="purchase">
+                    <td><img id="productImgPreview" name="product_img" src="{{data.product_name.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
+                    <td>{{data.product_name.Product.Product_Refrence_ID }}</td>
+                    <td>{{data.product_name.Product.Model_Name}}</td>
+                    <td>{{data.product_name.PProduct_color.color_name}}</td>
+                    <td>{{data.product_name.PProduct_SKU}}</td>
+                    <td>{{data.quantity_total}}</td>
+                    <td>{{data.qc_recieved_qty}}</td>
+                    <td>{{data.diffrence_qty}}</td>
+                {% else %}
+                    <input type="hidden" class="pro_id" value="{{data.id}}">
+                    <input type="hidden" class="ledger_type" value="transfer">
+                    <td><img id="productImgPreview" name="product_img" src="{{data.product.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
+                    <td>{{data.product.Product.Product_Refrence_ID }}</td>
+                    <td>{{data.product.Product.Model_Name}}</td>
+                    <td>{{data.product.PProduct_color.color_name}}</td>
+                    <td>{{data.product.PProduct_SKU}}</td>
+                    <td>{{data.product_quantity_transfer}}</td>
+                    <td>{{data.qc_recieved_qty}}</td>
+                    <td>{{data.diffrence_qty}}</td>
+                {% endif %}
+                
                 <td></td>
              </tr>
             {% endfor %}
@@ -49,9 +67,14 @@ function finshedGoodsScanList(){
     
         row.addEventListener('click',function(event){
             event.preventDefault();
-            var recordId = parseInt(row.querySelector('.refNo').textContent);
+            var recordId = parseInt(row.querySelector('.pro_id').value);
+            var ledgerType = row.querySelector('.ledger_type').value;
+
+            console.log(ledgerType)
+       
+            
            
-            window.location.href = "/scansingleproductlist/" + recordId;
+            window.location.href = "/scanproductlist/" + recordId+ '/'+ ledgerType;
             
         })
     })
