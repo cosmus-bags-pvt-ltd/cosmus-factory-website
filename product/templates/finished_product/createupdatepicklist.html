@@ -17,11 +17,11 @@
             <input type="date" class="item-select" name="" id="pickListDate" >
         </div>
         <div class="d-flex mb-2">
-            <label for="" class="me-3">Create By:</label>
-            <input type="text" class="item-select" name="" id="" value="" maxlength="255" readonly>
+            <label for="idNameCreated" class="me-3">Create By:</label>
+            <input type="text" class="item-select" name="" id="idNameCreated" value="" maxlength="255" >
         </div>
         <div>
-            <table class="table table-striped table-hover table-bordered">
+            <table class="table table-striped table-hover table-bordered" id="createpickListTable">
                 <thead>
                     <tr>
                         <th>No</th>
@@ -35,7 +35,7 @@
                         <th>Delete</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="mainTableList">
                     {{ formset.management_form }}
                     {% for form in formset %}
                     <tr>
@@ -43,7 +43,7 @@
                         <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>
                         <td> 
                             <div class="custom-dropdown-container">
-                              <input type="hidden" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name"  value="{% if form.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
+                              <input type="hidden" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products"  value="{% if form.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
                               <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" > 
                               <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
                                 
@@ -51,7 +51,7 @@
                                </div>
                           </div>
                         </td>
-                        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+                        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input produc" readonly></td>
 
                         <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
                         <td></td>
@@ -68,7 +68,7 @@
                             <input  type="text" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity" readonly>
                         </td>
                         <td>
-                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer; display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
+                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
                         </td>
                     </tr>
                    
@@ -78,7 +78,7 @@
         </div>
         <div class="ms-2 mb-5">
             <input type="number" class="product_row" name="productRow" id="id_productRow" value="1">
-            <button style="display: none;" type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
+            <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
         </div>
         <button type="submit" class="ms-5 newProductCreateBtn" id="picklistSubmit">Submit</button>
     </form>
@@ -194,20 +194,20 @@
                 $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
                 $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
                 $(this).addClass('selected').siblings().removeClass('selected');
-
+                itemValueCheckAjax(item_value,purchaseValue)
                 if (item_value !== undefined) {
-                var selectedValue = searchedProductNameDic[item_value];
-                var namevalueCheck = selectedValue[0];
-                var newnameValue = namevalueCheck +''+item_value;
-                $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name"]`).val(item_value);
-                $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
-                    const productColor = selectedValue[1];
-                    const productGst = selectedValue[2];
-                    var itemcolorinput = document.querySelector('#item_color_' + purchaseValue);
-                    var itemgstinputs = document.getElementById('product_purchase_voucher_items_set-' + purchaseValue + '-gst');
+                // var selectedValue = searchedProductNameDic[item_value];
+                // var namevalueCheck = selectedValue[0];
+                // var newnameValue = namevalueCheck +''+item_value;
+                // $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name"]`).val(item_value);
+                // $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
+                //     const productColor = selectedValue[1];
+                //     const productGst = selectedValue[2];
+                //     var itemcolorinput = document.querySelector('#item_color_' + purchaseValue);
+                //     var itemgstinputs = document.getElementById('product_purchase_voucher_items_set-' + purchaseValue + '-gst');
                                         
-                        itemcolorinput.value = productColor;
-                        itemgstinputs.value = productGst ;
+                //         itemcolorinput.value = productColor;
+                //         itemgstinputs.value = productGst ;
                 
             }
                
@@ -316,21 +316,23 @@
             index = 0;
             indexbool = false;
             $dropdownOptions.css('display', 'none');
+            itemValueCheckAjax(item_value,purchasedata)
             if (item_value !== undefined) {
-                var selectedValue = searchedProductNameDic[item_value];
-                console.log(selectedValue,'selectedValue')
-                var namevalueCheck = selectedValue[0];
-                 var newnameValue = namevalueCheck + ' '+item_value;
 
-                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name"]`).val(item_value);
-                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck)
-                    const productColor = selectedValue[1];
-                    const productGst = selectedValue[2];
-                    var itemcolorinput = document.querySelector('#item_color_' + purchasedata);
-                    var itemgstinputs = document.getElementById('product_purchase_voucher_items_set-' + purchasedata + '-gst');
+                // var selectedValue = searchedProductNameDic[item_value];
+                // console.log(selectedValue,'selectedValue')
+                // var namevalueCheck = selectedValue[0];
+                //  var newnameValue = namevalueCheck + ' '+item_value;
+
+                // $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name"]`).val(item_value);
+                // $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck)
+                //     const productColor = selectedValue[1];
+                //     const productGst = selectedValue[2];
+                //     var itemcolorinput = document.querySelector('#item_color_' + purchasedata);
+                //     var itemgstinputs = document.getElementById('product_purchase_voucher_items_set-' + purchasedata + '-gst');
                                         
-                        itemcolorinput.value = productColor;
-                        itemgstinputs.value = productGst ;
+                //         itemcolorinput.value = productColor;
+                //         itemgstinputs.value = productGst ;
                         enterPressed = true;
             hiddenValue.css("display" ,"none");
             $inputField.blur();
@@ -344,8 +346,273 @@
    
      });
 
-
+     function itemValueCheckAjax (item_value,purchasedata,purchaseValue){
+        if (item_value !== undefined) {
+            $.ajax({
+                url: '//',
+                method: 'GET',
+                data: { 'item_value': item_value },
+                success: function (response) {
+                    console.log(response)
+                },
+                error: function(error){
+                console.log(error)  
+                }
+            })
+        }
+     }
 
 })
+
+document.addEventListener('DOMContentLoaded', function () {
+    const addButton= document.getElementById('addRowButton');
+    const tableBody = document.querySelector('#createpickListTable tbody'); // Clone the first row of the table
+    
+    if(addButton && tableBody){
+        addButton.addEventListener('click', function() {
+            let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
+
+                if (isNaN(addInputRow) || addInputRow <= 0) {
+                    addInputRow = 1;
+                    return;
+                }
+                let lastVisibleRow = null;
+                tableBody.querySelectorAll('tr').forEach(row => {
+                    if (window.getComputedStyle(row).display !== 'none') {
+                        lastVisibleRow = row;
+                    }
+            });
+
+            if (lastVisibleRow) {
+                const formCountInput = document.getElementById("id_picklist_products_list-TOTAL_FORMS");
+               
+                for(let i = 0; i<addInputRow; i++){
+                    const formCount = parseInt(formCountInput.value); 
+                    const formIndex = formCount;
+                    const lastRow = lastVisibleRow.cloneNode(true);
+                    lastRow.querySelectorAll("input select").forEach(function (e) {
+                        e.value = "";
+                    });
+
+                    // update the input name,id and value of the last row   
+                    const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
+                    rowElement.id = `rowNo_${formIndex}`;
+                    rowElement.name = `rowNo_${formIndex}`;
+                    rowElement.value = formIndex + 1 ;
+                    rowElement.style.border="none";
+                    const inputRefNo = lastRow.querySelector('input[name$="-product_refNo"]');
+                    inputRefNo.id = `id_picklist_products_list-${formIndex}-product_refNo`;
+                    inputRefNo.name = `picklist_products_list-${formIndex}-product_refNo`;
+                    inputRefNo.value="";
+
+                    const inputSelectElement = lastRow.querySelector('input[name$="-products"]');
+                    inputSelectElement.id = `id_picklist_products_list-${formIndex}-products`;
+                    inputSelectElement.name = `picklist_products_list-${formIndex}-products`;
+                    inputSelectElement.value="";
+
+                    const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
+                    inputElement.id = `id_picklist_products_list-${formIndex}-product_name_value`;
+                    inputElement.name = `picklist_products_list-${formIndex}-product_name_value`;
+                    inputElement.value="";
+                    
+                    const selectElement = lastRow.querySelector('.product-name[name^="select_product_name_"]');
+                    selectElement.id = `select_product_name_${formIndex}`;
+                    selectElement.name = `select_product_name_${formIndex}`;
+                    selectElement.innerHTML = '';
+            
+                    const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color_"]');
+                    colorInputElement.id = `product_color_${formIndex}`;
+                    colorInputElement.name = `product_color_${formIndex}`;
+                    colorInputElement.value="";
+
+                    const skuInputElement = lastRow.querySelector('.purchase-amount[name^="product_Sku_"]');
+                    skuInputElement.id = `product_Sku_${formIndex}`;
+                    skuInputElement.name = `product_Sku_${formIndex}`;
+                    skuInputElement.value="";
+
+                    // const imageInputElement = lastRow.querySelector('.purchase-input[name^="product_color_"]');
+                    // imageInputElement.id = 
+                    // imageInputElement.name = 
+                    // imageInputElement.value="";
+
+
+                    const binElement = lastRow.querySelector('select[name^="picklist_products_list-"][name$="-bin_number"]');
+                    binElement.id = `id_picklist_products_list-${formIndex}-bin_number`;
+                    binElement.name = `picklist_products_list-${formIndex}-bin_number`;
+                    binElement.value="";
+
+                    const qunatityInputElement = lastRow.querySelector('.purchase-amount[name^="picklist_products_list-"][name$="-product_quantity"]');
+                    qunatityInputElement.id = `id_picklist_products_list-${formIndex}-product_quantity`;
+                    qunatityInputElement.name = `picklist_products_list-${formIndex}-product_quantity`;
+                    qunatityInputElement.value="";
+
+                
+                    const deleteElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
+                    deleteElement.id = `id_picklist_products_list-${formIndex}-DELETE`;
+                    deleteElement.name = `picklist_products_list-${formIndex}-DELETE`;
+                    deleteElement.value= "";
+
+                    formCountInput.value = formCount + 1; 
+                    tableBody.appendChild(lastRow);
+
+                }
+                document.getElementById('id_productRow').value = '1';
+                deleteRowData()
+                inputCheck()
+            }   
+             
+        });
+        
+    }else{
+        console.error("Could not find addFormButton or table body element.");
+
+    }
+    
+    });
+
+
+    function getVisibleRows() {
+    // Select all rows that are not hidden (excluding those with display: none)
+        const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
+        return visibleRows;
+    }
+   function deleteRowData(){
+    document.querySelectorAll('.delete-btn').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const rows =  getVisibleRows();
+     
+        
+            if (rows.length > 1) { // Find the row containing the clicked delete button
+                
+                const row = this.closest('tr');
+                if (row) { // Find the checkbox for deletion in the row
+                    
+                    const checkRow = row.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
+                    if (checkRow) {
+                        checkRow.checked = true; // Mark as checked
+                        checkRow.value = 'true'; // Set the value to 'true'
+                        row.style.display = 'none';
+
+                        inputCheck();
+                    } else {
+                        console.error("Checkbox for deletion not found in this row");
+                    }
+                }
+            } else {
+                // If only one row remains, alert the user
+                alert('Cannot delete this row; at least one row must remain.');
+            }
+        });
+    }); 
+};
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('id_picklist_no').focus();
+})
+
+function inputCheck(){
+
+const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
+const nameCreated = document.getElementById('idNameCreated')
+var tableRows = document.querySelectorAll('#createpickListTable tr');
+itemNameInputsid.forEach((input, index) => {
+  input.addEventListener("keydown", function (event) {
+
+      const closestRow = input.closest('tr');
+      const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
+      const binInput = closestRow.querySelector('[name$="-bin_number"]');
+      console.log(binInput)
+          if(allInputsInRow === ''){
+              if (event.key === "Tab") {
+                  event.preventDefault(); 
+                
+                  if (input.value.trim() !== "") {
+                        if (binInput) {
+                            binInput.focus();
+                        }
+                    } else {
+                        input.focus(); // Refocus on the current input if empty
+                    }
+                }
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const currentTd = input.closest('tr');
+                      
+                    if (currentTd) {
+                        const nextTd = currentTd.nextElementSibling;
+
+                        // Check if next <td> exists and contains an input
+                        if (nextTd) {
+                            const nextInput = nextTd.querySelector('[name$="-bin_number"]');
+                            if (nextInput) {
+                                nextInput.focus(); // Move focus to the next input
+                            }
+                        }
+                    }
+                }
+          }
+
+      
+  });
+});
+
+
+nameCreated.addEventListener('keydown', function(event) {
+    if (event.key === "Tab") {
+        event.preventDefault();
+
+        if (nameCreated.value === '') {
+            nameCreated.focus();
+            return; 
+        }else{
+          var tableRow = document.querySelectorAll('#createpickListTable tr');
+        for (let row of tableRow) {
+            var itemInput = row.querySelector('[name$="product_name_value"]');
+            var qtyInput = row.querySelector('[name$="-bin_number"]');
+
+            if (itemInput && itemInput.value === '') {
+                itemInput.focus();
+                return; 
+            } 
+            // Check if quantity is empty, then focus on it
+            else if (qtyInput && qtyInput.value === '') {
+                qtyInput.focus();
+                return; 
+            }
+        }
+        }
+
+        
+    }
+});
+
+tableRows.forEach(function (row,index) {
+    const qty = row.querySelector('[name$="-product_quantity"]');
+    const bin_no = row.querySelector('[name$="-bin_number"]')
+    if(bin_no){
+        bin_no.addEventListener('keydown', function (event) {
+            if (event.key === "Tab") {
+                event.preventDefault();
+                if (bin_no.value === '') {
+         
+                    bin_no.focus();
+                } else if(qty) {
+                   
+                    qty.focus();
+                  
+                    
+                }
+            }
+        });
+    }
+    
+    
+
+});
+
+
+}
+
+inputCheck()
+deleteRowData()
 </script>
 {% endblock body %}
