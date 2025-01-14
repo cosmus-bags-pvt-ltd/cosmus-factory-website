@@ -486,11 +486,12 @@ function checkOnlyOne(checkbox) {
             const totalBalance = document.getElementById('id_balanceQty');
             const processQtyValue = parseFloat(processQty.value) || 0;
             const cuttingQtyValue = parseFloat(cuttingQty.value) || 0;
+            const baclanceQtyValue = parseFloat(balanceQty.value) || 0
            
 
             if(cuttingQtyValue > processQtyValue){
 
-                document.getElementById('id_purchase_order_to_product_cutting_set-'+ i +'-cutting_quantity').value = 0;
+                document.getElementById('id_purchase_order_to_product_cutting_set-'+ i +'-cutting_quantity').value = baclanceQtyValue;
                
             }
         

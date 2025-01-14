@@ -26,6 +26,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Picklist_voucher_master)
+admin.site.register(Finished_goods_transfer_records)
 
 
 

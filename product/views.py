@@ -11763,12 +11763,89 @@ def create_update_picklist(request,p_id=None):
 
 
 def all_picklists_list(request):
-    all_picklists = Picklist_voucher_master.objects.all()
+    all_picklists = Picklist_voucher_master.objects.all().annotate(total_quantity = Sum('picklist_products_list__product_quantity'))
+    
+    return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
 
-    for i in all_picklists:
-        first_ins = i.picklist_products_list.all()
-        print(first_ins)
+
+
+
+def picklist_product_ajax(request):
+    try:
+        product_name_typed = request.GET.get('productnamevalue')
+
+        if not product_name_typed:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+        
+        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
+
+        
+
+        # total_inward_subquery = finishedgoodsbinallocation.objects.filter(
+        #     product=OuterRef('product__PProduct_SKU')
+        # ).values('product__PProduct_SKU').annotate(total=Sum('related_purchase_item__qc_recieved_qty')).values('total')
+
+        
+        products_purchase = product_purchase_voucher_items.objects.filter(
+            Q(product_name__PProduct_SKU__icontains=product_name_typed) |
+            Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |
+            Q(product_name__Product__Model_Name__icontains=product_name_typed),
+            qc_recieved_qty__gt = 0
+        ).values(
+            'product_name__PProduct_SKU', 
+            'product_name__PProduct_color__color_name', 
+            'product_name__Product__Model_Name',
+            'qc_recieved_qty'
+            )
     
-    
-    
-    return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists,'first_ins':first_ins})
+        products_transfer = Finished_goods_transfer_records.objects.filter(Q(product__PProduct_SKU__icontains=product_name_typed) | Q(product__PProduct_color__color_name__icontains=product_name_typed) | Q(product__Product__Model_Name__icontains=product_name_typed), qc_recieved_qty__gt = 0).values('product__PProduct_SKU', 'product__PProduct_color__color_name', 'product__Product__Model_Name','qc_recieved_qty')
+
+        if not products_purchase.exists() and not products_transfer.exists():
+            return JsonResponse({'error': 'No products found.'}, status=404)
+
+        # Handle the case where one of the querysets is empty
+        if not products_purchase.exists():
+            products_purchase = []
+
+        if not products_transfer.exists():
+            products_transfer = []
+
+        # Align field names in products_transfer to match products_purchase
+        products_transfer_aligned = [
+            {
+                'product_name__PProduct_SKU': item['product__PProduct_SKU'],
+                'product_name__PProduct_color__color_name': item['product__PProduct_color__color_name'],
+                'product_name__Product__Model_Name': item['product__Product__Model_Name'],
+                'qc_recieved_qty': item['qc_recieved_qty']
+            }
+            for item in products_transfer
+        ]
+
+        # Merge the two querysets
+        merged_data = chain(products_purchase, products_transfer_aligned)
+
+        # Aggregate and sum `qc_recieved_qty` by unique keys (PProduct_SKU)
+        aggregated_data = defaultdict(lambda: {'qc_recieved_qty': 0, 'color_name': '', 'model_name': ''})
+
+        for item in merged_data:
+            key = item['product_name__PProduct_SKU']
+            aggregated_data[key]['qc_recieved_qty'] += item['qc_recieved_qty']
+            aggregated_data[key]['color_name'] = item['product_name__PProduct_color__color_name']
+            aggregated_data[key]['model_name'] = item['product_name__Product__Model_Name']
+
+        # Format the result as {PProduct_SKU: [total_qty, color_name, model_name]}
+        final_data = {
+            key: [value['qc_recieved_qty'], value['color_name'], value['model_name']]
+            for key, value in aggregated_data.items()
+        }
+
+        
+
+        # Return as JSON
+        return JsonResponse({'products':final_data}, safe=False)
+
+        # return JsonResponse({'typed': product_name_typed}, status=200)
+
+    except Exception as e:
+        logger.error(f"Error during search by {request.user}: {e}")
+        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)

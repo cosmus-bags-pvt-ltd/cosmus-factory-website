@@ -78,44 +78,54 @@
       </div>
 
     </form>
-  </div>    
-</div>
-
-
-
-<div class="col-lg-3">
-  <div class="responsive">
-    <form action="{% if post_data.sub_category %}{% url 'save-bin-to-subcategory' post_data.sub_category.id %}{% endif %}" method = 'POST'>
-      {% csrf_token %}
-      <table class="table table-bordered table-striped table-hover">
-        <thead class="name_absolute sticky-top">
-          <tr>
-            <th>Bin Name</th>
-            <th>Bin Size</th>
-            <th>checkBox</th>
-          </tr>
-        </thead>
-        <tbody class="mainTableList" id="checkboxTable" style="max-height: 450px; overflow-y: auto;">
-          {{ formset.management_form }}
-          {% for form in formset %}
-          {{form.id}}
-          <tr>
-            <td><input type="text" class="assigneBin-input" name="{{form.prefix}}-bin_name" value="{{form.instance.bin_name}}" maxlength="30" id="id_{{form.prefix}}-bin_name" readonly></td>
-            <td><input type="number" class="purchase-mark" name="{{form.prefix}}-product_size_in_bin" value="{{form.instance.product_size_in_bin}}" id="id_{{form.prefix}}-product_size_in_bin"></td>
-            <td class=""> 
-              <input type="checkbox" class="px-3" name="{{form.prefix}}-check_if_added_value" id="id_{{form.prefix}}-check_if_added_value" value="{{form.check_if_added.initial}}">
-              <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added" id="id_{{form.prefix}}-check_if_added" value="{{form.check_if_added.initial}}">
-              <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added_all" id="id_{{form.prefix}}-check_if_added_all" value="{{form.check_if_added_all.initial}}">
-              <i style="display: none;" class="fa-solid fa-check-double fa-xl my-2 ms-2 iconClass text-danger"></i>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <button type="submit" id="submitButtonSubCategory" class="create-btn" name="save" value="Save">Save</button>    
-    </form>
+     
+  </div> 
+  
+  <div class="col-lg-7">
+      <form action="{% if post_data.sub_category %}{% url 'save-bin-to-subcategory' post_data.sub_category.id %}{% endif %}" method = 'POST'>
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="responsive">
+              <table class="table table-bordered table-striped table-hover">
+                <thead class="name_absolute sticky-top">
+                  <tr>
+                    <th>Bin Name</th>
+                    <th>Bin Size</th>
+                    <th>checkBox</th>
+                  </tr>
+                </thead>
+                <tbody class="mainTableList" id="checkboxTable" style="max-height: 450px; overflow-y: auto;">
+                  {{ formset.management_form }}
+                  {% for form in formset %}
+                  {{form.id}}
+                  <tr>
+                    <td><input type="text" class="assigneBin-input" name="{{form.prefix}}-bin_name" value="{{form.instance.bin_name}}" maxlength="30" id="id_{{form.prefix}}-bin_name" readonly></td>
+                    <td><input type="number" class="purchase-mark" name="{{form.prefix}}-product_size_in_bin" value="{{form.instance.product_size_in_bin}}" id="id_{{form.prefix}}-product_size_in_bin"></td>
+                    <td class=""> 
+                      <input type="checkbox" class="px-3" name="{{form.prefix}}-check_if_added_value" id="id_{{form.prefix}}-check_if_added_value" value="{{form.check_if_added.initial}}">
+                      <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added" id="id_{{form.prefix}}-check_if_added" value="{{form.check_if_added.initial}}">
+                      <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added_all" id="id_{{form.prefix}}-check_if_added_all" value="{{form.check_if_added_all.initial}}">
+                      <i style="display: none;" class="fa-solid fa-check-double fa-xl my-2 ms-2 iconClass text-danger"></i>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-lg-2">
+            <button type="submit" id="submitButtonSubCategory" class="create-btn" name="save" value="Save">Save</button>
+          </div>
+        </div>
+      </form>
+    
   </div>
 </div>
+
+
+
+
 
   
 

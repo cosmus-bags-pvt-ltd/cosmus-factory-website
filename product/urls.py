@@ -152,6 +152,7 @@ urlpatterns = [
     path('createupdatepicklist/',views.create_update_picklist , name = 'create-update-picklist'),
     path('createupdatepicklist/<int:p_id>/',views.create_update_picklist , name = 'create-update-picklist'),
     path('allpicklistslist/',views.all_picklists_list , name = 'all-picklists-list'),
+    path('picklistproductajax/',views.picklist_product_ajax , name = 'picklist-product-ajax'),
 
     #subcategorys
     path('gstcreate/', views.gst_create_update, name = 'gst-create-list'),
