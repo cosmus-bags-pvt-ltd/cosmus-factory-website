@@ -117,7 +117,7 @@
 
                 if(productnamevalue.length >= 1){
                     $.ajax({
-                    url: '//',
+                    url: '/picklistproductajax/',
                     method: 'GET',
                     data: { 'productnamevalue': productnamevalue },
                     success: function (response) {
@@ -125,7 +125,8 @@
                         function escapeRegExp(string) {
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
-                        searchedProductNameDic = response.products; 
+                        searchedProductNameDic = response.products;
+                        console.log(searchedProductNameDic) 
                         const searchQuery = productnamevalue.toLowerCase();
                         const searchTerms = searchQuery.split(/\s+/);
                         const convertStringData = searchTerms.toString();
@@ -154,10 +155,10 @@
                         // Generate suggestions for matching options
                         filteredOptions.forEach(([key, value], index) => {
                             // Extract relevant fields
-                            const productName = value[0]; // Product name
+                            const productName = value[2]; // Product name
                             const productSKU = key; // SKU
                             const productColor = value[1];
-                            const productQty = value[5];
+                            const productQty = value[0];
                             // Highlight matches in name, SKU, and color
                             const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
                             const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
