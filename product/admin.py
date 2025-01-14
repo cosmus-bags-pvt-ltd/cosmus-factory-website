@@ -27,7 +27,8 @@ class ProductAdmin(admin.ModelAdmin):
 # admin.site.register(purchase_order_to_product)
 # admin.site.register(purchase_order_to_product_cutting)
 # admin.site.register(product_to_item_labour_workout)
-admin.site.register(finished_product_warehouse_bin)
+admin.site.register(Finished_goods_transfer_records)
+admin.site.register(product_purchase_voucher_items)
 
 
 

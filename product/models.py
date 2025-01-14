@@ -1095,6 +1095,9 @@ class product_purchase_voucher_master(models.Model):
     def __str__(self):
         return self.purchase_number
 
+
+
+
 class product_purchase_voucher_items(models.Model):
     product_purchase_master = models.ForeignKey(product_purchase_voucher_master, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation, on_delete = models.PROTECT)
@@ -1210,6 +1213,7 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
     quantity = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     rate = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     
+
 
 
 

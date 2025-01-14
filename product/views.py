@@ -8973,15 +8973,28 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 def scan_product_qty_list(request):
     product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0)
-
     stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0)
-
-
     merged_queryset = chain(product_purchase_voucher, stock_transfer_voucher)
-
     merged_list = list(merged_queryset)
 
     return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list})
+
+
+
+
+
+
+def scan_product_list(request,pk,v_type):
+    
+    if v_type == "purchase":
+
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk)
+
+    elif v_type == "transfer":
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk)
+
+    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries})
+
 
 
 
@@ -9255,12 +9268,10 @@ def process_serial_no(request):
                         product_suggested_bins = finished_product_warehouse_bin.objects.filter(sub_catergory_id = records)
                         bins_related_to_product.append(product_suggested_bins)
                     
-                    
-                    
-                    
+
 
                     flatterned_bins_related_to_product_list = list(chain.from_iterable(bins_related_to_product))
-                    
+                    print('flatterned_bins_related_to_product_list -- ', flatterned_bins_related_to_product_list)
                     bin_to_dict = []
                     
                     for qs in flatterned_bins_related_to_product_list:
