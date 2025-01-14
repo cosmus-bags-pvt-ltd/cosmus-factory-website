@@ -1216,4 +1216,17 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
 
 
 
+class Picklist_voucher_master(models.Model):
+    picklist_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
+    c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
+
+
+
+class Picklist_products_list(models.Model):
+    picklist_master_instance = models.ForeignKey(Picklist_voucher_master,on_delete=models.CASCADE,related_name="picklist_products_list")
+    product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
+    bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
+    product_quantity = models.BigIntegerField()

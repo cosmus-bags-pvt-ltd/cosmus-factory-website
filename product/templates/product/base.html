@@ -150,6 +150,7 @@
           <a href="{% url 'scan-product-qty-list' %}" class="sub-item">Finished Goods Stock</a>
           <a href="{% url 'warehouse-stock' %}" class="sub-item">Warehouse stock</a>
           <a href="{% url 'sales-voucher-list' %}" class="sub-item">Sales(WH) Scan</a>
+          <a href="{% url 'all-picklists-list' %}" class="navText">Pick List</a>
           {% comment %} <a href="{% url 'finished-goods-stock-all' %}" class="sub-item">Warehouse Stock</a> {% endcomment %}
           
         </div>
@@ -268,7 +269,9 @@
         <ul class="dropdown-menu dropdown-menu-right">
           <li class="pro-head"><a href="{% url 'finished-goods-sorting-list' %}" class="navText " >Inward FG to Warehose (QR)</a></li>
           <li class="pro-head"><a href="{% url 'scan-product-qty-list' %}" class="navText">Finished Goods Stock</a></li>
+          <li class="pro-head"><a href="{% url 'all-picklists-list' %}" class="navText">Pick List</a></li>
           <li class="pro-head"><a href="{% url 'sales-voucher-list' %}" class="navText">Sales(WH) Scan</a></li>
+          
          
           <!-- <li class="pro-head"><a href="{% url 'finished-goods-stock-all' %}" class="navText">Finished Goods Stock</a></li> -->
           
