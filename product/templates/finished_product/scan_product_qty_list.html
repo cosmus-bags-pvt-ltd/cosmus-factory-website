@@ -50,11 +50,6 @@ function finshedGoodsScanList(){
         row.addEventListener('click',function(event){
             event.preventDefault();
             var recordId = parseInt(row.querySelector('.refNo').textContent);
-          
-
-            console.log(recordId)
-       
-            
            
             window.location.href = "/scansingleproductlist/" + recordId;
             
