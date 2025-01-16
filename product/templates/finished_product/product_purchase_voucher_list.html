@@ -118,3 +118,124 @@
     }
 </script>
 {% endblock body %}
+
+
+{% extends 'product/base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-12 mt-4">
+      <div class="d-flex mb-2">
+        <button class="product-btn" id="addLedgerClick" onclick="reversAddVoucharList()">Add +</button>
+        <div class="container-flex"> 
+         <input class="" type="search" placeholder="Search" aria-label="Search" id="p_search" name="product_search" >
+         <input type="submit" class="mx-2"></input>
+        </div>
+        <button class="product-btn ml-3" onclick="redirectLedgerFilter()">Clear Filter</button>
+      </div>
+    </div>  
+  </div>   
+
+<div class="table-res">
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="name_absolute sticky-top">
+            <tr>
+                <th>No</th>
+                <th>Date</th>
+                <th>Voucher No</th>
+                <th>Party Name</th>
+                <th>supplier_invoice_number</th>
+                <th>Total Qty</th>
+                <th>Grand Total</th>
+                <th>Remark</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+            {% for record in product_purchase_voucher_all %}
+            <tr>
+              <input type="hidden" class="check_diffQty" value="{{record.check_diff_qty}}">
+                <td>{{forloop.counter}}</td>
+                <td>{{record.created_date}}</td>
+                <td>{{record.purchase_number}}</td>
+                <td>{{record.party_name.name}}</td>
+                <td>{{record.supplier_invoice_number}}</td>
+                <td>{{record.total_qty}}</td>
+                <td>{{record.grand_total}}</td>
+                <td>{{record.narration |default_if_none:''}}</td>
+                {% if record.check_diff_qty > 0 %}
+                <td><a href="{% url 'product-purchase-voucher-update' record.id %}"><i style="color:rgb(0, 0, 0)" class="fa-solid fa-eye px-1"></i></a></td>
+                {% else %}
+                <td><a href="{% url 'product-purchase-voucher-update' record.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
+                {% endif %}
+                <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ record.id }}" data-key="{{record.check_diff_qty}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
+            </tr>
+                {% endfor %}
+            
+        </tbody>
+    </table>
+</div>
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="confirmDeleteMessage">
+            Are you sure you want to delete this Purcahase Voucher?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
+          <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+      document.body.appendChild(document.getElementById('exampleModal'));
+    $(document).ready(function(){
+      $('.delete-btn').click(function(){
+        var itemId = $(this).data('item-id');
+        var key = $(this).data('key')
+        var name = $(this).closest('tr').find('td').eq(1).text();
+        var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
+        var differenceQty = $(this).closest('tr').find('.check_diffQty').val();
+
+          $('#confirmDeleteMessage').html('Are you sure you want to delete the Purchase Voucher ' + coloredName + '?');
+          $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
+          $('#confirmDeleteButton').attr('data-key',key);
+          $('#confirmDeleteModal').modal('show');
+      });
+
+      // Confirm delete button click event
+      $('#confirmDeleteButton').off('click').on('click', function(){
+        var itemId = $(this).data('item-id');
+        var $this = $(this);
+        var key = $(this).data('key')
+        var spinner = $this.html();
+
+        $this.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...');
+     
+           // Redirect to delete view
+          if(key > 0){
+            $('#confirmDeleteMessage').html('Can not Delete this invoice  already use in bin');
+            $this.css('display', 'none');
+            $this.html('');
+          }else{
+              if(itemId){
+              $this.prop('disabled', false);
+              $this.html(spinner);
+              window.location.href = '/productpurchasevoucherdelete/' + itemId;
+
+            }
+          }
+      });
+    });
+    function reversAddVoucharList(){
+        window.location.href = "{% url 'product-purchase-voucher-create' %}"
+    }
+</script>
+{% endblock body %}

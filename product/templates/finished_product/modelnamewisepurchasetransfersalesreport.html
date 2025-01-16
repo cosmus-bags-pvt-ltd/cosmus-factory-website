@@ -42,11 +42,11 @@
                     
                     {% if item.voucher_type == "purchase(product)" %}
 
-                    <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: rgb(255, 219, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'product-purchase-voucher-update' item.instance_id %}">Purchase/{{ item.voucher_no }}</a></button></td>
+                    <td class="text-center"><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: rgb(255, 219, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'product-purchase-voucher-update' item.instance_id %}">Purchase/{{ item.voucher_no }}</a></button></td>
 
                     {% elif item.voucher_type == "Transfer" %}
 
-                    <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color:rgb(255, 219, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'warehouse-product-transfer-update' item.instance_id %}">Transfer/{{ item.voucher_no }}</a></button></td>
+                    <td class="text-center"><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color:rgb(255, 219, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'warehouse-product-transfer-update' item.instance_id %}">Transfer/{{ item.voucher_no }}</a></button></td>
                     
                     {% else %}
                     <td></td>
@@ -56,9 +56,9 @@
                     
                     {% if item.voucher_type == "Sales" %}
                         {% if item.selected_godown %}
-                        <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color:rgb(255, 16, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'sales-voucher-create' item.instance_id %}">{{ item.sale_no }}</a></button></td>
+                        <td class="text-center"><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color:rgb(255, 16, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'sales-voucher-create' item.instance_id %}">{{ item.sale_no }}</a></button></td>
                         {% else %}
-                        <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color:rgb(255, 16, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'sales-voucher-create-update-for-warehouse' item.instance_id %}">{{ item.sale_no }}</a></button></td>
+                        <td class="text-center"><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color:rgb(255, 16, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'sales-voucher-create-update-for-warehouse' item.instance_id %}">{{ item.sale_no }}</a></button></td>
                         {% endif %}
                     
                     {% else %}
@@ -68,9 +68,9 @@
                     <td>{{ item.party_name }}</td>
                     <td>{{ item.color }}</td>
                     <td>{{ item.pro_sku }}</td>
-                    <td class="total_Qty">{{ item.inward }}</td>
-                    <td>{{ item.outward }}</td>
-                    <td>{{ item.balance }}</td>
+                    <td class="total_Qty text-center">{{ item.inward }}</td>
+                    <td class="text-center">{{ item.outward }}</td>
+                    <td class="text-center">{{ item.balance }}</td>
                         
                 </tr>
             {% endfor %}

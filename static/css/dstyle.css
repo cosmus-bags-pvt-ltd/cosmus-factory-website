@@ -1974,7 +1974,9 @@ table>:not(caption)>*>*{
     background-color: transparent;
 
 }
-
+.productorder_input:focus{
+    outline: none;
+}
 .productShadeRmEstimation_input {
     width: 306px;
     border-radius: 3px;

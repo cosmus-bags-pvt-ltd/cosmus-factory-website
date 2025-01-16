@@ -88,7 +88,8 @@
           {% endif %}
         </div>
         <div class="col-lg-1">
-          <div class="delete-btn border-0 bg-transparent mt-5" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-3 "><input type="checkbox" class="product_delete_related px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="{{form.prefix}}-DELETE" value=""></i></div>
+          <span class="delete-btn border-0 bg-transparent mt-5" style="cursor: pointer;" ><i class="fa-solid fa-trash text-danger px-3 "><input type="checkbox" class="product_delete_related px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="{{form.prefix}}-DELETE" value=""></i></span>
+          
         </div>
 
       </div>
@@ -509,7 +510,7 @@
   </div>
 </form>
 
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -526,8 +527,10 @@
     </div>
   </div>
 </div>
-</div>
+</div> -->
 <script>
+   
+
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('newFormSubmit').addEventListener('click',function(){
     var forms = document.getElementById('newForm');
@@ -544,11 +547,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var productAdd= forms.querySelector('#aditional_details');
     var productCategorty = forms.querySelector('#product_category_btn')
     var productCatBTn = forms.querySelector('#product_category')
-    // console.log('Gender',typeof(Gender))
-    // console.log('brandName',brandName)
-    // console.log('statusForm',statusForm)
-    // console.log('HsnValue',HsnValue)
-    // console.log('MainCategorie',MainCategorie)
+   
     if(modelName === '' || ProductName === '' || ProductShortName ==='' || ProductGst === '' || brandName === '' || statusForm === '' || Gender === '' || HsnValue === '' || MainCategorie === ''){
       alert('Please fill all fields')
   
@@ -566,38 +565,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileNameElement = document.getElementById('file-name');
     fileNameElement.textContent = fileName;
   })
-  document.body.appendChild(document.getElementById('exampleModal'));
 
-  document.addEventListener('DOMContentLoaded', function () {
-   
-    document.querySelectorAll('.delete-btn').forEach(function (button) {
-      button.addEventListener('click', function () { 
-        const rows = this.closest('.card');
-        const productId = rows.querySelector('[name$="-PProduct_SKU"]').value;
-        const coloredName = '<span class="color-name" style="color:' + productId + ';">' + productId + '</span>';
-        const modelText = document.getElementById('exampleModal')
-        $(modelText).modal('show');
-        $('#modal-body-text').html('Are you sure you want to delete the Product Sku ' + coloredName + '?');
-        document.getElementById('confirmDeleteButton').addEventListener('click',function(){
-          console.log('test')
-          const checkRow = rows.querySelector('.product_delete_related[name^="productdetails-"][name$="-DELETE"]');
-            if (checkRow) {
-              checkRow.checked = true; // Mark as checked
-              checkRow.value = 'true'; // Set the value to 'true'
-              rows.style.display = 'none';
-              
-            } else {
-              console.error("Checkbox for deletion not found in this row");
-            }
-            $(modelText).modal('hide');
-        })
-        
-      });
-    });
-  });
+
 </script>
 
 <script>
+  //  document.body.appendChild(document.getElementById('exampleModal'));
   // THis code for a main catagory and sub catagory show in the form
   $(document).ready(function () {
     $('#id_Product_MainCatagory').change(function () {
@@ -629,7 +602,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
- 
+    $('.delete-btn').each(function () {
+        $(this).on('click', function () {
+            const rows = $(this).closest('.card');
+            const productId = rows.find('[name$="-PProduct_SKU"]').val();
+            const coloredName = `<span class="color-name" style="color:${productId};">${productId}</span>`;
+            
+            // Update the modal content
+            // $('#modal-body-text').html(`Are you sure you want to delete the Product SKU ${coloredName}?`);
+            
+            // // Show the modal
+            // $('#exampleModal').modal('show');
+
+            // Add click event listener to confirmDeleteButton using "once"
+            $('#confirmDeleteButton').one('click', function () {
+                
+            });
+
+            const checkRow = rows.find('.product_delete_related[name^="productdetails-"][name$="-DELETE"]');
+                if (checkRow.length) {
+                    checkRow.prop('checked', true).val('true'); // Check the checkbox and set value
+                    rows.hide(); // Hide the row
+
+                    // Hide the modal
+                    // $('#exampleModal').modal('hide');
+                    
+
+                } else {
+                    console.error("Checkbox for deletion not found in this row");
+              }
+        });
+    });
   });
 </script>
 

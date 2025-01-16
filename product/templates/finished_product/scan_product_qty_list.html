@@ -33,10 +33,10 @@
                     <td>{{data.product_name.Product.Product_Refrence_ID }}</td>
                     <td>{{data.product_name.Product.Model_Name}}</td>
                     <td>{{data.product_name.PProduct_color.color_name}}</td>
-                    <td>{{data.product_name.PProduct_SKU}}</td>
-                    <td>{{data.quantity_total}}</td>
-                    <td>{{data.qc_recieved_qty}}</td>
-                    <td>{{data.diffrence_qty}}</td>
+                    <td >{{data.product_name.PProduct_SKU}}</td>
+                    <td class="text-center">{{data.quantity_total}}</td>
+                    <td class="text-center">{{data.qc_recieved_qty}}</td>
+                    <td class="text-center">{{data.diffrence_qty}}</td>
                 {% else %}
                     <input type="hidden" class="pro_id" value="{{data.id}}">
                     <input type="hidden" class="ledger_type" value="transfer">
@@ -45,9 +45,9 @@
                     <td>{{data.product.Product.Model_Name}}</td>
                     <td>{{data.product.PProduct_color.color_name}}</td>
                     <td>{{data.product.PProduct_SKU}}</td>
-                    <td>{{data.product_quantity_transfer}}</td>
-                    <td>{{data.qc_recieved_qty}}</td>
-                    <td>{{data.diffrence_qty}}</td>
+                    <td class="text-center">{{data.product_quantity_transfer}}</td>
+                    <td class="text-center">{{data.qc_recieved_qty}}</td>
+                    <td class="text-center">{{data.diffrence_qty}}</td>
                 {% endif %}
                 
                 <td></td>

@@ -1,10 +1,10 @@
 {% extends 'product/base.html' %}
 {% load static %}
 {% block body %}
-<div class="mt-4">
+<div class="mt-2">
     <form method="POST">
         {% csrf_token %}
-        <div class="mb-3">
+        <div class="mb-2">
             {% if voucher_type == 'purchase' %}
             <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
             <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
@@ -16,76 +16,6 @@
 
             {% endif %}
         
-        </div>
-
-        
-        <div class="row mb-4">
-            <div class="col-lg-7">
-                <table class="table table-striped table-hover table-bordered">
-                    <thead class="name_absolute sticky-top">
-                        <tr>
-                            <th>No</th>
-                            <th>Product SKU</th>
-                            <th>Ref No</th>
-                            <th>Model Name</th>
-                            <th>Color</th>
-                            <th>Quantity</th>
-                            <th>Difference Qty</th>
-                            <th>QC Recieved QTY</th>
-                        </tr>
-                    </thead>
-                    <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-                        {{ formset.management_form}}
-
-                        {% for form in formset %}
-                        {{form.id}}
-                     
-                        {% if form.instance.product_purchase_master.purchase_number %}
-                    
-                        <tr>
-                            <input type="hidden" id="id_hiddenId" value="{{instance_id}}">
-                            <td>{{ forloop.counter }}</td>
-                            <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-product_sku" id="id_{{form.prefix}}-product_sku" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
-                            <td><input type="number" class="productShadeCutting_Material_input" name="{{form.prefix}}-refNo" value="{{ form.instance.product_name.Product.Product_Refrence_ID }}" readonly></td>
-                            <td>
-                                <input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-Product_name_Value" id="id_{{form.prefix}}-Product_name_Value" value="{{ form.instance.product_name.Product.Model_Name }}" readonly>
-                                <input type="hidden" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}">
-                            </td>
-                            <td><input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_color.color_name }}" readonly></td>
-
-                            <td><input type="number" class="productorderrawqty-input quantityTotal"  name="{{form.prefix}}-quantity_total" id="id_{{form.prefix}}-quantity_total" value="{{ form.instance.quantity_total|default_if_none:0 }}" readonly></td>
-                            <td> <input type="number" class="productorderrawqty-input productInwordDiffernceQty" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
-                            <td><input type="number" class="productorderrawqty-input productInwordRecivedQty" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
-                        </tr>
-                    
-                        {% elif form.instance.Finished_goods_Stock_TransferMasterinstance.voucher_no %}
-                        
-                        <tr>
-                            <input type="hidden" id="id_hiddenId" value="{{instance_id}}">
-                            <td>{{ forloop.counter }}</td>
-                            <td><input type="number" class="productShadeCutting_Material_input productInwordSku" name="{{form.prefix}}-stock_transfer_sku" id="id_{{form.prefix}}-stock_transfer_sku" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
-                            <td><input type="number" class="productShadeCutting_Material_input " name="{{form.prefix}}-refNo" id="id_{{form.prefix}}-refNo" value="{{ form.instance.product.Product.Product_Refrence_ID }}" readonly></td>
-                            <td>
-                                <input type="text" name="{{form.prefix}}-stock_transfer_name_value" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-stock_transfer_name_value" value="{{ form.instance.product.Product.Model_Name }}" readonly>
-                                <input type="hidden" name="{{form.prefix}}-product" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-product" value="{{ form.instance.product.PProduct_SKU }}">
-                            </td>
-
-                            <td><input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product.PProduct_color.color_name }}" readonly></td>
-
-
-                            <td><input type="number" class="productorderrawqty-input quantityTotal" name="{{form.prefix}}-product_quantity_transfer" id="id_{{form.prefix}}-product_quantity_transfer" value="{{ form.instance.product_quantity_transfer |default_if_none:0 }}" readonly></td>
-
-                            <td><input type="number" class="productorderrawqty-input productInwordDiffernceQty" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
-
-                            <td><input type="number" class="productorderrawqty-input productInwordRecivedQty" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{ form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
-
-                        </tr>
-                    
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>    
-                </table>
-            </div>
         </div>
         <div class="mb-3">
             <h4 class="fw-bold d-inline ">INWard Process</h4> <span id="responseMessage" class="mx-5 fw-bold"></span>
@@ -99,7 +29,7 @@
                     <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
                 </div>
                 <div class="mb-2 ms-2">
-                    <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button>
+                    <!-- <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button> -->
                     <label for="id_bin_Name" class="fw-bold ms-5">Bin :</label>
                     <select  class="productSelect" name="product_bin" id="id_bin_Name">
                     </select>
@@ -108,7 +38,7 @@
                      
             <div class="row mb-3">
                 <div class="col-lg-7 " style="display:none" id="stockTransferList">
-                    <table class="table table-striped table-hover table-bordered" >
+                    <table class="table table-striped table-hover table-bordered" id="stockTransferInstanceTable">
                         <thead class="name_absolute">
                             <tr>
                                 <th>Name</th>
@@ -120,9 +50,9 @@
                         <tbody class="mainTableList" >
                            
                             <tr>
-                                <td><input name="product_name" type="text" class="productSelect" id="id_product" readonly></td>
-                                <td><input name="product_sku" type="number" class="productSelect"  id="id_product_sku" readonly></td>
-                                <td><input name="product_color" type="text" class="productSelect"  id="id_product_color" readonly></td>
+                                <td><input name="product_name" type="text" class="productShadeCutting_Material_input" id="id_product" value="" readonly></td>
+                                <td><input name="product_sku" type="number" class="productorder_input"  id="id_product_sku" value="" readonly></td>
+                                <td><input name="product_color" type="text" class="productorder_input"  id="id_product_color" value="" readonly></td>
                                 <td>
                                     <img id="productImgPreview" name="product_img" src="" alt="Product Image" style="width: 60px; height: 60px;">
                                </td>
@@ -139,80 +69,138 @@
             </div>
           
         </div>
-        
-    </form>
-    <div class="mt-2">
-        <div>
-            <div class="d-flex">
-                <h4 class="fw-bold">INWarded Product</h4>
-                
-            </div>
-           
-            <div class="row">
-                <div class="col-lg-9">
-                    <table class="table table-striped table-hover table-bordered" id="inwordDateTable">
-                        <thead class="name_absolute sticky-top">
-                            <tr>
-                                <th colspan="6"></th>
-                                <th>Total :</th>
-                                <th><span class="totalentries text-danger"></span></th>
-                                <th colspan="3"></th>
-                            </tr>
-                            <tr>
-                                <th>No</th>
-                                <th>Ref No</th>
-                                <th>Model Name</th>
-                                <th>Product SKU</th>
-                                <th>Color</th>
-                                <th>Image</th>
-                                <th>Serial No</th>
-                                <th>Quantity</th>
-                                <th>QC Recieved QTY</th>
-                                <th>Bin NO</th>
-                                <th>Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-                            {% for entries in single_entries %}
-                        
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Product_Refrence_ID }}" readonly></td>
-                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.Product.Model_Name }}" readonly></td>
-                                <td><input type="number" class="stockQrcode_input inwardedsku" value="{{ entries.product.PProduct_SKU }}" readonly></td>
-                                <td><input type="text" class="stockQrcode_input " value="{{ entries.product.PProduct_color.color_name }}" readonly></td>
-
-                                <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_image.url }}" alt="Product Image" style="width: 60px; height: 60px;"></td>
-
-                                <td><input type="text" class="stockQrcode_input" value="{{ entries.unique_serial_no }}" readonly></td>
-                                
-                                {% if entries.related_purchase_item.quantity_total %}
-
-                                <input type="hidden" value="purchase" class="recordtype">
-                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ entries.related_purchase_item.quantity_total|default_if_none:0 }}" readonly></td>
-
-                                {% else %}
-                                
-                                <input type="hidden" value="transfer" class="recordtype">
-                                <td><input type="number" class="productorderrawqty-input inwardedQty" value="{{ entries.related_transfer_record.product_quantity_transfer|default_if_none:0 }}" readonly></td>
-
-                                {% endif %}
-                                
-
-                                <td><input type="number" class="productorderrawqty-input inwardedReceivedQty" value="1" readonly></td> 
-
-                                <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}" readonly></td> 
-                                 
-                                <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ entries.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
-                            </tr>
-                            {% endfor %}
-                        </tbody>    
-                    </table>
+        <div class="mt-2">
+                <div class="row">
+                    <div class="col-lg-9">
+                        <h4 class="fw-bold">INWarded Product</h4>
+                        <table class="table table-striped table-hover table-bordered" id="inwordDateTable">
+                            <thead class="name_absolute sticky-top">
+                                <tr>
+                                    <th colspan="6"></th>
+                                    <th>Total :</th>
+                                    <th class="text-center"><span class="totalQty fw-bold " ></span></th>
+                                    <th class="text-center"><span class="totalentries text-success"></span></th>
+                                    <th colspan="2">Balance For inward :<span class="pendingQty text-danger ps-3"></span></th>
+                                   
+                                </tr>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Ref No</th>
+                                    <th>Model Name</th>
+                                    <th>Product SKU</th>
+                                    <th>Color</th>
+                                    <th>Image</th>
+                                    <th>Serial No</th>
+                                    <th>Quantity</th>
+                                    <th>QC Rec QTY</th>
+                                    <th>Bin NO</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+                                {% for entries in single_entries %}
+                            
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><input type="text" class="productorder_input " value="{{ entries.product.Product.Product_Refrence_ID }}" readonly></td>
+                                    <td><input type="text" class="productShadeCutting_Material_input " value="{{ entries.product.Product.Model_Name }}" readonly></td>
+                                    <td><input type="number" class="productorder_input inwardedsku" value="{{ entries.product.PProduct_SKU }}" readonly></td>
+                                    <td><input type="text" class="productorder_input " value="{{ entries.product.PProduct_color.color_name }}" readonly></td>
+                                    <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_image.url }}" alt="Product" style="width: 60px; height: 60px;"></td>
+                                    <td><input type="text" class="productorder_input" value="{{ entries.unique_serial_no }}" readonly></td>
+                                    {% if entries.related_purchase_item.quantity_total %}
+                                    <input type="hidden" value="purchase" class="recordtype">
+                                    <td><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_purchase_item.quantity_total|default_if_none:0 }}" readonly></td>
+                                    {% else %}
+                                    <input type="hidden" value="transfer" class="recordtype">
+                                    <td><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_transfer_record.product_quantity_transfer|default_if_none:0 }}" readonly></td>
+    
+                                    {% endif %}
+                                    <td><input type="number" class="productorderrawqty-input inwardedReceivedQty text-center" value="1" readonly></td> 
+                                    <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}" readonly></td>  
+                                    <td><span class="border-0 bg-transparent delete-btn" data-item-id="{{ entries.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
+                                </tr>
+                                {% endfor %}
+                            </tbody>    
+                        </table>
+                    </div>
                 </div>
-            </div>
-           
         </div>
-    </div>
+        
+        <div class="row mb-4">
+            <div class="col-lg-7">
+                <table class="table table-striped table-hover table-bordered" id="inwardListproduct">
+                    <thead class="name_absolute sticky-top">
+                        <tr>
+                            <th>No</th>
+                            <th>Product SKU</th>
+                            <th>Ref No</th>
+                            <th>Model Name</th>
+                            <th>Color</th>
+                            <th>Quantity</th>
+                            <th>Diffe Qty</th>
+                            <th>QC Rec QTY</th>
+                        </tr>
+                    </thead>
+                    <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+                        {{ formset.management_form}}
+
+                        {% for form in formset %}
+                        {{form.id}}
+                     
+                        {% if form.instance.product_purchase_master.purchase_number %}
+                    
+                        <tr>
+                            <input type="hidden" id="id_hiddenId" value="{{instance_id}}">
+                            <td>{{ forloop.counter }}</td>
+                            <td><input type="number" class="productorder_input productInwordSku" name="{{form.prefix}}-product_sku" id="id_{{form.prefix}}-product_sku" value="{{ form.instance.product_name.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-refNo" value="{{ form.instance.product_name.Product.Product_Refrence_ID }}" readonly></td>
+                            <td>
+                                <input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-Product_name_Value" id="id_{{form.prefix}}-Product_name_Value" value="{{ form.instance.product_name.Product.Model_Name }}" readonly>
+                                <input type="hidden" class="productShadeCutting_Material_input" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}">
+                            </td>
+                            <td><input type="text" class="productorder_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_color.color_name }}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input quantityTotal text-center"  name="{{form.prefix}}-quantity_total" id="id_{{form.prefix}}-quantity_total" value="{{ form.instance.quantity_total|default_if_none:0 }}" readonly></td>
+                            <td> <input type="number" class="productorderrawqty-input productInwordDiffernceQty text-center" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input productInwordRecivedQty text-center" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
+                        </tr>
+                    
+                        {% elif form.instance.Finished_goods_Stock_TransferMasterinstance.voucher_no %}
+                        
+                        <tr>
+                            <input type="hidden" id="id_hiddenId" value="{{instance_id}}">
+                            <td>{{ forloop.counter }}</td>
+                            <td><input type="number" class="productorder_input productInwordSku" name="{{form.prefix}}-stock_transfer_sku" id="id_{{form.prefix}}-stock_transfer_sku" value="{{ form.instance.product.PProduct_SKU }}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input " name="{{form.prefix}}-refNo" id="id_{{form.prefix}}-refNo" value="{{ form.instance.product.Product.Product_Refrence_ID }}" readonly></td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-stock_transfer_name_value" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-stock_transfer_name_value" value="{{ form.instance.product.Product.Model_Name }}" readonly>
+                                <input type="hidden" name="{{form.prefix}}-product" class="productShadeCutting_Material_input" id="id_{{form.prefix}}-product" value="{{ form.instance.product.PProduct_SKU }}">
+                            </td>
+                            <td><input type="text" class="productorder_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product.PProduct_color.color_name }}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input quantityTotal text-center" name="{{form.prefix}}-product_quantity_transfer" id="id_{{form.prefix}}-product_quantity_transfer" value="{{ form.instance.product_quantity_transfer |default_if_none:0 }}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input productInwordDiffernceQty text-center" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input productInwordRecivedQty text-center" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{ form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
+
+                        </tr>
+                    
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>  
+                    <tbody class="mainTableList">
+                        <tr class="text-center fw-bold">
+                            <td colspan="4" ></td>
+                            <td >Total:</td>
+                            <td><span class="total"></span></td>
+                            <td><span class="pending text-danger"></span></td>
+                            <td><span class="receive text-success"></span></td>
+                           
+
+                        </tr>
+                    </tbody>  
+                </table>
+            </div>
+        </div>
+    </form>
 </div>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -234,210 +222,270 @@
 </div>
 
 <script>
-     document.body.appendChild(document.getElementById('exampleModal'));
-    document.addEventListener('DOMContentLoaded', function () {
+    document.body.appendChild(document.getElementById('exampleModal'));
+   document.addEventListener('DOMContentLoaded', function () {
+       const inwardSearch = document.getElementById('inwordSerialNo');
+       const manualSearch = document.getElementById('id_manualSerialNo');
+       const stockTable = document.getElementById('stockTransferList');
+       const responseMessage = $('#responseMessage');
+       const id_voucher_no = document.getElementById('id_voucher_no').value;
+       const instancId = parseInt(document.getElementById('id_hiddenId').value);
+       const voucherType = document.getElementById('id_voucher_type').value;
+       const selectBin = document.getElementById('id_bin_Name')
+  
+       $.ajax({
+           url: '/stocktransferinstancelistpopup/${instancId}/${voucherType}',
+           type: 'GET',
+           data: { 
+               'id_voucher_no':id_voucher_no,
+           },
 
-        
-        const inwardSearch = document.getElementById('inwordSerialNo');
-        const manualSearch = document.getElementById('id_manualSerialNo');
-        const stockTable = document.getElementById('stockTransferList');
-        const responseMessage = $('#responseMessage');
-        const id_voucher_no = document.getElementById('id_voucher_no').value;
-        const instancId = parseInt(document.getElementById('id_hiddenId').value);
-        const voucherType = document.getElementById('id_voucher_type').value;
-        console.log('voucherType',voucherType)
-        const selectBin = document.getElementById('id_bin_Name')
-       
-        $.ajax({
-            url: '/stocktransferinstancelistpopup/${instancId}/${voucherType}',
-            type: 'GET',
-            data: { 
-                'id_voucher_no':id_voucher_no,
-            },
+       })
+       // Focus on input field and hide table initially for `inwordSerialNo`
+       inwardSearch.focus();
 
-        })
-        // Focus on input field and hide table initially for `inwordSerialNo`
-        inwardSearch.focus();
-
-        inwardSearch.addEventListener('input', function () {
-            inwardSearch.style.color = 'white';
-            responseMessage.html(''); // Clear any previous messages
-            console.log('inwardSearch',inwardSearch.value)
-            if (inwardSearch.value) {
-                stockTable.style.display = "block";
-                manualSearch.value = ''; // Clear manual search if `inwordSerialNo` has input
-                inwardSearch.addEventListener('keydown',function(event){
+       inwardSearch.addEventListener('input', function () {
+           inwardSearch.style.color = 'white';
+             responseMessage.html(''); // Clear any previous messages
+           if (inwardSearch.value) {
+               stockTable.style.display = "block";
+               manualSearch.value = ''; // Clear manual search if `inwordSerialNo` has input
+               inwardSearch.addEventListener('keydown',function(event){
+               
+                   if(event.key === "Tab"){
                     event.preventDefault();
-                    if(event.key === "Tab"){
-                        selectBin.focus();
-                    }
-                })
-                    }
-        });
-    
-        // Add similar event listener for `id_manualSerialNo`
-        manualSearch.addEventListener('input', function () {
-            
-            responseMessage.html(''); // Clear any previous messages
-            if (manualSearch.value) {
-                stockTable.style.display = "block";
-                inwardSearch.value = ''; // Clear inward search if `id_manualSerialNo` has input
+                       selectBin.focus();
+                   }
+               })
             }
         });
-
-        
-        calculateQty()
-    });
-    
-    $(document).ready(function () {
-        let debounceTimeout;
-    
-        // Handle input in inwordSerialNo
-        $('#inwordSerialNo').on('input', function () {
-            console.log($(this).val())
-            clearTimeout(debounceTimeout);
-    
-            // Clear id_manualSerialNo
-            const manual_serial = $('#id_manualSerialNo');
-            manual_serial.val('');
-    
-            // Prevent manual button functionality
-            const manualButton = $('#manualAjaxButton');
-            manualButton.prop('disabled', true);
-            
-            const responseMessage = $('#responseMessage');
-            responseMessage.html(''); // Clear any previous messages
-
-            const inputField = $(this);
+   
+          // Add similar event listener for `id_manualSerialNo`
+       manualSearch.addEventListener('input', function () {
            
-            debounceTimeout = setTimeout(async function () {
-                let inputUrl = inputField.val();
-                let serialNo = '';
-                console.log('inputUrl',inputUrl)
-                // Extract serial number
-                if (inputUrl.includes('=')) {
-                    serialNo = inputUrl.split('=').pop();
-                    inputField.val(serialNo);
-                    inputField.css('color', 'black');
-                }
-    
-                if (serialNo) {
-                    try {
-                        const response = await sendSerialNumber(serialNo);
-                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
-                    } catch (error) {
-                        const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                        $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+           responseMessage.html(''); // Clear any previous messages
+           if (manualSearch.value) {
+               stockTable.style.display = "block";
+               inwardSearch.value = ''; // Clear inward search if `id_manualSerialNo` has input
+           }
+      
+       });
+
+       calculateQty()
+   });
+   
+   $(document).ready(function () {
+       let debounceTimeout;
+   
+       // Handle input in inwordSerialNo
+       $('#inwordSerialNo').on('input', function () {
+           clearTimeout(debounceTimeout);
+   
+           // Clear id_manualSerialNo
+           const manual_serial = $('#id_manualSerialNo');
+           manual_serial.val('');
+           
+           const responseMessage = $('#responseMessage');
+           responseMessage.html(''); // Clear any previous messages
+
+           const inputField = $(this);
+   
+           debounceTimeout = setTimeout(async function () {
+               let inputUrl = inputField.val();
+               let serialNo = '';
+   
+               // Extract serial number
+               if (inputUrl.includes('=')) {
+                   serialNo = inputUrl.split('=').pop();
+                   inputField.val(serialNo);
+                   inputField.css('color', 'black');
+               }
+   
+               if (serialNo) {
+                   try {
+                       const response = await sendSerialNumber(serialNo);
+                       $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                   } catch (error) {
+                       const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                       $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                   }
+               }
+           }, 500); // Debounce delay
+       });
+   
+       // Handle input in id_manualSerialNo
+       $('#id_manualSerialNo').on('input', function () {
+           // Clear inwordSerialNo
+           $('#inwordSerialNo').val('');
+   
+           const responseMessage = $('#responseMessage');
+           responseMessage.html(''); // Clear any previous messages
+
+       });
+   
+       // Handle click on the normal button
+       $('#id_manualSerialNo').on('keydown', async function (event) {
+            if(event.key === 'Enter'){
+                event.preventDefault();
+                const manualSerialNo = $('#id_manualSerialNo').val();
+                
+                const stockName = document.getElementById('id_product'); // Table element
+                const stockSku = document.getElementById('id_product_sku'); // Table element
+                const stockColor = document.getElementById('id_product_color'); // Table element
+                console.log(stockName,stockSku,stockColor)
+                const responseMessage = $('#responseMessage'); // Response message container
+                    if (manualSerialNo) {
+                        try {
+                            const response = await sendSerialNumber(manualSerialNo);
+                            
+                            $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                           
+                        } catch (error) {
+                            const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                            $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                            $('#id_manualSerialNo').val('');
+                            stockName.val('');
+                            stockSku.val('');
+                            stockColor.val('');
+                        }
+                    } else {
+                        $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
+                        $('#id_manualSerialNo').val('');
+                            stockName.val('');
+                            stockSku.val('');
+                            stockColor.val('');
                     }
-                }
-            }, 500); // Debounce delay
-        });
-    
-        // Handle input in id_manualSerialNo
-        $('#id_manualSerialNo').on('input', function () {
-            // Clear inwordSerialNo
-            $('#inwordSerialNo').val('');
-    
-            // Enable manual button
-            const manualButton = $('#manualAjaxButton');
-            manualButton.prop('disabled', false); // Enable manual button
-
-            const responseMessage = $('#responseMessage');
-            responseMessage.html(''); // Clear any previous messages
-
-        });
-    
-        // Handle click on the normal button
-        $('#manualAjaxButton').on('click', async function () {
-            const manualSerialNo = $('#id_manualSerialNo').val();
-    
-            if (manualSerialNo) {
-                try {
-                    const response = await sendSerialNumber(manualSerialNo);
-                    $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
-                } catch (error) {
-                    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
-                }
-            } else {
-                $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
+                    
             }
-        });
-    
-        // Function to send serial number to the backend
+           
+
+       });
+   
+       // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
             const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
             const instance_number = $('#id_voucher_no').val();
             const instance_type = $('#id_voucher_type').val();
-    
-            const response = await $.ajax({
-                url: '/processserialno/',
-                type: 'POST',
-                data: { 
-                    serialNo: serialNo, 
-                    csrfmiddlewaretoken: csrfToken,
-                    instance_number_post: instance_number,
-                    instance_type_post: instance_type
-                },
-            });
-    
-            // Populate fields
-            console.log(response.product_name)
-            $('#id_product').val(response.product_name);
-            $('#id_product_sku').val(response.product_sku);
-            $('#id_product_color').val(response.product_color);
-            $('#productImgPreview').attr('src', response.product_image);
-    
-            const binSelect = $('#id_bin_Name');
-            binSelect.empty(); // Clear existing options
-           
-            response.bin_to_dict.forEach(bin => {
-                binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
-            });
-    
-            return response;
+
+            try {
+                const response = await $.ajax({
+                    url: '/processserialno/',
+                    type: 'POST',
+                    data: { 
+                        serialNo: serialNo, 
+                        csrfmiddlewaretoken: csrfToken,
+                        instance_number_post: instance_number,
+                        instance_type_post: instance_type
+                    },
+                });
+
+                // Extract product SKU from response
+                const productSku = parseInt(response.product_sku);
+                const mainsku = document.querySelectorAll('[name$="-product_sku"]');
+                
+                // Check if any main SKU matches the product SKU
+                let isMatch = false;
+                mainsku.forEach(function (item) {
+                    const sku = parseInt(item.value);
+                    if (sku === productSku) {
+                        isMatch = true;
+                    }
+                });
+
+                if (!isMatch) {
+                    alert('SKU does not match!');
+                    throw new Error('SKU mismatch'); // Prevent further execution and returning the response
+                }
+
+                $('#id_product').val(response.model_name);
+                $('#id_product_sku').val(response.product_sku);
+                $('#id_product_color').val(response.product_color);
+                $('#productImgPreview').attr('src', response.product_image);
+
+                const binSelect = $('#id_bin_Name');
+                binSelect.empty(); // Clear existing options
+
+                response.bin_to_dict.forEach(bin => {
+                    binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
+                });
+
+                return response;
+            } catch (error) {
+                console.error('Error:', error);
+                return null; // Optionally return null or handle the error further
+            }
         }
 
 
-        $('.delete-btn').click(function(){
-            var itemId = $(this).data('item-id');
-            var name = $(this).closest('tr').find('td').eq(1).text();
-            var dataValue = $(this).closest('tr').find('.recordtype').val();
-            console.log('dataValue',dataValue)
-            var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
-    
-            $('#modal-body-text').html('Are you sure you want to delete the inward Product Serial no ' + coloredName + '?');
-            $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
-            $('#confirmDeleteButton').attr('data-item-key', dataValue);
-            $('#exampleModal').modal('show');
-        });
-    
-        // Confirm delete button click event
-        $('#confirmDeleteButton').click(function(){
-            var itemId = $(this).data('item-id');
-            var data = $(this).data('item-key');
-            // Redirect to delete view
-            window.location.href = '/deletesigleentries/' + itemId +'/'+ data;
-        });
 
+       $('.delete-btn').click(function(){
+           var itemId = $(this).data('item-id');
+           var name = $(this).closest('tr').find('td').eq(1).text();
+           var dataValue = $(this).closest('tr').find('.recordtype').val();
+           console.log('dataValue',dataValue)
+           var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
+   
+           $('#modal-body-text').html('Are you sure you want to delete the inward Product Serial no ' + coloredName + '?');
+           $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
+           $('#confirmDeleteButton').attr('data-item-key', dataValue);
+           $('#exampleModal').modal('show');
+       });
+   
+       // Confirm delete button click event
+       $('#confirmDeleteButton').click(function(){
+           var itemId = $(this).data('item-id');
+           var data = $(this).data('item-key');
+           console.log(data)
+           // Redirect to delete view
+           window.location.href = '/deletesigleentries/' + itemId +'/'+ data;
+           calculateQty()
+       });
+
+   });
+
+   function calculateQty() {
+    let totalQty = 0;
+    let difference = 0;
+    let rec = 0;
+
+    // Select all rows in the table
+    const rows = document.querySelectorAll('#inwardListproduct .mainTableList tr');
+
+    rows.forEach(function (row) {
+        const quantityInput = row.querySelector('.quantityTotal');
+        const differenceInput = row.querySelector('.productInwordDiffernceQty');
+        const receivedInput = row.querySelector('.productInwordRecivedQty');
+
+        // Safely parse values or default to 0 if the input is missing or invalid
+        const Qty = parseInt(quantityInput?.value || 0);
+        const differenceQty = parseInt(differenceInput?.value || 0);
+        const received = parseInt(receivedInput?.value || 0);
+
+        totalQty += Qty;
+        difference += differenceQty;
+        rec += received;
     });
 
-   function calculateQty(){
+    // Cache the elements to avoid querying them multiple times
+    const totalQtyElem = document.querySelector('.totalQty');
+    const totalElem = document.querySelector('.total');
+    const pendingElem = document.querySelector('.pending');
+    const receiveElem = document.querySelector('.receive');
+    const totalEntriesElem = document.querySelector('.totalentries');
+    const pendingQtyElem = document.querySelector('.pendingQty');
 
-    var rows = document.querySelectorAll('#inwordDateTable .mainTableList tr');
-    totalValue = 0;
-   
-    rows.forEach(function(row){
-        var inwordQty = parseInt(row.querySelector('.inwardedReceivedQty').value);
-        totalValue += inwordQty;
+    // Update DOM elements safely
+    if (totalQtyElem) totalQtyElem.textContent = totalQty;
+    if (totalElem) totalElem.textContent = totalQty;
+    if (pendingElem) pendingElem.textContent = difference;
+    if (receiveElem) receiveElem.textContent = rec;
+    if (totalEntriesElem) totalEntriesElem.textContent = rec;
+    if (pendingQtyElem) pendingQtyElem.textContent = difference;
+}
 
-        document.querySelector('.totalentries').textContent = totalValue;
-    })
+ 
+  calculateQty()
 
-   }
-  
-   calculateQty()
-  
 </script>
 
 {% endblock body %}

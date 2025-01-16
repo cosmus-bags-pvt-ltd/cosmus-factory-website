@@ -28,9 +28,9 @@
           <tr>
             <td class="fabricName"><a href="{% url 'godown-stock-raw-material-report_items' godown_id fab.id %}"
                 style="text-decoration: none; color: #000">{{fab.fab_grp_name}}</a></td>
-            <td class="fabricQty">{{fab.total_qty}}</td>
-            <td class="fabricRate">{{fab.avg_rate}}</td>
-            <td class="fabricValue"></td>
+            <td class="fabricQty text-center">{{fab.total_qty}}</td>
+            <td class="fabricRate text-center">{{fab.avg_rate}}</td>
+            <td class="fabricValue text-center"></td>
             <td></td>
           </tr>
           {% endfor %}
@@ -53,7 +53,7 @@
               <td class="fabricShadeItemName">{{ item.item_name }}</td>
               <td></td>
               <td></td>
-              <td>{{ item.total_qty }}</td>
+              <td class="text-center">{{ item.total_qty }}</td>
               <td></td>
           </tr>
           {% for shade in item.shades %}
@@ -62,10 +62,10 @@
               <td class="fabricShade">
                   <a href="{% url 'godown-item-report' shade.item_shade_id godown_id %}" style="text-decoration: none; color: #000">{{ shade.item_shade }}</a>
               </td>
-              <td class="fabricTotalShadeQty">{{ shade.quantity }}</td>
+              <td class="fabricTotalShadeQty text-center">{{ shade.quantity }}</td>
               <td></td>
-              <td class="fabricTotalRate">{{ shade.rate }}</td>
-              <td class="fabricTotalValue"></td>
+              <td class="fabricTotalRate text-center">{{ shade.rate }}</td>
+              <td class="fabricTotalValue text-center"></td>
           </tr>
           {% endfor %}
           {% endfor %}

@@ -43,7 +43,7 @@
                             <td>{{ record.Product.Product_Refrence_ID }}</td>
                             <td>{{ record.PProduct_SKU }}</td>
                             <td>{{ record.PProduct_color }}</td>
-                            <td class="stockQty">{{ record.total_warehouse_stock | default_if_none:'0' }}</td>
+                            <td class="stockQty text-center">{{ record.total_warehouse_stock | default_if_none:'0' }}</td>
                         </tr>
                    
                 {% endfor %}
