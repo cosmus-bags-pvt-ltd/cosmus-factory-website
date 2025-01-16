@@ -59,13 +59,13 @@
                                 {% if form.instance.id %}
                                     <option value="{{form.instance.bin_number.id}}"></option>
                                 {% elif not form.instance.id %}
-                                    <option value=""></option>
+                               
                                 {% endif %}
                             </select>
                             
                         </td>
                         <td>
-                            <input  type="text" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity" readonly>
+                            <input  type="text" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity">
                         </td>
                         <td>
                             <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
@@ -196,9 +196,9 @@
                 //$(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
                 $(this).addClass('selected').siblings().removeClass('selected');
                 // itemValueCheckAjax(item_value,purchaseValue)
-                console.log(searchedProductNameDic)
+             
                  var selectedValue = searchedProductNameDic[item_value];
-                 console.log(selectedValue)
+           
                 var namevalueCheck = selectedValue[0];
                 var newnameValue = namevalueCheck +'-----'+item_value;
                 $(`input[name$="picklist_products_list--${purchaseValue}-product_name"]`).val(item_value);
@@ -210,9 +210,35 @@
                     var skuIput = document.querySelector('#product_Sku_' + purchaseValue);
                     var itemgstinputs = document.getElementById('product_purchase_voucher_items_set-' + purchaseValue + '-gst');
                     var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
+            
                     productcolorinput.value = productColor;
                     skuIput.value = item_value
-                
+                    const selectBin = selectedValue[3]; // Array of objects
+                    console.log('selectBin:', selectBin); // Debug the structure
+
+                    if (selectBin) {
+                        var productSelectBin = document.getElementById('id_picklist_products_list-' + purchaseValue + '-bin_number');
+                        if (productSelectBin) {
+                            // Clear existing options and add default "Select Bin" option
+                            // productSelectBin.innerHTML = '<option value="">Select Bin</option>';
+
+                            // Iterate over the array of objects
+                            selectBin.forEach(bin => {
+                                // Each 'bin' is an object, so loop through its key-value pair
+                                Object.entries(bin).forEach(([key, value]) => {
+                                    console.log('Key:', key, 'Value:', value); // Debug each key-value pair
+                                    const optionHtml = `<option value="${key}">${key} - ${value}</option>`;
+                                    productSelectBin.insertAdjacentHTML('beforeend', optionHtml); // Append each option
+                                });
+                            });
+                        } else {
+                            console.error('Element with ID "id_picklist_products_list-' + purchaseValue + '-bin_number" not found.');
+                        }
+                    } else {
+                        console.error('selectBin is undefined or not iterable.');
+                    }
+
+
 
                     
             
