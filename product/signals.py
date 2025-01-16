@@ -521,7 +521,7 @@ def single_entries_delete(sender, instance, **kwargs):
     try:
         purchase_item = instance.related_purchase_item
         transfer_record = instance.related_transfer_record
-
+        
         print("In signal handler")
 
         # Update purchase item quantities
@@ -529,11 +529,26 @@ def single_entries_delete(sender, instance, **kwargs):
             purchase_item.qc_recieved_qty -= 1
             purchase_item.diffrence_qty += 1
             purchase_item.save()
+
+            warehouse = purchase_item.product_purchase_master.finished_godowns
+            model_name = purchase_item.product_name.PProduct_SKU
+
+            warehouse_object,created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=model_name)
+            warehouse_object.quantity = warehouse_object.quantity + 1
+            warehouse_object.save()
+
         # Update transfer record quantities
         elif transfer_record:
             transfer_record.qc_recieved_qty -= 1
             transfer_record.diffrence_qty += 1
             transfer_record.save()
+
+            warehouse = transfer_record.Finished_goods_Stock_TransferMasterinstance.destination_warehouse
+            model_name = transfer_record.product.PProduct_SKU
+
+            warehouse_object,created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=model_name)
+            warehouse_object.quantity = warehouse_object.quantity + 1
+            warehouse_object.save()
         else:
             print("No related purchase or transfer record found.")
 

@@ -205,3 +205,211 @@ function newPopUpwindow(button, path){
 
 
 {% endblock %}
+
+{% extends 'product/base.html' %}
+{% block body %}
+
+<div class="mt-2">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="item-form">Material Godown Id :</label>
+            <select type="text" class="item-select" name="raw_material_godown_id" id="id_raw_material_godown_id">
+                {% if product_estimation_form.instance.id %}
+                <option value="{{product_estimation_form.instance.raw_material_godown_id.id}}">{{product_estimation_form.instance.raw_material_godown_id.godown_name_raw}}</option>
+
+                {% for x in godown_id %}
+                <option value="{{x.id}}">{{x.godown_name_raw}}</option>
+                {% endfor %}
+                {% elif not product_estimation_form.instance.id %}
+                <option value=""></option>
+                {% for x in godown_id %}
+                <option value="{{x.id}}">{{x.godown_name_raw}}</option>
+                {% endfor %}
+                {% endif %}
+            </select>
+            <input type="hidden" id="id_unique_Value" name="unique_id" value="{{product_estimation_form.instance.pk}}">
+            {% if instance_exists_check %}
+            <button class="create-btn mt-3" id="calculate" type="button"  ><a class="text-white text-decoration-none " href="{% url 'raw-material-estimation-calculate' product_estimation_form.instance.pk %}">Calculate</a></button>
+            {% endif %}
+        </div>
+        
+    <div class="row">
+        <div class="col-lg-8">
+            <table class="table table-striped table-hover table-bordered" id="rawmaterialId">
+                <thead class="name_absolute sticky-top">
+                    <tr>
+                        <th>No</th>
+                        <th>Product Id</th>
+                        <th>Product Qty </th>
+                        <th>Purchase Order Estimation</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="mainTableList" >
+                    {{product_estimation_formset.management_form}}
+                    {% for form in product_estimation_formset %}
+                    {{ form.id }}
+                    <tr>
+                        <input type="hidden" id="id_{{form.prefix}}-newid" name="{{form.prefix}}-newid" value="{{form.instance.id}}" class="newIdInstance">
+                        <td><span>{{forloop.counter}}</span></td>
+                        <td>
+                            <select type="text" class="item-select" name="{{form.prefix}}-product_id" id="id_{{form.prefix}}-product_id">
+                                
+                                {% if form.instance.id %}
+                                
+                                <option value="{{form.instance.product_id.id}}">{{form.instance.product_id.Product_Name}}</option>
+                                
+                                {% for x in product_all %}
+                                <option value="{{x.id}}">{{x.Product_Name}}</option>
+                                {% endfor %}
+
+                                {% elif not form.instance.id %}
+                                <option value=""></option>
+                                {% for x in product_all %}
+                                <option value="{{x.id}}">{{x.Product_Name}}</option>
+                                {% endfor %}
+                                {% endif %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" class="item-select" name="{{form.prefix}}-total_product_qty" value="{{form.instance.total_product_qty}}" id="id_{{form.prefix}}-total_product_qty">
+                        </td>
+                        <td>
+                            {% if form.instance.id %}
+                            <button type="button" class="rounded px-3 py-1 bg-success text-white border-0 clickBtn" id="id_{{forloop.counter0}}-clickBtn" onclick="openRawMaterialPopup(this)">click</button>
+                            {% if form.instance.raw_material_product_ref_itemss_p_2_i.exists %}
+                            <span class="ms-3 text-success icons" id="id_{{forloop.counter0}}-icons"><i class="fa-solid fa-circle-check fs-4"></i></span>
+                            {% endif %}
+                            {% endif %}
+                            
+                        </td>
+                        <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE"id="id_{{form.prefix}}-DELETE" value=""></i></span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_narration">Narration :</label>
+            <input type="text" class="item-select" name="narration" value="{{product_estimation_form.instance.narration |default_if_none:''}}" id="id_narration">
+        </div>
+
+        <div>
+            <button type="button" class="item-btn" id="addRowMaterial">Add +</button>
+        </div> 
+    </div>
+        <button type="submit" class="create-btn mt-3">Submit</button>
+</form>
+
+
+</div> 
+<script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const addnewButton = document.getElementById('addRowMaterial');
+            const table = document.querySelector('.mainTableList');
+
+            if (addnewButton && table) {
+                addnewButton.addEventListener('click', function () {
+                    let lastVisibleRow = null;
+
+                    // Find the last visible row in the table
+                    table.querySelectorAll('tr').forEach(row => {
+                        if (window.getComputedStyle(row).display !== 'none') {
+                            lastVisibleRow = row;
+                        }
+                    });
+
+                    if (lastVisibleRow) {
+                        const newForm = document.getElementById('id_raw_material_production_estimations-TOTAL_FORMS');
+                        const newFormCount = parseInt(newForm.value);
+                        const newTable = lastVisibleRow.cloneNode(true);
+
+                        // Update and reset only the necessary fields
+                        const serialNumber = newTable.querySelector('span');
+                        serialNumber.textContent = newFormCount + 1;
+
+                        const productSelect = newTable.querySelector('select[name$="-product_id"]');
+                        productSelect.id = `id_raw_material_production_estimations-${newFormCount}-product_id`;
+                        productSelect.name = `raw_material_production_estimations-${newFormCount}-product_id`;
+                        productSelect.value = "";
+
+                        const productQty = newTable.querySelector('input[name$="-total_product_qty"]');
+                        productQty.id = `id_raw_material_production_estimations-${newFormCount}-total_product_qty`;
+                        productQty.name = `raw_material_production_estimations-${newFormCount}-total_product_qty`;
+                        productQty.value = "";
+
+                        const deleteCheckbox = newTable.querySelector('input[name$="-DELETE"]');
+                        deleteCheckbox.id = `id_raw_material_production_estimations-${newFormCount}-DELETE`;
+                        deleteCheckbox.name = `raw_material_production_estimations-${newFormCount}-DELETE`;
+                        deleteCheckbox.checked = false;
+
+                        newTable.querySelectorAll('.clickBtn, .icons').forEach(element => {
+                            element.style.display = 'none';
+                        });
+
+                        newForm.value = newFormCount + 1;
+
+                        table.appendChild(newTable);
+                        if (typeof deleteRow === 'function') {
+                            deleteRow();
+                        }
+                    }
+                });
+            }
+        });
+
+
+    function deleteRow(){
+        document.querySelectorAll('.delete-btn').forEach(function (button) {
+        button.addEventListener('click',function(){
+            var newRow = this.closest('tr');
+            var checkList = newRow.querySelector('.stock_deleteId[name^="raw_material_production_estimations-"][name$="-DELETE"]');
+            if(checkList){
+                checkList.checked = true;
+                checkList.value = 'true';
+                newRow.style.display = 'none';
+            }else {
+                console.error("Checkbox for deletion not found in this row");
+            }
+
+        })
+    })
+    }
+    deleteRow()
+
+  
+    var popUpNewWindow = null;
+    function openRawMaterialPopup(button){
+    openNewPopup(button, '/rawmaterialestimationpopup/');
+}
+
+function openNewPopup(button, url){
+    if (popUpNewWindow === null || popUpNewWindow.closed) {
+        newPopUpwindow(button, url);
+    } else {
+  
+        popUpNewWindow.focus();
+    }
+}
+
+function newPopUpwindow(button, path){
+    // Specify minimum height and width
+  var minWidth = 1150; // minimum width
+  var minHeight = 800; // minimum height
+  var instanceid = $(button).closest('tr').find('.newIdInstance').val();
+  console.log(instanceid)     
+    if(instanceid){
+         // Open new page with specified dimensions
+  popUpNewWindow = window.open(path + instanceid, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes'); 
+    }
+
+    // Ensure only one event listener is attached
+
+}
+</script>
+
+
+{% endblock %}

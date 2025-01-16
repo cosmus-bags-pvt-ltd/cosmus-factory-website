@@ -1,0 +1,24 @@
+{% extends 'product/base.html' %} 
+{% load static %}
+{% block body %}
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    
+    <div id="formset">
+      {% for form in formset %}
+        <div class="form-row">
+          {{ form.as_p }}
+        </div>
+      {% endfor %}
+    </div>
+    
+    <button type="submit">Save</button>
+  </form>
+  
+
+
+
+
+
+{% endblock body %}

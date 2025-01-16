@@ -8783,6 +8783,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
                                         #here
                                         print("Here for purchase")
+
                                     except ObjectDoesNotExist:
                                         messages.error(request, 'Product quantity in Warhouse not found')
                                         raise
@@ -8888,7 +8889,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 def delete_sigle_entries(request, e_id, voucher_type):
     try:
         delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
-
+    
         if voucher_type == "purchase":
             related_purchase_item = delete_instance.related_purchase_item
             if related_purchase_item:  # Check if related_purchase_item exists
@@ -9206,6 +9207,8 @@ def process_serial_no(request):
                     
                     product_sub_cats = product_instance.Product.product_cats.all()
                     sub_cats_all = [x.SubCategory_id for x in product_sub_cats]
+
+                    
 
                     bins_related_to_product = []
                     for records in sub_cats_all:
@@ -11770,6 +11773,10 @@ def all_picklists_list(request):
 
 
 
+
+
+
+
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
@@ -11779,73 +11786,100 @@ def picklist_product_ajax(request):
         
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
 
-        
-
-        # total_inward_subquery = finishedgoodsbinallocation.objects.filter(
-        #     product=OuterRef('product__PProduct_SKU')
-        # ).values('product__PProduct_SKU').annotate(total=Sum('related_purchase_item__qc_recieved_qty')).values('total')
-
-        
+        # Fetch and standardize product purchase data
         products_purchase = product_purchase_voucher_items.objects.filter(
             Q(product_name__PProduct_SKU__icontains=product_name_typed) |
             Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |
             Q(product_name__Product__Model_Name__icontains=product_name_typed),
-            qc_recieved_qty__gt = 0
+            qc_recieved_qty__gt=0
         ).values(
-            'product_name__PProduct_SKU', 
-            'product_name__PProduct_color__color_name', 
+            'product_name__PProduct_SKU',
+            'product_name__PProduct_color__color_name',
             'product_name__Product__Model_Name',
             'qc_recieved_qty'
-            )
-    
-        products_transfer = Finished_goods_transfer_records.objects.filter(Q(product__PProduct_SKU__icontains=product_name_typed) | Q(product__PProduct_color__color_name__icontains=product_name_typed) | Q(product__Product__Model_Name__icontains=product_name_typed), qc_recieved_qty__gt = 0).values('product__PProduct_SKU', 'product__PProduct_color__color_name', 'product__Product__Model_Name','qc_recieved_qty')
+        )
 
-        if not products_purchase.exists() and not products_transfer.exists():
-            return JsonResponse({'error': 'No products found.'}, status=404)
-
-        # Handle the case where one of the querysets is empty
-        if not products_purchase.exists():
-            products_purchase = []
-
-        if not products_transfer.exists():
-            products_transfer = []
-
-        # Align field names in products_transfer to match products_purchase
-        products_transfer_aligned = [
+        standardized_purchase = [
             {
-                'product_name__PProduct_SKU': item['product__PProduct_SKU'],
-                'product_name__PProduct_color__color_name': item['product__PProduct_color__color_name'],
-                'product_name__Product__Model_Name': item['product__Product__Model_Name'],
-                'qc_recieved_qty': item['qc_recieved_qty']
+                'product_sku': item['product_name__PProduct_SKU'],
+                'product_color': item['product_name__PProduct_color__color_name'],
+                'product_model': item['product_name__Product__Model_Name'],
+                'qc_received_qty': item['qc_recieved_qty'],
+            }
+            for item in products_purchase
+        ]
+
+        # Fetch and standardize product transfer data
+        products_transfer = Finished_goods_transfer_records.objects.filter(
+            Q(product__PProduct_SKU__icontains=product_name_typed) |
+            Q(product__PProduct_color__color_name__icontains=product_name_typed) |
+            Q(product__Product__Model_Name__icontains=product_name_typed),
+            qc_recieved_qty__gt=0
+        ).values(
+            'product__PProduct_SKU',
+            'product__PProduct_color__color_name',
+            'product__Product__Model_Name',
+            'qc_recieved_qty'
+        )
+
+        standardized_transfer = [
+            {
+                'product_sku': item['product__PProduct_SKU'],
+                'product_color': item['product__PProduct_color__color_name'],
+                'product_model': item['product__Product__Model_Name'],
+                'qc_received_qty': item['qc_recieved_qty'],
             }
             for item in products_transfer
         ]
 
-        # Merge the two querysets
-        merged_data = chain(products_purchase, products_transfer_aligned)
+        # Combine purchase and transfer data
+        merged_products = chain(standardized_purchase, standardized_transfer)
 
-        # Aggregate and sum `qc_recieved_qty` by unique keys (PProduct_SKU)
-        aggregated_data = defaultdict(lambda: {'qc_recieved_qty': 0, 'color_name': '', 'model_name': ''})
+        # Aggregate the data
+        final_data = {}
+        for item in merged_products:
+            product_sku = item['product_sku']
 
-        for item in merged_data:
-            key = item['product_name__PProduct_SKU']
-            aggregated_data[key]['qc_recieved_qty'] += item['qc_recieved_qty']
-            aggregated_data[key]['color_name'] = item['product_name__PProduct_color__color_name']
-            aggregated_data[key]['model_name'] = item['product_name__Product__Model_Name']
+            
 
-        # Format the result as {PProduct_SKU: [total_qty, color_name, model_name]}
-        final_data = {
-            key: [value['qc_recieved_qty'], value['color_name'], value['model_name']]
-            for key, value in aggregated_data.items()
-        }
+            product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = product_sku).values('bin_number__bin_name').annotate(product_count=Count('bin_number'))
 
-        
+            # Format bins as a list of {bin_name, product_count}
+            formatted_bins = [{bin['bin_number__bin_name']: bin['product_count']} for bin in product_bins]
 
-        # Return as JSON
-        return JsonResponse({'products':final_data}, safe=False)
+            if product_sku in final_data:
+                final_data[product_sku][2] += item['qc_received_qty']  # Sum the qty
+            else:
+                final_data[product_sku] = [
+                    item['product_model'],  # Model Name
+                    item['product_color'],  # Color Name
+                    item['qc_received_qty'],
+                    formatted_bins  # Received Qty
+                ]
 
-        # return JsonResponse({'typed': product_name_typed}, status=200)
+        print('final_data -- ', final_data)
+        return JsonResponse({'products': final_data}, status=200)
 
     except Exception as e:
-        logger.error(f"Error during search by {request.user}: {e}")
-        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
+        logger.error(f"Error in picklist_product_ajax: {str(e)}")
+        return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
+
+
+
+
+
+
+def picklist_bin_ajax(request):
+    click_sku = 40051011046
+
+    try:
+        product = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = click_sku).distinct('bin_number').values(
+            'product__Product__Product_Refrence_ID',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'bin_number__bin_name')
+        print(product)
+        return JsonResponse({'message': "ok"}, status=200)
+    except Exception as e:
+        logger.error(f"Error in picklist_product_ajax: {str(e)}")
+        return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
