@@ -140,7 +140,7 @@
                         const filteredOptions = Object.entries(searchedProductNameDic).filter(
                         ([key, value]) => {
                             const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
-                            const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
+                            const normalizedProductName = normalizeSpaces(value[2].toString().toLowerCase());
                             const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
                         
                             const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
@@ -196,7 +196,7 @@
                 $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
                 $(this).addClass('selected').siblings().removeClass('selected');
                 itemValueCheckAjax(item_value,purchaseValue)
-                if (item_value !== undefined) {
+              
                 // var selectedValue = searchedProductNameDic[item_value];
                 // var namevalueCheck = selectedValue[0];
                 // var newnameValue = namevalueCheck +''+item_value;
@@ -210,7 +210,7 @@
                 //         itemcolorinput.value = productColor;
                 //         itemgstinputs.value = productGst ;
                 
-            }
+            
                
                 suggestionsContainer.css('display', 'none');
                 
@@ -310,23 +310,26 @@
              event.preventDefault();
             const itemEnterValue = $(this);
             const item_value = Number(itemEnterValue.attr('data-key'));
-            const purchasedata = itemEnterValue.closest('tr').find('[name^="item_color_"]').attr('name').match(/\d+/)[0];
+            const purchasedata = itemEnterValue.closest('tr').find('[name^="product_color_"]').attr('name').match(/\d+/)[0];
             console.log('purchasedata',purchasedata)
             nameDataKey = '';
             nameKey = '';
             index = 0;
             indexbool = false;
             $dropdownOptions.css('display', 'none');
+
+            var selectedValue = searchedProductNameDic[item_value];
+                console.log(selectedValue,'selectedValue')
+                var namevalueCheck = selectedValue[0];
+                 var newnameValue = namevalueCheck + ' '+item_value;
+              $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name"]`).val(item_value);
+                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck)
+ 
             itemValueCheckAjax(item_value,purchasedata)
-            if (item_value !== undefined) {
+            
 
-                // var selectedValue = searchedProductNameDic[item_value];
-                // console.log(selectedValue,'selectedValue')
-                // var namevalueCheck = selectedValue[0];
-                //  var newnameValue = namevalueCheck + ' '+item_value;
-
-                // $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name"]`).val(item_value);
-                // $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck)
+                
+             
                 //     const productColor = selectedValue[1];
                 //     const productGst = selectedValue[2];
                 //     var itemcolorinput = document.querySelector('#item_color_' + purchasedata);
@@ -337,7 +340,7 @@
                         enterPressed = true;
             hiddenValue.css("display" ,"none");
             $inputField.blur();
-            }
+            
            
         }
         if (event.key === 'Tab' && enterPressed) {
@@ -349,6 +352,7 @@
 
      function itemValueCheckAjax (item_value,purchasedata,purchaseValue){
         if (item_value !== undefined) {
+            console.log('item_value',item_value)
             $.ajax({
                 url: '//',
                 method: 'GET',

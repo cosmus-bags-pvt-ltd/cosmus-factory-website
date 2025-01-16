@@ -55,14 +55,14 @@
                         </td>
                         <td><span class="vrefNo">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</span></td>
                         <td>{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Name}}</td>
-                        <td>{{instance.total_process_pcs}}</td>
-                        <td>{{instance.Total_Labour_Work_In|default_if_none:'0'}}</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>{{instance.Total_Labour_Work_In |default_if_none:'0'}}</td>
-                        <td>{{instance.Total_Balance_to_Vendor}}</td>
-                        <td>{{instance.Total_Pending_Qty |default_if_none:'0'}}</td>
-                        <td>{{instance.Total_Approve_Qty |default_if_none:'0'}}</td>
+                        <td class="text-center">{{instance.total_process_pcs}}</td>
+                        <td class="text-center">{{instance.Total_Labour_Work_In|default_if_none:'0'}}</td>
+                        <td class="text-center">0</td>
+                        <td class="text-center">0</td>
+                        <td class="text-center">{{instance.Total_Labour_Work_In |default_if_none:'0'}}</td>
+                        <td class="text-center">{{instance.Total_Balance_to_Vendor}}</td>
+                        <td class="text-center">{{instance.Total_Pending_Qty |default_if_none:'0'}}</td>
+                        <td class="text-center">{{instance.Total_Approve_Qty |default_if_none:'0'}}</td>
                         <td>{{instance.note}}</td>
                     </tr>
                 {% endfor %}

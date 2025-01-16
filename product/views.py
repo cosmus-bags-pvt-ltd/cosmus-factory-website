@@ -9198,7 +9198,7 @@ def process_serial_no(request):
                     product_scanned_sku = response_data['sku']
 
                     product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_scanned_sku)
-                
+                    model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
                     product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
                     product_sku = product_instance.PProduct_SKU
                     product_color = product_instance.PProduct_color.color_name if  product_instance.PProduct_color else None
@@ -9231,7 +9231,7 @@ def process_serial_no(request):
                     print('bin_to_dict ---- ' , bin_to_dict)
 
                     
-                    return JsonResponse({'product_name':product_name, 'product_sku': product_sku,
+                    return JsonResponse({'model_name':model_name,'product_name':product_name, 'product_sku': product_sku,
                                     'bin_to_dict':bin_to_dict,
                                     'product_color' : product_color,'product_image':product_image, 
                                     'message': f'Serial No {serial_no} processed successfully.'})
