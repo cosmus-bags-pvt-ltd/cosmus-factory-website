@@ -1,0 +1,137 @@
+{% extends 'product/base.html' %} 
+{% load static %}
+{% block body %}
+<div class="mt-2">
+    <div class="responsives mb-3">
+        <input type="hidden" value="{{ for_excel }}" id="finalDic">
+        <table class="table table-hover table-bordered table-striped">
+            <thead class="name_absolute sticky-top">
+                <tr>
+                    <th>No</th>
+                    <th>Product Name</th>
+                    {% comment %} <th>SKU</th> {% endcomment %}
+                    <th>Color</th>
+                    <th>Total Consump</th>
+                    <th>Cutting Pend Qty</th>
+                    <th>LWO Pend QTY</th>
+                    <th>Godown Stock</th>
+                    <th>Balance Stock</th>
+                    <th>Select</th>
+                    <th>Last Buying Seller</th>
+                    <th>Mobile No</th>
+                    <th>Email ID</th>
+                </tr>
+            </thead>
+            <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;"> 
+                {% for data in final_data %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td class="text-nowrap">{{data.material_name}}</td>
+                    {% comment %} <td>{{data.product_sku}}</td> {% endcomment %}
+                    <td class="text-nowrap">{{data.color}}</td>
+                    <td>{{data.total_consump}}</td>
+                    <td><span>{{data.cutting_consumption}}</span></td>
+                    <td><span>{{data.lwo_consumption}}</span></td>
+                    <td><span class="godownStock">{{data.godown_stock}}</span></td>
+                    <td><span class="balanceStock">{{data.balance_stock}}</span></td>
+                    {% if data.po_exist %}
+                    <td><i class="fa-solid fa-check-double fa-xl text-danger" ></i></td>
+                    {% else %}
+                    <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ data.item_id }}"></td>
+                    {% endif %}
+                    <td>{{data.party_name| default_if_none:""}}</td>
+                    <td>{{data.mobile_no| default_if_none:""}}</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-2" >
+        <button type="submit" class="newProductCreateBtn" id="checkboxSubmit" >Submit</button>
+        <button type="button" onclick= "downloadRawmaterial(this)" class="add_btn">Download Excel</button>
+    </div>
+    
+   
+</div>
+<script>
+
+    document.getElementById('checkboxSubmit').addEventListener('click',function(){
+        let selectedItem = {};
+
+        document.querySelectorAll('.purchaseCheckBox:checked').forEach((checkbox)=>{
+            const id = checkbox.id;
+            const value = parseInt(checkbox.value);
+            selectedItem[id] = value;
+        })
+        var selectedValue =  JSON.stringify(selectedItem);
+
+        const url = `/purchaseorderforpuchasevoucherrmcreateupdate/?selectedItemId=${encodeURIComponent(selectedValue)}`;
+        window.location.href = url;
+
+    })
+
+    function balanceQty(){
+        let balanceStock = document.querySelectorAll('.balanceStock');
+        let godownStock = document.querySelectorAll('.godownStock');
+        balanceStock.forEach((stock)=>{
+            let balance = parseFloat(stock.textContent);
+           
+            if(balance > 0){
+                stock.style.color = 'green';
+            }else{
+                stock.style.color = 'red';
+            } 
+            
+        }) 
+        godownStock.forEach((value)=>{
+            let stocks = parseFloat(value.textContent);
+            console.log(stocks)
+            if(stocks > 0){
+                value.style.color = 'green';
+            }else{
+                value.style.color = 'red';
+            } 
+        })  
+    }
+    balanceQty()
+
+    function downloadRawmaterial(button) {
+        var finalDic = document.getElementById('finalDic').value; // This should already be a valid JSON string
+
+        try {
+            // Parse the string to ensure it's valid JSON
+            let parsedDic = JSON.parse(finalDic);
+            // Send data to the server
+            $.ajax({
+                url: "/rawmaterialestimationcalculateexceldownload/",
+                type: "GET",
+                data: {
+                    "finalDic": JSON.stringify(parsedDic), // Stringify the JSON object again for transmission
+                },
+                xhrFields: {
+                    responseType: 'arraybuffer' // Important to handle binary data
+                },
+                success: function(response) {
+                    // Create a Blob from the binary response
+                    var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    var link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "Product_Estimation.xlsx";  // Set the download filename
+                    link.click();  // Trigger the download
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error during download:", error);
+                }
+            });
+        } catch (e) {
+            console.error('Invalid JSON format in finalDic:', e.message);
+            alert('The provided data is not in valid JSON format.');
+        }
+    }
+     
+</script>
+
+
+{% endblock body%}

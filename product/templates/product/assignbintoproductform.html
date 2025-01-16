@@ -1,0 +1,201 @@
+{% extends 'product/base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="row mt-4">
+  <div class="col-lg-6 mt-2">
+   
+    <form action="{% url 'assign-bin-to-product-form' %}" method="POST" id="subCategoryForm">
+      {% csrf_token %}
+      <div class="d-flex mb-3">
+        <label for="id_product_main_category" class="item-form">Main Category:</label>
+        <select name="product_main_category" id="id_product_main_category" class="item-select">
+          {% if form.instance.id %}
+          <option value="{{form.instance.product_main_category.id}}">{{form.instance.product_main_category.product_category_name}}</option>
+          {% for main_cat in main_categories %}
+          <option value="{{main_cat.id}}">{{main_cat.product_category_name}}</option>
+          {% endfor %}
+
+          {% elif not form.instance.id %}
+          <option value=""></option>
+          {% for main_cat in main_categories %}
+          <option value="{{main_cat.id}}">{{main_cat.product_category_name}}</option>
+          {% endfor %}
+          {% endif %}
+        </select>
+
+      </div>
+
+
+
+      <div>
+
+    <div class="d-flex mb-3">
+        <label for="id_product_sub_category_name" class="item-form">Sub Category:</label>
+        <select name="sub_category" id="id_sub_category" class="item-select">
+        
+            <option value=""></option>
+            {% for category in sub_category %}
+            <option value="{{ category.id }}">{{ category.product_sub_category_name }}</option>
+            {% endfor %}
+
+        </select> 
+    </div>
+
+
+    <div class="d-flex mb-3">
+        <label for="" class="item-form">Zone:</label>
+        <select name="zone" id="id_zone" class="item-select">
+        
+            <option value=""></option>
+            {% for zone in zones %}
+            <option value="{{ zone.id }}">{{ zone.zone_name }}</option>
+            {% endfor %}
+
+        </select>    
+    </div>
+
+
+    <div class="d-flex mb-3">
+        <label for="" class="item-form">Rack:</label>
+        <select name="rack" id="id_rack" class="item-select">
+        
+          <option value=""></option>
+          {% for rack in rack %}
+          <option value="{{ rack.id }}">{{ rack.rack_name }}</option>
+          {% endfor %}
+
+      </select>  
+    </div>
+    <input type="submit">
+  </form>
+
+    <div class="mt-2">
+        
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="name_absolute">
+                <tr>
+                  <th>Bin Name</th>
+                  <th>Bin Size</th>
+                  <th>checkBox</th>
+                </tr>
+            </thead>
+            <tbody class="mainTableList" id="checkboxTable">
+                {{ formset.management_form }}
+                {% for form in formset %}
+                {{form.id}}
+                <tr>
+                  <td><input type="text" class="productShadeCutting_Material_input" name="{{form.prefix}}-bin_name" value="{{form.instance.bin_name}}" maxlength="30" id="id_{{form.prefix}}-bin_name" readonly></td>
+                  <td> <input type="number" class="purchase-amount" name="{{form.prefix}}-product_size_in_bin" value="{{form.instance.product_size_in_bin}}" id="id_{{form.prefix}}-product_size_in_bin"></td>
+                  <td> 
+                    <input type="checkbox" class="px-3" name="{{form.prefix}}-check_if_added_value" id="id_{{form.prefix}}-check_if_added_value" value="{{form.check_if_added.initial}}">
+                    <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added" id="id_{{form.prefix}}-check_if_added" value="{{form.check_if_added.initial}}">
+                    <input type="hidden" class="px-3" name="{{form.prefix}}-check_if_added_all" id="id_{{form.prefix}}-check_if_added_all" value="{{form.check_if_added_all.initial}}">
+                    <i style="display: none;" class="fa-solid fa-check-double fa-xl my-2 ms-2 iconClass text-danger"></i>
+                  </td>
+                  
+                </tr>
+                {% endfor %}
+              </tbody>
+        </table>
+
+    </div>
+
+
+      </div> 
+      <button type="submit" id="submitButtonSubCategory" class="create-btn" name="save" value="Save">Save</button>     
+    
+  </div>
+  
+
+
+
+<script>
+
+  $(document).ready(function(){
+
+     // Reusable function for AJAX requests
+     function fetchData(url, data, dropdownId, placeholderText) {
+        $.ajax({
+            url: url,
+            method: "GET",
+            data: data,
+            success: function (response) {
+                console.log('Response:', response);
+
+                var dropdown = $(dropdownId);
+                dropdown.empty();
+                dropdown.append(`<option value="">${placeholderText}</option>`);
+
+                // Determine which data to use based on response structure
+                var responseData = response.sub_category_data || response.racks_data;
+                for (var i = 0; i < responseData.length; i++) {
+                    dropdown.append(`<option value="${responseData[i].id}">${responseData[i].name}</option>`);
+                }
+                
+            },
+            error: function (error) {
+                console.log('Error:', error);
+            }
+        });
+    }
+      $('#id_product_main_category').on('change', function () {
+        var mainProduct = $(this).val();
+        fetchData(
+          "/assignbintoproduct/",
+          { "mainProduct": mainProduct },
+          '#id_sub_category',
+          'Select Subcategory'
+        );
+      });
+
+      $('#id_zone').on('change', function () {
+        var mainZone = $(this).val();
+        fetchData(
+          "/assignbintoproduct/",
+          { "mainZone": mainZone },
+          '#id_rack',
+          'Select Rack'
+        );
+      })
+
+
+    function fetchProductData() {
+        var rack = $('#id_rack').val();
+        var subProduct = $('#id_sub_category').val();
+        var mainProduct = $('#id_product_main_category').val();
+        var mainZone = $('#id_zone').val();
+
+        if (!subProduct) {
+            alert("Please select a subcategory first.");
+            return;
+        }
+
+        $.ajax({
+            url: "/assignbintoproduct/",
+            method: "GET",
+            data: {
+                "rack": rack,
+                "subProduct": subProduct,
+                "mainProduct": mainProduct,
+                "mainZone": mainZone
+            },
+            success: function (response) {
+                console.log("Response:", response);
+                // Add further response handling logic if needed
+            },
+            error: function (error) {
+                console.log("Error:", error);
+            }
+        });
+    }
+
+    // Event handler for subcategory and rack change
+    $('#id_sub_category, #id_rack').on('change', function () {
+        fetchProductData();
+    });
+
+  })
+</script>
+
+{% endblock body %}
