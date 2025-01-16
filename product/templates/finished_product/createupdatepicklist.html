@@ -140,7 +140,7 @@
                         const filteredOptions = Object.entries(searchedProductNameDic).filter(
                         ([key, value]) => {
                             const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
-                            const normalizedProductName = normalizeSpaces(value[2].toString().toLowerCase());
+                            const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
                             const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
                         
                             const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
@@ -155,10 +155,10 @@
                         // Generate suggestions for matching options
                         filteredOptions.forEach(([key, value], index) => {
                             // Extract relevant fields
-                            const productName = value[2]; // Product name
+                            const productName = value[0]; // Product name
                             const productSKU = key; // SKU
                             const productColor = value[1];
-                            const productQty = value[0];
+                            const productQty = value[2];
                             // Highlight matches in name, SKU, and color
                             const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
                             const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
@@ -192,24 +192,29 @@
                 var item_value = $(this).data('key');
                 var itemNamevaluesCheck = $(this).text().trim();
                 
-                $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
-                $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
+               
+                //$(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
                 $(this).addClass('selected').siblings().removeClass('selected');
-                itemValueCheckAjax(item_value,purchaseValue)
-              
-                // var selectedValue = searchedProductNameDic[item_value];
-                // var namevalueCheck = selectedValue[0];
-                // var newnameValue = namevalueCheck +''+item_value;
-                // $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name"]`).val(item_value);
-                // $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
-                //     const productColor = selectedValue[1];
-                //     const productGst = selectedValue[2];
-                //     var itemcolorinput = document.querySelector('#item_color_' + purchaseValue);
-                //     var itemgstinputs = document.getElementById('product_purchase_voucher_items_set-' + purchaseValue + '-gst');
-                                        
-                //         itemcolorinput.value = productColor;
-                //         itemgstinputs.value = productGst ;
+                // itemValueCheckAjax(item_value,purchaseValue)
+                console.log(searchedProductNameDic)
+                 var selectedValue = searchedProductNameDic[item_value];
+                 console.log(selectedValue)
+                var namevalueCheck = selectedValue[0];
+                var newnameValue = namevalueCheck +'-----'+item_value;
+                $(`input[name$="picklist_products_list--${purchaseValue}-product_name"]`).val(item_value);
+                $(`input[name$="picklist_products_list--${purchaseValue}-product_name_value"]`).val(namevalueCheck)
+                $(this).closest('.custom-dropdown-container').find('.search-input').val(newnameValue);
+                    const productColor = selectedValue[1];
+                    const productGst = selectedValue[2];
+                    var productcolorinput = document.querySelector('#product_color_' + purchaseValue);
+                    var skuIput = document.querySelector('#product_Sku_' + purchaseValue);
+                    var itemgstinputs = document.getElementById('product_purchase_voucher_items_set-' + purchaseValue + '-gst');
+                    var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
+                    productcolorinput.value = productColor;
+                    skuIput.value = item_value
                 
+
+                    
             
                
                 suggestionsContainer.css('display', 'none');
@@ -325,7 +330,7 @@
               $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name"]`).val(item_value);
                 $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck)
  
-            itemValueCheckAjax(item_value,purchasedata)
+            //itemValueCheckAjax(item_value,purchasedata)
             
 
                 
@@ -350,22 +355,22 @@
    
      });
 
-     function itemValueCheckAjax (item_value,purchasedata,purchaseValue){
-        if (item_value !== undefined) {
-            console.log('item_value',item_value)
-            $.ajax({
-                url: '//',
-                method: 'GET',
-                data: { 'item_value': item_value },
-                success: function (response) {
-                    console.log(response)
-                },
-                error: function(error){
-                console.log(error)  
-                }
-            })
-        }
-     }
+    //  function itemValueCheckAjax (item_value,purchasedata,purchaseValue){
+    //     if (item_value !== undefined) {
+    //         console.log('item_value',item_value)
+    //         $.ajax({
+    //             url: '//',
+    //             method: 'GET',
+    //             data: { 'item_value': item_value },
+    //             success: function (response) {
+    //                 console.log(response)
+    //             },
+    //             error: function(error){
+    //             console.log(error)  
+    //             }
+    //         })
+    //     }
+    //  }
 
 })
 
