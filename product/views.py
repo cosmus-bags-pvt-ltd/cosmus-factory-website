@@ -11843,40 +11843,39 @@ def picklist_product_ajax(request):
         # Combine purchase and transfer data
         merged_products = chain(standardized_purchase, standardized_transfer)
 
-        # Aggregate the data
         final_data = {}
         for item in merged_products:
             product_sku = item['product_sku']
 
-            product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = product_sku).values('bin_number__bin_name').annotate(product_count=Count('bin_number')).order_by('created_date')
+            # Fetch product bins and group them
+            product_bins = finishedgoodsbinallocation.objects.filter(
+                product__PProduct_SKU=product_sku
+            ).values(
+                'bin_number', 'bin_number__bin_name'
+            ).annotate(product_count=Count('bin_number')).order_by('created_date')
 
-
-            # Format bins as a list of {bin_name, product_count}
-            formatted_bins = []
+            # Aggregate bins by bin_id
+            formatted_bins = {}
             for bin in product_bins:
+                bin_id = bin['bin_number']
                 bin_name = bin['bin_number__bin_name']
                 product_count = bin['product_count']
 
-                # Check if bin_name already exists in formatted_bins
-                bin_found = False
-                for existing_bin in formatted_bins:
-                    if bin_name in existing_bin:
-                        # Increment the product_count for the existing bin
-                        existing_bin[bin_name] += product_count
-                        bin_found = True
-                        break
-                
-                # If bin_name not found, add a new bin entry
-                if not bin_found:
-                    formatted_bins.append({bin_name: product_count})
-                    
+                # Add to formatted_bins, summing counts for the same bin_id
+                if bin_id in formatted_bins:
+                    formatted_bins[bin_id][1] += product_count  # Increment product_count
+                else:
+                    formatted_bins[bin_id] = [bin_name, product_count]  # Initialize bin entry
 
-            # Calculate total reserved quantity for all matching entries
+            # Convert formatted_bins to a list of dictionaries
+            formatted_bins_list = [{bin_id: bin_data} for bin_id, bin_data in formatted_bins.items()]
+
+            # Calculate total reserved quantity for the product
             reserved_qty = Picklist_products_list.objects.filter(
                 product__PProduct_SKU=product_sku
             ).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
-
+            # Aggregate data for the product
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']  # Sum the qty
                 final_data[product_sku][4] += reserved_qty  # Sum reserved quantity
@@ -11884,14 +11883,16 @@ def picklist_product_ajax(request):
                 final_data[product_sku] = [
                     item['product_model'],  # Model Name
                     item['product_color'],  # Color Name
-                    item['qc_received_qty'], # List of bins with counts
-                    formatted_bins,  # Received Qty
-                    reserved_qty,  # Reserved Quantity
+                    item['qc_received_qty'],  # Total Received Quantity
+                    formatted_bins_list,  # List of bins with their details
+                    reserved_qty,  # Total Reserved Quantity
                     item['product_ref_id'],
                     item['product_image']
                 ]
 
         print('final_data -- ', final_data)
+
+
         return JsonResponse({'products': final_data}, status=200)
 
     except Exception as e:
