@@ -38,7 +38,7 @@ import requests
 
 from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
-                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_voucher_master, Product,
+                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_products_list, Picklist_voucher_master, Product,
                     Product2SubCategory, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, StockItem,
                     SubCategory, Unit_Name_Create, account_credit_debit_master_table, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
@@ -11840,21 +11840,26 @@ def picklist_product_ajax(request):
         for item in merged_products:
             product_sku = item['product_sku']
 
-            
-
             product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = product_sku).values('bin_number__bin_name').annotate(product_count=Count('bin_number'))
 
             # Format bins as a list of {bin_name, product_count}
             formatted_bins = [{bin['bin_number__bin_name']: bin['product_count']} for bin in product_bins]
 
+            # Calculate total reserved quantity for all matching entries
+            reserved_qty = Picklist_products_list.objects.filter(
+                product__PProduct_SKU=product_sku
+            ).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']  # Sum the qty
+                final_data[product_sku][4] += reserved_qty  # Sum reserved quantity
             else:
                 final_data[product_sku] = [
                     item['product_model'],  # Model Name
                     item['product_color'],  # Color Name
-                    item['qc_received_qty'],
-                    formatted_bins  # Received Qty
+                    item['qc_received_qty'], # List of bins with counts
+                    formatted_bins,  # Received Qty
+                    reserved_qty,  # Reserved Quantity
                 ]
 
         print('final_data -- ', final_data)
