@@ -11796,7 +11796,9 @@ def picklist_product_ajax(request):
             'product_name__PProduct_SKU',
             'product_name__PProduct_color__color_name',
             'product_name__Product__Model_Name',
-            'qc_recieved_qty'
+            'qc_recieved_qty',
+            'product_name__Product__Product_Refrence_ID',
+            'product_name__PProduct_image',
         )
 
         standardized_purchase = [
@@ -11805,6 +11807,8 @@ def picklist_product_ajax(request):
                 'product_color': item['product_name__PProduct_color__color_name'],
                 'product_model': item['product_name__Product__Model_Name'],
                 'qc_received_qty': item['qc_recieved_qty'],
+                'product_ref_id':item['product_name__Product__Product_Refrence_ID'],
+                'product_image':item['product_name__PProduct_image'],
             }
             for item in products_purchase
         ]
@@ -11819,7 +11823,9 @@ def picklist_product_ajax(request):
             'product__PProduct_SKU',
             'product__PProduct_color__color_name',
             'product__Product__Model_Name',
-            'qc_recieved_qty'
+            'qc_recieved_qty',
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
         )
 
         standardized_transfer = [
@@ -11828,6 +11834,8 @@ def picklist_product_ajax(request):
                 'product_color': item['product__PProduct_color__color_name'],
                 'product_model': item['product__Product__Model_Name'],
                 'qc_received_qty': item['qc_recieved_qty'],
+                'product_ref_id':item['product__Product__Product_Refrence_ID'],
+                'product_image':item['product__PProduct_image'],
             }
             for item in products_transfer
         ]
@@ -11840,15 +11848,34 @@ def picklist_product_ajax(request):
         for item in merged_products:
             product_sku = item['product_sku']
 
-            product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = product_sku).values('bin_number__bin_name').annotate(product_count=Count('bin_number'))
+            product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = product_sku).values('bin_number__bin_name').annotate(product_count=Count('bin_number')).order_by('created_date')
+
 
             # Format bins as a list of {bin_name, product_count}
-            formatted_bins = [{bin['bin_number__bin_name']: bin['product_count']} for bin in product_bins]
+            formatted_bins = []
+            for bin in product_bins:
+                bin_name = bin['bin_number__bin_name']
+                product_count = bin['product_count']
+
+                # Check if bin_name already exists in formatted_bins
+                bin_found = False
+                for existing_bin in formatted_bins:
+                    if bin_name in existing_bin:
+                        # Increment the product_count for the existing bin
+                        existing_bin[bin_name] += product_count
+                        bin_found = True
+                        break
+                
+                # If bin_name not found, add a new bin entry
+                if not bin_found:
+                    formatted_bins.append({bin_name: product_count})
+                    
 
             # Calculate total reserved quantity for all matching entries
             reserved_qty = Picklist_products_list.objects.filter(
                 product__PProduct_SKU=product_sku
             ).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+
 
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']  # Sum the qty
@@ -11860,6 +11887,8 @@ def picklist_product_ajax(request):
                     item['qc_received_qty'], # List of bins with counts
                     formatted_bins,  # Received Qty
                     reserved_qty,  # Reserved Quantity
+                    item['product_ref_id'],
+                    item['product_image']
                 ]
 
         print('final_data -- ', final_data)
@@ -11874,17 +11903,17 @@ def picklist_product_ajax(request):
 
 
 
-def picklist_bin_ajax(request):
-    click_sku = 40051011046
+# def picklist_bin_ajax(request):
+#     click_sku = 40051011046
 
-    try:
-        product = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = click_sku).distinct('bin_number').values(
-            'product__Product__Product_Refrence_ID',
-            'product__Product__Model_Name',
-            'product__PProduct_color__color_name',
-            'bin_number__bin_name')
-        print(product)
-        return JsonResponse({'message': "ok"}, status=200)
-    except Exception as e:
-        logger.error(f"Error in picklist_product_ajax: {str(e)}")
-        return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
+#     try:
+#         product = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = click_sku).distinct('bin_number').values(
+#             'product__Product__Product_Refrence_ID',
+#             'product__Product__Model_Name',
+#             'product__PProduct_color__color_name',
+#             'bin_number__bin_name')
+#         print(product)
+#         return JsonResponse({'message': "ok"}, status=200)
+#     except Exception as e:
+#         logger.error(f"Error in picklist_product_ajax: {str(e)}")
+#         return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
