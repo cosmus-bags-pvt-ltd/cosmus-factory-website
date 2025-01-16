@@ -8972,10 +8972,10 @@ def warehouse_stock(request):
                     'color':x['product_name__PProduct_color__color_name'],
                     'product_sku': purchase_sku,
                     'total':total,
-                    'total_sale':x['total_sale'],
-                    'total_inward':x['total_inward'] + y['total_inward'],
-                    'total_balance':x['total_balance'] + y['total_balance'],
-                    'inward_minus_sales': (x['total_inward'] + y['total_inward']) - x['total_sale']
+                    'total_sale':x['total_sale'] or 0,
+                    'total_inward':(x['total_inward'] or 0) + (y['total_inward'] or 0),
+                    'total_balance':(x['total_balance'] or 0) + (y['total_balance'] or 0),
+                    'inward_minus_sales': ((x['total_inward'] or 0) + (y['total_inward'] or 0)) - (x['total_sale'] or 0)
                 }
                 merged_list.append(dict_to_append)
                 break
@@ -8988,10 +8988,10 @@ def warehouse_stock(request):
                     'model_name':x['product_name__Product__Model_Name'],
                     'color':x['product_name__PProduct_color__color_name'],
                     'product_sku': x['product_name__PProduct_SKU'],
-                    'total':x['total_quantity'],
-                    'total_sale':x['total_sale'],
-                    'total_inward':x['total_inward'],
-                    'total_balance':x['total_balance'],
+                    'total':x['total_quantity'] or 0,
+                    'total_sale':x['total_sale'] or 0,
+                    'total_inward':x['total_inward'] or 0,
+                    'total_balance':x['total_balance'] or 0,
                     'inward_minus_sales': (x['total_inward'] if x['total_inward'] else 0) -  (x['total_sale'] if x['total_sale'] else 0)
                 }
             merged_list.append(dict_to_append)
@@ -9004,7 +9004,7 @@ def warehouse_stock(request):
                     'model_name':y['product__Product__Model_Name'],
                     'color':y['product__PProduct_color__color_name'],
                     'product_sku': y['product__PProduct_SKU'],
-                    'total':y['total_quantity'],
+                    'total':y['total_quantity'] or 0,
                     'total_sale': y['total_sale'] if y['total_sale'] else 0,
                     'total_inward':y['total_inward'] if y['total_inward'] else 0,
                     'total_balance':y['total_balance'],
