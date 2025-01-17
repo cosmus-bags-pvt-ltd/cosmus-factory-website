@@ -44,7 +44,7 @@
                         <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>
                         <td> 
                             <div class="custom-dropdown-container">
-                              <input type="hidden" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products"  value="{% if form.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
+                              <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product"  value="{% if form.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
                               <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" > 
                               <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
                                 
@@ -70,6 +70,7 @@
                         </td>
                         <td>
                             <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity">
+                            <input type="hidden" class="productQtyValue" name="product_quantity-{{forloop.counter0}}" id="id_product_quantity-{{forloop.counter0}}" value = ''>
                         </td>
                         <td>
                             <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
@@ -195,7 +196,7 @@
             suggestionsContainer.on('click', '.itemName-div', function(e) {
                 var item_value = $(this).data('key');
                 var itemNamevaluesCheck = $(this).text().trim();
-                // $(this).closest('.custom-dropdown-container').find('.search-input').val(newnameValue);
+                // $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
                 // $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
                 $(this).addClass('selected').siblings().removeClass('selected');
 
@@ -208,12 +209,11 @@
                 const productReserve = selectedValue[4];
                 const url = selectedValue[6]
 
-                var newnameValue = namevalueCheck +'                                  '+productQty;
-                $(`input[name$="picklist_products_list-${purchaseValue}-product_name"]`).val(item_value);
+                var newnameValue = namevalueCheck + '                                       ' + productQty
+                $(`input[name$="picklist_products_list-${purchaseValue}-product"]`).val(item_value);
                 $(`input[name$="picklist_products_list-${purchaseValue}-product_name_value"]`).val(newnameValue)
               
-                  
-                
+                   
                 var productcolorinput = document.querySelector('#product_color_' + purchaseValue);
                 var skuIput = document.querySelector('#product_Sku_' + purchaseValue);
                 var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
@@ -225,22 +225,53 @@
                 imgUrl.src = url;
                 reserveValue.value = productReserve;
 
+
+                let totalExistingQuantity = 0;
+                // $('input[name^="picklist_products_list-"][name$="-product_quantity"]').on('input',function(){
+                    $('input[name^="picklist_products_list-"][name$="-product"]').each(function () {
+                    var rowProductValue = parseInt($(this).val());
+                    var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
+                  
+                    if (rowProductValue === item_value) {
+                        var rowQuantity = parseInt($(`input[name="picklist_products_list-${rowIndex}-product_quantity"]`).val()) || 0;
+                        totalExistingQuantity += rowQuantity;
+                        console.log('totalExistingQuantity',totalExistingQuantity)
+                        $(`input[name="product_quantity-${rowIndex}"]`).val(totalExistingQuantity)
+                    }
+                // });
+                })
+               
                 const selectBin = selectedValue[3]; // Array of objects
                 console.log('selectBin:', selectBin); // Debug the structure
 
                 if (selectBin) {
                     var productSelectBin = document.getElementById('id_picklist_products_list-' + purchaseValue + '-bin_number');
+                    var productmainQty = parseInt(document.getElementById('id_product_quantity-' + purchaseValue ).value)
+               
                     if (productSelectBin) {
-                        // Clear existing options and add default "Select Bin" option
-                        // productSelectBin.innerHTML = '<option value="">Select Bin</option>';
+                    
 
-                        // Iterate over the array of objects
-                        selectBin.forEach(bin => {
-                            // Each 'bin' is an object, so loop through its key-value pair
-                            Object.entries(bin).forEach(([key, value]) => {
-                                console.log('Key:', key, 'Value:', value); // Debug each key-value pair
-                                const optionHtml = `<option value="${key}">${key} - ${value}</option>`;
-                                productSelectBin.insertAdjacentHTML('beforeend', optionHtml); // Append each option
+                        selectBin.forEach(binObject => {
+                            Object.entries(binObject).forEach(([binKey, binArray]) => {
+                                
+
+                                // Ensure binArray is actually an array
+                                if (Array.isArray(binArray) && binArray.length === 2) {
+                                    const [binName, quantity] = binArray;
+                                    let optionHtml
+                                    let balanceQty = quantity - productReserve - productmainQty;
+                                    console.log('balanceQty',typeof(balanceQty))
+                                    if(balanceQty > 0){
+                                        optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
+                                      
+                                    }else{
+                                        optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
+                                    }
+                                    // Append option to select element
+                                    productSelectBin.insertAdjacentHTML('beforeend', optionHtml);
+                                } else {
+                                    console.error(`Invalid binArray format at key ${binKey}:`, binArray);
+                                }
                             });
                         });
                     } else {
@@ -370,7 +401,7 @@
                 const url = selectedValue[6]
 
                 var newnameValue = namevalueCheck +'                                  '+productQty;
-                $(`input[name$="picklist_products_list-${purchasedata}-product_name"]`).val(item_value);
+                $(`input[name$="picklist_products_list-${purchasedata}-product"]`).val(item_value);
                 $(`input[name$="picklist_products_list-${purchasedata}-product_name_value"]`).val(newnameValue)
               
                   
@@ -390,22 +421,30 @@
                 console.log('selectBin:', selectBin); // Debug the structure
 
                 if (selectBin) {
-                    var productSelectBin = document.getElementById('id_picklist_products_list-' + purchasedata + '-bin_number');
+                    var productSelectBin = document.getElementById('id_picklist_products_list-' + purchaseValue + '-bin_number');
                     if (productSelectBin) {
                         // Clear existing options and add default "Select Bin" option
                         // productSelectBin.innerHTML = '<option value="">Select Bin</option>';
 
-                        // Iterate over the array of objects
-                        selectBin.forEach(bin => {
-                            // Each 'bin' is an object, so loop through its key-value pair
-                            Object.entries(bin).forEach(([key, value]) => {
-                                console.log('Key:', key, 'Value:', value); // Debug each key-value pair
-                                const optionHtml = `<option value="${key}">${key} - ${value}</option>`;
-                                productSelectBin.insertAdjacentHTML('beforeend', optionHtml); // Append each option
+                        selectBin.forEach(binObject => {
+                            Object.entries(binObject).forEach(([binKey, binArray]) => {
+                                console.log('Bin Key:', binKey, 'Value:', binArray);
+
+                                // Ensure binArray is actually an array
+                                if (Array.isArray(binArray) && binArray.length === 2) {
+                                    const [binName, quantity] = binArray;
+                                    console.log('Bin Name:', binName, 'Quantity:', quantity);
+
+                                    // Append option to select element
+                                    const optionHtml = `<option value="${binKey}">${binName} - ${quantity}</option>`;
+                                    productSelectBin.insertAdjacentHTML('beforeend', optionHtml);
+                                } else {
+                                    console.error(`Invalid binArray format at key ${binKey}:`, binArray);
+                                }
                             });
                         });
                     } else {
-                        console.error('Element with ID "id_picklist_products_list-' + purchasedata + '-bin_number" not found.');
+                        console.error('Element with ID "id_picklist_products_list-' + purchaseValue + '-bin_number" not found.');
                     }
                 } else {
                     console.error('selectBin is undefined or not iterable.');
@@ -424,22 +463,7 @@
    
      });
 
-    //  function itemValueCheckAjax (item_value,purchasedata,purchaseValue){
-    //     if (item_value !== undefined) {
-    //         console.log('item_value',item_value)
-    //         $.ajax({
-    //             url: '//',
-    //             method: 'GET',
-    //             data: { 'item_value': item_value },
-    //             success: function (response) {
-    //                 console.log(response)
-    //             },
-    //             error: function(error){
-    //             console.log(error)  
-    //             }
-    //         })
-    //     }
-    //  }
+   
 
 })
 
@@ -485,9 +509,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     inputRefNo.name = `picklist_products_list-${formIndex}-product_refNo`;
                     inputRefNo.value="";
 
-                    const inputSelectElement = lastRow.querySelector('input[name$="-products"]');
-                    inputSelectElement.id = `id_picklist_products_list-${formIndex}-products`;
-                    inputSelectElement.name = `picklist_products_list-${formIndex}-products`;
+                    const inputSelectElement = lastRow.querySelector('input[name$="-product"]');
+                    inputSelectElement.id = `id_picklist_products_list-${formIndex}-product`;
+                    inputSelectElement.name = `picklist_products_list-${formIndex}-product`;
                     inputSelectElement.value="";
 
                     const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
@@ -529,6 +553,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     qunatityInputElement.id = `id_picklist_products_list-${formIndex}-product_quantity`;
                     qunatityInputElement.name = `picklist_products_list-${formIndex}-product_quantity`;
                     qunatityInputElement.value="";
+
+                    const qunatityhiddenElement = lastRow.querySelector('input[name^="product_quantity"]');
+                    qunatityhiddenElement.id = `id_product_quantity-${formIndex}`;
+                    qunatityhiddenElement.name = `product_quantity-${formIndex}`;
+                    
 
                 
                     const deleteElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
