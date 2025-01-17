@@ -136,28 +136,26 @@
 <script>
     $(document).ready(function(){
         $("#rawEstimationTable .rawlist").on('focus','input', function() {
-                // Find the closest row to the input being edited
+    
+            var row = $(this).closest('tr');
+            var qty = parseInt(row.find('input[name$="-estimate_qty"]').val());
+            if(qty === 0){
+                row.find('input[name$="-estimate_qty"]').val('');
+            }else if(qty >=0){
+                row.find('input[name$="-estimate_qty"]').val(qty);
+            }
+        });
 
-                var row = $(this).closest('tr');
-                console.log('row',row)
-                var qty = parseInt(row.find('input[name$="-estimate_qty"]').val());
-                if(qty=== 0){
-                    row.find('input[name$="-estimate_qty"]').val('');
-                }else if(qty >=0){
-                    row.find('input[name$="-estimate_qty"]').val(qty);
+        $(document).on('focusout','input[name$="-estimate_qty"]',function(){
+                
+                var value = $(this).val();
+           
+                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                    $(this).val('0'); // Set to 0 if empty or invalid
+                } else {
+                    $(this).val(value); // Retain the entered value if valid
                 }
-               
-            });
-            $(document).on('focusout','input[name$="-estimate_qty"]',function(){
-                    
-                    var value = $(this).val();
-                    console.log(value)
-                    if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
-                        $(this).val('0'); // Set to 0 if empty or invalid
-                    } else {
-                        $(this).val(value); // Retain the entered value if valid
-                    }
-            })
+        })
     })
 function calculateRawData(){
    
@@ -187,36 +185,13 @@ function calculateRawData(){
             document.getElementById('id_raw_material_product_ref_itemss_p_2_i-' + i + '-combi_consumption').value = '0.000';
         }
     }
+    calculateTotalConsumption()
 }
 
 calculateRawData()
-function valueCheck() {
-    const estimateValues = document.querySelectorAll('input[name$="-estimate_qty"]');
-    var final = 0; 
-    estimateValues.forEach(element => {
-        const estimatedata = parseFloat(element.value) || 0
-        const row = element.closest('tr');
-        const newvalue = parseFloat( document.getElementById('id_processTotal').value)
-        const totalQty = parseInt(document.getElementById('id_product_Qty').value);
-        const balance = parseFloat(document.getElementById('id_BalancePrevious_Qty').value);
-        
-        final += estimatedata;
-        if (totalQty < final) {
-            row.querySelector('input[name$="-estimate_qty"]').value = 0;
-            calculateRawData();
-        } else {
-            row.querySelector('input[name$="-estimate_qty"]').value = element.value;
-       
-        }
-        var newBalance = totalQty - element.value;
-        console.log('newBalance',newBalance)
-        document.getElementById('id_Balance_Qty').value = 
-        document.getElementById('id_processTotal').value =final;
-       
-    });
-}
 
-    valueCheck();
+
+
     function calculateTotalConsumption() {
      
         const processQty = document.querySelectorAll('input[name$="-estimate_qty"]');
@@ -240,7 +215,10 @@ function valueCheck() {
                         const process = parseFloat(processData.value) || 0;;
                         const gTotalValue = parseFloat(gTotalCombi.value) || 0;
                         const consumption = parseFloat(consumptionInput.value) || 0;
-                
+                        console.log('process',process)
+                        console.log('gTotalValue',gTotalValue)
+                        console.log('consumption',consumption)
+                        console.log('processQuantity',processQuantity)
                         let mainConsumption = gTotalValue * process;
                         let ConsumptionTotal = processQuantity * consumption;
                         let totalConsumption = ConsumptionTotal + mainConsumption;
@@ -271,7 +249,42 @@ function valueCheck() {
         })
         balanceStock();
     }
-    calculateTotalConsumption();
+    // calculateTotalConsumption();
+
+    function valueCheck() {
+
+
+        const estimateValues = document.querySelectorAll('input[name$="-estimate_qty"]');
+        var final = 0; 
+        estimateValues.forEach(element => {
+            let estimatedata = parseInt(element.value) || 0
+            console.log(estimatedata)
+            const row = element.closest('tr');
+            const newvalue = parseInt( document.getElementById('id_processTotal').value)
+            const totalQty = parseInt(document.getElementById('id_product_Qty').value);
+            const balance = parseFloat(document.getElementById('id_BalancePrevious_Qty').value);
+            console.log('totalQty',totalQty)
+            final += estimatedata;
+            document.getElementById('id_processTotal').value =final;
+            if (totalQty < final) {
+                row.querySelector('input[name$="-estimate_qty"]').value = 0;
+                //calculateRawData();
+            } else {
+                row.querySelector('input[name$="-estimate_qty"]').value = element.value;
+        
+            }
+            var newBalance = totalQty - final;
+            console.log('newBalance',newBalance)
+            document.getElementById('id_Balance_Qty').value = newBalance;
+            
+        
+        });
+    }
+
+
+
+
+
     function balanceStock() {
         var totals = document.getElementById('id_raw_material_product_ref_itemss_p_2_i-TOTAL_FORMS').value;
 
@@ -304,34 +317,33 @@ function valueCheck() {
         console.log(tableRows)
 
         tableRows.forEach((row) => {
-        const estimateQtyInput = row.querySelector('[name$="-estimate_qty"]');
-        if (estimateQtyInput) {
-            estimateQtyInput.focus();
-           
-            return; // Stop after focusing on the first matching input
-        }
-    });
+            const estimateQtyInput = row.querySelector('[name$="-estimate_qty"]');
+            if (estimateQtyInput) {
+                estimateQtyInput.focus();
+            
+                return; // Stop after focusing on the first matching input
+            }
+        });
                
 
-            formElements.forEach(element => {
-                element.addEventListener('focus', calculateRawData);
-                element.addEventListener('focus', calculateTotalConsumption);
-            });
-            processQuantityElements.forEach(elements => {
-                //elements.addEventListener('focusout',calculateRawData);
-                elements.addEventListener('focusout', valueCheck);
-                elements.addEventListener('input',function(){
-                    calculateTotalConsumption();
-                    valueCheck();
-                    calculateRawData()
-                });
-
+        formElements.forEach(element => {
+            element.addEventListener('focus', calculateRawData);
+            element.addEventListener('focus', calculateTotalConsumption);
+        });
+        processQuantityElements.forEach(elements => {
+            
+            elements.addEventListener('input',function(){
+                calculateTotalConsumption();
+                valueCheck()
+                calculateRawData()
             });
 
-            forms.addEventListener("keydown", function (event) {
-        if (event.key === "Enter" && event.target.type !== "submit") {
-            event.preventDefault(); // Prevent form submission
-        }
+        });
+
+        forms.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && event.target.type !== "submit") {
+                event.preventDefault(); // Prevent form submission
+            }
         });
         processQuantityElements.forEach((input, index) => {
             // Listen for keydown events on each Order Quantity input field
@@ -361,12 +373,12 @@ function valueCheck() {
             calculateRawData(); // Initialize the calculation on page load
     });
     document.body.appendChild(document.getElementById('exampleModal'));
-    $(document).ready(function(){
-        $('#RawMaterialSubmit').on('click', function(){
-            var newSpinner = $('#exampleModal');
-            newSpinner.show();
+        $(document).ready(function(){
+            $('#RawMaterialSubmit').on('click', function(){
+                var newSpinner = $('#exampleModal');
+                newSpinner.show();
+            })
         })
-    })
 </script>
 
 {% endblock %}
