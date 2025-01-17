@@ -769,7 +769,8 @@ class purchase_order_for_raw_material(models.Model):
     Remark = models.CharField(max_length = 50, null=False, blank=False)
     pcs = models.IntegerField(default = 0)
 
-
+    def __str__(self):
+        return self.material_name
 class purchase_order_raw_material_cutting(models.Model):
     purchase_order_id = models.ForeignKey(purchase_order, related_name ='cutting_pos', on_delete = models.CASCADE)
     raw_material_cutting_id = models.IntegerField(primary_key=True)
@@ -1004,6 +1005,8 @@ class raw_material_product_to_items(models.Model):
     pcs = models.IntegerField(default = 0)
 
 
+    def __str__(self):
+        return self.material_name
 
 class raw_material_production_total(models.Model):
     raw_material_estination_master = models.ForeignKey(raw_material_production_estimation,related_name='raw_material_production_estimations_total',on_delete=models.CASCADE)

@@ -246,6 +246,7 @@ urlpatterns = [
     path('rawmaterialestimationupdate/<int:pk>',views.rawmaterialestimationcreateupdate, name = 'rawmaterial-estimation-update'),
     path('rawmaterialestimationpopup/<int:pk>',views.raw_material_estimation_popup, name = 'raw-material-estimation-popup'),
     path('rawmaterialestimationcalculate/<int:u_id>',views.raw_material_estimation_calculate, name = 'raw-material-estimation-calculate'),
+    # path('rawmaterialestimationpopupcalculateinbackend/<int:u_id>',views.raw_material_estimation_pop_up_calculate_in_backend, name = 'raw-material-estimation-pop-up-calculate-in-backend'),
 
     path('rawmaterialestimatedelete/<int:pk>',views.raw_material_estimate_delete,name= 'raw-material-estimate-delete'),
 
