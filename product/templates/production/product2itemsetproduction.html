@@ -15,6 +15,7 @@
         <button type="button" class="color_btn mb-3" onclick="openNewColor()">Color +</button>
         <div class="ms-5">
             {% if clone_ajax_valid %}
+            <label >Set production Clone :</label>
             <select name="productSelector" id="productSelector" class="productSelect">
                 <option value=""></option>
                 {% for record in all_ref_ids %}
