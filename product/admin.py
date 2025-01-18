@@ -12,33 +12,20 @@ class PProductCreationInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     inlines = [PProductCreationInline]
 
-# admin.site.register(Product, ProductAdmin)
+admin.site.register(Product, ProductAdmin)
 
-# admin.site.register(Color)
-# admin.site.register(ProductImage)
-# admin.site.register(MainCategory)
-# admin.site.register(PProduct_Creation)
-# admin.site.register(AccountGroup)
-# admin.site.register(AccountSubGroup)
-# admin.site.register(StockItem)
-# admin.site.register(gst)
-# admin.site.register(item_godown_quantity_through_table)
-
-
-# admin.site.register(Picklist_voucher_master)
-# admin.site.register(raw_material_product_wise_qty)
-# admin.site.register(raw_material_product_to_items)
-# admin.site.register(purchase_order_for_raw_material)
-
-# admin.site.register(purchase_order_to_product_cutting)
-# admin.site.register(purchase_order_raw_material_cutting)
-# admin.site.register(product_to_item_labour_workout)
+admin.site.register(Color)
+admin.site.register(ProductImage)
+admin.site.register(MainCategory)
+admin.site.register(PProduct_Creation)
+admin.site.register(AccountGroup)
+admin.site.register(AccountSubGroup)
+admin.site.register(StockItem)
+admin.site.register(gst)
+admin.site.register(item_godown_quantity_through_table)
 
 
-admin.site.register(purchase_order)
-admin.site.register(purchase_order_to_product) #1st
-admin.site.register(purchase_order_raw_material_cutting)
-admin.site.register(purchase_order_to_product_cutting) 
+ 
 
 
 
