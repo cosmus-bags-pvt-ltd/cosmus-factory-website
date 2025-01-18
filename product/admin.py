@@ -29,9 +29,18 @@ class ProductAdmin(admin.ModelAdmin):
 # admin.site.register(raw_material_product_wise_qty)
 # admin.site.register(raw_material_product_to_items)
 # admin.site.register(purchase_order_for_raw_material)
-admin.site.register(purchase_order_to_product_cutting)
+
+# admin.site.register(purchase_order_to_product_cutting)
+# admin.site.register(purchase_order_raw_material_cutting)
+# admin.site.register(product_to_item_labour_workout)
+
+
+admin.site.register(purchase_order)
+admin.site.register(purchase_order_to_product) #1st
 admin.site.register(purchase_order_raw_material_cutting)
-admin.site.register(product_to_item_labour_workout)
+admin.site.register(purchase_order_to_product_cutting) 
+
+
 
 
 
