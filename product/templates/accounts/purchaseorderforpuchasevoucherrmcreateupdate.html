@@ -87,7 +87,7 @@
                              </div>
                         </div> 
                     </td>
-                    <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.Item_Color.color_name }}{% endif %}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+                    <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.Item_Color.color_name }}{% endif %}" class="purchase-input" readonly></td>
 
                     <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" class="purchase-input"></td>
 
@@ -124,7 +124,7 @@
                              </div>
                         </div> 
                     </td>
-                    <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{{forms.initial.item_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+                    <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{{forms.initial.item_color}}" class="purchase-input"  readonly></td>
 
                     <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'' }}" class="purchase-input"></td>
 
@@ -173,7 +173,7 @@
             <div class="col-lg-3">
                 <div class="mb-4">
                     <div class=" mb-3">
-                        <label  class="purchase-lable fw-bold">Gross total</label>
+                        <label  class="purchase-lable fw-bold">Before Tax</label>
                         <span class="purchase-span">
                             <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
                         </span>           
@@ -839,6 +839,11 @@ function getGstNo() {
             calculateTotalAmount();
             calculateOtherTotal();
             inputCheck()
+            var gstNo = parseInt(document.getElementById('purchase_order_for_puchase_voucher_rm_set-0-gst').value); 
+            console.log(gstNo) 
+            if(gstNo){
+                document.getElementById('id_voucher_gst').value = gstNo;
+            }
             });
         });
 
@@ -854,6 +859,21 @@ function getGstNo() {
     const productInvoiceId = document.getElementById('id_purchase_order_for_puchase_voucher_rm_set-0-id').value;
     const paymentTerms = document.getElementById('id_payment_term');
     const tableRows = document.querySelectorAll('#myTablePurchase .mainTableList tr');
+    const partyName = document.getElementById('id_party_name')
+
+    if(partyName){
+        partyName.addEventListener('keydown',function(event){
+            if(event.key === 'Tab'){
+                event.preventDefault();
+                if(partyName.value === ''){
+                    partyName.focus();
+                }else{
+                    paymentTerms.focus()
+                }
+            }
+        })
+    }
+    
     itemNameInputs.forEach((input, index) => {
         if (input) {
             input.addEventListener("keydown", function (event) {
@@ -897,23 +917,29 @@ function getGstNo() {
     paymentTerms.addEventListener('keydown', function (event) {
         if (event.key === 'Tab') {
             event.preventDefault(); // Prevent default tab behavior
-            
-            // Get all table rows
-            var tableRows = document.querySelectorAll('#myTablePurchase .mainTableList tr');
 
-            // Loop through rows and find the first empty field
-            for (let row of tableRows) {
-                var itemInput = row.querySelector('[name^="item_name_"]');
-                var qtyInput = row.querySelector('[name$="-quantity"]');
+            if(paymentTerms.value === ''){
+                paymentTerms.focus();
 
-                if (itemInput && itemInput.value === '') {
-                    itemInput.focus();
-                    return; // Exit the loop once focus is set
-                } else if (qtyInput && qtyInput.value === '') {
-                    qtyInput.focus();
-                    return; // Exit the loop once focus is set
+            }else{
+                // Get all table rows
+                var tableRows = document.querySelectorAll('#myTablePurchase .mainTableList tr');
+
+                // Loop through rows and find the first empty field
+                for (let row of tableRows) {
+                    var itemInput = row.querySelector('[name^="item_name_"]');
+                    var qtyInput = row.querySelector('[name$="-quantity"]');
+
+                    if (itemInput && itemInput.value === '') {
+                        itemInput.focus();
+                        return; // Exit the loop once focus is set
+                    } else if (qtyInput && qtyInput.value === '') {
+                        qtyInput.focus();
+                        return; // Exit the loop once focus is set
+                    }
                 }
             }
+            
         }
     });
 
@@ -966,13 +992,10 @@ function getGstNo() {
                             }
                         } else {
                         
-                            var gstElement = document.getElementById('id_voucher_gst');
-                            if (gstElement) {
-                                gstElement.focus();
-                                if(gstElement.value === '0'){
-                                    gstElement.value = ''
-                                }
-                               
+                            var submitElement = document.getElementById('parentFormClick');
+                            if (submitElement) {
+                                submitElement.focus();
+                              
                             }
                         }
                     }

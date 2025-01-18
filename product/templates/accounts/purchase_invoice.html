@@ -1343,14 +1343,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial validation on page load
     validateInputs();
     inputCheck();
+    document.getElementById('id_purchase_number').focus();
 });
 
 
 function inputCheck(){
-
+    // const purchaseOrder = document.getElementById('id_purchase_number');
+    const suppilerNo = document.getElementById('id_supplier_invoice_number');
     const itemNameInputsid = document.querySelectorAll('[name^="item_name_"]');
     const productInvoiceId = document.getElementById('id_purchase_voucher_items_set-0-id').value;
-       
+    
+    if(suppilerNo){
+        suppilerNo.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                suppilerNo.focus()
+            }else{
+                
+            }
+        })
+    }
+    
     itemNameInputsid.forEach((input, index) => {
         input.addEventListener("keydown", function (event) {
 
