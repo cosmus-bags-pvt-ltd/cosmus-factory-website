@@ -595,6 +595,7 @@ $(document).ready(function(){
                 $('#product_Sku_' + purchaseValue).val(item_value);
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp').val(productmrp);
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val(productPrice);
+                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-quantity"]`).focus();
             }
 
           
@@ -704,6 +705,7 @@ $(document).ready(function(){
           index = 0;
           indexbool = false;
           $dropdownOptions.css('display', 'none');
+
           if (item_value !== undefined) {
             var itemcolorinput = document.querySelector('#product_color_' + purchasedata);
             var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-gst');
@@ -721,6 +723,7 @@ $(document).ready(function(){
               const productPrice = selectedValue[7];
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name"]`).val(item_value);
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name_value"]`).val(newNameValue)
+              $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-quantity"]`).focus()
                const newGst = productGst + ' % '       
                 itemcolorinput.value = productColor;
                 itemgstinputs.value = newGst ;
@@ -1299,6 +1302,7 @@ $(document).ready(function(){
         const rate = row.querySelector('[name$="-spl_disct"]');
         const qty = row.querySelector('[name$="-quantity"]')
         const tredDisc = row.querySelector('[name$="-trade_disct"]')
+       
         if(qty){
             qty.addEventListener('keydown', function (event) {
                 if (event.key === "Tab") {
@@ -1309,6 +1313,22 @@ $(document).ready(function(){
                     } else if(tredDisc) {
                        
                       tredDisc.focus();
+                      
+                        
+                    }
+                }
+            });
+        }
+        if(tredDisc){
+          tredDisc.addEventListener('keydown', function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+                    if (tredDisc.value === '') {
+             
+                      tredDisc.focus();
+                    } else if(rate) {
+                       
+                      rate.focus();
                       
                         
                     }

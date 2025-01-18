@@ -140,7 +140,7 @@
         </div>
         {% endif %}
         <div> 
-            <table id="myTable" class="table table-striped table-hover  table-bordered">
+            <table id="myTable" class="table table-striped table-hover table-bordered">
                 <thead class="name_absolute">
                     <th>No</th>
                     <th colspan="2">Product Name</th>
@@ -615,6 +615,7 @@ function getGstNo() {
                 var newnameValue = namevalueCheck +''+item_value;
                 $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name"]`).val(item_value);
                 $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-product_name_value"]`).val(namevalueCheck)
+                $(`input[name$="product_purchase_voucher_items_set-${purchaseValue}-quantity_total"]`).focus();
                     const productColor = selectedValue[1];
                     const productGst = selectedValue[2];
                     var itemcolorinput = document.querySelector('#item_color_' + purchaseValue);
@@ -737,7 +738,8 @@ function getGstNo() {
                  var newnameValue = namevalueCheck + ' '+item_value;
 
                 $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name"]`).val(item_value);
-                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck)
+                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-product_name_value"]`).val(namevalueCheck);
+                $(`input[name$="product_purchase_voucher_items_set-${purchasedata}-quantity_total"]`).focus();
                     const productColor = selectedValue[1];
                     const productGst = selectedValue[2];
                     var itemcolorinput = document.querySelector('#item_color_' + purchasedata);
@@ -890,7 +892,7 @@ function getGstNo() {
                     if (window.getComputedStyle(row).display !== 'none') {
                         lastVisibleRow = row;
                     }
-            });
+                });
 
             if (lastVisibleRow) {
                 const formCountInput = document.getElementById("id_product_purchase_voucher_items_set-TOTAL_FORMS");
@@ -1070,61 +1072,191 @@ document.addEventListener("DOMContentLoaded", function () {
         
         }
     });
+    document.getElementById('id_purchase_number').focus();
     inputCheck()
 
 
 
 })
 function inputCheck(){
+        const purchaseOrder = document.getElementById('id_purchase_number');
+        const supplierNo = document.getElementById('id_supplier_invoice_number');
+        const finishGodown = document.getElementById('id_finished_godowns')
         const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
         const ProductPurchaseId = document.getElementById('id_product_purchase_voucher_items_set-0-id').value;
-      
+        const tables = document.querySelectorAll('#myTable .mainTableList tr');
+        var partyName = document.getElementById('id_party_name');
+        var narration = document.getElementById('id_narration');
+        const submitBtn = document.getElementById('parentFormClick');
+
+        if(purchaseOrder){
+            purchaseOrder.addEventListener('keydown', function(event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); 
+                    supplierNo.focus();
+                    return;
+                }
+            })
+        }
+        if(supplierNo){
+            supplierNo.addEventListener('keydown', function(event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); 
+                    if(supplierNo.value === ''){
+                        supplierNo.focus();
+                        return;
+                    }else{
+                        finishGodown.focus();
+                    }
+                    
+                }
+            })  
+        }
+        if(finishGodown){
+            finishGodown.addEventListener('keydown', function(event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); 
+                    if(finishGodown.value === ''){
+                        finishGodown.focus();
+                     
+                    }else{
+                        partyName.focus();
+                    }
+                    
+                }
+            })  
+        }
+
+        if(partyName){
+            partyName.addEventListener('keydown', function(event) {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+                    console.log(parseInt(partyName.value))
+                    if (partyName.value === '' ) {
+                        partyName.focus();
+                      
+                    }else{
+                    var tableRow = document.querySelectorAll('#myTable .mainTableList tr');
+                    for (let row of tableRow) {
+                        var itemInput = row.querySelector('[name$="product_name_value"]');
+                        var qtyInput = row.querySelector('[name$="-quantity_total"]');
+
+                        if (itemInput && itemInput.value === '') {
+                            itemInput.focus();
+                            return; 
+                        } 
+                        // Check if quantity is empty, then focus on it
+                        else if (qtyInput && qtyInput.value === '') {
+                            qtyInput.focus();
+                            return; 
+                        }
+                    }
+                    }
+
+                    
+                }
+            })  
+        }
+        
+
     itemNameInputsid.forEach((input, index) => {
         input.addEventListener("keydown", function (event) {
             const closestRow = input.closest('tr');
             const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
+            const qtyInput = closestRow.querySelector('[name$="-quantity_total"]');
 
-            if(ProductPurchaseId === ''){
-                if(allInputsInRow === ''){
-
-                    if (event.key === "Tab") {
-                        event.preventDefault(); // Prevent default tab behavior
-
-                        // Check if the current input has a value
-                        if (input.value.trim() !== "") {
-                            // If not the last input, move focus to the next row's item name
-                            if (itemNameInputsid[index + 1]) {
-                                itemNameInputsid[index + 1].focus();
+            if(allInputsInRow === ''){
+                  if (event.key === "Tab") {
+                      event.preventDefault(); 
+                    
+                      if (input.value.trim() !== "") {
+                            if (qtyInput) {
+                                qtyInput.focus();
                             }
                         } else {
-                            // If current input is empty, refocus on it
-                            input.focus();
+                            input.focus(); // Refocus on the current input if empty
                         }
                     }
                     if (event.key === 'Enter') {
-                        event.preventDefault(); // Prevent default Enter key behavior
-
-                        // Find the current <td> containing this input
-                        const currentTd = this.closest('td');
-                            console.log('currentId',currentTd)
-                        // Find the next <td> sibling
+                        event.preventDefault();
+                        const currentTd = input.closest('tr');
+                          
                         if (currentTd) {
                             const nextTd = currentTd.nextElementSibling;
 
                             // Check if next <td> exists and contains an input
                             if (nextTd) {
-                                const nextInput = nextTd.querySelector('input');
+                                const nextInput = nextTd.querySelector('[name$="-quantity_total"]');
                                 if (nextInput) {
                                     nextInput.focus(); // Move focus to the next input
                                 }
                             }
                         }
                     }
-                }
-            }
+              }
             
         });
     });
+    tables.forEach(function (row,index){
+        const qty = row.querySelector('[name$="-quantity_total"]')
+        const rate = row.querySelector('[name$="-rate"]');
+
+        if(qty){
+        qty.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault();
+                if(qty.value === ''){
+                    qty.focus()
+                }else{
+                    rate.focus();
+                }
+            }
+        })
+        }
+        if(rate){
+            rate.addEventListener('keydown',function(event){
+                if(event.key === "Tab"){
+                    event.preventDefault();
+                    if(rate.value === ''){
+                        rate.focus()
+                    }else{
+                        var nextRow = tables[index + 1];;
+                            // console.log('nextRow',nextRow)
+                            if (nextRow) {
+                                var nextItemInput = nextRow.querySelector('[name$="product_name_value"]');
+                                console.log('nextRow',nextItemInput)
+                                if (nextItemInput && nextItemInput.value === '') {
+                                    nextItemInput.focus();
+                                } else {
+                                    var nextQtyInput = nextRow.querySelector('[name$="-quantity_total"]');
+                                    if (nextQtyInput) {
+                                        nextQtyInput.focus();
+                                    }
+                                }
+                            } else {
+                            
+                                var AddElement = document.getElementById('addRowButton');
+                                if (AddElement) {
+                                AddElement.focus();
+                                    
+                                
+                                }
+                            }
+                    }
+                }
+            })
+        }
+    })
+
+    if(narration){
+        narration.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault();
+                submitBtn.focus();
+            }
+        })
+    }
+    
 }
 
     inputCheck()

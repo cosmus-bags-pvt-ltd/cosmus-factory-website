@@ -143,9 +143,12 @@
               </tbody>
           </table>
           {% if voucher_instance.qc_all_qty > 0 %}
-          <button style="display: none;" type="button" class="create-btn" id="addRowButton">Add +</button>
+            <input readonly  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
+            <button style="display: none;" type="button" class="create-btn" id="addRowButton">Add +</button>
           {% else %}
-          <button type="button" class="create-btn" id="addRowButton">Add +</button>
+
+            <input  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
+            <button type="button" class="create-btn" id="addRowButton">Add +</button>
           {% endif %}
             <div class="ms-2 mt-5">
                 <label for="id_narration" class="purchase-lable fw-bold me-2">Narration :</label>
@@ -160,7 +163,9 @@
   
   <script>
      $(document).ready(function(){
+        $('#id_voucher_no').focus()
         var forms = $("#id_finished_goods_transfer_records_set-0-id").val();
+       
         if(forms === ''){
             $('#id_voucher_no').on('focusout',function(){
             var purchase_number = $(this).val();
@@ -209,15 +214,22 @@
   
           if (addRowButton && mainTable) {
               addRowButton.addEventListener('click', function () {
-                  let lastVisibleRow = null;
-                  mainTable.querySelectorAll('tr').forEach(row => {
-                      if (window.getComputedStyle(row).display !== 'none') {
-                          lastVisibleRow = row;
-                      }
-                  });
+                let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
+
+                if (isNaN(addInputRow) || addInputRow <= 0) {
+                    addInputRow = 1;
+                    return;
+                }
+                let lastVisibleRow = null;
+                mainTable.querySelectorAll('tr').forEach(row => {
+                    if (window.getComputedStyle(row).display !== 'none') {
+                        lastVisibleRow = row;
+                    }
+                });
                   if (lastVisibleRow) {
                       const newForm = document.getElementById('id_finished_goods_transfer_records_set-TOTAL_FORMS');
-                      const newFormCount = parseInt(newForm.value);
+                      for(let i = 0; i<addInputRow; i++){
+                        const newFormCount = parseInt(newForm.value);
                       const newTable = lastVisibleRow.cloneNode(true);
                       newTable.querySelectorAll("input select").forEach(function (e) {
                           e.value = "";
@@ -283,6 +295,8 @@
                       newForm.value = newFormCount + 1;
   
                       mainTable.appendChild(newTable);
+                      }
+                      document.getElementById('id_productRow').value = '1';
                       deleteRow();
                     editStockTransferProduct()
                    inputCheck();
@@ -527,7 +541,7 @@
                             var newNameValue = namevalueCheck + '                             '+ productQty;
                     
                                 $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(newNameValue);
-                            
+                                $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product_quantity_transfer"]`).focus();
                                 const productColor = selectedValue[1]
                                
                                 const productRefNo = selectedValue[4];
@@ -660,6 +674,7 @@
         
                         $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product"]`).val(item_value);
                         $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(newNameValue);
+                        $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product_quantity_transfer"]`).focus();
 
                             const productColor = selectedValue[1];
                             
@@ -713,7 +728,44 @@ document.addEventListener("DOMContentLoaded", function () {
 function inputCheck() {
     const itemNameInputs = document.querySelectorAll('[name$="-products"]');
     const productInvoiceId = document.getElementById('id_finished_goods_transfer_records_set-0-ids').value;
+    const sourceGodown = document.getElementById('id_source_warehouse');
+    const destinationGodown = document.getElementById('id_destination_warehouse');
+    var tableRows = document.querySelectorAll('#mainProductForm .mainTableList tr');
 
+    sourceGodown.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(sourceGodown.value === ''){
+                sourceGodown.focus()
+            }else{
+                destinationGodown.focus()
+            }
+        }
+    })
+    destinationGodown.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(destinationGodown.value === ''){
+                destinationGodown.focus();
+            }else{
+                var tableRow = document.querySelectorAll('#mainProductForm .mainTableList tr');
+            for (let row of tableRow) {
+                var itemInput = row.querySelector('[name$="products"]');
+                var qtyInput = row.querySelector('[name$="-product_quantity_transfer"]');
+
+                if (itemInput && itemInput.value === '') {
+                    itemInput.focus();
+                    return; 
+                } 
+                // Check if quantity is empty, then focus on it
+                else if (qtyInput && qtyInput.value === '') {
+                    qtyInput.focus();
+                    return; 
+                }
+            }
+            }
+        }
+    })
     itemNameInputs.forEach((input, index) => {
         if (input) {
             input.addEventListener("keydown", function (event) {
@@ -739,6 +791,45 @@ function inputCheck() {
             });
         }
     });
+
+    tableRows.forEach(function(row ,index){
+        var qty = row.querySelector('[name$="-product_quantity_transfer"]');
+        if(qty){
+            qty.addEventListener('keydown', function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault(); // Prevent default tabbing behavior
+
+                    if (qty.value === '') {
+                        // If rate is empty, focus on the rate field itself
+                        qty.focus();
+                    } else {
+                        var nextRow = tableRows[index + 1];;
+                        // console.log('nextRow',nextRow)
+                        if (nextRow) {
+                            var nextItemInput = nextRow.querySelector('[name$="products"]');
+                            console.log('nextRow',nextItemInput)
+                            if (nextItemInput && nextItemInput.value === '') {
+                                nextItemInput.focus();
+                            } else {
+                                var nextQtyInput = nextRow.querySelector('[name$="-product_quantity_transfer"]');
+                                if (nextQtyInput) {
+                                    nextQtyInput.focus();
+                                }
+                            }
+                        } else {
+                        
+                            var AddElement = document.getElementById('addRowButton');
+                            if (AddElement) {
+                              AddElement.focus();
+                                
+                               
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    })
 }
 
 inputCheck()
