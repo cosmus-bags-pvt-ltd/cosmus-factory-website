@@ -1295,6 +1295,7 @@ $(document).ready(function(){
       
       if(godownSelect){
         godownSelect.focus();
+        return;
       }
     })
 
@@ -1310,9 +1311,11 @@ $(document).ready(function(){
                     if (qty.value === '') {
              
                         qty.focus();
+                        return;
                     } else if(tredDisc) {
                        
                       tredDisc.focus();
+                      return;
                       
                         
                     }
@@ -1324,12 +1327,12 @@ $(document).ready(function(){
                 if (event.key === "Tab") {
                     event.preventDefault();
                     if (tredDisc.value === '') {
-             
                       tredDisc.focus();
+                      return;
                     } else if(rate) {
                        
                       rate.focus();
-                      
+                      return;
                         
                     }
                 }
@@ -1344,6 +1347,7 @@ $(document).ready(function(){
                     if (rate.value === '') {
                         // If rate is empty, focus on the rate field itself
                         rate.focus();
+                        return;
                     } else {
                         var nextRow = tableRows[index + 1];;
                         // console.log('nextRow',nextRow)
@@ -1356,6 +1360,7 @@ $(document).ready(function(){
                                 var nextQtyInput = nextRow.querySelector('[name$="-quantity"]');
                                 if (nextQtyInput) {
                                     nextQtyInput.focus();
+                                    return;
                                 }
                             }
                         } else {
@@ -1363,7 +1368,7 @@ $(document).ready(function(){
                             var AddElement = document.getElementById('addRowButton');
                             if (AddElement) {
                               AddElement.focus();
-                                
+                              return;
                                
                             }
                         }

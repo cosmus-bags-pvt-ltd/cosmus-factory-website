@@ -587,11 +587,123 @@
             formSubmitted = false; // Reset for next submission
         }
     });
-  
+    document.getElementById('id_voucher_no').focus();
     // Initial validation on page load
     validateInputs();
    
 });
+
+function inputCheck() {
+    const itemNameInputs = document.querySelectorAll('[name^="stock_name_"]');
+    const sourceGodown = document.getElementById('id_source_godown');
+    const destinationGodown = document.getElementById('id_destination_godown');
+    var tableRows = document.querySelectorAll('#mainProductForm .mainTableList tr');
+
+    sourceGodown.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(sourceGodown.value === ''){
+                sourceGodown.focus()
+                return;
+            }else{
+                destinationGodown.focus()
+            }
+        }
+    })
+    destinationGodown.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(destinationGodown.value === ''){
+                destinationGodown.focus();
+                return;
+            }else{
+                var tableRow = document.querySelectorAll('#mainProductForm .mainTableList tr');
+                for (let row of tableRow) {
+                    var itemInput = row.querySelector('[name^="stock_name_"]');
+                    var qtyInput = row.querySelector('[name$="-item_shade_transfer"]');
+
+                    if (itemInput && itemInput.value === '') {
+                        itemInput.focus();
+                        return; 
+                    } 
+                    // Check if quantity is empty, then focus on it
+                    else if (qtyInput && qtyInput.value === '') {
+                        qtyInput.focus();
+                        return; 
+                    }
+                }
+            }
+        }
+    })
+    itemNameInputs.forEach((input, index) => {
+        if (input) {
+            input.addEventListener("keydown", function (event) {
+                const closestRow = input.closest('tr');
+         
+                const allInputsInRow = closestRow.querySelector('[name^="stock_name_"]').value;
+                const qtyInput = closestRow.querySelector('[name$="-item_shade_transfer"]');
+
+                // Check if the invoice ID is 'None' and handle accordingly
+                if (allInputsInRow === '') {
+                    // On 'Tab' or 'Enter', navigate focus
+                    if (event.key === "Tab" || event.key === "Enter") {
+                        event.preventDefault(); // Prevent default behavior
+
+                        // If product input is not empty
+                        if (input.value.trim() !== "") {
+                            if (qtyInput) {
+                                qtyInput.focus(); // Focus on the quantity input
+                            }
+                        } else {
+                            input.focus(); // Refocus on the current input if empty
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    // tableRows.forEach(function(row ,index){
+    //     var qty = row.querySelector('[name$="-item_shade_transfer"]');
+    //     if(qty){
+    //         qty.addEventListener('keydown', function (event) {
+    //             if (event.key === "Tab") {
+    //                 event.preventDefault(); // Prevent default tabbing behavior
+
+    //                 if (qty.value === '') {
+    //                     // If rate is empty, focus on the rate field itself
+    //                     qty.focus();
+    //                 } else {
+    //                     var nextRow = tableRows[index + 1];;
+    //                     // console.log('nextRow',nextRow)
+    //                     if (nextRow) {
+    //                         var nextItemInput = nextRow.querySelector('[name^="stock_name_"]');
+    //                         console.log('nextRow',nextItemInput)
+    //                         if (nextItemInput && nextItemInput.value === '') {
+    //                             nextItemInput.focus();
+    //                         } else {
+    //                             var nextQtyInput = nextRow.querySelector('[name$="-item_shade_transfer"]');
+    //                             if (nextQtyInput) {
+    //                                 nextQtyInput.focus();
+    //                             }
+    //                         }
+    //                     } else {
+                        
+    //                         var AddElement = document.getElementById('addRowButton');
+    //                         if (AddElement) {
+    //                           AddElement.focus();
+                                
+                               
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         });
+    //     }
+    // })
+}
+
+inputCheck()
 </script>
 
 {% endblock %}
