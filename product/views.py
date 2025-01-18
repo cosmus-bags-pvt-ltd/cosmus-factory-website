@@ -5304,6 +5304,10 @@ def purchase_order_for_raw_material_delete(request,pk):
     try:
         purchase_order_raw_instances = purchase_order_for_raw_material.objects.filter(purchase_order_id=pk)
 
+        purchase_object = get_object_or_404(purchase_order,pk=pk)
+        purchase_object.process_status = 2
+        purchase_object.save()
+
         for instances in purchase_order_raw_instances:
             instances.delete()
         messages.success(request,'Deleted Successfully')
@@ -5314,6 +5318,14 @@ def purchase_order_for_raw_material_delete(request,pk):
         return redirect('purchase-order-raw-material-list')
 
  
+
+
+
+
+
+
+
+
 
 @login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
@@ -6994,6 +7006,8 @@ def raw_material_estimation_popup(request, pk=None):
 
                 initial_p_2_i_dict.append(dict_to_append)
             
+            print(initial_p_2_i_dict)
+
             product_2_items_instances_unique = product_2_item_through_table.objects.filter(
                                 PProduct_pk__Product__Product_Refrence_ID = product_ref_items_instance.product_id.Product_Refrence_ID, common_unique = False).order_by(
                                     'row_number')
@@ -7196,6 +7210,90 @@ def labour_workin_pending_split(request,ref_id):
 
 
 
+# def raw_material_estimation_pop_up_calculate_in_backend(request,u_id):
+#     try:
+#         estimation_master_instance = get_object_or_404(raw_material_production_estimation,pk = u_id)
+        
+#     except ObjectDoesNotExist as e:
+#         print(e)
+    
+#     product_sku_qty = []
+
+#     if estimation_master_instance:
+        
+#         product_refs = estimation_master_instance.raw_material_production_estimations.all()
+
+#         for product_ref in product_refs:
+        
+#             product_wise_qty_items = product_ref.raw_material_product_ref_itemss.all()
+
+#             for item in product_wise_qty_items:
+#                 product_sku_qty.append({item.product_sku:item.estimate_qty})
+
+
+#     ref_id = (
+#         estimation_master_instance.raw_material_production_estimations
+#         .values_list('product_id__Product_Refrence_ID', flat=True)
+#     )
+
+#     material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = ref_id).select_related('PProduct_pk__Product','Item_pk__Item_Color')
+
+#     material_for_ref_id_list = [
+#         {
+#             'ref_id': material.PProduct_pk.Product.Product_Refrence_ID,
+#             'material_name': material.Item_pk.item_name,
+#             'color': material.Item_pk.Item_Color.color_name,
+#             'pro_sku': material.PProduct_pk.PProduct_SKU,
+#             'pro_fab_grp': material.Item_pk.Fabric_nonfabric,
+#             'panha_val': material.Item_pk.Panha,
+#             'unit_val': material.Item_pk.Units,
+#             'grand_total': material.grand_total,
+#             'consumption': round(material.grand_total / (material.Item_pk.Panha * material.Item_pk.Units), 3) if material.Item_pk.Panha and material.Item_pk.Units else 0,
+#             'consumtionCombi': round(material.grand_total_combi / (material.Item_pk.Panha * material.Item_pk.Units), 3) if material.Item_pk.Panha and material.Item_pk.Units else 0,
+#             'common_unique': material.common_unique,
+#         }
+#         for material in material_for_ref_id_queryset
+#     ]
+
+#     grouped_by_ref_id_unique = {}
+        
+#     for material in material_for_ref_id_list:
+
+#         ref_no = material['ref_id']
+
+#         if ref_no not in grouped_by_ref_id_unique:
+#             grouped_by_ref_id_unique[ref_no] = []
+
+#         if material['common_unique']:
+#             if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique[ref_no]):
+#                 grouped_by_ref_id_unique[ref_no].append(material)
+#         else:
+#             grouped_by_ref_id_unique[ref_no].append(material)
+
+
+
+
+            
+#     print('final_material_list = ', grouped_by_ref_id_unique)
+#     print(len(grouped_by_ref_id_unique))
+
+#     return raw_material_estimation_calculate(request,grouped_by_ref_id_unique)
+
+
+
+
+
+
+# def raw_material_estimation_calculate(request,grouped_by_ref_id_unique):
+
+#     return render(request,'reports/raw_material_estimation_calculation_pop_up.html',{'final_material_list':grouped_by_ref_id_unique})
+
+
+
+
+
+
+
 
 def raw_material_estimation_calculate(request,u_id):
     
@@ -7233,7 +7331,7 @@ def raw_material_estimation_calculate(request,u_id):
                     else:
                         final_total_list[material_name] = qty
             
-
+                # print(primary_list)
 
             for key, value in final_total_list.items():
 
@@ -7265,7 +7363,6 @@ def raw_material_estimation_calculate(request,u_id):
                 raw_material_production_total.objects.create(raw_material_estination_master = estimation_master_instance,item_name=key,total_consump=value,godown_stock = total_godown_stock,balance_stock = total_balance_stock)
 
         response_dict = raw_material_production_total.objects.filter(raw_material_estination_master = estimation_master_instance).values('item_name','total_consump','godown_stock','balance_stock')
-
         
 
         ref_id = []
@@ -7277,7 +7374,10 @@ def raw_material_estimation_calculate(request,u_id):
                 ref_id.append(val)
                 
 
-        material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = ref_id)
+        material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = ref_id).select_related(
+        'PProduct_pk__Product', 
+        'Item_pk__Item_Color'
+        )
         
         material_for_ref_id_list = []
 
@@ -7312,11 +7412,11 @@ def raw_material_estimation_calculate(request,u_id):
             material_for_ref_id_list.append(set_production_data_dict)
         
 
-        
+        print('material_for_ref_id_list = ', material_for_ref_id_list)
+
+
 
         grouped_by_ref_id_unique = {}
-
-        
         for material in material_for_ref_id_list:
 
             ref_no = material['ref_id']
@@ -7336,20 +7436,19 @@ def raw_material_estimation_calculate(request,u_id):
         
 
    
-        purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = ref_id)
+        purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = ref_id,process_status__gt = 2)
 
 
-        pending_ref_no_complete = purchase_order_to_product_cutting.objects.filter(~Q(cutting_quantity=F('approved_pcs')),purchase_order_cutting_id__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id,purchase_order_cutting_id__cutting_cancelled = False)
-
-        
 
         lwo_pending = product_to_item_labour_workout.objects.filter(labour_workout__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID__in = ref_id)
 
 
+        lwo_pending_cutting_complete = purchase_order_to_product_cutting.objects.filter(purchase_order_cutting_id__purchase_order_id__product_reference_number__Product_Refrence_ID__in=ref_id
+        ).filter(~Q(cutting_quantity=F('approved_pcs')))
+
+
 
         sku_total_qty = {}
-
-        
             
         for order in purchase_orders:
             for x in order.p_o_to_products.all():
@@ -7372,78 +7471,84 @@ def raw_material_estimation_calculate(request,u_id):
             skus['total'] = total_quantity
 
 
-
-
-        pending_ref_no_dict_complete = {}
-
-        for item in pending_ref_no_complete:
-            ref_id = item.purchase_order_cutting_id.purchase_order_id.product_reference_number.Product_Refrence_ID
-            sku = int(item.product_sku)
-            process_qty = item.cutting_quantity if item.balance_pcs == 0 else item.balance_pcs
-            
-            if ref_id not in pending_ref_no_dict_complete:
-                pending_ref_no_dict_complete[ref_id] = {}
-
-            current_quantity = pending_ref_no_dict_complete[ref_id].get(sku, 0)
-            pending_ref_no_dict_complete[ref_id][sku] = current_quantity + process_qty
-
+        print('sku_total_qty = ', sku_total_qty)
         
-        for product_reference_number, skus in pending_ref_no_dict_complete.items():
-            total_quantity = sum(skus.values())
-            skus['total'] = total_quantity
 
-
-
-
-        pending_complete_merged_dict = {}
-        
-        for key in sku_total_qty:
-            pending_complete_merged_dict[key] = {}
-            if key in pending_ref_no_dict_complete:
-                
-                for inner_key in sku_total_qty[key]:
-                    if inner_key in pending_ref_no_dict_complete[key]:
-                        
-                        pending_complete_merged_dict[key][inner_key] = sku_total_qty[key][inner_key] + pending_ref_no_dict_complete[key][inner_key]
-                    else:
-                        
-                        pending_complete_merged_dict[key][inner_key] = sku_total_qty[key][inner_key]
-                for inner_key in pending_ref_no_dict_complete[key]:
-                    if inner_key not in sku_total_qty[key]:
-                        
-                        pending_complete_merged_dict[key][inner_key] = pending_ref_no_dict_complete[key][inner_key]
-            else:
-                
-                pending_complete_merged_dict[key] = sku_total_qty[key]
-
-        for key in pending_ref_no_dict_complete:
-            if key not in pending_complete_merged_dict:
-                
-                pending_complete_merged_dict[key] = pending_ref_no_dict_complete[key]
-
-
+       
 
         sku_total_qty_lwo = {}
 
-        for x in lwo_pending:
+        if lwo_pending:
+            
 
-            product_reference_number = x.labour_workout.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID
-            sku = x.product_sku
-            process_quantity = x.pending_pcs
+            for x in lwo_pending:
 
-            if product_reference_number not in sku_total_qty_lwo:
-                sku_total_qty_lwo[product_reference_number] = {}
-                
-            if sku not in sku_total_qty_lwo[product_reference_number]:
-                sku_total_qty_lwo[product_reference_number][sku] = process_quantity
-                
-            else:
-                sku_total_qty_lwo[product_reference_number][sku] += process_quantity
+                product_reference_number = x.labour_workout.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID
+                sku = x.product_sku
+                process_quantity = x.pending_pcs
 
-        for product_reference_number, skus in sku_total_qty_lwo.items():
-            total_quantity = sum(skus.values())
-            skus['total'] = total_quantity
+                if product_reference_number not in sku_total_qty_lwo:
+                    sku_total_qty_lwo[product_reference_number] = {}
+                    
+                if sku not in sku_total_qty_lwo[product_reference_number]:
+                    sku_total_qty_lwo[product_reference_number][sku] = process_quantity
+                    
+                else:
+                    sku_total_qty_lwo[product_reference_number][sku] += process_quantity
 
+            for product_reference_number, skus in sku_total_qty_lwo.items():
+                total_quantity = sum(skus.values())
+                skus['total'] = total_quantity
+
+            print('sku_total_qty_lwo = ', sku_total_qty_lwo)
+
+        # print('lwo_pending_cutting_complete = ', lwo_pending_cutting_complete)
+
+
+        sku_total_qty_lwo_cutting_complete = {}
+
+        if lwo_pending_cutting_complete:
+            
+
+            for i in lwo_pending_cutting_complete:
+                product_reference_number = i.purchase_order_cutting_id.purchase_order_id.product_reference_number.Product_Refrence_ID
+                sku = i.product_sku
+                process_quantity = i.cutting_quantity if i.balance_pcs == 0 else i.balance_pcs
+
+                if product_reference_number not in sku_total_qty_lwo_cutting_complete:
+                    sku_total_qty_lwo_cutting_complete[product_reference_number] = {}
+                    
+                if sku not in sku_total_qty_lwo_cutting_complete[product_reference_number]:
+                    sku_total_qty_lwo_cutting_complete[product_reference_number][sku] = process_quantity
+                    
+                else:
+                    sku_total_qty_lwo_cutting_complete[product_reference_number][sku] += process_quantity
+
+            for product_reference_number, skus in sku_total_qty_lwo_cutting_complete.items():
+                total_quantity = sum(skus.values())
+                skus['total'] = total_quantity
+
+
+            print('sku_total_qty_lwo_cutting_complete = ', sku_total_qty_lwo_cutting_complete)
+
+
+        merged_data_lwo = {}
+
+        for key in sku_total_qty_lwo.keys():
+            if key not in merged_data_lwo:
+                merged_data_lwo[key] = {}
+            for sub_key in sku_total_qty_lwo[key]:
+                merged_data_lwo[key][sub_key] = sku_total_qty_lwo[key][sub_key] + sku_total_qty_lwo_cutting_complete.get(key, {}).get(sub_key, 0)
+
+        for key in sku_total_qty_lwo_cutting_complete.keys():
+            if key not in merged_data_lwo:
+                merged_data_lwo[key] = {}
+            for sub_key in sku_total_qty_lwo_cutting_complete[key]:
+                if sub_key not in merged_data_lwo[key]:
+                    merged_data_lwo[key][sub_key] = sku_total_qty_lwo_cutting_complete[key][sub_key]
+
+        # Result
+        print('merged_data_lwo = ', merged_data_lwo)
 
 
         dataset_to_send = []
@@ -7452,9 +7557,9 @@ def raw_material_estimation_calculate(request,u_id):
 
         list_to_send_for_lwo = []
 
-        if pending_complete_merged_dict and sku_total_qty_lwo:
-
-            for key, value in pending_complete_merged_dict.items():
+        if sku_total_qty and merged_data_lwo:
+            print("******* IN BOTH *******")
+            for key, value in sku_total_qty.items():
 
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -7530,7 +7635,7 @@ def raw_material_estimation_calculate(request,u_id):
                                         list_to_send_for_cutting.append(dict_append)
 
 
-            for key, value in pending_complete_merged_dict.items():
+            for key, value in sku_total_qty.items():
 
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -7555,7 +7660,7 @@ def raw_material_estimation_calculate(request,u_id):
 
           
 
-            for key,value in sku_total_qty_lwo.items():
+            for key,value in merged_data_lwo.items():
                     
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -7638,7 +7743,7 @@ def raw_material_estimation_calculate(request,u_id):
                                             list_to_send_for_lwo.append(dict_append)
 
 
-            for key, value in sku_total_qty_lwo.items():
+            for key, value in merged_data_lwo.items():
 
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -7719,8 +7824,8 @@ def raw_material_estimation_calculate(request,u_id):
                                 'item_id':item.id,
                                 'material_name':i['item_name'],
                                 'color': j['color'],
-                                'cutting_consumption': j['cutting_consumption'],
-                                'lwo_consumption': j['lwo_consumption'],
+                                'cutting_consumption': 0 if j['cutting_consumption'] == 0.000 else j['cutting_consumption'],
+                                'lwo_consumption': 0 if j['lwo_consumption'] == 0.000 else  j['lwo_consumption'],
                                 'total_consump':i['total_consump'],
                                 'godown_stock': i['godown_stock'],
                                 'balance_stock': i['balance_stock'],
@@ -7736,8 +7841,8 @@ def raw_material_estimation_calculate(request,u_id):
                                 'item_id':item.id,
                                 'material_name':i['item_name'],
                                 'color': j['color'],
-                                'cutting_consumption': j['cutting_consumption'],
-                                'lwo_consumption': 0,
+                                'cutting_consumption': 0 if j['cutting_consumption'] == 0.000 else j['cutting_consumption'],
+                                'lwo_consumption': 0 if j['lwo_consumption'] == 0.000 else  j['lwo_consumption'],
                                 'total_consump':i['total_consump'],
                                 'godown_stock': i['godown_stock'],
                                 'balance_stock': i['balance_stock'],
@@ -7747,11 +7852,11 @@ def raw_material_estimation_calculate(request,u_id):
                             }
                         dataset_to_send.append(dict_to_append)
 
-        elif pending_complete_merged_dict:
+        elif sku_total_qty:
 
             print("in only cutting")
 
-            for key, value in pending_complete_merged_dict.items():
+            for key, value in sku_total_qty.items():
 
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -7827,7 +7932,7 @@ def raw_material_estimation_calculate(request,u_id):
                                         list_to_send_for_cutting.append(dict_append)
 
 
-            for key, value in pending_complete_merged_dict.items():
+            for key, value in sku_total_qty.items():
 
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -7886,29 +7991,29 @@ def raw_material_estimation_calculate(request,u_id):
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
-                #         break
-                # if not match_found:
-                #     dict_to_append = {
-                #             'item_id':item.id,
-                #             'material_name':x['item_name'],
-                #             'total_consump':x['total_consump'],
-                #             'cutting_consumption': 0,
-                #             'lwo_consumption': 0,
-                #             'godown_stock': x['godown_stock'],
-                #             'balance_stock': x['balance_stock'],
-                #             'party_name' : p_name,
-                #             'mobile_no' : mobile,
-                #         }
-                #     dataset_to_send.append(dict_to_append)
+                        break
+                if not match_found:
+                    dict_to_append = {
+                            'item_id':item.id,
+                            'material_name':x['item_name'],
+                            'total_consump':x['total_consump'],
+                            'cutting_consumption': 0,
+                            'lwo_consumption': 0,
+                            'godown_stock': x['godown_stock'],
+                            'balance_stock': x['balance_stock'],
+                            'party_name' : p_name,
+                            'mobile_no' : mobile,
+                        }
+                    dataset_to_send.append(dict_to_append)
 
 
 
         
-        elif sku_total_qty_lwo:
+        elif merged_data_lwo:
             
             print("in only lwo")
 
-            for key,value in sku_total_qty_lwo.items():
+            for key,value in merged_data_lwo.items():
                     
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -7924,7 +8029,6 @@ def raw_material_estimation_calculate(request,u_id):
                                     
                                     if data['pro_fab_grp'] == 'Non Fabric':
 
-                                    
                                         total_consumption_value = v * data['consumption']
 
                                         total_combi_consumption_value = value['total'] * data['consumtionCombi']
@@ -7990,8 +8094,8 @@ def raw_material_estimation_calculate(request,u_id):
                                             
                                             list_to_send_for_lwo.append(dict_append)
 
-
-            for key, value in sku_total_qty_lwo.items():
+            # this code is working for if one ref id pending lwo are there then we have to add second ref id material in the list
+            for key, value in merged_data_lwo.items():
 
                 for refno, value_list in grouped_by_ref_id_unique.items():
 
@@ -8011,7 +8115,7 @@ def raw_material_estimation_calculate(request,u_id):
                                 }
 
                                 list_to_send_for_lwo.append(dict_append)
-
+            
             for x in response_dict:
                 material_name = x['item_name']
                 match_found = False
@@ -8045,23 +8149,23 @@ def raw_material_estimation_calculate(request,u_id):
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
-                        # break
-                # if not match_found:
-                #     dict_to_append = {
-                #             'item_id':item.id,
-                #             'material_name':x['item_name'],
-                #             'total_consump':x['total_consump'],
-                #             'cutting_consumption': 0,
-                #             'lwo_consumption': 0,
-                #             'godown_stock': x['godown_stock'],
-                #             'balance_stock': x['balance_stock'],
-                #             'party_name' : p_name,
-                #             'mobile_no' : mobile,
-                #         }
-                #     dataset_to_send.append(dict_to_append)
+                        break
+                if not match_found:
+                    dict_to_append = {
+                            'item_id':item.id,
+                            'material_name':x['item_name'],
+                            'total_consump':x['total_consump'],
+                            'cutting_consumption': 0,
+                            'lwo_consumption': 0,
+                            'godown_stock': x['godown_stock'],
+                            'balance_stock': x['balance_stock'],
+                            'party_name' : p_name,
+                            'mobile_no' : mobile,
+                        }
+                    dataset_to_send.append(dict_to_append)
 
         else:
-
+            print("******* IN NOTHING *******")
             for x in response_dict:
                               
                 item = get_object_or_404(Item_Creation, item_name=x['item_name'])
@@ -9596,21 +9700,17 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             # Add keys that exist only in the second dictionary
             pending_complete_merged_dict[key] = pending_ref_no_dict_complete[key]
 
-    
 
-    
-    # print('pending_ref_no_dict --- ', pending_ref_no_dict)
-    # print('pending_ref_no_dict_complete --- ', pending_ref_no_dict_complete)
-    # print('pending_complete_merged_dict ---', pending_complete_merged_dict)
     
     pending_ref_no_dict_lwo = {}
 
-    pending_ref_no_lwo = product_to_item_labour_workout.objects.filter(~Q(pending_pcs=0))
+    # pending_ref_no_lwo = product_to_item_labour_workout.objects.filter(~Q(pending_pcs=0))
+    pending_ref_no_lwo = product_to_item_labour_workout.objects.all()
 
     for item in pending_ref_no_lwo:
         ref_id = item.labour_workout.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID
         sku = int(item.product_sku)
-        process_qty = item.processed_pcs
+        process_qty = item.processed_pcs if item.processed_pcs == item.pending_pcs else item.pending_pcs
 
         if ref_id not in pending_ref_no_dict_lwo:
                 pending_ref_no_dict_lwo[ref_id] = {}
@@ -9623,9 +9723,54 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         total_quantity = sum(skus.values())
         skus['total'] = total_quantity
 
-        
+
+    lwo_pending_cutting_complete = purchase_order_to_product_cutting.objects.filter(~Q(cutting_quantity=F('approved_pcs'))) 
 
 
+
+
+    sku_total_qty_lwo_cutting_complete = {}
+
+    for i in lwo_pending_cutting_complete:
+        product_reference_number = i.purchase_order_cutting_id.purchase_order_id.product_reference_number.Product_Refrence_ID
+        sku = i.product_sku
+        process_quantity = i.cutting_quantity if i.balance_pcs == 0 else i.balance_pcs
+
+        if product_reference_number not in sku_total_qty_lwo_cutting_complete:
+            sku_total_qty_lwo_cutting_complete[product_reference_number] = {}
+            
+        if sku not in sku_total_qty_lwo_cutting_complete[product_reference_number]:
+            sku_total_qty_lwo_cutting_complete[product_reference_number][sku] = process_quantity
+            
+        else:
+            sku_total_qty_lwo_cutting_complete[product_reference_number][sku] += process_quantity
+
+    for product_reference_number, skus in sku_total_qty_lwo_cutting_complete.items():
+        total_quantity = sum(skus.values())
+        skus['total'] = total_quantity
+
+
+
+
+
+
+    merged_data_lwo = {}
+
+    for key in pending_ref_no_dict_lwo.keys():
+        if key not in merged_data_lwo:
+            merged_data_lwo[key] = {}
+        for sub_key in pending_ref_no_dict_lwo[key]:
+            merged_data_lwo[key][sub_key] = pending_ref_no_dict_lwo[key][sub_key] + sku_total_qty_lwo_cutting_complete.get(key, {}).get(sub_key, 0)
+
+    for key in sku_total_qty_lwo_cutting_complete.keys():
+        if key not in merged_data_lwo:
+            merged_data_lwo[key] = {}
+        for sub_key in sku_total_qty_lwo_cutting_complete[key]:
+            if sub_key not in merged_data_lwo[key]:
+                merged_data_lwo[key][sub_key] = sku_total_qty_lwo_cutting_complete[key][sub_key]
+
+    # Result
+    print('merged_data_lwo = ', merged_data_lwo)
     # purchase_orders = purchase_order.objects.filter(product_reference_number__Product_Refrence_ID__in = pending_ref_no_dict).prefetch_related('raw_materials')
 
     
@@ -9639,7 +9784,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     merged_data = []
 
-    if pending_complete_merged_dict and pending_ref_no_dict_lwo:
+    if pending_complete_merged_dict and merged_data_lwo:
 
         print("in both****************************")
 
@@ -9780,7 +9925,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
 
 
-        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = pending_ref_no_dict_lwo)
+        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = merged_data_lwo)
 
         # print(pending_ref_no_dict_lwo)
         # print(material_for_ref_id_queryset_for_low)
@@ -9839,7 +9984,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
         lwo_consumption_list = []
 
-        for key,value in pending_ref_no_dict_lwo.items():
+        for key,value in merged_data_lwo.items():
                     
                 for refno, value_list in grouped_by_ref_id_unique_lwo.items():
 
@@ -10240,14 +10385,14 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
                     
     #ONLY IF LWO PENDING
-    elif pending_ref_no_dict_lwo:
+    elif merged_data_lwo:
         print("in only lwo")
 
         # print('pending_ref_no_dict_lwo -- ', pending_ref_no_dict_lwo)
 
-        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = pending_ref_no_dict_lwo)
+        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = merged_data_lwo)
 
-        print(pending_ref_no_dict_lwo)
+        # print(pending_ref_no_dict_lwo)
         # print(material_for_ref_id_queryset_for_low)
 
         for material in material_for_ref_id_queryset_for_low:
@@ -10304,7 +10449,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
         lwo_consumption_list = []
 
-        for key,value in pending_ref_no_dict_lwo.items():
+        for key,value in merged_data_lwo.items():
                     
                 for refno, value_list in grouped_by_ref_id_unique_lwo.items():
 

@@ -1,7 +1,9 @@
 {% extends 'product/base.html' %} 
 {% load static %}
 {% block body %}
+{{response_dict}}
 <div class="mt-2">
+    <!-- {{final_material_list}} -->
     <div class="responsives mb-3">
         <input type="hidden" value="{{ for_excel }}" id="finalDic">
         <table class="table table-hover table-bordered table-striped">
