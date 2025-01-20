@@ -1203,7 +1203,7 @@ class sales_voucher_finish_Goods(models.Model):
 
 
 class purchase_order_master_for_puchase_voucher_rm(models.Model):
-    po_no = models.CharField(unique=True,null=False,blank=False)
+    po_no = models.CharField(max_length = 100 , unique=True,null=False,blank=False)
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     payment_term = models.CharField(max_length=20, null=True, blank=True)
     fright_transport = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
