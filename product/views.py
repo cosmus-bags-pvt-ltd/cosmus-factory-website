@@ -7821,7 +7821,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name = i['item_name'])
 
-                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i['item_name']).exists()
+                    po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
 
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -7845,10 +7845,10 @@ def raw_material_estimation_calculate(request,u_id):
                                 'cutting_con_aprv_pen': 0 if j['cutting_con_aprv_pen'] == 0.000 else j['cutting_con_aprv_pen'],
                                 'total_consump':i['total_consump'],
                                 'godown_stock': i['godown_stock'],
-                                'balance_stock': i['balance_stock'],
+                                'po_qty':po_qty,
+                                'balance_stock': (i['godown_stock']) - ((i['total_consump']) + (j['cutting_consumption']) + (j['cutting_con_aprv_pen']) + (j['lwo_consumption']) - (po_qty if po_qty is not None else 0)),
                                 'party_name' : p_name,
                                 'mobile_no' : mobile,
-                                'po_exist':po_exist
                             }
                             dataset_to_send.append(dict_to_append)
                             match_found = True
@@ -7863,16 +7863,16 @@ def raw_material_estimation_calculate(request,u_id):
                                 'cutting_con_aprv_pen': 0,
                                 'total_consump':i['total_consump'],
                                 'godown_stock': i['godown_stock'],
-                                'balance_stock': i['balance_stock'],
+                                'po_qty':po_qty,
+                                'balance_stock': (i['godown_stock']) - ((i['total_consump']) + (0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
                                 'party_name' : p_name,
                                 'mobile_no' : mobile,
-                                'po_exist':po_exist
                             }
                         dataset_to_send.append(dict_to_append)
 
 
-
-# *******************************************************************************************                
+# *******************************************************************************************
+              
         elif sku_total_qty_cutting and sku_total_qty_cutting_lwo_aprv_pending:
             
             print("IN CUTTING PENDING AND CUTTING APPROVE PENDING")
@@ -8103,7 +8103,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
+                    po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -8124,10 +8124,10 @@ def raw_material_estimation_calculate(request,u_id):
                             'cutting_con_aprv_pen': 0 if y['cutting_con_aprv_pen'] == 0.000 else y['cutting_con_aprv_pen'],
                             'lwo_consumption': 0,
                             'godown_stock': x['godown_stock'],
-                            'balance_stock': x['balance_stock'],
+                            'po_qty':po_qty,
+                            'balance_stock': (x['godown_stock']) - ((x['total_consump']) + (y['cutting_consumption']) + (y['cutting_con_aprv_pen']) + (0) - (po_qty if po_qty is not None else 0)),
                             'party_name' : p_name,
                             'mobile_no' : mobile,
-                            'po_exist':po_exist
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -8147,9 +8147,8 @@ def raw_material_estimation_calculate(request,u_id):
                 #     dataset_to_send.append(dict_to_append)
 
 
-
-
-# *******************************************************************************************                
+# *******************************************************************************************
+             
         elif sku_total_qty_cutting and sku_total_qty_lwo_pending:
             
             print("IN CUTTING PENDING AND LWO PENDING")
@@ -8373,7 +8372,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
+                    po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -8394,10 +8393,10 @@ def raw_material_estimation_calculate(request,u_id):
                             'cutting_con_aprv_pen': 0,
                             'lwo_consumption': 0 if y['lwo_consumption'] == 0.000 else y['lwo_consumption'],
                             'godown_stock': x['godown_stock'],
-                            'balance_stock': x['balance_stock'],
+                            'po_qty':po_qty,
+                            'balance_stock': (x['godown_stock']) - ((x['total_consump']) + (y['cutting_consumption']) + (0) + (y['lwo_consumption']) - (po_qty if po_qty is not None else 0)),
                             'party_name' : p_name,
                             'mobile_no' : mobile,
-                            'po_exist':po_exist
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -8417,7 +8416,9 @@ def raw_material_estimation_calculate(request,u_id):
                 #         }
                 #     dataset_to_send.append(dict_to_append)
 
+
 #**************************************************************************************************
+
         elif sku_total_qty_cutting_lwo_aprv_pending and sku_total_qty_lwo_pending:
 
             print("IN CUTTING APPROVE PENDING AND LWO PENDING")
@@ -8654,7 +8655,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
+                    po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -8675,10 +8676,11 @@ def raw_material_estimation_calculate(request,u_id):
                             'cutting_con_aprv_pen': 0 if y['cutting_con_aprv_pen'] == 0.000 else y['cutting_con_aprv_pen'],
                             'lwo_consumption': 0 if y['lwo_consumption'] == 0.000 else y['lwo_consumption'],
                             'godown_stock': x['godown_stock'],
-                            'balance_stock': x['balance_stock'],
+                            'po_qty':po_qty,
+                            'balance_stock': (x['godown_stock']) - ((x['total_consump']) + (0) + (y['cutting_con_aprv_pen']) + (y['lwo_consumption']) - (po_qty if po_qty is not None else 0)),
                             'party_name' : p_name,
                             'mobile_no' : mobile,
-                            'po_exist':po_exist
+
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -8697,8 +8699,6 @@ def raw_material_estimation_calculate(request,u_id):
                 #             'mobile_no' : mobile,
                 #         }
                 #     dataset_to_send.append(dict_to_append)
-
-
 
 
         elif sku_total_qty_cutting:
@@ -8812,7 +8812,8 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
+                    po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
+
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -8834,10 +8835,10 @@ def raw_material_estimation_calculate(request,u_id):
                             'lwo_consumption': 0,
                             'cutting_con_aprv_pen': 0,
                             'godown_stock': x['godown_stock'],
-                            'balance_stock': x['balance_stock'],
+                            'po_qty':po_qty,
+                            'balance_stock': (x['godown_stock']) - ((x['total_consump']) + (y['cutting_consumption']) + (0) + (0) - (po_qty if po_qty is not None else 0)),
                             'party_name' : p_name,
                             'mobile_no' : mobile,
-                            'po_exist':po_exist
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -8973,7 +8974,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
+                    po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -8995,10 +8996,10 @@ def raw_material_estimation_calculate(request,u_id):
                             'lwo_consumption': 0,
                             'cutting_con_aprv_pen': 0 if y['cutting_con_aprv_pen'] == 0.000 else y['cutting_con_aprv_pen'],
                             'godown_stock': x['godown_stock'],
-                            'balance_stock': x['balance_stock'],
+                            'po_qty':po_qty,
+                            'balance_stock': (x['godown_stock']) - ((x['total_consump']) + (0) + (y['cutting_con_aprv_pen']) + (0) - (po_qty if po_qty is not None else 0)),
                             'party_name' : p_name,
                             'mobile_no' : mobile,
-                            'po_exist':po_exist
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -9019,6 +9020,7 @@ def raw_material_estimation_calculate(request,u_id):
                 #         }
                 #     dataset_to_send.append(dict_to_append)
         
+
         elif sku_total_qty_lwo_pending:
 
             print("IN ONLY LWO PENDING")
@@ -9123,7 +9125,7 @@ def raw_material_estimation_calculate(request,u_id):
                     
                     item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                    po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
+                    po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
                     
                     party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -9145,10 +9147,11 @@ def raw_material_estimation_calculate(request,u_id):
                             'lwo_consumption': 0 if y['lwo_consumption'] == 0.000 else y['lwo_consumption'],
                             'cutting_con_aprv_pen': 0,
                             'godown_stock': x['godown_stock'],
-                            'balance_stock': x['balance_stock'],
+                            'po_qty':po_qty,
+                            'balance_stock': (x['godown_stock']) - ((x['total_consump']) + (0) + (0) + (y['lwo_consumption']) - (po_qty if po_qty is not None else 0)),
                             'party_name' : p_name,
                             'mobile_no' : mobile,
-                            'po_exist':po_exist
+
                         }
                         dataset_to_send.append(dict_to_append)
                         match_found = True
@@ -9177,7 +9180,7 @@ def raw_material_estimation_calculate(request,u_id):
                               
                 item = get_object_or_404(Item_Creation, item_name=x['item_name'])
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=x['item_name']).aggregate(total_qty=Sum('quantity'))['total_qty']
                 
                 party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = x['item_name']).select_related('item_purchase_master__party_name').order_by('-created_date').first()
                     
@@ -9199,10 +9202,11 @@ def raw_material_estimation_calculate(request,u_id):
                     'lwo_consumption': 0,
                     'cutting_con_aprv_pen':0,
                     'godown_stock': x['godown_stock'],
-                    'balance_stock': x['balance_stock'],
+                    'po_qty':po_qty,
+                    'balance_stock': (x['godown_stock']) - ((x['total_consump']) + (0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
                     'party_name' : p_name,
                     'mobile_no' : mobile,
-                    'po_exist':po_exist
+
                 }
 
                 dataset_to_send.append(dict_to_apnd)
@@ -11222,7 +11226,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
                         'po_qty':po_qty,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption']) - (po_qty)),
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption']) - (po_qty if po_qty is not None else 0)),
                         'party_name' : p_name,
 					    'mobile_no' : mobile,
                     }
@@ -11471,7 +11475,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'lwo_consumption': 0,
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
                         'po_qty':po_qty,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (0) - (po_qty)),
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (0) - (po_qty if po_qty is not None else 0)),
                         'party_name' : p_name,
 					    'mobile_no' : mobile,
                     }
@@ -11738,7 +11742,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
                         'po_qty':po_qty,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption']) - (po_qty)),
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption']) - (po_qty if po_qty is not None else 0)),
                         'party_name' : p_name,
 					    'mobile_no' : mobile,
                     }
@@ -11995,7 +11999,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
                         'po_qty':po_qty,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + x['lwo_consumption'] + (0) - (po_qty)),
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + x['lwo_consumption'] + (0) - (po_qty if po_qty is not None else 0)),
                         'party_name' : p_name,
 					    'mobile_no' : mobile,
                     }
@@ -12138,7 +12142,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'lwo_consumption': 0,
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
                         'po_qty':po_qty,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (0) + (0)-(po_qty)),
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (0) + (0)-(po_qty if po_qty is not None else 0)),
                         'party_name' : p_name,
                         'mobile_no' : mobile,
                     }
@@ -12288,7 +12292,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'lwo_consumption': 0,
                         'po_qty':po_qty,
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (0) - (po_qty)),
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (0) - (po_qty if po_qty is not None else 0)),
                         'party_name' : p_name,
                         'mobile_no' : mobile,
                     }
@@ -12448,7 +12452,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
                         'po_qty':po_qty,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0) - ((0) + (0) + (x['lwo_consumption']) - (po_qty)),
+                        'balance' : (i.total_qty if i.total_qty is not None else 0) - ((0) + (0) + (x['lwo_consumption']) - (po_qty if po_qty is not None else 0)),
                         'party_name' : p_name,
                         'mobile_no' : mobile,
                     }
