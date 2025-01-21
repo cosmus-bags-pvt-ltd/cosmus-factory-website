@@ -10636,27 +10636,27 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     
     pending_ref_no = purchase_order_to_product.objects.filter(purchase_order_id__process_status__gt = 2,process_quantity__gt=0)
 
-
     sku_total_qty_cutting = {}
 
-    for item in pending_ref_no:
-        product_reference_number = item.purchase_order_id.product_reference_number.Product_Refrence_ID
-        sku = item.product_id.PProduct_SKU
-        process_quantity = item.process_quantity
+    if pending_ref_no:
+        for item in pending_ref_no:
+            product_reference_number = item.purchase_order_id.product_reference_number.Product_Refrence_ID
+            sku = item.product_id.PProduct_SKU
+            process_quantity = item.process_quantity
 
-        if product_reference_number not in sku_total_qty_cutting:
-            sku_total_qty_cutting[product_reference_number] = {}
+            if product_reference_number not in sku_total_qty_cutting:
+                sku_total_qty_cutting[product_reference_number] = {}
 
-        if sku not in sku_total_qty_cutting[product_reference_number]:
-            sku_total_qty_cutting[product_reference_number][sku] = process_quantity
-        else:
-            sku_total_qty_cutting[product_reference_number][sku] += process_quantity
+            if sku not in sku_total_qty_cutting[product_reference_number]:
+                sku_total_qty_cutting[product_reference_number][sku] = process_quantity
+            else:
+                sku_total_qty_cutting[product_reference_number][sku] += process_quantity
 
-    for product_reference_number, skus in sku_total_qty_cutting.items():
-        total_quantity = sum(skus.values())
-        skus['total'] = total_quantity
+        for product_reference_number, skus in sku_total_qty_cutting.items():
+            total_quantity = sum(skus.values())
+            skus['total'] = total_quantity
 
-    print('sku_total_qty_cutting -- ', sku_total_qty_cutting)
+    # print('sku_total_qty_cutting = ', sku_total_qty_cutting)
 
 
 
@@ -10682,7 +10682,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             total_quantity = sum(skus.values())
             skus['total'] = total_quantity
 
-    print('sku_total_qty_cutting_lwo_aprv_pending',sku_total_qty_cutting_lwo_aprv_pending)
+    # print('sku_total_qty_cutting_lwo_aprv_pending = ',sku_total_qty_cutting_lwo_aprv_pending)
 
 
     
@@ -10709,25 +10709,18 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             total_quantity = sum(skus.values())
             skus['total'] = total_quantity
 
-    print('sku_total_qty_lwo_pending = ', sku_total_qty_lwo_pending)
+    # print('sku_total_qty_lwo_pending = ', sku_total_qty_lwo_pending)
+
+
 
 
 
     material_for_ref_id_list = []
 
-    material_for_ref_id_list_for_lwo = []
-
-    material_for_ref_id_list_for_cutting_aprv_pending = []
-
-    merged_data = []
-
-    if sku_total_qty_cutting and sku_total_qty_cutting_lwo_aprv_pending and sku_total_qty_lwo_pending:
-
-        print("IN ALL")
+    if sku_total_qty_cutting:
 
         material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
         
-
         for material in material_for_ref_id_queryset:
             reference_id = material.PProduct_pk.Product.Product_Refrence_ID
             material_name = material.Item_pk.item_name
@@ -10766,7 +10759,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             if ref_no not in grouped_by_ref_id_unique:
                 grouped_by_ref_id_unique[ref_no] = []
 
-            
             if material['common_unique']:
 
                 if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique[ref_no]):
@@ -10774,9 +10766,127 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             else:
                 grouped_by_ref_id_unique[ref_no].append(material)
 
-        
         # print('grouped_by_ref_id_unique = ', grouped_by_ref_id_unique)
 
+
+    material_for_ref_id_list_for_cutting_aprv_pending = []
+
+    if sku_total_qty_cutting_lwo_aprv_pending:
+
+        material_for_ref_id_queryset_for_cutting_aprv_pending = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting_lwo_aprv_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
+
+        for material in material_for_ref_id_queryset_for_cutting_aprv_pending:
+            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
+            material_name = material.Item_pk.item_name
+            color = material.Item_pk.Item_Color.color_name
+            pro_sku = material.PProduct_pk.PProduct_SKU
+            pro_fab_grp = material.Item_pk.Fabric_nonfabric
+            panha_val = material.Item_pk.Panha
+            unit_val = material.Item_pk.Units
+            grand_total = material.grand_total
+            grand_total_combi = material.grand_total_combi
+            consumption = round(grand_total / (panha_val * unit_val),3)
+            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
+            common_unique = material.common_unique
+
+            set_production_data_dict = {
+                'ref_id': reference_id,
+                'material_name': material_name,
+                'color':color,
+                'pro_sku': pro_sku,
+                'pro_fab_grp': pro_fab_grp,
+                'panha_val':panha_val,
+                'unit_val':unit_val,
+                'grand_total':grand_total,
+                'consumption': consumption,
+                'consumtionCombi': consumtionCombi,
+                'common_unique': common_unique
+            }
+            material_for_ref_id_list_for_cutting_aprv_pending.append(set_production_data_dict)
+        
+
+
+        grouped_by_ref_id_unique_cutting_aprv_pending = {}
+
+        for material in material_for_ref_id_list_for_cutting_aprv_pending:
+
+            ref_no = material['ref_id']
+
+            if ref_no not in grouped_by_ref_id_unique_cutting_aprv_pending:
+                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no] = []
+
+            if material['common_unique']:
+                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_cutting_aprv_pending[ref_no]):
+                    grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
+            else:
+                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
+
+        # print("grouped_by_ref_id_unique_cutting_aprv_pending = ", grouped_by_ref_id_unique_cutting_aprv_pending)
+    
+
+    material_for_ref_id_list_for_lwo = []
+
+    if sku_total_qty_lwo_pending:
+
+        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_lwo_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
+
+        for material in material_for_ref_id_queryset_for_low:
+            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
+            material_name = material.Item_pk.item_name
+            color = material.Item_pk.Item_Color.color_name
+            pro_sku = material.PProduct_pk.PProduct_SKU
+            pro_fab_grp = material.Item_pk.Fabric_nonfabric
+            panha_val = material.Item_pk.Panha
+            unit_val = material.Item_pk.Units
+            grand_total = material.grand_total
+            grand_total_combi = material.grand_total_combi
+            consumption = round(grand_total / (panha_val * unit_val),3)
+            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
+            common_unique = material.common_unique
+
+            set_production_data_dict = {
+                'ref_id': reference_id,
+                'material_name': material_name,
+                'color':color,
+                'pro_sku': pro_sku,
+                'pro_fab_grp': pro_fab_grp,
+                'panha_val':panha_val,
+                'unit_val':unit_val,
+                'grand_total':grand_total,
+                'consumption': consumption,
+                'consumtionCombi': consumtionCombi,
+                'common_unique': common_unique
+            }
+            material_for_ref_id_list_for_lwo.append(set_production_data_dict)
+        
+        grouped_by_ref_id_unique_lwo = {}
+
+        for material in material_for_ref_id_list_for_lwo:
+
+            ref_no = material['ref_id']
+
+            if ref_no not in grouped_by_ref_id_unique_lwo:
+                grouped_by_ref_id_unique_lwo[ref_no] = []
+
+            
+            if material['common_unique']:
+
+                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_lwo[ref_no]):
+                    grouped_by_ref_id_unique_lwo[ref_no].append(material)
+            else:
+                grouped_by_ref_id_unique_lwo[ref_no].append(material)
+
+
+        # print('grouped_by_ref_id_unique_lwo = ', grouped_by_ref_id_unique_lwo)
+
+
+
+
+    merged_data = []
+
+    if sku_total_qty_cutting and sku_total_qty_cutting_lwo_aprv_pending and sku_total_qty_lwo_pending:
+
+        print("IN ALL")
 
         cutting_consumption_list = []
 
@@ -10844,56 +10954,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         # print('cutting_consumption_list = ',cutting_consumption_list)
         # print(len(cutting_consumption_list))
 
-#******************************************************************************************************************************
-        material_for_ref_id_queryset_for_cutting_aprv_pending = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting_lwo_aprv_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_cutting_aprv_pending:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_cutting_aprv_pending.append(set_production_data_dict)
-        
-
-
-        grouped_by_ref_id_unique_cutting_aprv_pending = {}
-
-        for material in material_for_ref_id_list_for_cutting_aprv_pending:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_cutting_aprv_pending:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no] = []
-
-            
-            if material['common_unique']:
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_cutting_aprv_pending[ref_no]):
-                    grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-
+# #******************************************************************************************************************************
         
 
         list_to_send_for_cutting_aprv_pending = []
@@ -10970,58 +11031,9 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         # print('list_to_send_for_cutting_aprv_pending --- ', list_to_send_for_cutting_aprv_pending)
         # print(len(list_to_send_for_cutting_aprv_pending))
 
-#******************************************************************************************************************************
+# #******************************************************************************************************************************
 
-        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_lwo_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_low:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_lwo.append(set_production_data_dict)
         
-        grouped_by_ref_id_unique_lwo = {}
-
-        for material in material_for_ref_id_list_for_lwo:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_lwo:
-                grouped_by_ref_id_unique_lwo[ref_no] = []
-
-            
-            if material['common_unique']:
-
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_lwo[ref_no]):
-                    grouped_by_ref_id_unique_lwo[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_lwo[ref_no].append(material)
-
-
-        # print(grouped_by_ref_id_unique_lwo)
 
         lwo_consumption_list = []
 
@@ -11124,7 +11136,29 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     if dict_to_append not in merge_aprv_pend_and_lwo_pend:  
                         merge_aprv_pend_and_lwo_pend.append(dict_to_append)
                     break
+
+        for x in list_to_send_for_cutting_aprv_pending:
+            if not any(d['material_name'] == x['material_name'] for d in merge_aprv_pend_and_lwo_pend):
+                merge_aprv_pend_and_lwo_pend.append(
+                    {
+                        'material_name': x['material_name'],
+                        'cutting_con_aprv_pen': x['cutting_con_aprv_pen'],
+                        'lwo_consumption': 0, 
+                    }
+                )
+
+        for x in lwo_consumption_list:
+            if not any(d['material_name'] == x['material_name'] for d in merge_aprv_pend_and_lwo_pend):
+                merge_aprv_pend_and_lwo_pend.append(
+                    {
+                        'material_name': x['material_name'],
+                        'cutting_con_aprv_pen':0,
+                        'lwo_consumption':  x['lwo_consumption'], 
+                    }
+                )
         
+        # print('merge_aprv_pend_and_lwo_pend = ', merge_aprv_pend_and_lwo_pend)
+        # print(len(merge_aprv_pend_and_lwo_pend))
 
         data_list = []
 
@@ -11155,15 +11189,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'lwo_consumption': 0,
                 })
 
-        
-
-        # print('data_list --- ', data_list)
-        # print(len(data_list))
-
-
-
-        
-
 
         for x in data_list:
             item_name = x['material_name']
@@ -11171,7 +11196,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for i in negetive_stock_report_list:
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
 
                 if item_name == i.item_name:
                     matched = True  
@@ -11187,35 +11221,28 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'cutting_con_aprv_pen': x['cutting_con_aprv_pen'],
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption'])),
-                        'po_exist':po_exist
+                        'po_qty':po_qty,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption']) - (po_qty)),
+                        'party_name' : p_name,
+					    'mobile_no' : mobile,
                     }
 
                     if dict_to_append not in merged_data:  
                         merged_data.append(dict_to_append)
                     break  
-
-            # if not matched:
-            #     dict_to_append = {
-            #         'item_id' : i.id,
-            #         'Material_code' : i.Material_code,
-            #         'Item_Color':i.Item_Color.color_name,
-            #         'Fabric_Group':i.Fabric_Group.fab_grp_name,
-            #         'unit_name' : i.unit_name_item.unit_name,
-            #         'material_name': i.item_name,
-            #         'cutting_consumption': x['cutting_consumption'],
-            #         'lwo_consumption': x['lwo_consumption'],
-            #         'total_qty': i.total_qty if i.total_qty is not None else 0,
-            #         'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) ,
-            #         'po_exist':po_exist
-            #     }
-            #     if dict_to_append not in merged_data:
-            #         merged_data.append(dict_to_append)
-
-        
+ 
         for i in negetive_stock_report_list:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
 
             if not any(d['material_name'] == i.item_name for d in merged_data):
 
@@ -11230,70 +11257,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : 0,
-                    'po_exist':po_exist
+                    'po_qty':po_qty,
+                    'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+					'mobile_no' : mobile,
                 })
-
-    
-        print('merged_data -- ', merged_data)
-        print(len(merged_data))
-
 
 
     elif sku_total_qty_cutting and sku_total_qty_cutting_lwo_aprv_pending:
+
         print("IN CUTTING PENDING AND CUTTING APPROVE PENDING")
-
-        material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-        
-
-        for material in material_for_ref_id_queryset:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list.append(set_production_data_dict)
-        
-        grouped_by_ref_id_unique = {}
-
-        for material in material_for_ref_id_list:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique:
-                grouped_by_ref_id_unique[ref_no] = []
-
-            
-            if material['common_unique']:
-
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique[ref_no]):
-                    grouped_by_ref_id_unique[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique[ref_no].append(material)
-
-
-
 
         cutting_consumption_list = []
 
@@ -11359,56 +11332,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                         cutting_consumption_list.append(dict_append)
 
 
-        material_for_ref_id_queryset_for_cutting_aprv_pending = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting_lwo_aprv_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_cutting_aprv_pending:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_cutting_aprv_pending.append(set_production_data_dict)
-        
-
-
-        grouped_by_ref_id_unique_cutting_aprv_pending = {}
-
-        for material in material_for_ref_id_list_for_cutting_aprv_pending:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_cutting_aprv_pending:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no] = []
-
-            
-            if material['common_unique']:
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_cutting_aprv_pending[ref_no]):
-                    grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-
-        
 
         list_to_send_for_cutting_aprv_pending = []
 
@@ -11503,7 +11426,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'material_name': i['material_name'],
                     'cutting_consumption': i['cutting_consumption'],
                     'cutting_con_aprv_pen': 0,
-                })                
+                })
+
+        for i in list_to_send_for_cutting_aprv_pending:
+            if not any(d['material_name'] == i['material_name'] for d in merge_two_list):
+                merge_two_list.append({
+                    'material_name': i['material_name'],
+                    'cutting_consumption': 0,
+                    'cutting_con_aprv_pen': i['cutting_con_aprv_pen'],
+                })               
+
 
 
         for x in merge_two_list:
@@ -11512,7 +11444,17 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for i in negetive_stock_report_list:
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
+
 
                 if item_name == i.item_name:
                     matched = True  
@@ -11528,35 +11470,30 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'cutting_con_aprv_pen': x['cutting_con_aprv_pen'],
                         'lwo_consumption': 0,
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (0)),
-                        'po_exist':po_exist
+                        'po_qty':po_qty,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['cutting_con_aprv_pen']) + (0) - (po_qty)),
+                        'party_name' : p_name,
+					    'mobile_no' : mobile,
                     }
 
                     if dict_to_append not in merged_data:  
                         merged_data.append(dict_to_append)
                     break  
 
-            # if not matched:
-            #     dict_to_append = {
-            #         'item_id' : i.id,
-            #         'Material_code' : i.Material_code,
-            #         'Item_Color':i.Item_Color.color_name,
-            #         'Fabric_Group':i.Fabric_Group.fab_grp_name,
-            #         'unit_name' : i.unit_name_item.unit_name,
-            #         'material_name': i.item_name,
-            #         'cutting_consumption': x['cutting_consumption'],
-            #         'lwo_consumption': x['lwo_consumption'],
-            #         'total_qty': i.total_qty if i.total_qty is not None else 0,
-            #         'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) ,
-            #         'po_exist':po_exist
-            #     }
-            #     if dict_to_append not in merged_data:
-            #         merged_data.append(dict_to_append)
-
         
         for i in negetive_stock_report_list:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
+
 
             if not any(d['material_name'] == i.item_name for d in merged_data):
 
@@ -11571,67 +11508,17 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : 0,
-                    'po_exist':po_exist
+                    'po_qty':po_qty,
+                    'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+					'mobile_no' : mobile,
                 })
-
 
 
     elif sku_total_qty_cutting_lwo_aprv_pending and sku_total_qty_lwo_pending:
 
         print("ONLY IF CUTTING APPROVE PENDING AND LWO PENDING")
-
-        material_for_ref_id_queryset_for_cutting_aprv_pending = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting_lwo_aprv_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_cutting_aprv_pending:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_cutting_aprv_pending.append(set_production_data_dict)
         
-
-
-        grouped_by_ref_id_unique_cutting_aprv_pending = {}
-
-        for material in material_for_ref_id_list_for_cutting_aprv_pending:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_cutting_aprv_pending:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no] = []
-
-            
-            if material['common_unique']:
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_cutting_aprv_pending[ref_no]):
-                    grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-
-        
-
         list_to_send_for_cutting_aprv_pending = []
 
         for key,value in sku_total_qty_cutting_lwo_aprv_pending.items():
@@ -11702,57 +11589,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                             existing_item['cutting_con_aprv_pen'] += total_consumption
                                         else:
                                             list_to_send_for_cutting_aprv_pending.append(dict_append)
-
-        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_lwo_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_low:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_lwo.append(set_production_data_dict)
-        
-        grouped_by_ref_id_unique_lwo = {}
-
-        for material in material_for_ref_id_list_for_lwo:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_lwo:
-                grouped_by_ref_id_unique_lwo[ref_no] = []
-
-            
-            if material['common_unique']:
-
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_lwo[ref_no]):
-                    grouped_by_ref_id_unique_lwo[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_lwo[ref_no].append(material)
-
-
-        # print(grouped_by_ref_id_unique_lwo)
 
         lwo_consumption_list = []
 
@@ -11857,7 +11693,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'material_name': i['material_name'],
                     'lwo_consumption': i['lwo_consumption'],
                     'cutting_con_aprv_pen': 0,
+                })
+
+        for i in list_to_send_for_cutting_aprv_pending:
+            if not any(d['material_name'] == i['material_name'] for d in merge_two_list):
+                merge_two_list.append({
+                    'material_name': i['material_name'],
+                    'lwo_consumption': 0,
+                    'cutting_con_aprv_pen': i['cutting_con_aprv_pen'],
                 }) 
+        
 
 
         for x in merge_two_list:
@@ -11866,7 +11711,17 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for i in negetive_stock_report_list:
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
+
 
                 if item_name == i.item_name:
                     matched = True  
@@ -11882,35 +11737,29 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'cutting_con_aprv_pen': x['cutting_con_aprv_pen'],
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption'])),
-                        'po_exist':po_exist
+                        'po_qty':po_qty,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (x['lwo_consumption']) - (po_qty)),
+                        'party_name' : p_name,
+					    'mobile_no' : mobile,
                     }
 
                     if dict_to_append not in merged_data:  
                         merged_data.append(dict_to_append)
                     break  
 
-            # if not matched:
-            #     dict_to_append = {
-            #         'item_id' : i.id,
-            #         'Material_code' : i.Material_code,
-            #         'Item_Color':i.Item_Color.color_name,
-            #         'Fabric_Group':i.Fabric_Group.fab_grp_name,
-            #         'unit_name' : i.unit_name_item.unit_name,
-            #         'material_name': i.item_name,
-            #         'cutting_consumption': x['cutting_consumption'],
-            #         'lwo_consumption': x['lwo_consumption'],
-            #         'total_qty': i.total_qty if i.total_qty is not None else 0,
-            #         'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) ,
-            #         'po_exist':po_exist
-            #     }
-            #     if dict_to_append not in merged_data:
-            #         merged_data.append(dict_to_append)
-
         
         for i in negetive_stock_report_list:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
 
             if not any(d['material_name'] == i.item_name for d in merged_data):
 
@@ -11925,65 +11774,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : 0,
-                    'po_exist':po_exist
+                    'po_qty':po_qty,
+                    'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+					'mobile_no' : mobile,
                 })
+
 
     elif sku_total_qty_cutting and sku_total_qty_lwo_pending:
         
         print("ONLY IF CUTTING PENDING AND LWO PENDING")
-
-        material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-        
-
-        for material in material_for_ref_id_queryset:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list.append(set_production_data_dict)
-        
-        grouped_by_ref_id_unique = {}
-
-        for material in material_for_ref_id_list:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique:
-                grouped_by_ref_id_unique[ref_no] = []
-
-            
-            if material['common_unique']:
-
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique[ref_no]):
-                    grouped_by_ref_id_unique[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique[ref_no].append(material)
-
-
-
 
         cutting_consumption_list = []
 
@@ -12048,57 +11848,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                                     else:
                                         cutting_consumption_list.append(dict_append)
 
-
-        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_lwo_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_low:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_lwo.append(set_production_data_dict)
-        
-        grouped_by_ref_id_unique_lwo = {}
-
-        for material in material_for_ref_id_list_for_lwo:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_lwo:
-                grouped_by_ref_id_unique_lwo[ref_no] = []
-
-            
-            if material['common_unique']:
-
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_lwo[ref_no]):
-                    grouped_by_ref_id_unique_lwo[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_lwo[ref_no].append(material)
-
-
-        # print(grouped_by_ref_id_unique_lwo)
 
         lwo_consumption_list = []
 
@@ -12205,6 +11954,14 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'lwo_consumption': 0,
                 })
 
+        for i in lwo_consumption_list:
+            if not any(d['material_name'] == i['material_name'] for d in merge_two_list):
+                merge_two_list.append({
+                    'material_name': i['material_name'],
+                    'cutting_consumption': 0,
+                    'lwo_consumption': i['lwo_consumption'],
+                })
+
         
         for x in merge_two_list:
             item_name = x['material_name']
@@ -12212,7 +11969,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for i in negetive_stock_report_list:
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
 
                 if item_name == i.item_name:
                     matched = True  
@@ -12228,35 +11994,29 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'cutting_con_aprv_pen': 0,
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + x['lwo_consumption'] + (0)),
-                        'po_exist':po_exist
+                        'po_qty':po_qty,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + x['lwo_consumption'] + (0) - (po_qty)),
+                        'party_name' : p_name,
+					    'mobile_no' : mobile,
                     }
 
                     if dict_to_append not in merged_data:  
                         merged_data.append(dict_to_append)
                     break 
 
-            # if not matched:
-            #     dict_to_append = {
-            #         'item_id' : i.id,
-            #         'Material_code' : i.Material_code,
-            #         'Item_Color':i.Item_Color.color_name,
-            #         'Fabric_Group':i.Fabric_Group.fab_grp_name,
-            #         'unit_name' : i.unit_name_item.unit_name,
-            #         'material_name': i.item_name,
-            #         'cutting_consumption': x['cutting_consumption'],
-            #         'lwo_consumption': x['lwo_consumption'],
-            #         'total_qty': i.total_qty if i.total_qty is not None else 0,
-            #         'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) ,
-            #         'po_exist':po_exist
-            #     }
-            #     if dict_to_append not in merged_data:
-            #         merged_data.append(dict_to_append)
-
         
         for i in negetive_stock_report_list:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
 
             if not any(d['material_name'] == i.item_name for d in merged_data):
 
@@ -12270,66 +12030,17 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'cutting_consumption': 0,
                     'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
+                    'po_qty':po_qty,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : 0,
-                    'po_exist':po_exist
+                    'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+					'mobile_no' : mobile,
                 })
     
+
     elif sku_total_qty_cutting:
 
         print("ONLY IF CUTTING PENDING")
-
-        material_for_ref_id_queryset = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-        
-
-        for material in material_for_ref_id_queryset:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list.append(set_production_data_dict)
-        
-        grouped_by_ref_id_unique = {}
-
-        for material in material_for_ref_id_list:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique:
-                grouped_by_ref_id_unique[ref_no] = []
-
-            
-            if material['common_unique']:
-
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique[ref_no]):
-                    grouped_by_ref_id_unique[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique[ref_no].append(material)
-
-
-
 
         cutting_consumption_list = []
 
@@ -12401,7 +12112,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for i in negetive_stock_report_list:
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
 
                 if item_name == i.item_name:
                     matched = True  
@@ -12417,35 +12137,28 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'cutting_con_aprv_pen': 0,
                         'lwo_consumption': 0,
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (0) + (0)),
-                        'po_exist':po_exist
+                        'po_qty':po_qty,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (0) + (0)-(po_qty)),
+                        'party_name' : p_name,
+                        'mobile_no' : mobile,
                     }
 
                     if dict_to_append not in merged_data:  
                         merged_data.append(dict_to_append)
                     break  
 
-            # if not matched:
-            #     dict_to_append = {
-            #         'item_id' : i.id,
-            #         'Material_code' : i.Material_code,
-            #         'Item_Color':i.Item_Color.color_name,
-            #         'Fabric_Group':i.Fabric_Group.fab_grp_name,
-            #         'unit_name' : i.unit_name_item.unit_name,
-            #         'material_name': i.item_name,
-            #         'cutting_consumption': x['cutting_consumption'],
-            #         'lwo_consumption': x['lwo_consumption'],
-            #         'total_qty': i.total_qty if i.total_qty is not None else 0,
-            #         'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) ,
-            #         'po_exist':po_exist
-            #     }
-            #     if dict_to_append not in merged_data:
-            #         merged_data.append(dict_to_append)
-
-        
         for i in negetive_stock_report_list:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
 
             if not any(d['material_name'] == i.item_name for d in merged_data):
 
@@ -12459,66 +12172,18 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'cutting_consumption': 0,
                     'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
+                    'po_qty':po_qty,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : 0,
-                    'po_exist':po_exist
+                    'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (0) + (0)-(po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+		            'mobile_no' : mobile,
                 })
 
 
-
     elif sku_total_qty_cutting_lwo_aprv_pending:
+
         print(" ONLY CUTTING APPROVED PENDING")
-        material_for_ref_id_queryset_for_cutting_aprv_pending = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_cutting_lwo_aprv_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_cutting_aprv_pending:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_cutting_aprv_pending.append(set_production_data_dict)
-        
-
-
-        grouped_by_ref_id_unique_cutting_aprv_pending = {}
-
-        for material in material_for_ref_id_list_for_cutting_aprv_pending:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_cutting_aprv_pending:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no] = []
-
-            
-            if material['common_unique']:
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_cutting_aprv_pending[ref_no]):
-                    grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_cutting_aprv_pending[ref_no].append(material)
-
-        
-
+  
         list_to_send_for_cutting_aprv_pending = []
 
         for key,value in sku_total_qty_cutting_lwo_aprv_pending.items():
@@ -12597,7 +12262,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for i in negetive_stock_report_list:
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
 
                 if item_name == i.item_name:
                     matched = True  
@@ -12612,36 +12286,29 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'cutting_consumption': 0,
                         'cutting_con_aprv_pen': x['cutting_con_aprv_pen'],
                         'lwo_consumption': 0,
+                        'po_qty':po_qty,
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (0)),
-                        'po_exist':po_exist
+                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (x['cutting_con_aprv_pen']) + (0) - (po_qty)),
+                        'party_name' : p_name,
+                        'mobile_no' : mobile,
                     }
 
                     if dict_to_append not in merged_data:  
                         merged_data.append(dict_to_append)
                     break  
 
-            # if not matched:
-            #     dict_to_append = {
-            #         'item_id' : i.id,
-            #         'Material_code' : i.Material_code,
-            #         'Item_Color':i.Item_Color.color_name,
-            #         'Fabric_Group':i.Fabric_Group.fab_grp_name,
-            #         'unit_name' : i.unit_name_item.unit_name,
-            #         'material_name': i.item_name,
-            #         'cutting_consumption': x['cutting_consumption'],
-            #         'lwo_consumption': x['lwo_consumption'],
-            #         'total_qty': i.total_qty if i.total_qty is not None else 0,
-            #         'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) ,
-            #         'po_exist':po_exist
-            #     }
-            #     if dict_to_append not in merged_data:
-            #         merged_data.append(dict_to_append)
-
-        
         for i in negetive_stock_report_list:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
 
             if not any(d['material_name'] == i.item_name for d in merged_data):
 
@@ -12655,65 +12322,16 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'cutting_consumption': 0,
                     'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
+                    'po_qty':po_qty,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : 0,
-                    'po_exist':po_exist
+                    'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+                    'mobile_no' : mobile,
                 })
     
     elif sku_total_qty_lwo_pending:
 
         print("ONLY LWO PENDING")
-
-        material_for_ref_id_queryset_for_low = product_2_item_through_table.objects.filter(PProduct_pk__Product__Product_Refrence_ID__in = sku_total_qty_lwo_pending).select_related('PProduct_pk__Product', 'Item_pk__Item_Color')
-
-        for material in material_for_ref_id_queryset_for_low:
-            reference_id = material.PProduct_pk.Product.Product_Refrence_ID
-            material_name = material.Item_pk.item_name
-            color = material.Item_pk.Item_Color.color_name
-            pro_sku = material.PProduct_pk.PProduct_SKU
-            pro_fab_grp = material.Item_pk.Fabric_nonfabric
-            panha_val = material.Item_pk.Panha
-            unit_val = material.Item_pk.Units
-            grand_total = material.grand_total
-            grand_total_combi = material.grand_total_combi
-            consumption = round(grand_total / (panha_val * unit_val),3)
-            consumtionCombi = round(grand_total_combi / (panha_val * unit_val),3)
-            common_unique = material.common_unique
-
-            set_production_data_dict = {
-                'ref_id': reference_id,
-                'material_name': material_name,
-                'color':color,
-                'pro_sku': pro_sku,
-                'pro_fab_grp': pro_fab_grp,
-                'panha_val':panha_val,
-                'unit_val':unit_val,
-                'grand_total':grand_total,
-                'consumption': consumption,
-                'consumtionCombi': consumtionCombi,
-                'common_unique': common_unique
-            }
-            material_for_ref_id_list_for_lwo.append(set_production_data_dict)
-        
-        grouped_by_ref_id_unique_lwo = {}
-
-        for material in material_for_ref_id_list_for_lwo:
-
-            ref_no = material['ref_id']
-
-            if ref_no not in grouped_by_ref_id_unique_lwo:
-                grouped_by_ref_id_unique_lwo[ref_no] = []
-
-            
-            if material['common_unique']:
-
-                if not any(m['material_name'] == material['material_name'] for m in grouped_by_ref_id_unique_lwo[ref_no]):
-                    grouped_by_ref_id_unique_lwo[ref_no].append(material)
-            else:
-                grouped_by_ref_id_unique_lwo[ref_no].append(material)
-
-
-        # print(grouped_by_ref_id_unique_lwo)
 
         lwo_consumption_list = []
 
@@ -12802,8 +12420,19 @@ def purchase_order_for_puchase_voucher_rm_list(request):
             
             for i in negetive_stock_report_list:
 
-                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+                po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
 
+                party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+                if party_names: 
+                    p_name = party_names.item_purchase_master.party_name.name
+                    mobile = party_names.item_purchase_master.party_name.mobile_no
+                else:
+                    p_name = None
+                    mobile = None
+
+                
+                
                 if item_name == i.item_name:
                     matched = True  
                     
@@ -12818,35 +12447,28 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                         'cutting_con_aprv_pen': 0,
                         'lwo_consumption': x['lwo_consumption'],
                         'total_qty': i.total_qty if i.total_qty is not None else 0,
-                        'balance' : (i.total_qty if i.total_qty is not None else 0)-((0) + (0) + (x['lwo_consumption'])),
-                        'po_exist':po_exist
+                        'po_qty':po_qty,
+                        'balance' : (i.total_qty if i.total_qty is not None else 0) - ((0) + (0) + (x['lwo_consumption']) - (po_qty)),
+                        'party_name' : p_name,
+                        'mobile_no' : mobile,
                     }
 
                     if dict_to_append not in merged_data:  
                         merged_data.append(dict_to_append)
                     break  
 
-            # if not matched:
-            #     dict_to_append = {
-            #         'item_id' : i.id,
-            #         'Material_code' : i.Material_code,
-            #         'Item_Color':i.Item_Color.color_name,
-            #         'Fabric_Group':i.Fabric_Group.fab_grp_name,
-            #         'unit_name' : i.unit_name_item.unit_name,
-            #         'material_name': i.item_name,
-            #         'cutting_consumption': x['cutting_consumption'],
-            #         'lwo_consumption': x['lwo_consumption'],
-            #         'total_qty': i.total_qty if i.total_qty is not None else 0,
-            #         'balance' : (i.total_qty if i.total_qty is not None else 0)-((x['cutting_consumption']) + (x['lwo_consumption'])) ,
-            #         'po_exist':po_exist
-            #     }
-            #     if dict_to_append not in merged_data:
-            #         merged_data.append(dict_to_append)
-
-        
         for i in negetive_stock_report_list:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
 
             if not any(d['material_name'] == i.item_name for d in merged_data):
 
@@ -12861,19 +12483,28 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : 0,
-                    'po_exist':po_exist
+                    'po_qty':po_qty,
+                    'balance' : (i.total_qty if i.total_qty is not None else 0) - ((0) + (0) + (0) - (po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+                    'mobile_no' : mobile,
                 })
 
 
     else:
-
         negetive_stock_report =  Item_Creation.objects.all().annotate(total_qty = Sum('shades__godown_shades__quantity')).order_by('item_name').select_related('Item_Color','Fabric_Group')
-
 
         for i in negetive_stock_report:
 
-            po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).exists()
+            po_qty = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name=i.item_name).aggregate(total_qty=Sum('quantity'))['total_qty']
+
+            party_names = purchase_voucher_items.objects.filter(item_shade__items__item_name = i.item_name).select_related('item_purchase_master__party_name').order_by('-created_date').first()
+
+            if party_names: 
+                p_name = party_names.item_purchase_master.party_name.name
+                mobile = party_names.item_purchase_master.party_name.mobile_no
+            else:
+                p_name = None
+                mobile = None
 
             dict_to_append = {
                     'item_id' : i.id,
@@ -12883,16 +12514,19 @@ def purchase_order_for_puchase_voucher_rm_list(request):
                     'unit_name' : i.unit_name_item.unit_name,
                     'material_name': i.item_name,
                     'cutting_consumption': 0,
+                    'cutting_con_aprv_pen': 0,
                     'lwo_consumption': 0,
+                    'po_qty':po_qty,
                     'total_qty': i.total_qty if i.total_qty is not None else 0,
-                    'balance' : (i.total_qty if i.total_qty is not None else 0)-(0+0),
-                    'po_exist':po_exist
+                    'balance' : (i.total_qty if i.total_qty is not None else 0)-((0)+(0)+(0)-(po_qty if po_qty is not None else 0)),
+                    'party_name' : p_name,
+                    'mobile_no' : mobile,
                 }
 
             merged_data.append(dict_to_append)
 
 
-    data_for_frontend = sorted(merged_data , key=itemgetter('material_name'))
+    data_for_frontend = sorted(merged_data , key=itemgetter('total_qty'))
 
     if filter_name == 'highest' and filter_name != '':
         data_for_frontend = sorted(merged_data, key=lambda x: x["total_qty"], reverse=True)
@@ -12912,8 +12546,6 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         selected_fabric_grp_lower = selected_fabric_grp.lower()
         less_Number = decimal.Decimal(less_Number)
         data_for_frontend = [item for item in merged_data if item["Fabric_Group"].lower() == selected_fabric_grp_lower and item["total_qty"] < less_Number]
-
-    
 
     return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number,'merged_data':data_for_frontend,})
 

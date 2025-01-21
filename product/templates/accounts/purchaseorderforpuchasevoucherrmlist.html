@@ -93,6 +93,7 @@
                                 <th>Cutting Pend QTY</th>
                                 <th>Cutting Aprv Pend QTY</th>
                                 <th>LWO Pend QTY</th>
+                                <th>Open PO Qty</th>
                                 <th>Net Balance Stock</th>
                                 <th>Select</th>
                                 <th>Last Buying seller</th>
@@ -114,15 +115,15 @@
                                 <td>{{item.cutting_consumption}}</td>
                                 <td>{{item.cutting_con_aprv_pen}}</td>
                                 <td>{{item.lwo_consumption}}</td>
+                                <td>{{item.po_qty}}</td>
                                 <td class="balanceValue">{{item.balance}}</td>
-                                {% if item.po_exist %}
-                                <td><i class="fa-solid fa-check-double fa-xl text-danger" ></i></td>
-                                {% else %}
-                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.item_id }}"></td>
-                                {% endif %}
                                 
-                                <td></td>
-                                <td></td>
+                                
+                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.item_id }}"></td>
+                                
+                                
+                                <td>{{item.party_name | default_if_none:''}}</td>
+                                <td>{{item.mobile_no | default_if_none:''}}</td>
                                 <td></td>
                             </tr>
                             {% endfor %}
