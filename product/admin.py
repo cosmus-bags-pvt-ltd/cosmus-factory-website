@@ -26,6 +26,8 @@ class ProductAdmin(admin.ModelAdmin):
 # admin.site.register(purchase_order_raw_material_cutting)
 admin.site.register(labour_work_in_master)
 admin.site.register(labour_work_in_product_to_item)
+# admin.site.register(purchase_order_raw_material_cutting)
+
 
 
  

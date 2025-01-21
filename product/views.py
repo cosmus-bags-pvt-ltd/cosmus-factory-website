@@ -5656,16 +5656,33 @@ def purchaseordercuttinglistall(request):
 
     print('vouchers_pending_count = ', vouchers_pending_count)
 
-    voucher_pending_quantity = purchase_order_raw_material_cutting.objects.filter(cutting_cancelled = False).filter(~Q(processed_qty=F('approved_qty'))).annotate(total_balance_qty = Sum('balance_qty'))
+    voucher_pending_quantity = purchase_order_raw_material_cutting.objects.filter(cutting_cancelled = False).exclude(processed_qty = F('approved_qty'))
 
-    aggregated_total = voucher_pending_quantity.aggregate(total_balance_qty_sum=Sum('total_balance_qty'))
+    voucher_pending_quantity_total = 0
 
-    print()
+    for i in voucher_pending_quantity:
+
+        processed_qty = i.processed_qty
+        approved_qty = i.approved_qty
+
+        balance = processed_qty - approved_qty
+
+        voucher_pending_quantity_total += balance
+
+    
+
+
+    print(voucher_pending_quantity)
+
+    # aggregated_total = voucher_pending_quantity.aggregate(total_balance_qty_sum=Sum('total_balance_qty'))
+
+    # print(aggregated_total['total_balance_qty_sum'])
 
 
     return render(request,'production/purchaseordercuttinglistall.html', {'purchase_orders_cutting_pending':purchase_orders_cutting_pending,
                                                 'purchase_orders_cutting_completed':purchase_orders_cutting_completed,'page_name':'Cutting Order List','current_date':current_date,
-                                                'purchase_order_cutting_all':purchase_order_cutting_all,'vouchers_pending_count':vouchers_pending_count,'voucher_pending_quantity':aggregated_total['total_balance_qty_sum']})
+                                                'purchase_order_cutting_all':purchase_order_cutting_all,'vouchers_pending_count':vouchers_pending_count,
+                                                'voucher_pending_quantity_total':voucher_pending_quantity_total})
 
 
 
@@ -6231,6 +6248,8 @@ def labourworkincreatelist(request,l_w_o_id):
 
     labour_workin_instances = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(approved_Qty_total=Sum('l_w_in_products__approved_qty'),total_approved_pcs = Sum('l_w_in_products__approved_qty'),pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval')).order_by('created_date')
 
+    
+
     return render(request,'production/labour_work_in_list.html',{
                                             'labour_workout_child_instance':labour_workout_child_instance,
                                             'labour_workin_instances':labour_workin_instances,
@@ -6537,23 +6556,15 @@ def labourworkinlistall(request):
 
     labour_workin_child_instances_all = labour_work_in_master.objects.all()
 
-    labour_workin_pending_count = labour_work_in_master.objects.all().count()
+    labour_workin_pending_count = labour_work_in_master.objects.filter(~Q(total_return_pcs = F('total_approved_qty'))).count()
 
-    # labour_workin_pending_quantity = labour_work_in_master.objects.filter(~Q(total_return_pcs = F('total_approved_qty'))).annotate(total_pending_qty=Case(
-    #     When(total_balance_pcs=0, then=F('total_return_pcs')),
-    #     default=F('total_return_pcs'),
-    #     output_field=IntegerField(),
-    # ))
+    labour_workin_pending_quantity = labour_work_in_master.objects.all().aggregate(pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval'))['pending_for_approval_pcs']
 
-    # aggregated_total = labour_workin_pending_quantity.aggregate(
-    # total_pending_qty_sum=Sum('total_pending_qty')
-    # )
 
-    # print(aggregated_total['total_pending_qty_sum'])
 
     return render(request,'production/labour_workin_listall.html',
                   {'labour_workout_child_instances_all':labour_workout_child_instances_all,
-                   'purchase_order_instances': purchase_orders_with_labour_workout_childs,'current_date':current_date,'page_name':'Labour WorkIn List','labour_workin_child_instances_all':labour_workin_child_instances_all,'labour_workin_pending_count':labour_workin_pending_count})
+                   'purchase_order_instances': purchase_orders_with_labour_workout_childs,'current_date':current_date,'page_name':'Labour WorkIn List','labour_workin_child_instances_all':labour_workin_child_instances_all,'labour_workin_pending_count':labour_workin_pending_count,'labour_workin_pending_quantity':labour_workin_pending_quantity})
 
 
 

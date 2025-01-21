@@ -25,7 +25,11 @@
         <div class="col-6">
             <label class="fw-bold">Images:</label>
             {% for img in purchase_order_instance.product_reference_number.productdetails.all %}
-            <img src="{{img.PProduct_image.url}}" style="width: 60px; height: 60px; padding:2px; margin: 2px;">
+            {% if img.PProduct_image %}
+                <img src="{{ img.PProduct_image.url }}" style="width: 60px; height: 60px; padding:2px; margin: 2px;">
+            {% else %}
+                <img src="/path/to/default/image.jpg" style="width: 60px; height: 60px; padding:2px; margin: 2px;">
+            {% endif %}
             {% endfor %}
         </div>
     </div>

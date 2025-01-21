@@ -18,7 +18,7 @@
 <div>
   <div class="d-flex my-3">
       <button class=" border-0 py-1 px-3 rounded-2 my-1 directCreateBtn"  style="margin-left: 60px; background-color: rgba(70, 137, 39, 0.7);"><a class="text-decoration-none text-white " href="{% url 'labour-workin-create-raw' %}">CREATE</a></button>
-      <button class=" border-0 py-1 px-3 rounded-2 my-1 pendingBtn" style="margin-left: 850px; background-color: rgba(167, 25, 25, 0.7);"><a class="text-decoration-none text-white" href="{% url 'goods-return-list' %}">GR-QC-App Pending List = {{labour_workin_pending_count}}</a></button>
+      <button class=" border-0 py-1 px-3 rounded-2 my-1 pendingBtn" style="margin-left: 850px; background-color: rgba(167, 25, 25, 0.7);"><a class="text-decoration-none text-white" href="{% url 'goods-return-list' %}">GR-QC-App Pending List = {{labour_workin_pending_count}} Pcs-{{labour_workin_pending_quantity}}</a></button>
   </div>
   <div class="">
     <button type="button" class="edit_btn w-100 mb-3" id="PendingFinishedGoods_btn">Pending Finished Goods Inward by ref No (Model namewise) <span class="labourInPendingArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
