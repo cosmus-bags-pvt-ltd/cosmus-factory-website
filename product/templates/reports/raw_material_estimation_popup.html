@@ -35,13 +35,13 @@
                         <tr>
                            <td><input type="text" class="productinput" name="{{records.prefix}}-product_sku" value="{{records.instance.product_sku}}" maxlength="100" id="id_{{records.prefix}}-product_sku" readonly></td> 
                            <td><input type="text" class="productinput" name="{{records.prefix}}-product_color" value="{{records.instance.product_color}}" maxlength="100" id="id_{{records.prefix}}-product_color" readonly></td> 
-                           <td><input type="number" class="productorderqty-input" name="{{records.prefix}}-estimate_qty" value="{{records.instance.estimate_qty}}" step="0.01" id="id_{{records.prefix}}-estimate_qty"></td> 
+                           <td><input type="number" class="productorderqty-input" name="{{records.prefix}}-estimate_qty" value="{{records.instance.estimate_qty}}" step="1" min="0" id="id_{{records.prefix}}-estimate_qty"></td> 
                         </tr>
                         {% elif not records.instance.id %}
                         <tr>
                             <td><input type="text" class="productinput" name="{{records.prefix}}-product_sku" value="{{records.initial.product_sku}}" maxlength="100" id="id_{{records.prefix}}-product_sku" readonly></td> 
                             <td><input type="text" class="productinput" name="{{records.prefix}}-product_color" value="{{records.initial.product_color}}" maxlength="100" id="id_{{records.prefix}}-product_color" readonly></td> 
-                            <td><input type="number" class="productorderqty-input" name="{{records.prefix}}-estimate_qty" value="{{records.initial.estimate_qty|default_if_none:0 }}" step="0.01" id="id_{{records.prefix}}-estimate_qty"></td> 
+                            <td><input type="number" class="productorderqty-input" name="{{records.prefix}}-estimate_qty" value="{{records.initial.estimate_qty|default_if_none:0 }}" step="1"  min="0" id="id_{{records.prefix}}-estimate_qty"></td> 
                          </tr>
                         {% endif %}
                         {% endfor %}
@@ -215,10 +215,7 @@ calculateRawData()
                         const process = parseFloat(processData.value) || 0;;
                         const gTotalValue = parseFloat(gTotalCombi.value) || 0;
                         const consumption = parseFloat(consumptionInput.value) || 0;
-                        console.log('process',process)
-                        console.log('gTotalValue',gTotalValue)
-                        console.log('consumption',consumption)
-                        console.log('processQuantity',processQuantity)
+                     
                         let mainConsumption = gTotalValue * process;
                         let ConsumptionTotal = processQuantity * consumption;
                         let totalConsumption = ConsumptionTotal + mainConsumption;
@@ -252,34 +249,29 @@ calculateRawData()
     // calculateTotalConsumption();
 
     function valueCheck() {
+    let final = 0; 
+    const estimateValues = document.querySelectorAll('input[name$="-estimate_qty"]');
+    const totalQty = parseInt(document.getElementById('id_product_Qty').value) || 0;
+    const balancePrevious = parseFloat(document.getElementById('id_BalancePrevious_Qty').value) || 0;
+    
+    estimateValues.forEach(element => {
+        let estimatedata = parseInt(element.value) || 0;
+        const row = element.closest('tr');
 
+        if (final + estimatedata > totalQty) {
+            element.value = 0; // Reset only this field
+            estimatedata = 0;
+        }
 
-        const estimateValues = document.querySelectorAll('input[name$="-estimate_qty"]');
-        var final = 0; 
-        estimateValues.forEach(element => {
-            let estimatedata = parseInt(element.value) || 0
-            console.log(estimatedata)
-            const row = element.closest('tr');
-            const newvalue = parseInt( document.getElementById('id_processTotal').value)
-            const totalQty = parseInt(document.getElementById('id_product_Qty').value);
-            const balance = parseFloat(document.getElementById('id_BalancePrevious_Qty').value);
-            console.log('totalQty',totalQty)
-            final += estimatedata;
-            document.getElementById('id_processTotal').value =final;
-            if (totalQty < final) {
-                row.querySelector('input[name$="-estimate_qty"]').value = 0;
-                //calculateRawData();
-            } else {
-                row.querySelector('input[name$="-estimate_qty"]').value = element.value;
-        
-            }
-            var newBalance = totalQty - final;
-            console.log('newBalance',newBalance)
-            document.getElementById('id_Balance_Qty').value = newBalance;
-            
-        
-        });
-    }
+        final += estimatedata;
+    });
+
+   
+    document.getElementById('id_processTotal').value = final;
+    const newBalance = totalQty - final;
+
+    document.getElementById('id_Balance_Qty').value = newBalance;
+}
 
 
 
@@ -313,16 +305,18 @@ calculateRawData()
         var processQuantityElements = document.querySelectorAll('input[name$="-estimate_qty"]');
         var submitButton = document.getElementById('RawMaterialSubmit')
         var forms = document.getElementById('rawMaterialEstimationForm')
-        var tableRows = document.querySelectorAll('#rawEstimationTable .rawlist')
-        console.log(tableRows)
+       
+        const estimateInputs = document.querySelectorAll('input[name$="-estimate_qty"]');
+            if (estimateInputs.length > 0) {
+            estimateInputs[0].focus(); // Focus on the first input field
+        }
 
-        tableRows.forEach((row) => {
-            const estimateQtyInput = row.querySelector('[name$="-estimate_qty"]');
-            if (estimateQtyInput) {
-                estimateQtyInput.focus();
-            
-                return; // Stop after focusing on the first matching input
-            }
+        estimateInputs.forEach(input => {
+            input.addEventListener('input', function () {
+                if (this.value === "0") {
+                    this.value = ""; // Remove 0 when user starts typing
+                }
+            });
         });
                
 
@@ -363,6 +357,7 @@ calculateRawData()
                 }
             });
         });
+        
         submitButton.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
             forms.submit(); // Trigger form submission

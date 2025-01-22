@@ -117,15 +117,15 @@
                     </div>
                     <div class="d-flex mb-3">
                         <label for="id_labour_charges" class="item-form">Labour charges:</label>
-                        <input type="number" class="product_color" name="labour_charges" step="0.01"value="{{master_form.labour_charges.initial | default_if_none:''}}" required id="id_labour_charges" >
+                        <input type="number" class="product_color" name="labour_charges"value="{{master_form.labour_charges.initial | default_if_none:''}}" required id="id_labour_charges" >
                     </div>
                     <div class="d-flex mb-3">
                         <label for="id_other_charges" class="item-form">Other Charges:</label>
-                        <input type="number" class="product_color" value="0" name="other_charges" step="0.01" required id="id_other_charges">
+                        <input type="number" class="product_color" value="0" name="other_charges"  required id="id_other_charges">
                     </div>
                     <div class="d-flex mb-3">
                         <label for="id_amount" class="item-form">Amount:</label>
-                        <input type="number" class="product_color" name="amount" step="0.01" value="0" required id="id_amount" readonly style="border: 1px solid blue; outline: none;">
+                        <input type="number" class="product_color" name="amount"  value="0" required id="id_amount" readonly style="border: 1px solid blue; outline: none;">
                     </div>
                     <input type="hidden" id="childId" name="labour_workout_child_instance_id" value="">
                 </div>

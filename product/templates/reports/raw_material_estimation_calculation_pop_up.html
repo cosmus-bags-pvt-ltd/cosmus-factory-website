@@ -3,7 +3,6 @@
 {% block body %}
 {{response_dict}}
 <div class="mt-2">
-    <!-- {{final_material_list}} -->
     <div class="responsives mb-3">
         <input type="hidden" value="{{ for_excel }}" id="finalDic">
         <table class="table table-hover table-bordered table-striped">
@@ -11,7 +10,7 @@
                 <tr>
                     <th>No</th>
                     <th>Product Name</th>
-                    {% comment %} <th>SKU</th> {% endcomment %}
+                  <!-- <th>SKU</th>  -->
                     <th>Color</th>
                     <th>Total Consump</th>
                     <th>Cutting Pend Qty</th>
@@ -31,7 +30,7 @@
                 <tr>
                     <td>{{forloop.counter}}</td>
                     <td class="text-nowrap">{{data.material_name}}</td>
-                    {% comment %} <td>{{data.product_sku}}</td> {% endcomment %}
+                    <!--  <td>{{data.product_sku}}</td> -->
                     <td class="text-nowrap">{{data.color}}</td>
                     <td>{{data.total_consump}}</td>
                     <td><span>{{data.cutting_consumption}}</span></td>

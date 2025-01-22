@@ -118,7 +118,7 @@
                                 <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-pending_pcs" value="{{form.initial.pending_pcs}}" id="id_{{form.prefix}}-pending_pcs" readonly></td>
                                 <td><input type="number" class="productorderrawqty-input" name="{{form.prefix}}-balance_pcs" value="{{form.initial.balance_pcs}}" id="id_{{form.prefix}}-balance_pcs" readonly></td>
                                <input type="hidden" class="productorderrawqty-input" name="{{form.prefix}}-balance_pcs_view" value="{{form.initial.balance_pcs}}" id="id_{{form.prefix}}-balance_pcs_view" readonly>  
-                                <td><input type="number" class="productorderqty-input" name="{{form.prefix}}-processed_pcs" value="{{form.initial.processed_pcs}}" id="id_{{form.prefix}}-processed_pcs" ></td>   
+                                <td><input type="number" class="productorderqty-input" name="{{form.prefix}}-processed_pcs" value="{{form.initial.processed_pcs}}" id="id_{{form.prefix}}-processed_pcs" step="1"  min="0"></td>   
                             </tr>
                             {% endif %}
                             {% endfor %}

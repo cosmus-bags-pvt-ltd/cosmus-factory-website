@@ -11,7 +11,7 @@
         <div class="d-flex mb-2">
             
             <div class="d-flex mb-3">
-                <label for="id_purchase_order_number" class="">P.O No:</label>
+                <label for="id_purchase_order_number" class="">P.O No :</label>
                 <input type="text" name="purchase_order_number" class="purchase-amount ms-2 me-4" value="{{form.instance.purchase_order_number | default_if_none:''}}" required id="id_purchase_order_number">
             </div>
             <div class="d-flex mb-3 ms-5">
@@ -85,7 +85,7 @@
         <input type="number" class="productinput ms-2  text-danger pb-2" name="grand_quantity" id="id_grand_quantity" value="" maxlength="50" step=".01" readonly>
         <input type="hidden" id="id_total-quantity" value="{{form.instance.number_of_pieces}}">
         <label class="fw-bold ">Balance :</label>
-        <input type=" number" class="productinput ms-2  text-danger pb-2" name="balance_quantity" id="id_balance_quantity" value="{{form.instance.number_of_pieces}}" maxlength="50" step=".01" readonly>
+        <input type=" number" class="productinput ms-2  text-danger pb-2" name="balance_quantity" id="id_balance_quantity" value="" maxlength="50" step=".01" readonly>
         <div class="mb-2 ms-1">
             <label class="fw-bold">Images :</label>
             {% for img in model_images.all %}
@@ -126,6 +126,12 @@
                             <input type="hidden" value="{{form.instance.purchase_order_id.raw_materials.exists}}" class="purchaseOderDelete">
                         </tr>
                         {% endfor %}
+                    </tbody>
+                    <tbody class="mainTable">
+                        <tr class=" fw-bold">
+                            <td colspan="2">Total :</td>
+                            <td><span id="totalActualValue" class=" text-danger ms-3">0</span></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -206,7 +212,7 @@
              $(document).on('focusout','input[name$="-order_quantity"]',function(){
                 
                 var value = $(this).val();
-                console.log(value)
+             
                 if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
                     $(this).val('0'); // Set to 0 if empty or invalid
                 } else {
@@ -282,10 +288,88 @@
         submitButtonCheck()
     });
     document.addEventListener("DOMContentLoaded", function () {
+        
     const table = document.getElementById("productTable");
     const orderQuantityInputs = table.querySelectorAll(".oderedValues");
     const submitButton = document.getElementById("id_submit_2");
-    const form = document.getElementById('productForm')
+    const submitbtn_1 = document.getElementById('id_submit_1')
+    const form = document.getElementById('productForm');
+    const purchaseNo = document.getElementById('id_purchase_order_number');
+    const refNo = document.getElementById('id_product_reference_number');
+    const partyName = document.getElementById('id_ledger_party_name');
+    const dates = document.getElementById('id_target_date');
+    const totalQty = document.getElementById('id_number_of_pieces');
+    const godownName = document.getElementById('id_temp_godown_select')
+
+    purchaseNo.focus()
+
+    if(purchaseNo){
+        purchaseNo.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault();
+                if(purchaseNo.value === ''){
+                    purchaseNo.focus();
+                    return;
+                }else{
+                    refNo.focus()
+                }
+            }
+        })
+    }
+    if(refNo){
+        refNo.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault();
+                if(refNo.value === ''){
+                    refNo.focus();
+                    return;
+                }else{
+                    partyName.focus()
+                }
+            }
+        })
+    }
+    if(partyName){
+        partyName.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault();
+                if(partyName.value === ''){
+                    partyName.focus()
+                    return;
+                }else{
+                    dates.focus();
+                }
+            }
+        })
+    }
+    if(totalQty){
+        totalQty.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault();
+                if(totalQty.value === ''){
+                    totalQty.focus()
+                    return;
+                }else{
+                    godownName.focus();
+                }
+            }
+        })
+    }
+
+    if(godownName){
+        godownName.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault();
+                if(godownName.value === ''){
+                    godownName.focus()
+                    return
+                }else{
+                    submitbtn_1.focus();
+                }
+            }
+        })
+    }
+
 
     form.addEventListener("keydown", function (event) {
         if (event.key === "Enter" && event.target.type !== "submit") {
@@ -318,13 +402,13 @@
 });
 
 </script>
-<script>
+<!-- <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Function to update the total quantity and manage the input fields
         function updateTotalQuantity(event) {
             let totalQuantity = 0;
             const formCount = parseInt(document.getElementById('id_p_o_to_products-TOTAL_FORMS').value);
-            const totalAllowedQuantity = parseFloat(document.getElementById('id_total-quantity').value);
+            const totalAllowedQuantity = parseInt(document.getElementById('id_total-quantity').value);
             const grandQuantityElement = document.getElementById('id_grand_quantity');
             const quantities = [];
             // Get the element that triggered the event
@@ -340,18 +424,13 @@
                    
                 }
                 quantities.push({ element: quantityElement, value: quantityValue });
-
+           
                 // Check if this is the current element
                 if (quantityElement === currentElement) {
                     currentIndex = i;
                 }
             }
-                const newBalance = totalAllowedQuantity - totalQuantity
-    
-            // Update the grand total quantity field
             grandQuantityElement.value = totalQuantity;
-          
-           document.getElementById('id_balance_quantity').value = newBalance;
 
             // Initially, set all input fields to read-only and reset their border color
             quantities.forEach(function (q) {
@@ -369,11 +448,16 @@
                 // If the total quantity exceeds the allowed quantity, set the current input field's border to red
                 if (currentIndex !== -1) {
                     quantities[currentIndex].element.style.borderColor = 'red';
-                    quantities[currentIndex].element.value = '0';
-                    quantities[currentIndex].element.readOnly = true;
+                    quantities[currentIndex].element.value = totalAllowedQuantity;
+                    quantities[currentIndex].element.readOnly = false;
                 }
             } else{
                 // If total quantity is less than allowed quantity, make all fields editable
+                const newBalance = totalAllowedQuantity - totalQuantity
+                
+                    
+                
+                document.getElementById('id_balance_quantity').value = newBalance;
                 quantities.forEach(function (q) {
                     q.element.readOnly = false;
                     q.element.style.borderColor = '';
@@ -411,6 +495,53 @@
     });
 
     
+</script> -->
+
+
+<script>
+
+    function updateqtyCalculation(){
+        let totalQuantity = 0;
+        const formCount = parseInt(document.getElementById('id_p_o_to_products-TOTAL_FORMS').value);
+        const totalAllowedQuantity = parseInt(document.getElementById('id_total-quantity').value);
+        const grandQuantityElement = document.getElementById('id_grand_quantity');
+        const submitBtn = document.getElementById('id_submit_2')
+        let balance = totalAllowedQuantity;
+   
+        for(let i = 0 ;i < formCount; i++){
+           const quantityElement = document.getElementById('id_p_o_to_products-' + i + '-order_quantity');
+            let quantityValue = parseInt(quantityElement.value) || 0;
+        
+            if (totalQuantity + quantityValue > totalAllowedQuantity) {
+                quantityElement.value = 0; // Reset only this field
+                quantityValue = 0;
+            }
+        totalQuantity += quantityValue;
+     
+        }
+        balance = totalAllowedQuantity - totalQuantity;
+        grandQuantityElement.value = totalQuantity;
+        document.getElementById('totalActualValue').textContent = totalQuantity;
+        document.getElementById('id_balance_quantity').value = balance;
+        if(totalAllowedQuantity !== totalQuantity){
+            submitBtn.disabled = true;
+            
+        }else{
+            submitBtn.disabled = false;
+        }
+        
+    }
+
+    updateqtyCalculation()
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const quantityElement = document.querySelectorAll('[name$="-order_quantity"]');
+        quantityElement.forEach(function(element){
+           
+            element.addEventListener('input', updateqtyCalculation);
+            element.addEventListener('focus', updateqtyCalculation);
+        })
+    })
 </script>
 
 {% endblock %}

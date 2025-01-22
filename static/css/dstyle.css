@@ -1985,6 +1985,9 @@ table>:not(caption)>*>*{
     height: 28px;
     background-color: transparent;
 }
+.productShadeRmEstimation_input:focus{
+    outline: none;
+}
 .productorderqty-input{
     width: 66px;
     border-radius: 3px;
