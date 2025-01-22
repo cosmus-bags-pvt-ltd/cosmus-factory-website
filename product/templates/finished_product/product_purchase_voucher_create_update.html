@@ -431,7 +431,7 @@ function getGstNo() {
         if(form === ''){
             $('#id_purchase_number').on('focusout',function(){
             var purchase_number = $(this).val();
-           console.log(purchase_number)
+    
             var purchase = $("#id_purchase_number");
             var errorElement = $('#purchaseError'); // The error message element
             var submitForm = $('#parentFormClick');
@@ -515,7 +515,7 @@ function getGstNo() {
             var productnamevalue = $(this).val().trim();
             var selectNameValue = `select_product_name_${purchaseValue}`;
             var suggestionsContainer = $(`#${selectNameValue}`);
- 
+            console.log('productnamevalue',productnamevalue)
                 if (productnamevalue === 'None') {
                     var selectNameValue = $(this).closest('tr').find('[name^="select_product_name_"]');
                         
@@ -540,6 +540,7 @@ function getGstNo() {
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
                         searchedProductNameDic = response.products; 
+                        console.log('searchedProductNameDic',searchedProductNameDic)
                         const searchQuery = productnamevalue.toLowerCase();
                         const searchTerms = searchQuery.split(/\s+/);
                         const convertStringData = searchTerms.toString();
@@ -590,9 +591,7 @@ function getGstNo() {
                         console.log(xhr.status + ": " + xhr.responseText);
                         if (xhr.status === 404) {
                             
-                            suggestionsContainer.show();
-                            suggestionsContainer.empty();
-                            suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                            suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
                         }
                     }
                 });

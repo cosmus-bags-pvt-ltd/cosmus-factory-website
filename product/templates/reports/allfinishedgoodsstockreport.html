@@ -30,12 +30,9 @@
                 <td>{{query.Product.Model_Name}}</td>
                 <td>{{query.PProduct_color}}</td>
                 <td>{{query.PProduct_SKU}}</td>
-                <td class="text-center"><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #1030ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}">{{query.total_labour_workin_qty | default_if_none:0}}</a></button></td>
-
-                <td class="text-center"><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #ecca1b;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}">{{query.total_labour_workin_pending_qty | default_if_none:0}}</a></button></td>
-
-                <td class="text-center"> <button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: #10a7ff;"><a style="color: rgb(255, 255, 255); text-decoration: none;" href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}">
-                    {{query.total_labour_workin_approve_qty | default_if_none:0}}</a></button></td>
+                <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;">{{ query.total_labour_workin_qty | default_if_none:0 }}</a></td>     
+                <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;">{{ query.total_labour_workin_pending_qty | default_if_none:0 }} </a></td>
+                <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</a></td>
                 <td class="toatlQty text-center">{{query.total_sales_qty | default_if_none:0}}</td>
                 <td class="text-center">{{query.total_qty | default_if_none:0}}</td>
             </tr>

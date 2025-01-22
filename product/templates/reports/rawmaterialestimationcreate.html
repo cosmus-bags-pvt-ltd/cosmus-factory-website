@@ -22,7 +22,7 @@
             </select>
             <input type="hidden" id="id_unique_Value" name="unique_id" value="{{product_estimation_form.instance.pk}}">
             {% if instance_exists_check %}
-            <button class="create-btn mt-3" id="calculate" type="button"  ><a class="text-white text-decoration-none " href="{% url 'raw-material-estimation-calculate' product_estimation_form.instance.pk %}">Calculate</a></button>
+            <a href="{% url 'raw-material-estimation-calculate' product_estimation_form.instance.pk %}" class="create-btn border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style=" text-decoration: none;">Calculate</a>
             {% endif %}
         </div>
         

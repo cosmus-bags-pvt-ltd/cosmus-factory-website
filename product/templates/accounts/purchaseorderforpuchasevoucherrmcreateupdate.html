@@ -232,7 +232,7 @@
             var nameValue = $(this).val().trim();
             var selectNameValue = `select_item_name_${purchaseValue}`;
             var suggestionsContainer = $(`#${selectNameValue}`);
-        
+            console.log('name',nameValue)
             if (nameValue === 'None') {
                 var selectNameValue = $(this).closest('tr').find('[name^="select_item_name_"]');
                     

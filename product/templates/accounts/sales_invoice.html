@@ -1216,10 +1216,17 @@ $(document).ready(function(){
     calculateOtherTotal();
     deleteRowData()
   function inputCheck(){
-
     const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
+    const buyerNo = document.getElementById('id_buyer_inv_no')
     const godownSelect = document.getElementById('id_selected_godown')
     var tableRows = document.querySelectorAll('#salesbody tr');
+    var partyName = document.getElementById('id_party_name')
+  
+
+
+
+
+
     itemNameInputsid.forEach((input, index) => {
       input.addEventListener("keydown", function (event) {
 
@@ -1260,8 +1267,35 @@ $(document).ready(function(){
       });
     });
 
+    if(buyerNo){
+      buyerNo.addEventListener('keydown', function(event) {
+        if (event.key === "Tab") {
+          event.preventDefault();
+          if (buyerNo.value === '') {
+            buyerNo.focus();
+            return;
+          }else{
+            partyName.focus();
+          }
+        }
+      })
+    }
    
-    godownSelect.addEventListener('keydown', function(event) {
+    if(partyName){
+      partyName.addEventListener('keydown',function(){
+        if (event.key === "Tab") {
+          event.preventDefault();
+          if(partyName.value === ''){
+            partyName.focus();
+          }else{
+            godownSelect.focus()
+          }
+        }
+    })
+    }
+    
+    if(godownSelect){
+      godownSelect.addEventListener('keydown', function(event) {
         if (event.key === "Tab") {
             event.preventDefault();
 
@@ -1288,17 +1322,11 @@ $(document).ready(function(){
 
             
         }
-    });
+      });
+    }
+    
 
-    var partyName = document.getElementById('id_party_name')
-    partyName.addEventListener('change',function(){
-      
-      if(godownSelect){
-        godownSelect.focus();
-        return;
-      }
-    })
-
+   
     tableRows.forEach(function (row,index) {
         const rate = row.querySelector('[name$="-spl_disct"]');
         const qty = row.querySelector('[name$="-quantity"]')

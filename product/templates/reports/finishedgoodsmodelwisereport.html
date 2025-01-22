@@ -51,10 +51,10 @@
                     <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
                         {% for record in data_list %}
                         <tr>
-                            <td>  <button class="border-0 rounded  mb-1 px-2 py-0.7" style="color:white; background-color: #f5239a;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workin-view-update' record.challan_No record.LWI_ID True %}">{{record.voucher_number}}</a></button> </td>
+                            <td><a href="{% url 'labour-workin-view-update' record.challan_No record.LWI_ID True %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f5239a; text-decoration: none;">{{record.voucher_number}}</a></td>
                             <td>{{record.date}}</td>
                             <td>{{record.description}}</td> 
-                            <td>  <button class="border-0 rounded  mb-1 px-2 py-0.7" style="color:white; background-color: #f5a623;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workout-single-view' record.challan_No %}">{{record.challan_No}}</a></button> </td> 
+                            <td><a href="{% url 'labour-workout-single-view' record.challan_No %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f5a623; text-decoration: none;">{{record.challan_No}}</a> </td> 
                             <td>{{record.LWO_Total}}</td>       
                             <td style="background-color: #90D5FF;" class="inwardLwIn ">{{record.L_W_I}}</td>
                             <td style="background-color: #90D5FF;" class="inwardRepairIn">{{record.Repair_In}}</td>
