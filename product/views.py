@@ -2389,8 +2389,8 @@ def purchase_voucher_rm_with_po_ajax(request):
 
             else:
                 return JsonResponse({'error': 'No items found.'}, status=404)
-        
-         
+
+
     except Exception as e:
         print(e)
 
@@ -2513,7 +2513,7 @@ def purchasevouchercreateupdate(request, pk = None):
                     
                     master_instance = master_form.save()
                     
-                    
+                    print(master_instance.opening_po)
                     
                     
                     for form in items_formset.deleted_forms:
