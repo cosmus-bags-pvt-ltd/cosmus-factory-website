@@ -132,6 +132,8 @@ urlpatterns = [
 
     path('uniquevalidcheckajax/', views.UniqueValidCheckAjax, name = 'unique-pk-valid-check-ajax'),
 
+    path('purchasevoucherrmwithpoajax/', views.purchase_voucher_rm_with_po_ajax, name = 'purchase-voucher-rm-with-po-ajax'),
+
     path('purchasevoucherpopupcreate/<int:shade_id>/<int:prefix_id>/<str:item_rate>/<str:unique_id>', views.purchasevoucherpopup, name='purchase-voucher-popup-create'),
     path('purchasevoucherpopupupdate/<int:shade_id>/<int:prefix_id>/<int:primarykey>', views.purchasevoucherpopup, name='purchase-voucher-popup-update'),
     path('purchasevouchercreategodownpopupurl/',views.purchasevouchercreategodownpopupurl,name = 'purchasevoucher-createpopup-ajax'),
@@ -185,12 +187,15 @@ urlpatterns = [
     path('purchaseorderlist/',views.purchaseorderlist, name = 'purchase-order-list'),
     path('purchaseorderdelete/<int:pk>',views.purchaseorderdelete, name = 'purchase-order-delete'),
 
+
+
     #purchase_order_for_raw
     path('purchaseorderrawmaterial/<int:p_o_pk>/<int:prod_ref_no>', views.purchaseorderrawmaterial, name = 'purchase-order-rawmaterial'),
     path('purchaseorderrawmaterialupdate/<int:p_o_pk>/<int:prod_ref_no>/<str:model_name>', views.purchaseorderrawmaterial, name = 'purchase-order-rawmaterial-update'),
     path('purchaseorderrawmateriallist/',views.purchase_order_for_raw_material_list, name = 'purchase-order-raw-material-list'),
     path('purchaseorderforrawmaterialdelete/<int:pk>',views.purchase_order_for_raw_material_delete, name = 'purchase-order-for-raw-material-delete'),
     
+
 
     #purchase_order_cutting_room
     path('purchaseordercuttinglist/<int:p_o_pk>/<int:prod_ref_no>', views.purchaseordercuttinglist, name = 'purchase-order-cutting-list'),
@@ -258,6 +263,10 @@ urlpatterns = [
     path('productpurchasevoucherupdate/<int:pk>',views.product_purchase_voucher_create_update, name = 'product-purchase-voucher-update'),
     path('productpurchasevoucherlist/',views.product_purchase_voucher_list, name = 'product-purchase-voucher-list'),
     path('productpurchasevoucherdelete/<int:pk>',views.product_purchase_voucher_delete, name = 'product-purchase-voucher-delete'),
+    
+    
+    
+
 
     # warehouse product transfer
     path('allproducttransfertowarehouse/', views.product_transfer_to_warehouse_list,name='all-product-transfer-to-warehouse'),

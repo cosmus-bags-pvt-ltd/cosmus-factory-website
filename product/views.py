@@ -2364,6 +2364,35 @@ def stockTrasferRawDelete(request,pk):
 
 
 
+def purchase_voucher_rm_with_po_ajax(request):
+    try:
+        party_name = request.GET.get('partyName')
+        open_po = request.GET.get('openPO')
+        
+        if open_po == "true":
+
+            item_names_search = purchase_order_for_puchase_voucher_rm.objects.filter(master_instance__party_name=party_name).values('item_name','item_name__item_name','item_name__Material_code').annotate(total_qty=Sum('quantity'))
+
+            if item_names_search:
+
+                searched_item_name_dict = {}
+
+                for i in item_names_search:
+                    total_qty = str(i['total_qty'])
+                    item_name_val = i['item_name__item_name'] + ' | ' + total_qty + ',' + i['item_name__Material_code']
+                    item_id = i['item_name']
+                    searched_item_name_dict[item_id] = item_name_val
+
+                logger.info(f"searched result via itemdynamicsearchajax {searched_item_name_dict}")
+                
+                return JsonResponse({'searched_item_name_dict': searched_item_name_dict}, status=200)
+
+            else:
+                return JsonResponse({'error': 'No items found.'}, status=404)
+         
+    except Exception as e:
+        print(e)
+
 
 
 
@@ -9421,10 +9450,6 @@ def cuttingroomdelete(request,pk):
     instance = cutting_room.objects.get(pk=pk)
     instance.delete()
     return redirect('cutting_room-create')
-
-
-
-
 
 
 
