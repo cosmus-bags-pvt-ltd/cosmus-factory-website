@@ -505,7 +505,23 @@ randomValue();
             const openPO = $('#id_opening_po').val()
             console.log('partyName',partyName)
             console.log('openPO',openPO)
-            $.ajax({
+            checkpartyAndPoNoajax(partyName,openPO)
+            
+        })
+        $(document).on('change','#id_opening_po', function(){
+            const partyName = $('#id_party_name').val();
+            const openPO = $(this).val()
+            console.log('partyNameclick',partyName)
+            console.log('openPOclick',openPO)
+            checkpartyAndPoNoajax(partyName,openPO)
+            
+        })
+
+
+        function checkpartyAndPoNoajax(partyName,openPO){
+            if(partyName && openPO){
+                console.log('test')
+                $.ajax({
                 url: '//',
                 method: 'GET',
                 data: { 
@@ -522,8 +538,8 @@ randomValue();
 
                 
             })
-        })
-
+            }
+        }
         $(document).on('click input keyup focus keydown', 'input[name^="item_name_"]', function () {
         itemName = $(this).closest('tr').find('select[name^="purchase_voucher_items_set-"]').attr('name');
         purchaseValue = itemName.split('-')[1];
