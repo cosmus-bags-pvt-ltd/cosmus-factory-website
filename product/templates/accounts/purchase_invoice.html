@@ -510,9 +510,7 @@ randomValue();
 
 
         function checkpartyAndPoNoajax(partyName,openPO){
-          
-                console.log('test')
-                $.ajax({
+            $.ajax({
                 url: '/purchasevoucherrmwithpoajax/',
                 method: 'GET',
                 data: { 
@@ -520,17 +518,12 @@ randomValue();
                     'openPO':openPO
                 },
                 success: function (response) {
-
                     partySelectPo = response.searched_item_name_dict;
                 },
                 error : function(error){
-                    console.log(error);
-                      
-                }
-
-                
-            })
-            
+                    console.log(error);   
+                }                
+            }) 
         }
         $(document).on('click input keyup focus keydown', 'input[name^="item_name_"]', function () {
         itemName = $(this).closest('tr').find('select[name^="purchase_voucher_items_set-"]').attr('name');
