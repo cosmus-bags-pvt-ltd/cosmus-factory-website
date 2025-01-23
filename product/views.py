@@ -2527,14 +2527,19 @@ def purchasevouchercreateupdate(request, pk = None):
                     all_purchase_temp_data = []
                     
                     for form in items_formset:
+                        from_open_po = form.cleaned_data.get('from_open_po', None)
+                        print(f"From Open PO: {from_open_po}")
                         if form.is_valid():
                             
                             
                             if not form.cleaned_data.get('DELETE'):
+                                
 
                                 items_instance = form.save(commit=False)
                                 items_instance.item_purchase_master = master_instance
                                 items_instance.save()
+
+                                
                                 
                                 form_prefix_number = form.prefix[-1] 
                                 # print(request.POST)
