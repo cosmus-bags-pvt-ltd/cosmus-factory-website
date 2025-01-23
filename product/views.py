@@ -2379,7 +2379,7 @@ def purchase_voucher_rm_with_po_ajax(request):
 
                 for i in item_names_search:
                     total_qty = str(i['total_qty'])
-                    item_name_val = i['item_name__item_name'] + ' | ' + total_qty + ',' + i['item_name__Material_code']
+                    item_name_val = i['item_name__item_name'] + ' | ' + total_qty + ',' + i['item_name__Material_code'] + ',' + 'True'
                     item_id = i['item_name']
                     searched_item_name_dict[item_id] = item_name_val
 
@@ -2513,7 +2513,8 @@ def purchasevouchercreateupdate(request, pk = None):
                     
                     master_instance = master_form.save()
                     
-                    print(master_instance.opening_po)
+                    # open_po = request.POST.get('opening_po')
+                    # print('open_po = ',open_po)
                     
                     
                     for form in items_formset.deleted_forms:
@@ -2536,7 +2537,7 @@ def purchasevouchercreateupdate(request, pk = None):
                                 items_instance.save()
                                 
                                 form_prefix_number = form.prefix[-1] 
-                                print(request.POST)
+                                # print(request.POST)
                                 
                                 unique_id_no = request.POST.get(f'item_unique_id_{form_prefix_number}')
                                 primary_key = request.POST.get(f'purchase_voucher_items_set-{form_prefix_number}-id')

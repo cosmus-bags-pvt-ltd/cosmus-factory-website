@@ -145,7 +145,7 @@
                     </td>
                     <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
                     <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="{{forms.prefix}}-DELETE" value="" ></i></span></td>
-                    
+                    <input type="hidden" id="{{forms.prefix}}-from_open_po" value="" name="{{forms.prefix}}-from_open_po">
                  </tr>   
             {% endfor %}
             </tbody>
