@@ -520,10 +520,8 @@ randomValue();
                     'openPO':openPO
                 },
                 success: function (response) {
-                    console.log(response);
 
-                    partySelectPo = response
-                   
+                    partySelectPo = response.searched_item_name_dict;
                 },
                 error : function(error){
                     console.log(error);
@@ -580,50 +578,8 @@ randomValue();
             if ((purchaseData === '' && uniqueValue !== '') || (purchaseData === '' && uniqueValue === '' && jsonData === '')) {
                 if(nameValue.length >= 1){
                     if (openpoId === 'true' && Object.keys(partySelectPo).length > 0){
-
-                        populateSuggestions(suggestionsContainer, partySelectPo, nameValue);
-                        // function escapeRegExp(string) {
-                        //     return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
-                        // }
-                        
-                        // searchedItemNameDict = partySelectPo;
-                            
-                        // var searchQuery = nameValue.toLowerCase();
-                        // var escapedSearchQuery = escapeRegExp(searchQuery); // Escape special characters in search query
-                        // var regex = new RegExp('(' + escapedSearchQuery + ')', 'gi');
-                        // var filteredOptions = Object.entries(searchedItemNameDict).filter(([key, value]) => value.toLowerCase().includes(searchQuery));
-                        
-                        // // Clear and repopulate options
-                        // suggestionsContainer.empty();
-
-                        // $.each(filteredOptions, function(index, [key, value]) {
-                        
-                        //     let highlightedText = value;
-                        //     let colorStyle = '';
-                        //     if (searchQuery) {
-                        //         highlightedText = value.split("|")[0].replace(regex, '<span class="highlight">$1</span>');
-                        //         const valueCalculate = value.split("|")[1].split(",")[0].trim(); 
-                        //         const numberKey = value.split(/-?\d+(\.\d+)?,/)[2].trim();
-
-                        //         // Initialize the color based on valueCalculate
-                                
-                        //         if (parseFloat(valueCalculate) > 0) {
-                        //             colorStyle = 'color: green; float: right;';
-                        //         } else {
-                        //             colorStyle = 'color: red;  float: right;';
-                        //         }
-
-                        //         if(numberKey.includes(searchQuery)){
-                        //             numberKeyHighlighted = `<span class="highlight">M Code - ${numberKey}</span>`;
-                        //         }else {
-                        //             numberKeyHighlighted = `M Code - ${numberKey}`;
-                        //         }
-                        //         suggestionsContainer.append(`<div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion " data-key="${key}">${highlightedText} <span style="${colorStyle}">${valueCalculate}</span>
-                        //             <br>
-                        //             <span style="font-weight:bold">${numberKeyHighlighted}</span>
-                        //             </div>`);
-                        //     } 
-                        // });
+                        searchedItemNameDict = partySelectPo;
+                        populateSuggestions(suggestionsContainer, searchedItemNameDict, nameValue);
 
                     }else{
                         $.ajax({
@@ -631,49 +587,9 @@ randomValue();
                             method: 'GET',
                             data: { 'nameValue': nameValue },
                             success: function (response) {
-                                populateSuggestions(suggestionsContainer, response.searched_item_name_dict, nameValue);
-                                // Function to escape special characters in the search query
-                                // function escapeRegExp(string) {
-                                //     return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
-                                // }
-                                // searchedItemNameDict = response.searched_item_name_dict;
-                                // console.log('searchedItemNameDict',searchedItemNameDict)
-                                // var searchQuery = nameValue.toLowerCase();
-                                // var escapedSearchQuery = escapeRegExp(searchQuery); // Escape special characters in search query
-                                // var regex = new RegExp('(' + escapedSearchQuery + ')', 'gi');
-                                // var filteredOptions = Object.entries(searchedItemNameDict).filter(([key, value]) => value.toLowerCase().includes(searchQuery));
-                                
-                                // // Clear and repopulate options
-                                // suggestionsContainer.empty();
-
-                                // $.each(filteredOptions, function(index, [key, value]) {
-                                
-                                //     let highlightedText = value;
-                                //     let colorStyle = '';
-                                //     if (searchQuery) {
-                                //         highlightedText = value.split("|")[0].replace(regex, '<span class="highlight">$1</span>');
-                                //         const valueCalculate = value.split("|")[1].split(",")[0].trim(); 
-                                //         const numberKey = value.split(/-?\d+(\.\d+)?,/)[2].trim();
-
-                                //         // Initialize the color based on valueCalculate
-                                        
-                                //         if (parseFloat(valueCalculate) > 0) {
-                                //             colorStyle = 'color: green; float: right;';
-                                //         } else {
-                                //             colorStyle = 'color: red;  float: right;';
-                                //         }
-
-                                //         if(numberKey.includes(searchQuery)){
-                                //             numberKeyHighlighted = `<span class="highlight">M Code - ${numberKey}</span>`;
-                                //         }else {
-                                //             numberKeyHighlighted = `M Code - ${numberKey}`;
-                                //         }
-                                //         suggestionsContainer.append(`<div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion " data-key="${key}">${highlightedText} <span style="${colorStyle}">${valueCalculate}</span>
-                                //             <br>
-                                //             <span style="font-weight:bold">${numberKeyHighlighted}</span>
-                                //             </div>`);
-                                //     } 
-                                // });
+                                searchedItemNameDict =  response.searched_item_name_dict
+                                populateSuggestions(suggestionsContainer,searchedItemNameDict , nameValue);
+                            
                             },
                             error: function (xhr) {
                                 console.log(xhr.status + ": " + xhr.responseText);
