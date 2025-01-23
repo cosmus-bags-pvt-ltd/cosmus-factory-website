@@ -553,7 +553,7 @@ randomValue();
             var purchaseData = $(`#purchase_voucher_items_set-${purchaseValue}-popupData`).val();
             var jsonData = $(`#purchase_voucher_items_set-${purchaseValue}-jsonDataInputquantity`).val();
             var uniqueValue = $(`#item_unique_id_${purchaseValue}`).val();
-            var openpoId = $('#id_opening_po').val()
+            var openpoId = $('#id_opening_po').val();
           
             if (nameValue === 'None') {
                 var selectNameValue = $(this).closest('tr').find('[name^="select_item_name_"]');
@@ -778,13 +778,18 @@ randomValue();
 
             if (item_value !== undefined || item_value !== "") {
                 var selectedValue = searchedItemNameDict[item_value];  
-
-                var namevalueCheck = selectedValue.match(/[a-zA-Z\s().0-9]+/g).join('');
-                var numberValue = selectedValue.match(/-?\d+(\.\d+)?/g)[0];
-                var newnameValue = namevalueCheck.replace(/[\.\s 0-9]+$/, '');
-                    
-                $(`input[name^="item_name_${purchaseValue}"]`).val(newnameValue);
-            
+             
+                var namevalueCheck = selectedValue.match(/^[^|]+/);
+                var nameValue = namevalueCheck ? namevalueCheck[0].trim() : "";
+               
+                var numberMatch = selectedValue.match(/\|\s*(\d+(\.\d+)?)/);
+                var numberValue = numberMatch ? numberMatch[1] : "";
+         
+                var newnameValueMatch = nameValue       //+ '                       '+ numberValue;
+                var trueValue = selectedValue.includes("True") ? "True" : "";
+          
+                $(`input[name^="item_name_${purchaseValue}"]`).val(newnameValueMatch);
+                $(`#purchase_voucher_items_set-${purchaseValue}-from_open_po`).val(trueValue)
                 $.ajax({
                     url: '/purchasevouchercreate/',
                     method: 'GET',
@@ -1227,6 +1232,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     checkIdElement.name = `item_checkshade-${formIndex}`;
                     checkIdElement.value= '';
 
+                    const openPOElement = lastRow.querySelector('input[name^="purchase_voucher_items_set-"][name$="-from_open_po"]');
+                    openPOElement.id = `purchase_voucher_items_set-${formIndex}-from_open_po`;
+                    openPOElement.name = `purchase_voucher_items_set-${formIndex}-from_open_po`;
+                    openPOElement.value = '';
 
                     formCountInput.value = formCount + 1; 
                     tableBody.appendChild(lastRow);
