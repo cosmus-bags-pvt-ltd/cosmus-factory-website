@@ -13,31 +13,35 @@
                 <div class="d-flex ">
                     <label for="id_purchase_number"  class="me-3">Purchase No :</label>
                     {% if master_form.instance.id %}
-                    <input type="text" class="item-select" name="purchase_number" id ="id_purchase_number" value="{{master_form.instance.purchase_number}}" maxlength="255" required readonly>
+                    <input type="text" class="purchase-itemName" name="purchase_number" id ="id_purchase_number" value="{{master_form.instance.purchase_number}}" maxlength="255" required readonly>
                     {% elif not master_form.instance.id %}
-                    <input type="text" class="item-select" name="purchase_number" id ="id_purchase_number" value="{{master_form.purchase_number.initial}}" maxlength="255" required>
+                    <input type="text" class="purchase-itemName" name="purchase_number" id ="id_purchase_number" value="{{master_form.purchase_number.initial}}" maxlength="255" required>
                     {% endif %}
                 </div>
                 <span id="SupplierError" class="error-messages"></span>
                 <div class="d-flex ms-3">
                     <label for="id_supplier_invoice_number" class="item-form" >Supplier Invoice No :</label>
                     {% if master_form.instance.id %}
-                    <input type="text" class="item-select" name="supplier_invoice_number" id ="id_supplier_invoice_number" value="{{master_form.instance.supplier_invoice_number}}" maxlength="255" readonly>
+                    <input type="text" class="purchase-itemName" name="supplier_invoice_number" id ="id_supplier_invoice_number" value="{{master_form.instance.supplier_invoice_number}}" maxlength="255" readonly>
                     {% elif not master_form.instance.id %}
-                    <input type="text" class="item-select" name="supplier_invoice_number" id ="id_supplier_invoice_number" value="{{master_form.instance.supplier_invoice_number}}" maxlength="255" required  aria-required="true">
+                    <input type="text" class="purchase-itemName" name="supplier_invoice_number" id ="id_supplier_invoice_number" value="{{master_form.instance.supplier_invoice_number}}" maxlength="255" required  aria-required="true">
                     {% endif %}
                 </div>
                
                 <div class="d-flex ms-3">
                     <label for="id_GST_numbers" class="item-form" >Company GST No :</label>
-                    <input type="text" class="item-select" name="GST_numbers" id ="id_company_GST_numbers" value="27AAACG20210238" maxlength="50" readonly >
+                    <input type="text" class="item-selects" name="GST_numbers" id ="id_company_GST_numbers" value="27AAACG20210238" maxlength="50" readonly >
+                </div>
+                <span id="ledgerError" class="error-messages"></span>
+                <div class="d-flex ms-3">
+                    <label for="id_ledger_type" class="me-3" >ledger Type :</label>
+                    <input type="text" class="purchase-amount" name="ledger_type" id ="id_ledger_type" value="{{master_form.instance.ledger_type}}" maxlength="50" default='Purchase' readonly required placeholder="Purchase" >
                 </div>
             </div>
-            <span id="ledgerError" class="error-messages"></span>
             <div class="d-flex">
                 <div class="d-flex mb-3">
-                    <label for="id_ledger_type" class="me-3" >ledger Type :</label>
-                    <input type="text" class="item-select" name="ledger_type" id ="id_ledger_type" value="{{master_form.instance.ledger_type}}" maxlength="50" default='Purchase' readonly required placeholder="Purchase" >
+                    <label for="id_opening_po" class="me-2" >Opening PO :</label>
+                    <input type="checkbox"  name="opening_po" id ="id_opening_po" value="false" >
                 </div>
                 <span id="purchaseError" class="error-messages"></span>
                 <div class="d-flex ms-3">
@@ -62,7 +66,7 @@
              
                 <div class="d-flex ms-3">
                     <label for="id_GST_number" class="me-2" >Party GST No :</label>
-                    <input type="text" class="item-select" name="GST_number" id ="id_GST_number"  value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15" readonly required>
+                    <input type="text" class="item-selects" name="GST_number" id ="id_GST_number"  value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15" readonly required>
                 </div>
             
             </div>
@@ -225,148 +229,153 @@
       });
 
   var popUpNewWindow = null;
-function openPurchasePartyPopup(button){
-  openNewPopup(button, '{% url "ledger-popup-create" %}');
-}
+    function openPurchasePartyPopup(button){
+    openNewPopup(button, '{% url "ledger-popup-create" %}');
+    }
 
-function openNewPopup(button, url){
-  if (popUpNewWindow === null || popUpNewWindow.closed) {
-      newPopUpwindow(button, url);
-  } else {
+    function openNewPopup(button, url){
+        if (popUpNewWindow === null || popUpNewWindow.closed) {
+            newPopUpwindow(button, url);
+        } else {
 
-      popUpNewWindow.focus();
-  }
-}
+            popUpNewWindow.focus();
+        }
+    }
 
-function newPopUpwindow(button, path){
-  // Specify minimum height and width
-var minWidth = 1150; // minimum width
-var minHeight = 800; // minimum height
+    function newPopUpwindow(button, path){
 
-$('body').addClass('popup-open');
-$('body').append('<div class="popup-overlay"></div>');
+        var minWidth = 1150; // minimum width
+        var minHeight = 800; // minimum height
 
-// Open new page with specified dimensions
-popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-  // Ensure only one event listener is attached
+        $('body').addClass('popup-open');
+        $('body').append('<div class="popup-overlay"></div>');
 
-  window.addEventListener('message', function(event){
-      if (event.data.message === 'close') {
-              $('body').removeClass('popup-open');
-              $('.popup-overlay').remove();
-              popUpNewWindow.close();
-              
-           }
-         });
+        // Open new page with specified dimensions
+        popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
 
 
-  // Listen for messages from the popup window
-  window.addEventListener('click', function(event) {
-  handleOutsideClick(event);
-});
-}
-function handleOutsideClick(event) {
-var popUpRect = document.querySelector('body').getBoundingClientRect();
-var clickX = event.clientX;
-var clickY = event.clientY;
+        window.addEventListener('message', function(event){
+            if (event.data.message === 'close') {
+                    $('body').removeClass('popup-open');
+                    $('.popup-overlay').remove();
+                    popUpNewWindow.close();
+                    
+            }
+        });
 
-// Check if the click is outside the popup window
-if (
-  clickX > popUpRect.left || clickX <= popUpRect.right ||
-  clickY > popUpRect.top || clickY <= popUpRect.bottom
-) {
- 
-  popUpNewWindow.focus();
-  
-}
+        window.addEventListener('click', function(event) {
+        handleOutsideClick(event);
+        });
+    }
+    function handleOutsideClick(event) {
+        var popUpRect = document.querySelector('body').getBoundingClientRect();
+        var clickX = event.clientX;
+        var clickY = event.clientY;
 
-}
+        // Check if the click is outside the popup window
+        if (
+        clickX > popUpRect.left || clickX <= popUpRect.right ||
+        clickY > popUpRect.top || clickY <= popUpRect.bottom
+        ) {
+        
+        popUpNewWindow.focus();
+        
+        }
 
-window.addEventListener('message', function(event) {
-  const data = event.data;
-  console.log(data.ledger_labour);
-  if (data.ledger_labour) {
-      populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
-  }
-});
+    }
 
-function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
-  const dropdown = $(dropdownSelector);
-  dropdown.empty();
-  dropdown.append('<option value="">' + defaultText + '</option>');
+    window.addEventListener('message', function(event) {
+    const data = event.data;
+        if (data.ledger_labour) {
+            populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
+        }
+    });
 
-  items.forEach(item => {
-      dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
-  });
-}
+    function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
+        const dropdown = $(dropdownSelector);
+        dropdown.empty();
+        dropdown.append('<option value="">' + defaultText + '</option>');
+
+        items.forEach(item => {
+            dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+        });
+    }
 </script>
 
 <script>
-  $(document).ready(function(){
-      $('#id_purchase_number').on('focusout',function(){
-        var purchase_number = $(this).val();
-        var purchaseId = $('#id_purchase_voucher_items_set-0-id').val();
-        var purchase = $("#id_purchase_number");
-        var errorElement = $('#purchaseError'); // The error message element
-        var submitForm = $('#parentFormClick');
-          if(purchaseId === ''){
-              $.ajax({
-              url: '/uniquevalidcheckajax/',
-              method: 'GET',
-              data: {
-                  'purchase_number': purchase_number,
-                  
-              },
-              success: function (data) {
-               
-                  if(data.validation_flag === true){
-                     purchase.css('border', '1px solid red');
-                      errorElement.text('*Purchase number already exists');
-                      errorElement.show();
-                      submitForm.prop('disabled', true);
-                     
-                  }else {
-                      
-                      purchase.css('border', '1px solid black');
-                      errorElement.text('');
-                      errorElement.hide();
-                      submitForm.prop('disabled', false);
-                  }
-                 
-              },
-              error: function (error) {   
-                  console.log(error);
-              }
+    $(document).ready(function(){
+        $('#id_purchase_number').on('focusout',function(){
+            var purchase_number = $(this).val();
+            var purchaseId = $('#id_purchase_voucher_items_set-0-id').val();
+            var purchase = $("#id_purchase_number");
+            var errorElement = $('#purchaseError'); // The error message element
+            var submitForm = $('#parentFormClick');
+            if(purchaseId === ''){
+                $.ajax({
+                url: '/uniquevalidcheckajax/',
+                method: 'GET',
+                data: {
+                    'purchase_number': purchase_number,
+                    
+                },
+                success: function (data) {
+                
+                    if(data.validation_flag === true){
+                        purchase.css('border', '1px solid red');
+                        errorElement.text('*Purchase number already exists');
+                        errorElement.show();
+                        submitForm.prop('disabled', true);
+                        
+                    }else {
+                        
+                        purchase.css('border', '1px solid black');
+                        errorElement.text('');
+                        errorElement.hide();
+                        submitForm.prop('disabled', false);
+                    }
+                    
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
 
-          })
-          }
-          
-      })
+            })
+          }   
+        })
  
-//this ajax is for gst no 
-      $(document).on('change', 'select[name^="party_name"]', function () {
+            //this ajax is for gst no 
+        $(document).on('change', 'select[name^="party_name"]', function () {
 
-      const selected_party_name = $(this).val()
-      const int_selected_party_name = parseInt(selected_party_name)
+            const selected_party_name = $(this).val()
+            const int_selected_party_name = parseInt(selected_party_name)
 
-      $.ajax({
-          url: '/purchasevouchercreate/',
-          method: 'GET',
-          data: {
-              'selected_party_name': selected_party_name,
-          },
-          success: function (response) {
-              const party_gst_no_response = response.party_gst_no
-              const gst_no_input = document.getElementById('id_GST_number')
-              gst_no_input.value = party_gst_no_response
-              getGstNo()
-              calculateTotalAmount()
-          },
-          error: function (xhr, errmsg, err) {
-              console.log('Error sending value to the backend');
-          }
-      })
-      })
+            $.ajax({
+                url: '/purchasevouchercreate/',
+                method: 'GET',
+                data: {
+                    'selected_party_name': selected_party_name,
+                },
+                success: function (response) {
+                    const party_gst_no_response = response.party_gst_no
+                    const gst_no_input = document.getElementById('id_GST_number')
+                    gst_no_input.value = party_gst_no_response
+                    getGstNo()
+                    calculateTotalAmount()
+                },
+                error: function (xhr, errmsg, err) {
+                    console.log('Error sending value to the backend');
+                }
+            })
+        })
+
+        var checkbox = $('#id_opening_po');
+        checkbox.on('change',function(){
+            if(checkbox.prop('checked')){
+                checkbox.val('true')
+            }else{
+                checkbox.val('false')
+            }
+        })
   })
 
   window.addEventListener('message', receiveMessage, false);
@@ -491,6 +500,46 @@ randomValue();
         var enterPressed = false;
 
          // perfix value on item-name change
+        $(document).on('change','select[id="id_party_name"]', function(){
+            const partyName = $(this).val();
+            const openPO = $('#id_opening_po').val()
+            console.log('partyName',partyName)
+            console.log('openPO',openPO)
+            checkpartyAndPoNoajax(partyName,openPO)
+            
+        })
+        $(document).on('change','#id_opening_po', function(){
+            const partyName = $('#id_party_name').val();
+            const openPO = $(this).val()
+            console.log('partyNameclick',partyName)
+            console.log('openPOclick',openPO)
+            checkpartyAndPoNoajax(partyName,openPO)
+            
+        })
+
+
+        function checkpartyAndPoNoajax(partyName,openPO){
+            if(partyName && openPO){
+                console.log('test')
+                $.ajax({
+                url: '//',
+                method: 'GET',
+                data: { 
+                    'partyName': partyName ,
+                    'openPO':openPO
+                },
+                success: function (response) {
+                    console.log(response);
+                },
+                error : function(error){
+                    console.log(error);
+                      
+                }
+
+                
+            })
+            }
+        }
         $(document).on('click input keyup focus keydown', 'input[name^="item_name_"]', function () {
         itemName = $(this).closest('tr').find('select[name^="purchase_voucher_items_set-"]').attr('name');
         purchaseValue = itemName.split('-')[1];

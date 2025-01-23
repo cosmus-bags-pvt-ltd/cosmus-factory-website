@@ -1674,10 +1674,8 @@ table>:not(caption)>*>*{
 }
 .purchase-itemName{
     width: 158px;
-    border: none;
-    border-top: 1px solid  #cecdcd ;
-    border-bottom: 1px solid  #cecdcd ;
-    border-radius: 3px;
+    border: 1px solid  #cecdcd ;
+    border-radius: 2px;
     padding-left: 5px; 
     height: 33px; 
 }
@@ -1761,13 +1759,13 @@ table>:not(caption)>*>*{
     width: 300px;
 }
 
-.search-input {
+/* .search-input {
     width: 100%;
     padding: 8px;
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 4px;
-}
+} */
 
 .labourworkoutlist_table{
     max-height: 230px ;
@@ -1781,14 +1779,6 @@ table>:not(caption)>*>*{
     padding-left: 5px;
     height: 33px;
 }
-
-/* .product_color_EAnCode{
-    width: 130px;
-    border: 1px solid #cecdcd;
-    border-radius: 5px;
-    padding-left: 5px;
-    height: 33px;
-} */
 
 .labourInPendingArrow{
     padding-left: 270px;
