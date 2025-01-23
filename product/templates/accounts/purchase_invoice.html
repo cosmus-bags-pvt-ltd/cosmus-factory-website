@@ -40,7 +40,7 @@
             </div>
             <div class="d-flex">
                 <div class="d-flex mb-3">
-                    <label for="id_opening_po" class="me-2" >Opening PO :</label>
+                    <label for="id_opening_po" class="me-2 fw-bold" >Opening PO :</label>
                     <input type="checkbox"  name="opening_po" id ="id_opening_po" value="false" >
                 </div>
                 <span id="purchaseError" class="error-messages"></span>
@@ -372,9 +372,11 @@
         var checkbox = $('#id_opening_po');
         checkbox.on('change',function(){
             if(checkbox.prop('checked')){
-                checkbox.val('true')
+                checkbox.val('true');
+                checkbox.css('accent-color', 'red'); 
             }else{
-                checkbox.val('false')
+                checkbox.val('false');
+                checkbox.css('accent-color', 'red'); 
             }
         })
   })
@@ -786,7 +788,7 @@ randomValue();
                 var numberMatch = selectedValue.match(/\|\s*(\d+(\.\d+)?)/);
                 var numberValue = numberMatch ? numberMatch[1] : "";
          
-                var newnameValueMatch = nameValue       //+ '                       '+ numberValue;
+                var newnameValueMatch = nameValue       + '                       '+ numberValue;
                 var trueValue = selectedValue.includes("True") ? "True" : "";
           
                 $(`input[name^="item_name_${purchaseValue}"]`).val(newnameValueMatch);
