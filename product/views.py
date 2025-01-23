@@ -6534,37 +6534,68 @@ def labourworkinlistall(request):
 
     current_date = datetime.date.today
 
-    
+
+    approved_qty_subquery = labour_work_in_product_to_item.objects.filter(
+    labour_workin_instance__labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id=OuterRef('pk')
+    ).values('labour_workin_instance__labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id') \
+    .annotate(
+        total_approved_qty=Sum('approved_qty')
+    ).values('total_approved_qty')
+
+
+
+    pending_approved_qty_subquery = labour_work_in_product_to_item.objects.filter(
+    labour_workin_instance__labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id=OuterRef('pk')
+    ).values('labour_workin_instance__labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id') \
+    .annotate(
+        total_pending_approved_qty=Sum('pending_for_approval')
+    ).values('total_pending_approved_qty')
+
+
+
     labour_workout_childs_exists = labour_workout_childs.objects.filter(
     labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id = OuterRef('pk')
     ).values('pk')[:1]
 
-    
+
+    #for all 
     purchase_orders_with_labour_workout_childs = purchase_order.objects.annotate(
     has_labour_workout_childs=Exists(labour_workout_childs_exists)
-    ).filter(has_labour_workout_childs = True).annotate(total_lwo_pcs = Sum('cutting_pos__labourworkouts__labour_workout_childs__total_process_pcs'),
-    total_labour_workin_pcs = Sum('cutting_pos__labourworkouts__labour_workout_childs__labour_workin_pcs'),
-    total_labour_workin_pending = Sum('cutting_pos__labourworkouts__labour_workout_childs__labour_workin_pending_pcs'),
-    total_approved_qty = Sum('cutting_pos__labourworkouts__labour_workout_childs__labour_work_in_master__l_w_in_products__approved_qty'),
-    total_pending_approved_qty = Sum('cutting_pos__labourworkouts__labour_workout_childs__labour_work_in_master__l_w_in_products__pending_for_approval'))
+    ).filter(
+        has_labour_workout_childs=True
+    ).annotate(
+        total_lwo_pcs=Sum('cutting_pos__labourworkouts__labour_workout_childs__total_process_pcs'),
+        total_labour_workin_pcs=Sum('cutting_pos__labourworkouts__labour_workout_childs__labour_workin_pcs'),
+        total_labour_workin_pending=Sum('cutting_pos__labourworkouts__labour_workout_childs__labour_workin_pending_pcs'),
+        total_approved_qty=Subquery(approved_qty_subquery),
+        total_pending_approved_qty=Subquery(pending_approved_qty_subquery)
+    )
 
-    
-
-
+    #vendor name wise
     labour_workout_child_instances_all = labour_workout_childs.objects.all().annotate(total_approved_qty = Sum('labour_work_in_master__l_w_in_products__approved_qty'),total_pending_approved_qty = Sum('labour_work_in_master__l_w_in_products__pending_for_approval'))
 
-
+    # labour workin grn no wise
     labour_workin_child_instances_all = labour_work_in_master.objects.all()
 
-    labour_workin_pending_count = labour_work_in_master.objects.filter(~Q(total_return_pcs = F('total_approved_qty'))).count()
 
+    # Calculate approve pending quantity
     labour_workin_pending_quantity = labour_work_in_master.objects.all().aggregate(pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval'))['pending_for_approval_pcs']
 
+
+    # Calculate approve pending count
+    labour_workin_pending_count = labour_work_in_master.objects.annotate(
+        total_pending_for_approval=Sum('l_w_in_products__pending_for_approval'),
+        total_approved_qty_sum=Sum('l_w_in_products__approved_qty')
+    ).filter(
+        Q(total_pending_for_approval__gt=F('total_approved_qty_sum'))
+    ).count()
 
 
     return render(request,'production/labour_workin_listall.html',
                   {'labour_workout_child_instances_all':labour_workout_child_instances_all,
                    'purchase_order_instances': purchase_orders_with_labour_workout_childs,'current_date':current_date,'page_name':'Labour WorkIn List','labour_workin_child_instances_all':labour_workin_child_instances_all,'labour_workin_pending_count':labour_workin_pending_count,'labour_workin_pending_quantity':labour_workin_pending_quantity})
+
+
 
 
 
