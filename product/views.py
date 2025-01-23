@@ -2527,10 +2527,25 @@ def purchasevouchercreateupdate(request, pk = None):
                     all_purchase_temp_data = []
                     
                     for form in items_formset:
-                        from_open_po = form.cleaned_data.get('from_open_po', None)
-                        print(f"From Open PO: {from_open_po}")
+                        
                         if form.is_valid():
-                            
+                            # *****************************
+                            from_open_po = form.cleaned_data.get('from_open_po', None)
+
+                            if from_open_po:
+                                item_name = form.instance.item_shade.items.item_name
+                                qty = form.instance.quantity_total
+                                
+                                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name = item_name)
+                                    
+                                for i in po_exist:
+                                    if i.item_name.item_name == item_name:
+                                        if i.quantity == qty:
+                                            i.quantity = i.quantity - qty
+                                            i.save()
+                                            break
+                                        
+
                             
                             if not form.cleaned_data.get('DELETE'):
                                 

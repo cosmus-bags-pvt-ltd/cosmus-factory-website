@@ -1718,14 +1718,10 @@ class item_purchase_voucher_master_form(forms.ModelForm):
 
 class PurchaseVoucherItemForm(forms.ModelForm):
     from_open_po = forms.CharField(required=False)
-
+    item_name = forms.CharField(required=False)
     class Meta:
         model = purchase_voucher_items
         fields = ('item_shade', 'quantity_total', 'rate', 'amount','from_open_po')
-
-
-
-
 
 
 purchase_voucher_items_formset = inlineformset_factory(item_purchase_voucher_master, purchase_voucher_items,form=PurchaseVoucherItemForm, fields=('item_shade', 'quantity_total','rate','amount'), extra=1)

@@ -1198,7 +1198,8 @@ class sales_voucher_finish_Goods(models.Model):
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
     spl_disct = models.IntegerField()
-
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
 
 
@@ -1208,6 +1209,8 @@ class purchase_order_master_for_puchase_voucher_rm(models.Model):
     payment_term = models.CharField(max_length=20, null=True, blank=True)
     fright_transport = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     voucher_gst = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
 
 class purchase_order_for_puchase_voucher_rm(models.Model):
@@ -1215,6 +1218,8 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
     item_name = models.ForeignKey(Item_Creation,on_delete=models.PROTECT)
     quantity = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     rate = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
     
 
 
