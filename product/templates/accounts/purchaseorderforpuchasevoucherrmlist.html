@@ -71,14 +71,14 @@
                         </tr>
                     </thead>
                     <tbody class="mainTableList">
-                        {% for order in order_list %}
+                        {% for order in order_list_complete %}
                         <tr>
-                            <!-- <td>{{forloop.counter}}</td>
+                            <td>{{forloop.counter}}</td>
                             <td>{{ order.po_no }}</td> 
                             <td>{{ order.party_name.name }}</td>
                             <td><a href='{% url "purchase-order-for-puchase-voucher-rm-create-update" order.id %}'><i class="fa-solid fa-eye px-2"></i></a></td>
                             <td><a href='{% url "excel-download-for-purchase-order" order.id %}'><i class="fa-regular fa-file-excel ms-3 fs-6"></i></a></td>
-                            <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{order.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></i></button></td> -->
+                            <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{order.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></i></button></td>
                         
                         </tr>
                        

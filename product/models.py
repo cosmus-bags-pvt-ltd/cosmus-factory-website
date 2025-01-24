@@ -1217,6 +1217,7 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
     master_instance = models.ForeignKey(purchase_order_master_for_puchase_voucher_rm, on_delete=models.CASCADE)
     item_name = models.ForeignKey(Item_Creation,on_delete=models.PROTECT)
     quantity = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    demo_quantity = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     rate = models.DecimalField(default = 0, max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)

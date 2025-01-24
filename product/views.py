@@ -10717,6 +10717,8 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
                 if not form.cleaned_data.get('DELETE'):
                     form_instance = form.save(commit=False)
                     form_instance.master_instance = master_form_instance
+                    qty = form.instance.quantity
+                    form_instance.demo_quantity = qty
                     form_instance.save()
 
         else:
@@ -10732,7 +10734,10 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
 
 def purchase_order_for_puchase_voucher_rm_list(request):
   
-    order_list = purchase_order_master_for_puchase_voucher_rm.objects.all().order_by('po_no')
+    order_list = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity')).filter(total_qty__gt=0).order_by('po_no')
+    
+
+    order_list_complete = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity')).filter(total_qty = 0).order_by('po_no')
 
     negetive_stock_sellerwise = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
 
@@ -12666,7 +12671,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         less_Number = decimal.Decimal(less_Number)
         data_for_frontend = [item for item in merged_data if item["Fabric_Group"].lower() == selected_fabric_grp_lower and item["total_qty"] < less_Number]
 
-    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number,'merged_data':data_for_frontend,})
+    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number,'merged_data':data_for_frontend,'order_list_complete':order_list_complete})
 
 
 

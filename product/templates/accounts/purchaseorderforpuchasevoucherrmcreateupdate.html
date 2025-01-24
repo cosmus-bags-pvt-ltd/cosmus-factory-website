@@ -89,7 +89,13 @@
                     </td>
                     <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.Item_Color.color_name }}{% endif %}" class="purchase-input" readonly></td>
 
+                    {% if forms.instance.quantity == 0 %}
+                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.demo_quantity | default_if_none:'' }}" class="purchase-input"></td>
+                    {% else %}
                     <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" class="purchase-input"></td>
+                    {% endif %}
+
+                    
 
                     <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.unit_name_item.unit_name }}{% endif %}" class="purchase-mark" readonly></td>
 
