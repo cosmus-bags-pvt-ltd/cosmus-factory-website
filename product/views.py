@@ -2536,15 +2536,41 @@ def purchasevouchercreateupdate(request, pk = None):
                                 item_name = form.instance.item_shade.items.item_name
                                 qty = form.instance.quantity_total
                                 
-                                po_exist = purchase_order_for_puchase_voucher_rm.objects.filter(item_name__item_name = item_name)
-                                    
-                                for i in po_exist:
-                                    if i.item_name.item_name == item_name:
-                                        if i.quantity == qty:
-                                            i.quantity = i.quantity - qty
-                                            i.save()
-                                            break
-                                        
+                                po_instances = purchase_order_for_puchase_voucher_rm.objects.filter(
+                                    item_name__item_name=item_name,quantity__gt = 0
+                                ).order_by('id')  # Ensure predictable ordering
+                                
+                                # Step 1: First look for an exact quantity match
+                                exact_match_instance = po_instances.filter(quantity=qty).first()
+                                if exact_match_instance:
+                                    exact_match_instance.quantity -= qty
+                                    exact_match_instance.save()
+                                    continue  # Move to the next form if exact match is found and processed
+                                
+                                # Step 2: If no exact match, deduct from other instances
+                                remaining_qty = qty
+                                po_updated = False
+                                
+                                for po_instance in po_instances:
+                                    if po_instance.quantity >= remaining_qty:
+                                        # Deduct only the remaining quantity
+                                        po_instance.quantity -= remaining_qty
+                                        po_instance.save()
+                                        po_updated = True
+                                        break
+                                    elif po_instance.quantity > 0:
+                                        # Deduct what is possible and continue to the next instance
+                                        remaining_qty -= po_instance.quantity
+                                        po_instance.quantity = 0
+                                        po_instance.save()
+                                
+                                if not po_updated:
+                                    # If we couldn't deduct the required quantity, raise an error or create a new PO
+                                    raise ValueError(
+                                        f"Insufficient quantity available for {item_name}. Please create a new purchase order.",
+                                        print(f"Insufficient quantity available for {item_name}. Please create a new purchase order.")
+                                    )
+
 
                             
                             if not form.cleaned_data.get('DELETE'):
