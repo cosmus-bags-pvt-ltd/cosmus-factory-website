@@ -505,13 +505,16 @@ randomValue();
          $(document).on('change', '#id_party_name, #id_opening_po', function () {
             var partyName = $('#id_party_name').val();
             var openPO = $('#id_opening_po').val();
+
             if(partyName && openPO){
-            checkpartyAndPoNoajax(partyName, openPO); // Pass values correctly
+
+                checkpartyAndPoNoajax(partyName, openPO); // Pass values correctly
             }
         });
 
 
         function checkpartyAndPoNoajax(partyName,openPO){
+          
             $.ajax({
                 url: '/purchasevoucherrmwithpoajax/',
                 method: 'GET',
@@ -521,28 +524,31 @@ randomValue();
                 },
                 success: function (response) {
                     partySelectPo = response.searched_item_name_dict;
+               
                 },
-                error : function(error){
-                    console.log(error);   
+                error : function(response){
+                     console.log(response.status); 
+                    partySelectPo = {};
+                  
                 }                
             }) 
         }
         $(document).on('click input keyup focus keydown', 'input[name^="item_name_"]', function () {
-        itemName = $(this).closest('tr').find('select[name^="purchase_voucher_items_set-"]').attr('name');
-        purchaseValue = itemName.split('-')[1];
+            itemName = $(this).closest('tr').find('select[name^="purchase_voucher_items_set-"]').attr('name');
+            purchaseValue = itemName.split('-')[1];
                 
         });
 
         $(document).on('change','select[name^="purchase_voucher_items_set-"]', function () {
-        var newData = document.getElementById('purchase_voucher_items_set-'+purchaseValue+'-jsonDataInputquantity').value;
-        var itemShade = document.getElementById('input_item_shade_'+ purchaseValue);
-        var itemShadeValue = document.querySelector('#purchase_voucher_items_set-'+purchaseValue+'-old_item_shade_for_dropdown_change')
-        var selectElementValue = itemShadeValue.value;
+            var newData = document.getElementById('purchase_voucher_items_set-'+purchaseValue+'-jsonDataInputquantity').value;
+            var itemShade = document.getElementById('input_item_shade_'+ purchaseValue);
+            var itemShadeValue = document.querySelector('#purchase_voucher_items_set-'+purchaseValue+'-old_item_shade_for_dropdown_change')
+            var selectElementValue = itemShadeValue.value;
     
-        if(newData == ''){
-            itemShade.value =selectElementValue;
-            itemShade.style ="display: none";
-        }
+            if(newData == ''){
+                itemShade.value =selectElementValue;
+                itemShade.style ="display: none";
+            }
 
         });
         
@@ -572,24 +578,30 @@ randomValue();
         
             if ((purchaseData === '' && uniqueValue !== '') || (purchaseData === '' && uniqueValue === '' && jsonData === '')) {
                 if(nameValue.length >= 1){
-                    if (openpoId === 'true' && Object.keys(partySelectPo).length > 0){
-                        searchedItemNameDict = partySelectPo;
-                        populateSuggestions(suggestionsContainer, searchedItemNameDict, nameValue);
 
-                    }else{
+                    if (openpoId === 'true') {
+                        if (Object.keys(partySelectPo).length > 0) {
+
+                            searchedItemNameDict = partySelectPo;
+                            populateSuggestions(suggestionsContainer, searchedItemNameDict, nameValue);
+                        } else {
+                            suggestionsContainer.show().empty().append(`<div class="itemName-div itemName-div-suggestion">No item found</div>`);
+                            return;
+                        }
+                    } else {
                         $.ajax({
                             url: '/itemdynamicsearchajax/',
                             method: 'GET',
                             data: { 'nameValue': nameValue },
                             success: function (response) {
-                                searchedItemNameDict =  response.searched_item_name_dict
+                                searchedItemNameDict =  response.searched_item_name_dict;
                                 populateSuggestions(suggestionsContainer,searchedItemNameDict , nameValue);
                             
                             },
                             error: function (xhr) {
                                 console.log(xhr.status + ": " + xhr.responseText);
                                 if (xhr.status === 404) {
-                                    suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                                    suggestionsContainer.show().empty().append(`<div class="itemName-div itemName-div-suggestion ">No item found</div>`);
                                 }
                             }
                         });
@@ -628,6 +640,7 @@ randomValue();
 
         function populateSuggestions(container, searchedItemNameDict, searchQuery) {
             container.empty();
+           
             var regex = new RegExp('(' + searchQuery.toLowerCase().replace(/[.*+?^${}()|[\]\\,]/g, '\\$&') + ')', 'gi');
 
             Object.entries(searchedItemNameDict).forEach(([key, value], index) => {
@@ -643,7 +656,11 @@ randomValue();
                     <span style="font-weight:bold">${numberKeyHighlighted}</span>
                 </div>`);
             });
+            
+            
         }
+
+
         $(document).on('click','[name^="item_name_"]', function(event) {
           event.preventDefault();
             var  selectName = $(this).closest('tr').find('[id^="select_item_name_"]').attr('id');
