@@ -3240,6 +3240,14 @@ def salesvoucherlist(request):
 
 
 
+
+@login_required(login_url='login')
+def salesvoucherlistwarehouse(request):
+    sales_list = sales_voucher_master_finish_Goods.objects.all()
+    return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list})
+
+
+
 @login_required(login_url='login')
 def salesvoucherdelete(request,pk):
     sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
@@ -10737,7 +10745,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
     order_list = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity')).filter(total_qty__gt=0).order_by('po_no')
     
 
-    order_list_complete = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity')).filter(total_qty = 0).order_by('po_no')
+    order_list_complete = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity'),total_demo_qty = Sum('purchase_order_for_puchase_voucher_rm__demo_quantity')).filter(total_qty = 0).order_by('po_no')
 
     negetive_stock_sellerwise = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
 

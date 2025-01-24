@@ -1,14 +1,11 @@
 {% extends 'product/base.html' %} 
 {% load static %} 
-
 {% block body %}
   
   <div class="mt-2">
     
       <div class="d-flex mb-3">
-        <button class="acc-btn" onclick="addButtonRedirect()">Add Invoice +</button>
-        
-        
+        <button class="edit_btn ms-2" ><a class="text-light text-decoration-none" href="{% url 'sales-voucher-create-update-for-warehouse' %}">Add Invoice +</a></button>
         <div class="container-account"> 
          <input class="" type="search" placeholder="Search" aria-label="Search" id="" name="" />
            <a class="px-2 py-2" href="#"><i class="fa-solid fa-magnifying-glass"></i></a>
@@ -44,10 +41,8 @@
                 <td>{{sale.sales_no}}</td>
                 <td>{{sale.grand_total}}</td>
                 <td>{{sale.grand_total}}</td>
-                
-                <td><a href="{% url 'sales-voucher-create' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-                <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
-                
+                <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
+                <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td> 
               </tr>
               {% endfor %}
              

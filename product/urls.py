@@ -143,6 +143,7 @@ urlpatterns = [
     path('salesvouchercreateupdate/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
     path('salesvouchercreateupdate/<int:s_id>/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
     path('salesvoucherlist/', views.salesvoucherlist, name = 'sales-voucher-list'),
+    path('salesvoucherlistwarehouse/', views.salesvoucherlistwarehouse, name = 'sales-voucher-list-warehouse'),
     path('salesvoucherdelete/<int:pk>/', views.salesvoucherdelete, name = 'sales-voucher-delete'),
 
 
