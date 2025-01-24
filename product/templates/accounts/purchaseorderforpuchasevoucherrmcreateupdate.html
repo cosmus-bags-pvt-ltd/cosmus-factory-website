@@ -90,7 +90,9 @@
                     <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.Item_Color.color_name }}{% endif %}" class="purchase-input" readonly></td>
 
                     {% if forms.instance.quantity == 0 %}
-                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.demo_quantity | default_if_none:'' }}" class="purchase-input"></td>
+                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.demo_quantity | default_if_none:'' }}" class="purchase-input">
+                        <input type="hidden" name="quantity-{{forloop.counter}}" id="id_quantity-{{forloop.counter}}" value="{{forms.instance.quantity | default_if_none:'' }}" class="purchase-input">
+                    </td>
                     {% else %}
                     <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" class="purchase-input"></td>
                     {% endif %}
@@ -132,7 +134,8 @@
                     </td>
                     <td><input type="text" name="item_color_{{forloop.counter0}}" id="item_color_{{forloop.counter0}}" value="{{forms.initial.item_color}}" class="purchase-input"  readonly></td>
 
-                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'' }}" class="purchase-input"></td>
+                    <td><input type="number" name="{{forms.prefix}}-quantity" id="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'' }}" class="purchase-input">
+                        <input type="hidden" name="quantity-{{forloop.counter}}" id="id_quantity-{{forloop.counter}}" value="{{forms.instance.quantity | default_if_none:'' }}" class="purchase-input"></td>
 
                     <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{{ forms.initial.item_unit }}" class="purchase-mark" readonly></td>
 
@@ -800,43 +803,90 @@ function getGstNo() {
 }
    function deleteRowData(){
     // Add click event listener to all delete buttons
-    document.querySelectorAll('.delete-btn').forEach(function (button) {
-    button.addEventListener('click', function () {
-        // Find all rows in the table
-        const rows =  getVisibleRows();
-        // Check if more than one row exists
-        if (rows.length > 1) {
-            // Find the row containing the clicked delete button
-            const row = this.closest('tr');
+        document.querySelectorAll('.delete-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                // Find all rows in the table
+                const rows =  getVisibleRows();
+                // Check if more than one row exists
+                if (rows.length > 1) {
+                    // Find the row containing the clicked delete button
+                    const row = this.closest('tr');
 
-            if (row) {
-                // Find the checkbox for deletion in the row
-                const checkRow = row.querySelector('.godown_deleteId[name^="purchase_order_for_puchase_voucher_rm_set-"][name$="-DELETE"]');
+                    if (row) {
+                        // Find the checkbox for deletion in the row
+                        const checkRow = row.querySelector('.godown_deleteId[name^="purchase_order_for_puchase_voucher_rm_set-"][name$="-DELETE"]');
 
-                if (checkRow) {
-                    checkRow.checked = true; // Mark as checked
-                    checkRow.value = 'true'; // Set the value to 'true'
+                        if (checkRow) {
+                            checkRow.checked = true; // Mark as checked
+                            checkRow.value = 'true'; // Set the value to 'true'
 
-                    // Optionally hide the row visually
-                    row.style.display = 'none';
+                            // Optionally hide the row visually
+                            row.style.display = 'none';
 
-                    // Call functions to recalculate totals or perform other updates
-                    calculateTotalAmount();
-                    calculateOtherTotal();
-                     inputCheck();
+                            // Call functions to recalculate totals or perform other updates
+                            calculateTotalAmount();
+                            calculateOtherTotal();
+                            inputCheck();
+                        } else {
+                            console.error("Checkbox for deletion not found in this row");
+                        }
+                    }
                 } else {
-                    console.error("Checkbox for deletion not found in this row");
+                    // If only one row remains, alert the user
+                    alert('Cannot delete this row; at least one row must remain.');
                 }
-            }
-        } else {
-            // If only one row remains, alert the user
-            alert('Cannot delete this row; at least one row must remain.');
-        }
-    });
-});
+            });
+        });
+    };
 
- 
-  };
+    function updateTableValue(){
+        var ids = document.getElementById('id_purchase_order_for_puchase_voucher_rm_set-0-id').value;
+        var poNo = document.getElementById('id_po_no');
+        var paymentTerm = document.getElementById('id_payment_term');
+       
+        if(ids !== ''){
+            var poQty = document.querySelectorAll('[name^="quantity-"]');
+            poQty.forEach(function(item){
+                var qty = parseFloat(item.value);
+                var row = item.closest('tr');
+                var itemName = row.querySelector('[name^="item_name_"]');
+                var newQty = row.querySelector('[name$="-quantity"]')
+                var rate = row.querySelector('[name$="-rate"]')
+                var addbutton = document.getElementById('addRowButton');
+                var productRow = document.getElementById('id_productRow');
+                var voucherGst = document.getElementById('id_voucher_gst')
+                var submitButton   = document.getElementById('parentFormClick');
+               
+                if(qty === 0){
+                    addbutton.style.display = 'none';
+                    submitButton.style.display = 'none';
+                    voucherGst.readOnly = true;
+                    productRow.readOnly = true;
+                    productRow.style.display = 'none'
+                    itemName.readOnly = true;
+                    newQty.readOnly = true;
+                    rate.readOnly = true;
+                }else{
+                    addbutton.style.display = 'block';
+                    submitButton.style.display = 'block';
+                    voucherGst.readOnly = false;
+                    productRow.readOnly = false;
+                    productRow.style.display = 'block' ;
+                    itemName.readOnly = false;
+                    rate.readOnly = false;
+                    newQty.readOnly = false;
+                }
+            })
+            poNo.readOnly = true;
+            paymentTerm.readOnly = true;
+        
+        }else{
+            poNo.readOnly = false;
+            paymentTerm.readOnly = false;
+           
+        }
+    }
+    updateTableValue();
 
   document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('id_po_no').focus();
@@ -844,7 +894,8 @@ function getGstNo() {
             input.addEventListener('input', function(){
             calculateTotalAmount();
             calculateOtherTotal();
-            inputCheck()
+            inputCheck();
+            updateTableValue();
             var gstNo = parseInt(document.getElementById('purchase_order_for_puchase_voucher_rm_set-0-gst').value); 
             console.log(gstNo) 
             if(gstNo){
