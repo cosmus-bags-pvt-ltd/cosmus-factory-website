@@ -101,7 +101,7 @@
 
                     <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{% if forms.instance.id %}{{ forms.instance.item_name.unit_name_item.unit_name }}{% endif %}" class="purchase-mark" readonly></td>
 
-                    <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" value="{{forms.instance.rate | default_if_none:'' }}" ></td>
+                    <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" step="0.01" value="{{forms.instance.rate | default_if_none:'' }}" ></td>
 
                     <td>
                         <input type="hidden" id="{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
@@ -139,7 +139,7 @@
 
                     <td><input type="text" name="item_per_{{forloop.counter0}}" id="item_per_{{forloop.counter0}}" value="{{ forms.initial.item_unit }}" class="purchase-mark" readonly></td>
 
-                    <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" value="{{forms.initial.rate | default_if_none:'' }}" ></td>
+                    <td><input type="number" id="{{forms.prefix}}-rate" class="purchase-input purchase-rate" name="{{forms.prefix}}-rate" step="0.01" value="{{forms.initial.rate | default_if_none:'' }}" ></td>
 
                     <td>
                         <input type="hidden" id="{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.initial.amount | default_if_none:''}}" readonly>
