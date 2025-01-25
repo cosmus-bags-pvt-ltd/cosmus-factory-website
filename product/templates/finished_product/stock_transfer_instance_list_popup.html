@@ -490,33 +490,40 @@
 
  
   calculateQty()
-
   function balanceQty() {
     var rows = document.querySelectorAll('#inwordDateTable .mainTableList tr');
-    var previousBalance = 0; // Store the previous row's balance
+    var skuBalanceMap = {}; // Object to store SKU-wise last balance
 
-    rows.forEach(function(row, index) {
-        var qtyInput = row.querySelector('.inwardedQty');
-        var receivedInput = row.querySelector('.inwardedReceivedQty');
-        var balanceCell = row.querySelector('.balanceLots');
+    rows.forEach(function (row, index) {
+        var qtyInput = row.querySelector('.inwardedQty');  // Initial Quantity
+        var receivedInput = row.querySelector('.inwardedReceivedQty'); // Received Qty
+        var balanceCell = row.querySelector('.balanceLots'); // Balance Column
+        var skuInput = row.querySelector('.inwardedsku'); // SKU Input
 
-        // Ensure elements exist before accessing their values
-        if (qtyInput && receivedInput && balanceCell) {
+        if (qtyInput && receivedInput && balanceCell && skuInput) {
             var qty = parseInt(qtyInput.value) || 0;
             var received = parseInt(receivedInput.value) || 0;
+            var sku = skuInput.value.trim(); // Get SKU value
 
-            // Use the previous row's balance for subsequent calculations
-            if (index === 0) {
-                var balance = qty - received; // First row calculation
+            // If SKU has previous balance, continue calculation
+            if (sku in skuBalanceMap) {
+                var balance = skuBalanceMap[sku] - received;
             } else {
-                var balance = previousBalance - received; // Use previous row's balance
+                // First time encountering this SKU, start fresh
+                var balance = qty - received;
             }
 
-            balanceCell.textContent = balance;
-            previousBalance = balance; // Store current row's balance for the next row
+            balanceCell.textContent = balance; // Update balance display
+            skuBalanceMap[sku] = balance; // Store updated balance for this SKU
         }
     });
 }
+
+// Run function on page load or when values change dynamically
+balanceQty();
+
+
+
 
 
 balanceQty();
