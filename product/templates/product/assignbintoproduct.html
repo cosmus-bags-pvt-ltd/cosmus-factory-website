@@ -5,7 +5,7 @@
 
 <div class="row mt-4">
   <div class="col-lg-4">
-    <form action="{% url 'assign-bin-to-product-ajax' %} " method="POST" id="subCategoryForm"> 
+    <form action="{% url 'assign-bin-to-product-ajax' %} " method="POST" id="mainCategoryForm"> 
 
       {% csrf_token %}
       
@@ -27,7 +27,7 @@
       </div>
    
 
-      <div class="d-flex mb-2">
+      <!-- <div class="d-flex mb-2">
         <label for="id_product_sub_category_name" class="item-form">Sub Category:</label>
         <select name="sub_category" id="id_sub_category" class="item-select">
         {% if post_data %}
@@ -39,7 +39,7 @@
           {% endfor %}
         {% endif %}
         </select> 
-      </div>
+      </div> -->
 
 
       <div class="d-flex mb-2">
@@ -82,7 +82,7 @@
   </div> 
   
   <div class="col-lg-7">
-      <form action="{% if post_data.sub_category %}{% url 'save-bin-to-subcategory' post_data.sub_category.id %}{% endif %}" method = 'POST'>
+      <form action="{% if post_data.product_main_category %}{% url 'save-bin-to-subcategory' post_data.product_main_category.id %}{% endif %}" method = 'POST'>
         {% csrf_token %}
         <div class="row">
           <div class="col-lg-4">
@@ -141,7 +141,7 @@
                 dropdown.append(`<option value="">${placeholderText}</option>`);
 
                 // Determine which data to use based on response structure
-                var responseData = response.sub_category_data || response.racks_data;
+                var responseData =  response.racks_data;
                 for (var i = 0; i < responseData.length; i++) {
                     dropdown.append(`<option value="${responseData[i].id}">${responseData[i].name}</option>`);
                 }
@@ -152,15 +152,7 @@
             }
         });
     }
-      $('#id_product_main_category').on('change', function () {
-        var mainProduct = $(this).val();
-        fetchData(
-          "/assignbintoproductajax/",
-          { "mainProduct": mainProduct },
-          '#id_sub_category',
-          'Select Subcategory'
-        );
-      });
+      
 
       $('#id_zone').on('change', function () {
         var mainZone = $(this).val();
@@ -175,21 +167,14 @@
 
     function fetchProductData() {
         var rack = $('#id_rack').val();
-        var subProduct = $('#id_sub_category').val();
         var mainProduct = $('#id_product_main_category').val();
         var mainZone = $('#id_zone').val();
-
-        if (!subProduct) {
-            alert("Please select a subcategory first.");
-            return;
-        }
 
         $.ajax({
             url: "/assignbintoproductajax/",
             method: "GET",
             data: {
                 "rack": rack,
-                "subProduct": subProduct,
                 "mainProduct": mainProduct,
                 "mainZone": mainZone
             },
@@ -204,17 +189,17 @@
     }
 
     // Event handler for subcategory and rack change
-    $('#id_sub_category, #id_rack').on('change', function () {
+    $('#id_rack').on('change', function () {
         fetchProductData();
     });
 
-    $('#id_sub_category, #id_rack').on('input', function () {
+    $(' #id_rack').on('input', function () {
       fetchProductData();
     });
 
 
     $('#id_rack').on('change',function(){
-        var forms = $('#subCategoryForm');
+        var forms = $('#mainCategoryForm');
         forms.submit();
     })
   })

@@ -27,7 +27,7 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(labour_work_in_master)
 admin.site.register(labour_work_in_product_to_item)
 admin.site.register(labour_workin_approval_report)
-admin.site.register(purchase_order_for_puchase_voucher_rm)
+
 # admin.site.register(purchase_order_raw_material_cutting)
 
 

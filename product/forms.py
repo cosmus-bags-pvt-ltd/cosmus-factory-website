@@ -1127,48 +1127,48 @@ class finished_product_warehouse_bin_form(forms.ModelForm):
         fields = ['bin_name']
 
 
-class subcat_and_bin_form(forms.ModelForm):
-    check_if_added = forms.BooleanField(required=False,initial=False)
-    check_if_added_all = forms.BooleanField(required=False, initial=False)
+# class subcat_and_bin_form(forms.ModelForm):
+#     check_if_added = forms.BooleanField(required=False,initial=False)
+#     check_if_added_all = forms.BooleanField(required=False, initial=False)
 
-    class Meta:
-        model = finished_product_warehouse_bin
-        fields = ['bin_name','product_size_in_bin','check_if_added','check_if_added_all']
+#     class Meta:
+#         model = finished_product_warehouse_bin
+#         fields = ['bin_name','product_size_in_bin','check_if_added','check_if_added_all']
 
-    def __init__(self, *args, **kwargs):
-        self.sub_cat_instance = kwargs.pop('sub_cat_instance', None)  
-        super().__init__(*args, **kwargs)
+#     def __init__(self, *args, **kwargs):
+#         self.sub_cat_instance = kwargs.pop('sub_cat_instance', None)  
+#         super().__init__(*args, **kwargs)
 
 
 
-class FinishedProductWarehouseBinFormSet(BaseModelFormSet): 
+# class FinishedProductWarehouseBinFormSet(BaseModelFormSet): 
 
-    def __init__(self, *args, **kwargs):
-        self.sub_cat_instance = kwargs.pop('form_kwargs', None)  
-        self.sub_cat_instance = self.sub_cat_instance['sub_cat_instance']
+#     def __init__(self, *args, **kwargs):
+#         self.sub_cat_instance = kwargs.pop('form_kwargs', None)  
+#         self.sub_cat_instance = self.sub_cat_instance['sub_cat_instance']
         
-        super().__init__(*args, **kwargs)
+#         super().__init__(*args, **kwargs)
         
-        for form in self.forms:
-            if form.instance:
-                try:
-                    sub_cat_instance = finished_product_warehouse_bin.objects.get(pk=form.instance.pk)
+#         for form in self.forms:
+#             if form.instance:
+#                 try:
+#                     sub_cat_instance = finished_product_warehouse_bin.objects.get(pk=form.instance.pk)
     
-                    if sub_cat_instance.sub_catergory_id == self.sub_cat_instance and self.sub_cat_instance is not None: 
-                        form.fields['check_if_added'].initial = True  
-                        form.fields['check_if_added_all'].initial = True   
-                    else:                                                  
-                        form.fields['check_if_added'].initial = False   
-                        form.fields['check_if_added_all'].initial = False  
+#                     if sub_cat_instance.sub_catergory_id == self.sub_cat_instance and self.sub_cat_instance is not None: 
+#                         form.fields['check_if_added'].initial = True  
+#                         form.fields['check_if_added_all'].initial = True   
+#                     else:                                                  
+#                         form.fields['check_if_added'].initial = False   
+#                         form.fields['check_if_added_all'].initial = False  
 
-                        if sub_cat_instance.sub_catergory_id is None or sub_cat_instance.sub_catergory_id == '':
-                            form.fields['check_if_added_all'].initial = True
+#                         if sub_cat_instance.sub_catergory_id is None or sub_cat_instance.sub_catergory_id == '':
+#                             form.fields['check_if_added_all'].initial = True
                 
-                except finished_product_warehouse_bin.DoesNotExist:
-                    continue
+#                 except finished_product_warehouse_bin.DoesNotExist:
+#                     continue
 
 
-sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+# sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
 
 
 
@@ -2410,6 +2410,7 @@ class subcat_and_bin_form(forms.ModelForm):
     check_if_added = forms.BooleanField(required=False,initial=False)
     check_if_added_all = forms.BooleanField(required=False, initial=False)
 
+    
     class Meta:
         model = finished_product_warehouse_bin
         fields = ['bin_name','product_size_in_bin','check_if_added','check_if_added_all']
@@ -2447,7 +2448,9 @@ class FinishedProductWarehouseBinFormSet(BaseModelFormSet):
                     continue
 
 
-sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
+sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,form=subcat_and_bin_form,formset= FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
+
 
 
 
@@ -2549,3 +2552,8 @@ class Picklistproductslistform(forms.ModelForm):
 
 
 picklistcreateformset = inlineformset_factory(Picklist_voucher_master , Picklist_products_list ,form = Picklistproductslistform ,extra=1, can_delete=True)
+
+
+
+
+
