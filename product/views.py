@@ -9955,6 +9955,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
             completed_formset = stock_transfer_instance_formset_only_for_update(queryset = completed_qs, instance=stock_transfer_instance)
 
             entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no = purchase_number)
+
             # print(entries)
 
 
@@ -10205,7 +10206,7 @@ def warehouse_stock(request):
     transfer_sales_quantity_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
 
 
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.all().values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
 
     
     merged_list = []
@@ -10428,9 +10429,10 @@ def model_name_wise_purchase_transfer_report(request,sku):
 
 
 def process_serial_no(request):
+    print("in scan def")
     if request.method == 'POST':
         serial_no = request.POST.get('serialNo')
-        
+        print(serial_no)
         if serial_no:  
             try:
                 if finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).exists():
@@ -10445,7 +10447,7 @@ def process_serial_no(request):
                 
                 response_post = requests.get(url)
                 response_data =  response_post.json()
-
+                print(response_data)
                 if response_data.get('response_code') == 200 and response_data.get('response_desc') == 'success':
                     product_scanned_sku = response_data['sku']
 
@@ -10456,20 +10458,25 @@ def process_serial_no(request):
                     product_color = product_instance.PProduct_color.color_name if  product_instance.PProduct_color else None
                     product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
                     
-                    product_sub_cats = product_instance.Product.product_cats.all()
-                    sub_cats_all = [x.SubCategory_id for x in product_sub_cats]
+                    product_main_cats = product_instance.Product.product_cats.all()
+                    main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
+
+                    # print(main_cats_all)
+                    # product_sub_cats = product_instance.Product.product_cats.all()
+                    # sub_cats_all = [x.SubCategory_id for x in product_sub_cats]
 
                     
 
                     bins_related_to_product = []
-                    for records in sub_cats_all:
+                    for records in main_cats_all:
                         product_suggested_bins = finished_product_warehouse_bin.objects.filter(sub_catergory_id = records)
                         bins_related_to_product.append(product_suggested_bins)
                     
 
 
                     flatterned_bins_related_to_product_list = list(chain.from_iterable(bins_related_to_product))
-                    print('flatterned_bins_related_to_product_list -- ', flatterned_bins_related_to_product_list)
+                    # print('flatterned_bins_related_to_product_list -- ', flatterned_bins_related_to_product_list)
+
                     bin_to_dict = []
                     
                     for qs in flatterned_bins_related_to_product_list:
@@ -10480,15 +10487,19 @@ def process_serial_no(request):
                             'bin_name' : qs.bin_name,
                             'bin_size' :qs.product_size_in_bin,
                             'products_in_bin':products_in_bin}
-                        bin_to_dict.append(dict_to_append)
+                        
+                        if any(d['bin_name'] == qs.bin_name for d in bin_to_dict):
+                            continue
+                        else:
+                            bin_to_dict.append(dict_to_append)
 
                     print('bin_to_dict ---- ' , bin_to_dict)
 
                     
-                    return JsonResponse({'model_name':model_name,'product_name':product_name, 'product_sku': product_sku,
+                    
+                    return JsonResponse({ 'model_name':model_name,'product_name':product_name, 'product_sku': product_sku,
                                     'bin_to_dict':bin_to_dict,
-                                    'product_color' : product_color,'product_image':product_image, 
-                                    'message': f'Serial No {serial_no} processed successfully.'})
+                                    'product_color' : product_color,'product_image':product_image,'message': f'Serial No {serial_no} processed successfully.'})
 
                 else:
                     return JsonResponse({'message': 'Invalid response from external API.'}, status=400)

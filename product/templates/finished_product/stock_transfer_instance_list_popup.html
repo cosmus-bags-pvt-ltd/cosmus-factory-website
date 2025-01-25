@@ -1,5 +1,6 @@
 {% extends 'product/base.html' %}
 {% load static %}
+
 {% block body %}
 <div class="mt-2">
     <form method="POST">
@@ -109,6 +110,7 @@
                                     <td><input type="text" class="productorderrawqty-input " value="{{ entries.product.PProduct_color.color_name }}" readonly></td>
                                     <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_image.url }}" alt="Product" style="width: 60px; height: 60px;"></td>
                                     <td><input type="text" class="productorder_input" value="{{ entries.unique_serial_no }}" readonly></td>
+                                    
                                     {% if entries.related_purchase_item.quantity_total %}
                                     <input type="hidden" value="purchase" class="recordtype">
                                     <td class="text-nowrap"><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_purchase_item.quantity_total|default_if_none:0 }}" readonly>Lots</td>
@@ -378,13 +380,15 @@
                 });
 
                 // Extract product SKU from response
-                const productSku = parseInt(response.product_sku);
+                const productSku = response.product_sku;
                 const mainsku = document.querySelectorAll('[name$="-product_sku"]');
-                
+                console.log(productSku, typeof(productSku))
+               
                 // Check if any main SKU matches the product SKU
                 let isMatch = false;
                 mainsku.forEach(function (item) {
                     const sku = parseInt(item.value);
+                    console.log(sku, typeof(sku))
                     if (sku === productSku) {
                         isMatch = true;
                     }
