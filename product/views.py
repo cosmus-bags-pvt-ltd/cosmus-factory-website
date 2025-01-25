@@ -81,7 +81,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset,picklistcreateformset,)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate)
     
 
 
@@ -13929,8 +13929,25 @@ def create_update_picklist(request,p_id=None):
 
     if p_id:
         voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
+
+        picklist_product = voucher_instance.picklist_products_list.all()
+        print(picklist_product)
+        final_data = {}
+        for i in picklist_product:
+            
+            final_data[i.product.PProduct_SKU] = [
+                    i.product.Product.Model_Name,
+                    i.product.PProduct_color.color_name,
+                    i.bin_number.bin_name,
+                    i.product.Product.Product_Refrence_ID,
+                    i.product.PProduct_image
+                ]
+            
+        print(final_data)
         master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
-        formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
+        formset = picklistcreateformsetupdate(request.POST or None,instance=voucher_instance)
+
+
     else:
         voucher_instance = None
         master_form  = Picklistvouchermasterform()
@@ -13974,6 +13991,12 @@ def create_update_picklist(request,p_id=None):
 
 
     return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
+
+
+def deletepicklist(request,pl_id):
+    picklist = Picklist_voucher_master.objects.get(pk=pl_id)
+    picklist.delete()
+    return redirect('all-picklists-list')
 
 
 
@@ -14111,7 +14134,6 @@ def picklist_product_ajax(request):
     except Exception as e:
         logger.error(f"Error in picklist_product_ajax: {str(e)}")
         return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
-
 
 
 

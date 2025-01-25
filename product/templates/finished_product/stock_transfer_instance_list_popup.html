@@ -117,7 +117,7 @@
                                     {% else %}
                                     <input type="hidden" value="transfer" class="recordtype">
                                     <td class="text-nowrap"><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_transfer_record.product_quantity_transfer|default_if_none:0 }}" readonly>Lots</td>
-    
+                                    
                                     {% endif %}
                                     <td><input type="number" class="productorderrawqty-input inwardedReceivedQty text-center" value="1" readonly></td> 
                                     <td class="text-center balanceLots"></td>

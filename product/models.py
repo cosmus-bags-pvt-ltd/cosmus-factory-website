@@ -56,9 +56,6 @@ class SubCategory(models.Model):
     product_sub_category_name = models.CharField(max_length = 250)
     product_main_category = models.ForeignKey(MainCategory, on_delete = models.PROTECT, related_name = 'subcategories')
 
-    
-    
-
     def __str__(self):
         return self.product_sub_category_name 
 
@@ -1239,3 +1236,5 @@ class Picklist_products_list(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
+    # created_date = models.DateTimeField(auto_now_add=True)
+    # updated_date = models.DateTimeField(auto_now=True)
