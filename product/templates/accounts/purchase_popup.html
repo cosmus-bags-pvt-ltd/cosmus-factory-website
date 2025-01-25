@@ -254,7 +254,7 @@
 </script>
 
 <script>
-        // create a new row and the calculation the single row and save
+    // create a new row and the calculation the single row and save
     $(document).ready (function(){    //addbutton click then check the rate value is not empty then add a new row // otherwise don't add a new row
         $('#addModalButton').on('click', function() {  //first find the last row rate value is not empty then add a new row there any one rate value is empty then don't add a new row
         
@@ -323,6 +323,7 @@
        
             calculateGodownAmount();
             deleteRowCalculate();
+            inputCheck()
         });
     
         // This funcion calculate the amount for each row then set the total amount and total quantity
@@ -385,16 +386,15 @@
             let totalRate = 0; 
             
             $('#newTable tbody tr:visible').each(function() {
-                const amount = parseFloat( $(this).find('.godown-amount').val()); // Calculate amount for this row
-                const qty = parseFloat($(this).find('.godown-quantity').val()); // Calculate quantity
-                const rate = parseFloat($(this).find('.godown-rate').val()); // Calculate rate
+                const amount = parseFloat( $(this).find('.godown-amount').val());
+                const qty = parseFloat($(this).find('.godown-quantity').val());
+                const rate = parseFloat($(this).find('.godown-rate').val()); 
 
-                // Accumulate totals
-                totalAmount += amount; // Add amount to total
-                totalQty += qty; // Add quantity to total
-                totalRate = rate; // Set rate (if applicable, otherwise accumulate)
+                totalAmount += amount; 
+                totalQty += qty; 
+                totalRate = rate; 
             });
-                    // Update the totals in the UI
+            
             $('#grand_godown_amount').val(totalAmount.toFixed(2));
             $('#grand_godown_quantity').val(totalQty.toFixed(2));
             $('#grand_godown_rate').val(totalRate.toFixed(2));             
@@ -422,7 +422,7 @@
                 row.find('.unique_ids').val('');
                 checkbox.prop('checked', true); 
                 checkbox.val('true');
-               let totalFormValue = totalForm - 1;
+                let totalFormValue = totalForm - 1;
                 
                 if(checkbox.val() == 'true'){
                     row.hide();
@@ -432,13 +432,93 @@
             } else {
                 alert('The table must have at least one godown item'); 
             }
-            });
+        });
 
-            $('#childform').on('submit', function(event) {
-                $('#popupData').attr('disabled', 'disabled').val('Saving...');
-                // event.preventDefault(); // Uncomment if you want to prevent form submission for validation
+        $('#childform').on('submit', function(event) {
+            $('#popupData').attr('disabled', 'disabled').val('Saving...');
+            // event.preventDefault(); // Uncomment if you want to prevent form submission for validation
+        })
+    })
+
+    function inputCheck(){
+        var godownId = document.querySelectorAll('[name$="-godown_id"]');
+        var tableRow = document.querySelectorAll('#newTable .mainTableList tr');
+        var addButton = document.getElementById('addModalButton')
+        godownId.forEach((input, index) =>{
+            input.addEventListener("keydown", function (event) {
+                const closestRow = input.closest('tr');
+                const allgodownId = closestRow.querySelector('[name$="-godown_id"]').value;
+                const godownQty = closestRow.querySelector('[name$="-quantity"]').value;
+                if(allgodownId === ''){
+                    if (event.key === "Tab") {
+                        event.preventDefault(); // Prevent default tab behavior
+                        console.log('input.value',input.value)
+                        if (input.value.trim() !== "") {
+                            if (godownQty) {
+                                godownQty.focus();
+                                return;
+                            }
+                        } else {
+                            input.focus(); // Refocus on the current input if empty
+                        }
+                    }
+                    // if (event.key === 'Enter') {
+                    //     event.preventDefault(); // Prevent default Enter key behavior
+
+                    //     // Find the current <td> containing this input
+                    //     const currentTd = input.closest('td');
+                           
+                    //     // Find the next <td> sibling
+                    //     if (currentTd) {
+                    //         const nextTd = currentTd.nextElementSibling;
+
+                    //         // Check if next <td> exists and contains an input
+                    //         if (nextTd) {
+                    //             const nextInput = nextTd.querySelector('[name$="-quantity"]').value;
+                    //             if (nextInput) {
+                    //                 nextInput.focus(); // Move focus to the next input
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                }
             })
         })
+        tableRow.forEach(function(row){
+            var qty = row.querySelector('[name$="-quantity"]');
+           
+            var rate = row.querySelector('[name$="-rate"]')
+            if(qty){
+                qty.addEventListener('keydown', function (event) {
+                    if (event.key === "Tab") {
+                        event.preventDefault();
+                        var newQty = parseInt(qty.value) || 0;
+                        if(newQty <= 0 ){
+                            qty.focus();
+                        }else{
+                            rate.focus();
+                        }
+                    }
+                })
+            }
+            if(rate){
+                rate.addEventListener('keydown', function (event) {
+                    if (event.key === "Tab") {
+                        event.preventDefault();
+                        if(rate.value === ''){
+                            rate.focus();
+                        }else{
+
+                            addButton.focus();
+                        }
+                    }
+                })
+            }
+        })
+
+      
+    }
+    inputCheck();
 </script>
 
 {% endblock body %}
