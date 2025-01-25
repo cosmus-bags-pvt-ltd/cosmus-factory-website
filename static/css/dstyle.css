@@ -1933,7 +1933,7 @@ table>:not(caption)>*>*{
     height: 33px;
 }
 .productpurchaseInvoice{
-    width: 316px;
+    width: 300px;
     border: 1px solid #cecdcd;
     border-radius: 3px;
     padding-left: 5px;
