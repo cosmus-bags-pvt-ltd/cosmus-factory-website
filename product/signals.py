@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from django.forms import ValidationError
 from django.core.exceptions import ValidationError , ObjectDoesNotExist
 from .models import (Finished_goods_transfer_records, Ledger, PProduct_Creation, Product, Product_warehouse_quantity_through_table, RawStockTrasferRecords,
-                      account_credit_debit_master_table, finishedgoodsbinallocation, godown_item_report_for_cutting_room,  item_purchase_voucher_master, 
+                      account_credit_debit_master_table, finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,  item_purchase_voucher_master, 
                       item_godown_quantity_through_table,Item_Creation,item_color_shade, labour_workout_master, 
                       opening_shade_godown_quantity, product_2_item_through_table, product_godown_quantity_through_table, product_purchase_voucher_items, purchase_order, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_raw_material_cutting,
                         purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, sales_voucher_finish_Goods, set_prod_item_part_name,
@@ -521,7 +521,12 @@ def single_entries_delete(sender, instance, **kwargs):
     try:
         purchase_item = instance.related_purchase_item
         transfer_record = instance.related_transfer_record
-        
+        bin_no = instance.bin_number.id
+
+        bin_instance = finished_product_warehouse_bin.objects.get(pk=bin_no)
+        bin_instance.products_in_bin -= 1
+        bin_instance.save()
+
         print("In signal handler")
 
         # Update purchase item quantities

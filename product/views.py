@@ -10009,6 +10009,9 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         product_instance = get_object_or_404(PProduct_Creation, pk=scanned_sku)
 
                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
+
+                                        bin_instance.products_in_bin += 1
+                                        bin_instance.save()
                                         
                                         finishedgoodsbinallocation.objects.create(related_purchase_item = product_pur_items_instance, 
                                                 unique_serial_no = prathamesh,product = product_instance, 
@@ -10062,6 +10065,9 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         product_instance = get_object_or_404(PProduct_Creation,pk=scanned_sku)
 
                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
+
+                                        bin_instance.products_in_bin += 1
+                                        bin_instance.save()
 
                                         finishedgoodsbinallocation.objects.create(related_transfer_record = product_transfer_items_instance, 
                                                     unique_serial_no = prathamesh, product = product_instance, 
@@ -10141,7 +10147,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 def delete_sigle_entries(request, e_id, voucher_type):
     try:
         delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
-    
+        
         if voucher_type == "purchase":
             related_purchase_item = delete_instance.related_purchase_item
             if related_purchase_item:  # Check if related_purchase_item exists
@@ -14086,7 +14092,7 @@ def picklist_product_ajax(request):
             # Fetch product bins and group them
             product_bins = finishedgoodsbinallocation.objects.filter(
                 product__PProduct_SKU=product_sku
-            ).values(
+            ).filter(~Q(bin_number__products_in_bin=0)).values(
                 'bin_number', 'bin_number__bin_name'
             ).annotate(product_count=Count('bin_number')).order_by('created_date')
 
@@ -14137,19 +14143,6 @@ def picklist_product_ajax(request):
 
 
 
+def picklist_view(request,pl_id):
+    return render(request,'finished_product/picklist_view.html')
 
-
-# def picklist_bin_ajax(request):
-#     click_sku = 40051011046
-
-#     try:
-#         product = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = click_sku).distinct('bin_number').values(
-#             'product__Product__Product_Refrence_ID',
-#             'product__Product__Model_Name',
-#             'product__PProduct_color__color_name',
-#             'bin_number__bin_name')
-#         print(product)
-#         return JsonResponse({'message': "ok"}, status=200)
-#     except Exception as e:
-#         logger.error(f"Error in picklist_product_ajax: {str(e)}")
-#         return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)

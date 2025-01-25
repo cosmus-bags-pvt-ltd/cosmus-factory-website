@@ -158,6 +158,7 @@ urlpatterns = [
     path('createupdatepicklist/<int:p_id>/',views.create_update_picklist , name = 'create-update-picklist'),
     path('allpicklistslist/',views.all_picklists_list , name = 'all-picklists-list'),
     path('deletepicklists/<int:pl_id>',views.deletepicklist , name = 'delete-picklists'),
+    path('picklistview/<int:pl_id>',views.picklist_view , name = 'picklist-view'),
     path('picklistproductajax/',views.picklist_product_ajax , name = 'picklist-product-ajax'),
     # path('picklistbinajax/',views.picklist_bin_ajax , name = 'picklist-bin-ajax'),
 

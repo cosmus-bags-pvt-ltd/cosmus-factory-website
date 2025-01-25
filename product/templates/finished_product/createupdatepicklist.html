@@ -255,7 +255,7 @@
                 console.log('selectBin:', selectBin); // Debug the structure
 
                 if (selectBin) {
-                    var productSelectBin = document.getElementById('id_picklist_products_list-' + purchaseValue + '-bin_number');
+                    var productSelectBin = $(`id_picklist_products_list-${ purchaseValue}-bin_number`);
                     var productmainQty = parseInt(document.getElementById('id_product_quantity-' + purchaseValue ).value)
                
                     if (productSelectBin) {
@@ -270,7 +270,7 @@
                                     const [binName, quantity] = binArray;
                                     let optionHtml
                                     let balanceQty = quantity - productReserve - productmainQty;
-                                    console.log('balanceQty',typeof(balanceQty))
+                                    console.log('balanceQty',balanceQty)
                                     if(balanceQty > 0){
                                         optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
                                       
@@ -278,7 +278,7 @@
                                         optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
                                     }
                                     // Append option to select element
-                                    productSelectBin.insertAdjacentHTML('beforeend', optionHtml);
+                                    productSelectBin.append(optionHtml);
                                 } else {
                                     console.error(`Invalid binArray format at key ${binKey}:`, binArray);
                                 }

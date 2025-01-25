@@ -1036,7 +1036,7 @@ class finished_product_warehouse_bin(models.Model):
     rack_finished_name = models.ForeignKey(finished_goods_warehouse_racks, on_delete=models.PROTECT, related_name='racks')
     sub_catergory_id = models.ForeignKey(MainCategory, on_delete=models.PROTECT, related_name='sub_categories', null=True, blank=True)
     product_size_in_bin = models.IntegerField(default=0)
-    
+    products_in_bin = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         
@@ -1210,6 +1210,8 @@ class purchase_order_master_for_puchase_voucher_rm(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
+
+
 class purchase_order_for_puchase_voucher_rm(models.Model):
     master_instance = models.ForeignKey(purchase_order_master_for_puchase_voucher_rm, on_delete=models.CASCADE)
     item_name = models.ForeignKey(Item_Creation,on_delete=models.PROTECT)
@@ -1236,5 +1238,8 @@ class Picklist_products_list(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
-    # created_date = models.DateTimeField(auto_now_add=True)
-    # updated_date = models.DateTimeField(auto_now=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+
+
