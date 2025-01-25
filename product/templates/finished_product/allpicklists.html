@@ -46,7 +46,7 @@
                 <td>{{ data.product.PProduct_SKU }}</td>
                 <td>{{ picklist.total_quantity }}</td>
                 <td></td>
-                <td></td>
+                <td><a href="{% url 'delete-picklists' picklist.id %}">DELETE</a></td>
                 <td><a href="{% url 'create-update-picklist' picklist.id %}">Edit</a></td>
                 <td></td>
                 

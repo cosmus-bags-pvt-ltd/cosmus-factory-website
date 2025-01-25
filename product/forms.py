@@ -2553,6 +2553,8 @@ class Picklistproductslistform(forms.ModelForm):
 
 picklistcreateformset = inlineformset_factory(Picklist_voucher_master , Picklist_products_list ,form = Picklistproductslistform ,extra=1, can_delete=True)
 
+picklistcreateformsetupdate = inlineformset_factory(Picklist_voucher_master , Picklist_products_list ,form = Picklistproductslistform ,extra=0, can_delete=True)
+
 
 
 

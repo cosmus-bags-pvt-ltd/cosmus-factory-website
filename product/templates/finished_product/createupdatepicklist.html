@@ -44,21 +44,30 @@
                         <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>
                         <td> 
                             <div class="custom-dropdown-container">
-                              <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product"  value="{% if form.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
-                              <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" > 
+                              <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product"  value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" >
+
+                              <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product.Product.Model_Name}} {% endif %}" > 
+
                               <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
                                 
                              
                                </div>
                           </div>
                         </td>
-                        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input produc" readonly></td>
+                        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color}}" class="purchase-input produc" readonly></td>
 
-                        <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
+                        <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly></td>
+                        
+                        {% if form.instance.id %}
+                        <td><img src="{{form.instance.product.PProduct_image.url}}" id="id_productInward_img_{{forloop.counter0}}" alt="product" width="50px" height="50px"></td>
+                        {% else %}
                         <td><img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" width="50px" height="50px"></td>
+                        {% endif %}
+                        
+
                         <td><select name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number"  class="item-select" aria-label="Select Bin">
                                 {% if form.instance.id %}
-                                    <option value="{{form.instance.bin_number.id}}"></option>
+                                    <option value="{{form.instance.bin_number.id}}">{{form.instance.bin_number.bin_name}}</option>
                                 {% elif not form.instance.id %}
                                
                                 {% endif %}
@@ -78,6 +87,7 @@
                     </tr>
                    
                     {% endfor %}
+                    
                 </tbody>
             </table>
         </div>
