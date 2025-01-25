@@ -16,10 +16,10 @@
             <label for="pickListDate" class="me-3">Date :</label>
             <input type="date" class="item-select" name="" id="pickListDate" >
         </div>
-        <div class="d-flex mb-2">
+        <!-- <div class="d-flex mb-2">
             <label for="idNameCreated" class="me-3">Create By:</label>
             <input type="text" class="item-select" name="" id="idNameCreated" value="" maxlength="255" >
-        </div>
+        </div> -->
         <div>
             <table class="table table-striped table-hover table-bordered" id="createpickListTable">
                 <thead>
@@ -131,7 +131,6 @@
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
                         searchedProductNameDic = response.products;
-                        console.log(searchedProductNameDic) 
                         const searchQuery = productnamevalue.toLowerCase();
                         const searchTerms = searchQuery.split(/\s+/);
                         const convertStringData = searchTerms.toString();
@@ -196,8 +195,7 @@
             suggestionsContainer.on('click', '.itemName-div', function(e) {
                 var item_value = $(this).data('key');
                 var itemNamevaluesCheck = $(this).text().trim();
-                // $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
-                // $(this).closest('.custom-dropdown-container').find('[name$="-product_name"]').val(item_value)
+       
                 $(this).addClass('selected').siblings().removeClass('selected');
 
              
@@ -209,25 +207,21 @@
                 const productReserve = selectedValue[4];
                 const url = selectedValue[6]
 
-                var newnameValue = namevalueCheck + '                                       ' + productQty
+                var newnameValue = namevalueCheck + '                                      ' + productQty
                 $(`input[name$="picklist_products_list-${purchaseValue}-product"]`).val(item_value);
                 $(`input[name$="picklist_products_list-${purchaseValue}-product_name_value"]`).val(newnameValue)
               
                    
-                var productcolorinput = document.querySelector('#product_color_' + purchaseValue);
-                var skuIput = document.querySelector('#product_Sku_' + purchaseValue);
-                var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
-                var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
-                var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue)
-                productcolorinput.value = productColor;
-                skuIput.value = item_value;
-                productRefNo.value = productRefId;
-                imgUrl.src = url;
-                reserveValue.value = productReserve;
+                $(`#product_color_${purchaseValue}`).val(productColor);
+                $(`#product_Sku_${purchaseValue}`).val(item_value);
+                $(`#id_picklist_products_list${purchaseValue}-product_refNo`).val(productRefId);
+                $(`#id_reserver_Qty_${purchaseValue}`).val(productReserve);
+                $('#id_productInward_img_' + purchaseValue).attr('src', url);
+
 
 
                 let totalExistingQuantity = 0;
-                // $('input[name^="picklist_products_list-"][name$="-product_quantity"]').on('input',function(){
+                
                     $('input[name^="picklist_products_list-"][name$="-product"]').each(function () {
                     var rowProductValue = parseInt($(this).val());
                     var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
@@ -235,40 +229,36 @@
                     if (rowProductValue === item_value) {
                         var rowQuantity = parseInt($(`input[name="picklist_products_list-${rowIndex}-product_quantity"]`).val()) || 0;
                         totalExistingQuantity += rowQuantity;
-                        console.log('totalExistingQuantity',totalExistingQuantity)
+        
                         $(`input[name="product_quantity-${rowIndex}"]`).val(totalExistingQuantity)
                     }
-                // });
+          
                 })
                
                 const selectBin = selectedValue[3]; // Array of objects
-                console.log('selectBin:', selectBin); // Debug the structure
-
+         
                 if (selectBin) {
-                    var productSelectBin = document.getElementById('id_picklist_products_list-' + purchaseValue + '-bin_number');
-                    var productmainQty = parseInt(document.getElementById('id_product_quantity-' + purchaseValue ).value)
-               
+                    var productSelectBin = $(`#id_picklist_products_list-${purchaseValue}-bin_number`);
+                    var productmainQty = parseInt($(`#id_product_quantity-${purchaseValue}`).val())
+             
                     if (productSelectBin) {
-                    
-
+    
                         selectBin.forEach(binObject => {
                             Object.entries(binObject).forEach(([binKey, binArray]) => {
-                                
-
+                            
                                 // Ensure binArray is actually an array
                                 if (Array.isArray(binArray) && binArray.length === 2) {
                                     const [binName, quantity] = binArray;
                                     let optionHtml
                                     let balanceQty = quantity - productReserve - productmainQty;
-                                    console.log('balanceQty',typeof(balanceQty))
+                
                                     if(balanceQty > 0){
                                         optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
                                       
                                     }else{
                                         optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
                                     }
-                                    // Append option to select element
-                                    productSelectBin.insertAdjacentHTML('beforeend', optionHtml);
+                                    productSelectBin.append(optionHtml);
                                 } else {
                                     console.error(`Invalid binArray format at key ${binKey}:`, binArray);
                                 }
@@ -281,11 +271,6 @@
                     console.error('selectBin is undefined or not iterable.');
                 }
 
-
-
-                    
-            
-               
                 suggestionsContainer.css('display', 'none');
                 
             });
@@ -385,7 +370,7 @@
             const itemEnterValue = $(this);
             const item_value = Number(itemEnterValue.attr('data-key'));
             const purchasedata = itemEnterValue.closest('tr').find('[name^="product_color_"]').attr('name').match(/\d+/)[0];
-            console.log('purchasedata',purchasedata)
+
             nameDataKey = '';
             nameKey = '';
             index = 0;
@@ -406,38 +391,38 @@
               
                   
                 
-                var productcolorinput = document.querySelector('#product_color_' + purchasedata);
-                var skuIput = document.querySelector('#product_Sku_' + purchasedata);
-                var productRefNo = document.getElementById('id_picklist_products_list-' + purchasedata + '-product_refNo');                   
-                var imgUrl = document.getElementById('id_productInward_img_'+purchasedata );
-                var reserveValue = document.getElementById('id_reserver_Qty_'+ purchasedata)
-                productcolorinput.value = productColor;
-                skuIput.value = item_value;
-                productRefNo.value = productRefId;
-                imgUrl.src = url;
-                reserveValue.value = productReserve;
+                $(`#product_color_${purchasedata}`).val(productColor);
+                $(`#product_Sku_${purchasedata}`).val(item_value);
+                $(`#id_picklist_products_list${purchasedata}-product_refNo`).val(productRefId);
+                $(`#id_reserver_Qty_${purchasedata}`).val(productReserve);
+                $('#id_productInward_img_' + purchasedata).attr('src', url);
 
                 const selectBin = selectedValue[3]; // Array of objects
-                console.log('selectBin:', selectBin); // Debug the structure
-
+         
                 if (selectBin) {
-                    var productSelectBin = document.getElementById('id_picklist_products_list-' + purchaseValue + '-bin_number');
+                    var productSelectBin = $(`#id_picklist_products_list-${purchasedata}-bin_number`);
+                    var productmainQty = parseInt($(`#id_product_quantity-${purchasedata}`).val())
+        
                     if (productSelectBin) {
-                        // Clear existing options and add default "Select Bin" option
-                        // productSelectBin.innerHTML = '<option value="">Select Bin</option>';
+                    
 
                         selectBin.forEach(binObject => {
                             Object.entries(binObject).forEach(([binKey, binArray]) => {
-                                console.log('Bin Key:', binKey, 'Value:', binArray);
-
+                
                                 // Ensure binArray is actually an array
                                 if (Array.isArray(binArray) && binArray.length === 2) {
                                     const [binName, quantity] = binArray;
-                                    console.log('Bin Name:', binName, 'Quantity:', quantity);
-
+                                    let optionHtml
+                                    let balanceQty = quantity - productReserve - productmainQty;
+                
+                                    if(balanceQty > 0){
+                                        optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
+                                      
+                                    }else{
+                                        optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
+                                    }
                                     // Append option to select element
-                                    const optionHtml = `<option value="${binKey}">${binName} - ${quantity}</option>`;
-                                    productSelectBin.insertAdjacentHTML('beforeend', optionHtml);
+                                    productSelectBin.append(optionHtml);
                                 } else {
                                     console.error(`Invalid binArray format at key ${binKey}:`, binArray);
                                 }
@@ -618,6 +603,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }); 
 };
+
+function updateForm(){
+    
+}
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('id_picklist_no').focus();
 })
@@ -625,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function inputCheck(){
 
 const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
-const nameCreated = document.getElementById('idNameCreated')
+const date = document.getElementById('pickListDate')
 var tableRows = document.querySelectorAll('#createpickListTable tr');
 itemNameInputsid.forEach((input, index) => {
   input.addEventListener("keydown", function (event) {
@@ -633,7 +622,6 @@ itemNameInputsid.forEach((input, index) => {
       const closestRow = input.closest('tr');
       const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
       const binInput = closestRow.querySelector('[name$="-bin_number"]');
-      console.log(binInput)
           if(allInputsInRow === ''){
               if (event.key === "Tab") {
                   event.preventDefault(); 
@@ -669,12 +657,12 @@ itemNameInputsid.forEach((input, index) => {
 });
 
 
-nameCreated.addEventListener('keydown', function(event) {
+date.addEventListener('keydown', function(event) {
     if (event.key === "Tab") {
         event.preventDefault();
 
-        if (nameCreated.value === '') {
-            nameCreated.focus();
+        if (date.value === '') {
+            date.focus();
             return; 
         }else{
           var tableRow = document.querySelectorAll('#createpickListTable tr');
