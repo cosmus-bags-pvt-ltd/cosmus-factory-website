@@ -121,7 +121,7 @@
                                     {% endif %}
                                     <td><input type="number" class="productorderrawqty-input inwardedReceivedQty text-center" value="1" readonly></td> 
                                     <td class="text-center balanceLots"></td>
-                                    <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}" readonly></td>  
+                                    <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}-{{entries.bin_number.product_size_in_bin}}" readonly></td>  
                                     <td><span class="border-0 bg-transparent delete-btn" data-item-id="{{ entries.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
                                 </tr>
                                 {% endfor %}
@@ -378,7 +378,7 @@
                         instance_type_post: instance_type
                     },
                 });
-
+                
                 // Extract product SKU from response
                 const productSku = response.product_sku;
                 const mainsku = document.querySelectorAll('[name$="-product_sku"]');

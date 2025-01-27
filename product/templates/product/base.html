@@ -151,6 +151,7 @@
           <a href="{% url 'warehouse-stock' %}" class="sub-item">Warehouse stock</a>
           <a href="{% url 'sales-voucher-list-warehouse' %}" class="sub-item">Sales(WH) Scan</a>
           <a href="{% url 'all-picklists-list' %}" class="navText">Pick List</a>
+          <a href="{% url 'outward-scan-product-create' %}" class="navText">Outward Scan</a>
           {% comment %} <a href="{% url 'finished-goods-stock-all' %}" class="sub-item">Warehouse Stock</a> {% endcomment %}
           
         </div>
@@ -269,7 +270,9 @@
       <li class="nav-item my-3 mx-2 dropdown">
         <a class="nav-link text-white" style="cursor: pointer;"  data-bs-toggle="dropdown" aria-expanded="false">Warehouse</a> 
         <ul class="dropdown-menu dropdown-menu-right">
+
           <li class="pro-head"><a href="{% url 'finished-goods-sorting-list' %}" class="navText" style="font-size: 11px;" >Inward FG to Warehose (QR)</a></li>
+          <li class="pro-head"><a href="{% url 'outward-scan-product-create' %}" class="navText">Outward Scan</a></li>
           <li class="pro-head"><a href="{% url 'scan-product-qty-list' %}" class="navText">Finished Goods Stock</a></li>
           <li class="pro-head"><a href="{% url 'all-picklists-list' %}" class="navText">Pick List</a></li>
           <li class="pro-head"><a href="{% url 'sales-voucher-list-warehouse' %}" class="navText">Sales(WH) Scan</a></li>

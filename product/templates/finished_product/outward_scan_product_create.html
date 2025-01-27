@@ -1,0 +1,24 @@
+{% extends 'product/base.html' %} 
+{% load static %} 
+
+{% block body %}
+<div class="mb-3">
+    <div class="d-flex">
+     <div class="mb-2">
+       <label for="inwordSerialNo" class="fw-bold me-2">Scan S/N :</label>
+       <input type="text" name="scanned_serial_number" class="item-select ms-4" id="inwordSerialNo">
+   </div>
+     <div class=""> 
+       <span id="responseMessage" class="ms-3 fw-bold"></span></div>
+    </div>
+    
+     <div class="d-flex ">
+         <div class="mb-2">
+             <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
+             <input type="text" name="manual_serial_number" class="item-select ms-3" id="id_manualSerialNo">
+         </div>
+         <div class="mb-2 ms-2">
+             <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button>
+         </div>
+     </div>
+{% endblock body %}

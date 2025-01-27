@@ -19,12 +19,8 @@
         <thead class="name_absolute sticky-top">
             <tr>
                 <th>No</th>
+                <th>Date</th>
                 <th>PikList No</th>
-                <th>Image</th>
-                <th>Ref No</th>
-                <th>Model Name</th>
-                <th>Color</th>
-                <th>Product SKU</th>
                 <th>Quantity</th>
                 <th>Status</th>
                 <th>View</th>
@@ -35,24 +31,19 @@
         <tbody class="mainTableList" >
             
             {% for picklist in all_picklists %}
-            {% for data in picklist.picklist_products_list.all %}
+            
             <tr>
                 <td>{{forloop.counter}}</td>
-                <td><a href="{% url 'picklist-view' picklist.id %}">{{ picklist.picklist_no }}</a></td>
-                <td><img id="productImgPreview" name="product_img" src="{{ data.product.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
-                <td>{{ data.product.Product.Product_Refrence_ID }}</td>
-                <td>{{ data.product.Product.Model_Name }}</td>
-                <td>{{ data.product.PProduct_color.color_name }}</td>
-                <td>{{ data.product.PProduct_SKU }}</td>
+                <td>{{ picklist.created_date}}</td>
+                <td><a href="{% url 'picklist-view' picklist.id %}" class="btn btn-sm">{{ picklist.picklist_no }}</a></td>
                 <td>{{ picklist.total_quantity }}</td>
                 <td></td>
                 <td><a href="{% url 'create-update-picklist' picklist.id %}"><i class="fa-solid fa-eye px-2"></i></a></td>
                 <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ picklist.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
-               
-                <td></td>
-                
+                <td><a href="{% url 'download-picklist-pdf' picklist.id %}">PDF</a>
+                  <a href="{% url 'download-picklist-excel' picklist.id %}" >Excel</a></td>
              </tr>
-             {% endfor %}
+      
             {% endfor %}
       
         </tbody>    
