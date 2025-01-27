@@ -1831,7 +1831,7 @@ table>:not(caption)>*>*{
     margin: 0;
     font-size: 14px;
     cursor: pointer;
-    flex: 1 1 auto;
+    /* flex: 1 1 auto; */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1840,6 +1840,7 @@ table>:not(caption)>*>*{
 .itemName-div-suggestion {
     padding: 5px;
     cursor: pointer;
+   
 }
 
 .itemName-div-suggestion:hover {
@@ -1878,6 +1879,60 @@ table>:not(caption)>*>*{
     background: #000;
 }
 
+/*========= new custom dropdown*/
+.itemName-divs {
+    padding: 7px 10px;
+    margin: 0;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.itemName-div-suggestion {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.itemName-div-suggestion:hover {
+    background-color: #5c5c5c;
+    color: #fff;
+}
+
+.s-suggestion-containers {
+    z-index: 1000;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    max-height: 200px; /* Limit the height of the dropdown */
+}
+
+.s-suggestion-containers::-webkit-scrollbar {
+    width: 8px;
+}
+
+.s-suggestion-containers::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.s-suggestion-containers::-webkit-scrollbar-thumb {
+    background: #000;
+    border-radius: 4px;
+}
+
+.s-suggestion-containers::-webkit-scrollbar-thumb:hover {
+    background: #000;
+}
+
+
+/*========= new custom dropdown*/
 .bg-highlight {
     background-color: #5c5c5c;
     color: #fff;

@@ -29,11 +29,14 @@
                     <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
                     <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
                 </div>
-                <div class="mb-2 ms-2">
-                    <!-- <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button> -->
+                <div class="mb-2 ms-2 d-flex ms-2">
                     <label for="id_bin_Name" class="fw-bold ms-5">Bin :</label>
                     <select  class="productSelect" name="product_bin" id="id_bin_Name">
                     </select>
+                    <!-- <div name="bin_Name" class="item-selects s-suggestion-containers" id="id_bin_Name" dir="auto" spellcheck="false" tabindex="0" aria-label="Bin Name" >
+                                
+                             
+                    </div> -->
                 </div>
             </div>
                      
@@ -404,12 +407,51 @@
                 $('#id_product_color').val(response.product_color);
                 $('#productImgPreview').attr('src', response.product_image);
 
-                const binSelect = $('#id_bin_Name');
+                const binSelect = $('#id_bin_Name');  // Container for displaying the bin list
+         
                 binSelect.empty(); // Clear existing options
 
                 response.bin_to_dict.forEach(bin => {
                     binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
                 });
+    
+                // Dynamically create the list of bins based on the response
+                // response.bin_to_dict.forEach(bin => {
+                //     binSelect.append(`
+                //         <div class="itemName-div itemName-div-suggestion" data-key="${bin.bin_id}">
+                //             ${bin.bin_name}
+                //             <span style="padding-left:20px;color: #007FFF;">${bin.bin_size}</span>-
+                //             <span style="color:#006400">${bin.products_in_bin}</span>
+                //         </div>
+                //     `);
+                // });
+
+                // Show the bin options list when clicking the container
+                // $('#id_bin_Name').on('click', function () {
+                //     $('.s-suggestion-containers').show();  // Show the options dropdown
+                // });
+
+                // // Hide the dropdown when an item is selected
+                // $(document).on('click', '.itemName-div-suggestion', function () {
+                //     let selectedBin = $(this).text().trim();  // Get text of selected bin
+                //     $('#id_bin_Name').text(selectedBin);  // Display selected bin name
+                //     $('.s-suggestion-containers').hide();  // Hide the suggestion container
+                // });
+
+                // // Handle Enter key press to select an item
+                // $(document).on('keydown', '.itemName-div-suggestion', function (e) {
+                //     if (e.key === "Enter") {
+                //         $(this).trigger('click');  // Trigger the click event on Enter key
+                //     }
+                // });
+
+                // // Hide suggestion container if clicked outside
+                // $(document).on('click', function (e) {
+                //     if (!$(e.target).closest('#id_bin_Name').length) {
+                //         $('.s-suggestion-containers').hide();  // Hide suggestions if clicked outside
+                //     }
+                // });
+
 
                 return response;
             } catch (error) {
