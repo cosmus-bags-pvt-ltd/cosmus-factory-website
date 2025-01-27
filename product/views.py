@@ -83,7 +83,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,OutwardProductFormSet)
     
 
 
@@ -9962,6 +9962,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
             entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no = purchase_number)
 
+            
             # print(entries)
 
 
@@ -14079,18 +14080,22 @@ def picklist_product_ajax(request):
             # Fetch product bins and group them
             product_bins = finishedgoodsbinallocation.objects.filter(
                 product__PProduct_SKU=product_sku
-            ).filter(~Q(bin_number__products_in_bin=0)).values(
-                'bin_number', 'bin_number__bin_name','bin_number__products_in_bin'
-            ).order_by('created_date')
+            ).values(
+                'bin_number', 'bin_number__bin_name'
+            ).annotate(product_count=Count('bin_number')).order_by('created_date')
 
             # Aggregate bins by bin_id
             formatted_bins = {}
             for bin in product_bins:
                 bin_id = bin['bin_number']
                 bin_name = bin['bin_number__bin_name']
-                product_count = bin['bin_number__products_in_bin']
+                product_count = bin['product_count']
 
-                formatted_bins[bin_id] = [bin_name, product_count]  # Initialize bin entry
+                # Add to formatted_bins, summing counts for the same bin_id
+                if bin_id in formatted_bins:
+                    formatted_bins[bin_id][1] += product_count  # Increment product_count
+                else:
+                    formatted_bins[bin_id] = [bin_name, product_count]  # Initialize bin entry
 
             # Convert formatted_bins to a list of dictionaries
             formatted_bins_list = [{bin_id: bin_data} for bin_id, bin_data in formatted_bins.items()]
@@ -14103,7 +14108,7 @@ def picklist_product_ajax(request):
             # Aggregate data for the product
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']  # Sum the qty
-                final_data[product_sku][4] += reserved_qty  # Sum reserved quantity
+                
             else:
                 final_data[product_sku] = [
                     item['product_model'],  # Model Name
@@ -14234,13 +14239,23 @@ def download_picklist_excel(request,pl_id):
 
 
 def outward_scan_product_create(request):
-    return render(request,'finished_product/outward_scan_product_create.html')
+    pickilist_refrence = Picklist_voucher_master.objects.all()
+    if request.method == 'POST':
+        formset = OutwardProductFormSet(request.POST)
+        if formset.is_valid():
+            formset.save()  # Save all the forms at once
+            return redirect('success')  # Redirect after saving
+    else:
+        formset = OutwardProductFormSet()
+    return render(request,'finished_product/outward_scan_product_create.html',{'pickilist_refrence':pickilist_refrence,'formset': formset})
 
 
 
 def outward_scan_serial_no_process(request):
     print("in scan def")
     if request.method == 'POST':
-        serial_no = request.POST.get('serialNo')
+        serial_no = request.POST.get('manual_serial_number')
         print(serial_no)
+
+    return redirect('outward-scan-product-create')
         
