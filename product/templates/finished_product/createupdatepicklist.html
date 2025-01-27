@@ -302,7 +302,7 @@
                 if (selectBin) {
                     var productSelectBin = $(`#id_picklist_products_list-${purchaseValue}-bin_number`);
                     var productmainQty = parseInt($(`#id_product_quantity-${purchaseValue}`).val())
-             
+                    productSelectBin.empty();
                     if (productSelectBin) {
     
                         selectBin.forEach(binObject => {
@@ -313,9 +313,14 @@
                                     const [binName, quantity] = binArray;
                                     let optionHtml
                                     let balanceQty = quantity - productReserve - productmainQty;
-                
+                                    console.log('balanceQty',balanceQty)
                                     if(balanceQty > 0){
-                                        optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
+                                        if(productQty !== productmainQty){
+                                            optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
+                                        }else{
+                                            optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
+                                        }
+                                       
                                       
                                     }else{
                                         optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
@@ -323,6 +328,7 @@
                                     productSelectBin.append(optionHtml);
                                 } else {
                                     console.error(`Invalid binArray format at key ${binKey}:`, binArray);
+                                    productSelectBin.empty();
                                 }
                             });
                         });
