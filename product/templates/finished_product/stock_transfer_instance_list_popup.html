@@ -29,11 +29,14 @@
                     <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
                     <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
                 </div>
-                <div class="mb-2 ms-2">
-                    <!-- <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button> -->
+                <div class="mb-2 ms-2 d-flex ms-2">
                     <label for="id_bin_Name" class="fw-bold ms-5">Bin :</label>
                     <select  class="productSelect" name="product_bin" id="id_bin_Name">
                     </select>
+                    <!-- <div name="bin_Name" class="item-selects s-suggestion-containers" id="id_bin_Name" dir="auto" spellcheck="false" tabindex="0" aria-label="Bin Name" >
+                                
+                             
+                    </div> -->
                 </div>
             </div>
                      
@@ -121,9 +124,11 @@
                                     {% endif %}
                                     <td><input type="number" class="productorderrawqty-input inwardedReceivedQty text-center" value="1" readonly></td> 
                                     <td class="text-center balanceLots"></td>
-                                    <td><input type="text" class="productorderrawqty-input " value="{{ entries.bin_number.bin_name|default_if_none:'' }}-{{entries.bin_number.product_size_in_bin}}" readonly></td>  
+                                  
+                                    <td class="text-nowrap binvalue"><span>{{ entries.bin_number.bin_name|default_if_none:'' }} </span><span class="fw-bold text-primary binqty ps-3">{{entries.bin_number.product_size_in_bin}}- <span class="binsize text-success"></span></span></td>  
                                     <td><span class="border-0 bg-transparent delete-btn" data-item-id="{{ entries.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
-                                </tr>
+                                        <input type="hidden" class="productbinValue" value="{{entries.bin_number.products_in_bin}}">
+                                    </tr>
                                 {% endfor %}
                             </tbody>    
                         </table>
@@ -404,12 +409,51 @@
                 $('#id_product_color').val(response.product_color);
                 $('#productImgPreview').attr('src', response.product_image);
 
-                const binSelect = $('#id_bin_Name');
+                const binSelect = $('#id_bin_Name');  // Container for displaying the bin list
+         
                 binSelect.empty(); // Clear existing options
 
                 response.bin_to_dict.forEach(bin => {
                     binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
                 });
+    
+                // Dynamically create the list of bins based on the response
+                // response.bin_to_dict.forEach(bin => {
+                //     binSelect.append(`
+                //         <div class="itemName-div itemName-div-suggestion" data-key="${bin.bin_id}">
+                //             ${bin.bin_name}
+                //             <span style="padding-left:20px;color: #007FFF;">${bin.bin_size}</span>-
+                //             <span style="color:#006400">${bin.products_in_bin}</span>
+                //         </div>
+                //     `);
+                // });
+
+                // Show the bin options list when clicking the container
+                // $('#id_bin_Name').on('click', function () {
+                //     $('.s-suggestion-containers').show();  // Show the options dropdown
+                // });
+
+                // // Hide the dropdown when an item is selected
+                // $(document).on('click', '.itemName-div-suggestion', function () {
+                //     let selectedBin = $(this).text().trim();  // Get text of selected bin
+                //     $('#id_bin_Name').text(selectedBin);  // Display selected bin name
+                //     $('.s-suggestion-containers').hide();  // Hide the suggestion container
+                // });
+
+                // // Handle Enter key press to select an item
+                // $(document).on('keydown', '.itemName-div-suggestion', function (e) {
+                //     if (e.key === "Enter") {
+                //         $(this).trigger('click');  // Trigger the click event on Enter key
+                //     }
+                // });
+
+                // // Hide suggestion container if clicked outside
+                // $(document).on('click', function (e) {
+                //     if (!$(e.target).closest('#id_bin_Name').length) {
+                //         $('.s-suggestion-containers').hide();  // Hide suggestions if clicked outside
+                //     }
+                // });
+
 
                 return response;
             } catch (error) {
@@ -490,17 +534,19 @@
 
  
   calculateQty()
-  function balanceQty() {
+  function updateQuantitiesAndBinSize() {
     var rows = document.querySelectorAll('#inwordDateTable .mainTableList tr');
     var skuBalanceMap = {}; // Object to store SKU-wise last balance
 
-    rows.forEach(function (row, index) {
+    rows.forEach(function (row) {
         var qtyInput = row.querySelector('.inwardedQty');  // Initial Quantity
         var receivedInput = row.querySelector('.inwardedReceivedQty'); // Received Qty
         var balanceCell = row.querySelector('.balanceLots'); // Balance Column
+        var binValueSpan = row.querySelector('.binvalue .binsize'); // Target the binsize span
+        var binValue = row.querySelector('.binvalue')
         var skuInput = row.querySelector('.inwardedsku'); // SKU Input
-
-        if (qtyInput && receivedInput && balanceCell && skuInput) {
+     
+        if (qtyInput && receivedInput && balanceCell && skuInput && binValue) {
             var qty = parseInt(qtyInput.value) || 0;
             var received = parseInt(receivedInput.value) || 0;
             var sku = skuInput.value.trim(); // Get SKU value
@@ -512,22 +558,25 @@
                 // First time encountering this SKU, start fresh
                 var balance = qty - received;
             }
-
-            balanceCell.textContent = balance; // Update balance display
-            skuBalanceMap[sku] = balance; // Store updated balance for this SKU
+            
+            // Update balance display in both balance column and bin size
+            balanceCell.textContent = balance;  // Update balance in balance column
+            if (binValueSpan) {
+                binValueSpan.textContent = balance;  // Update bin size span with balance
+                // Change background color of binValue to red if balance is 0
+                if (balance === 0) {
+                    binValue.style.backgroundColor = '#ec6e6e';  // Set background color to red
+                } else {
+                    binValue.style.backgroundColor = '';  // Reset background color
+                }
+            }
+            // Store updated balance for this SKU
+            skuBalanceMap[sku] = balance;
         }
     });
 }
 
-// Run function on page load or when values change dynamically
-balanceQty();
-
-
-
-
-
-balanceQty();
-
+updateQuantitiesAndBinSize()
 </script>
 
 {% endblock body %}

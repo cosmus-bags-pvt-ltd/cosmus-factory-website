@@ -127,6 +127,25 @@
     </form>
 </div>
 
+<!-- <script>
+  $(document).ready(function () {
+    $('#addRowButton').on('click',function(){
+        var table = $('#createpickListTable .mainTableList tr');
+        var lastRow = table.last(); // Get the last row
+        var previousRow = lastRow.prev(); //
+        console.log('Last Row:', lastRow);
+        console.log('Previous Row:', previousRow);
+        var qty = previousRow.querySelector('[name$="-product_quantity"]')
+        console.log(qty)
+    })
+    
+})
+
+</script> -->
+
+
+
+
 <script>
     //This ajax call is to populate the shade and color based on the selected item once retrive the value
     //When click the item name then append the shades with the color, per 
@@ -169,6 +188,7 @@
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
                         searchedProductNameDic = response.products;
+                        console.log('searchedProductNameDic',searchedProductNameDic)
                         const searchQuery = productnamevalue.toLowerCase();
                         const searchTerms = searchQuery.split(/\s+/);
                         const convertStringData = searchTerms.toString();
@@ -193,7 +213,7 @@
                         });
          
                         suggestionsContainer.empty();
-
+                        
                         // Generate suggestions for matching options
                         filteredOptions.forEach(([key, value], index) => {
                             // Extract relevant fields
