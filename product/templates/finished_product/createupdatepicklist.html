@@ -127,21 +127,38 @@
     </form>
 </div>
 
-<!-- <script>
+<script>
   $(document).ready(function () {
     $('#addRowButton').on('click',function(){
         var table = $('#createpickListTable .mainTableList tr');
-        var lastRow = table.last(); // Get the last row
+
         var previousRow = lastRow.prev(); //
-        console.log('Last Row:', lastRow);
-        console.log('Previous Row:', previousRow);
-        var qty = previousRow.querySelector('[name$="-product_quantity"]')
-        console.log(qty)
+        
+        var qty = previousRow.find('[name$="-product_quantity"]').val();
+        var binNumber = previousRow.find('[name$="-bin_number"]').val();
+        var sku = previousRow.find('[name^="product_Sku_"]').val();
+
+        $.ajax({
+            url: '/picklistproductajax/',
+            method: 'GET',
+            data: { 
+                'sku':sku,
+                'qty': qty,
+                'binNumber':binNumber,
+             },
+            success: function (response) {
+                console.log(response)
+            },
+            error:function(error){
+                console.log(error) 
+            } 
+        })
+       
     })
     
 })
 
-</script> -->
+</script>
 
 
 
@@ -307,7 +324,7 @@
     
                         selectBin.forEach(binObject => {
                             Object.entries(binObject).forEach(([binKey, binArray]) => {
-                            
+                                console.log(binArray)
                                 // Ensure binArray is actually an array
                                 if (Array.isArray(binArray) && binArray.length === 2) {
                                     const [binName, quantity] = binArray;
@@ -317,7 +334,7 @@
                                     if(balanceQty > 0){
                                         if(productQty !== productmainQty){
                                             optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
-                                        }else{
+                                        }else {
                                             optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
                                         }
                                        

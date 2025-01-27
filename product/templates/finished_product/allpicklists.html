@@ -35,7 +35,7 @@
             <tr>
                 <td>{{forloop.counter}}</td>
                 <td>{{ picklist.created_date}}</td>
-                <td><a href="{% url 'picklist-view' picklist.id %}" class="btn btn-sm">{{ picklist.picklist_no }}</a></td>
+                <td><a href="{% url 'picklist-view' picklist.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #bd50e9; text-decoration: none;">{{ picklist.picklist_no }}</a></td>
                 <td>{{ picklist.total_quantity }}</td>
                 <td></td>
                 <td><a href="{% url 'create-update-picklist' picklist.id %}"><i class="fa-solid fa-eye px-2"></i></a></td>
