@@ -127,41 +127,6 @@
     </form>
 </div>
 
-<script>
-  $(document).ready(function () {
-    $('#addRowButton').on('click',function(){
-        var table = $('#createpickListTable .mainTableList tr');
-
-        var previousRow = lastRow.prev(); //
-        
-        var qty = previousRow.find('[name$="-product_quantity"]').val();
-        var binNumber = previousRow.find('[name$="-bin_number"]').val();
-        var sku = previousRow.find('[name^="product_Sku_"]').val();
-
-        $.ajax({
-            url: '/picklistproductajax/',
-            method: 'GET',
-            data: { 
-                'sku':sku,
-                'qty': qty,
-                'binNumber':binNumber,
-             },
-            success: function (response) {
-                console.log(response)
-            },
-            error:function(error){
-                console.log(error) 
-            } 
-        })
-       
-    })
-    
-})
-
-</script>
-
-
-
 
 <script>
     //This ajax call is to populate the shade and color based on the selected item once retrive the value

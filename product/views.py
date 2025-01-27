@@ -14010,6 +14010,7 @@ def all_picklists_list(request):
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
+        
 
         if not product_name_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
@@ -14076,6 +14077,7 @@ def picklist_product_ajax(request):
         final_data = {}
         for item in merged_products:
             product_sku = item['product_sku']
+            
 
             # Fetch product bins and group them
             product_bins = finishedgoodsbinallocation.objects.filter(
@@ -14094,11 +14096,17 @@ def picklist_product_ajax(request):
                 # Add to formatted_bins, summing counts for the same bin_id
                 if bin_id in formatted_bins:
                     formatted_bins[bin_id][1] += product_count  # Increment product_count
+
+                    
+
                 else:
                     formatted_bins[bin_id] = [bin_name, product_count]  # Initialize bin entry
 
             # Convert formatted_bins to a list of dictionaries
             formatted_bins_list = [{bin_id: bin_data} for bin_id, bin_data in formatted_bins.items()]
+
+
+
 
             # Calculate total reserved quantity for the product
             reserved_qty = Picklist_products_list.objects.filter(
