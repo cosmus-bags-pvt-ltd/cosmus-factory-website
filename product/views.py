@@ -35,6 +35,8 @@ from openpyxl.styles import Font
 from openpyxl.styles import Alignment
 from openpyxl.styles import Border, Side
 import requests
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
 
 from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
@@ -728,6 +730,7 @@ def assign_bin_to_product_ajax(request):
     zone_id = request.POST.get('zone')
     rack_id = request.POST.get('rack')
 
+    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id).exclude(pk=rack_id)
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         
@@ -754,7 +757,8 @@ def assign_bin_to_product_ajax(request):
     return render(request, 'product/assignbintoproduct.html', {
         'formset': formset,
         'main_categories': main_categories,
-        'zones': zones,'post_data': post_data
+        'zones': zones,'post_data': post_data,
+        'racks':racks
     })
 
 
@@ -848,16 +852,18 @@ def update_bin_to_subcategory(request,sub_id,r_id,bin_id=None):
     main_cate = MainCategory.objects.get(pk = sub_id)
 
     rack = finished_goods_warehouse_racks.objects.get(pk = r_id)
+   
     zone = rack.zone_finished_name
+
+    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name = zone).exclude(pk = r_id)
 
     
 
     post_data = {
                 'product_main_category': main_cate,
-                
                 'rack': rack,
                 'zone': zone,
-                    }
+                }
 
     if request.method == 'POST':
         try:
@@ -899,7 +905,7 @@ def update_bin_to_subcategory(request,sub_id,r_id,bin_id=None):
             print(e)
             messages.error(request,f'An Exception occoured - {e}')
 
-    return render(request, 'product/assignbintoproduct.html',{'formset':formset,'post_data':post_data,'zones': zones,'editable_bin_id': bin_id})
+    return render(request, 'product/assignbintoproduct.html',{'formset':formset,'post_data':post_data,'zones': zones,'editable_bin_id': bin_id,'racks':racks})
 
 
 
@@ -13935,25 +13941,8 @@ def create_update_picklist(request,p_id=None):
 
     if p_id:
         voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
-
-        picklist_product = voucher_instance.picklist_products_list.all()
-        print(picklist_product)
-        final_data = {}
-        for i in picklist_product:
-            
-            final_data[i.product.PProduct_SKU] = [
-                    i.product.Product.Model_Name,
-                    i.product.PProduct_color.color_name,
-                    i.bin_number.bin_name,
-                    i.product.Product.Product_Refrence_ID,
-                    i.product.PProduct_image
-                ]
-            
-        print(final_data)
         master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
         formset = picklistcreateformsetupdate(request.POST or None,instance=voucher_instance)
-
-
     else:
         voucher_instance = None
         master_form  = Picklistvouchermasterform()
@@ -13961,6 +13950,7 @@ def create_update_picklist(request,p_id=None):
 
     
     if request.method == "POST":
+        print(request.POST)
         master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
         formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
 
@@ -13993,9 +13983,6 @@ def create_update_picklist(request,p_id=None):
                 
             except Exception as e:
                 print(e)
-
-
-
     return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
 
 
@@ -14008,8 +13995,8 @@ def deletepicklist(request,pl_id):
 
 
 def all_picklists_list(request):
-    all_picklists = Picklist_voucher_master.objects.all().annotate(total_quantity = Sum('picklist_products_list__product_quantity'))
-    
+    all_picklists = Picklist_voucher_master.objects.prefetch_related('picklist_products_list__product').annotate(
+    total_quantity=Sum('picklist_products_list__product_quantity'))
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
 
 
@@ -14093,21 +14080,17 @@ def picklist_product_ajax(request):
             product_bins = finishedgoodsbinallocation.objects.filter(
                 product__PProduct_SKU=product_sku
             ).filter(~Q(bin_number__products_in_bin=0)).values(
-                'bin_number', 'bin_number__bin_name'
-            ).annotate(product_count=Count('bin_number')).order_by('created_date')
+                'bin_number', 'bin_number__bin_name','bin_number__products_in_bin'
+            ).order_by('created_date')
 
             # Aggregate bins by bin_id
             formatted_bins = {}
             for bin in product_bins:
                 bin_id = bin['bin_number']
                 bin_name = bin['bin_number__bin_name']
-                product_count = bin['product_count']
+                product_count = bin['bin_number__products_in_bin']
 
-                # Add to formatted_bins, summing counts for the same bin_id
-                if bin_id in formatted_bins:
-                    formatted_bins[bin_id][1] += product_count  # Increment product_count
-                else:
-                    formatted_bins[bin_id] = [bin_name, product_count]  # Initialize bin entry
+                formatted_bins[bin_id] = [bin_name, product_count]  # Initialize bin entry
 
             # Convert formatted_bins to a list of dictionaries
             formatted_bins_list = [{bin_id: bin_data} for bin_id, bin_data in formatted_bins.items()]
@@ -14144,5 +14127,120 @@ def picklist_product_ajax(request):
 
 
 def picklist_view(request,pl_id):
-    return render(request,'finished_product/picklist_view.html')
+    picklist_number=get_object_or_404(Picklist_voucher_master,pk=pl_id)
+    picklist_data = Picklist_products_list.objects.filter(picklist_master_instance=pl_id)
+    return render(request,'finished_product/picklist_view.html',{'picklist_data':picklist_data,'picklist_number':picklist_number})
 
+
+
+
+
+def download_picklist_pdf(request,pl_id):
+ # Get the Picklist_voucher_master instance
+    picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
+
+    # Get all related Picklist_products_list instances
+    products_list = picklist.picklist_products_list.all()
+
+    # Prepare context for the PDF, including absolute URLs for images
+    context = {
+        'picklist': picklist,
+        'products_list': []
+    }
+
+    # Build the absolute URLs for the images and add them to the context
+    for data in products_list:
+        product_image_url = request.build_absolute_uri(data.product.PProduct_image.url)
+        context['products_list'].append({
+            'product': data.product,
+            'product_image_url': product_image_url,
+            'product_quantity': data.product_quantity,
+            'bin_name': data.bin_number.bin_name,
+            'rack_name': data.bin_number.rack_finished_name.rack_name,
+            'zone_name': data.bin_number.rack_finished_name.zone_finished_name.zone_name
+        })
+
+    # Render the HTML template for the PDF
+    html = render_to_string('finished_product/picklist_pdf_template.html', context)
+
+    # Create a response object to serve the PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="picklist_{picklist.picklist_no}.pdf"'
+
+    # Generate the PDF from the HTML
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    # Check if the PDF was successfully created
+    if pisa_status.err:
+        return HttpResponse('Error generating PDF', status=500)
+
+    return response
+
+
+
+
+
+
+
+def download_picklist_excel(request,pl_id):
+    # Get the Picklist_voucher_master instance
+    picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
+
+    # Get all related Picklist_products_list instances
+    products_list = picklist.picklist_products_list.all()
+
+    # Create a new workbook and add a worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Picklist Products"
+
+    # Add Picklist_voucher_master data
+    ws.append(["Picklist No:", picklist.picklist_no])
+    ws.append(["Created by:", picklist.c_user.username])
+    ws.append(["Created Date:", picklist.created_date.date()])
+    ws.append([])  # Empty line for separation
+
+    # Set headers for products list
+    headers = ["Product", "Image", "Zone", "Rack", "Bin", "Quantity"]
+    ws.append(headers)
+
+    # Style the headers (bold font)
+    for cell in ws[6]:
+        cell.font = Font(bold=True)
+
+    # Fill in the product data
+    for data in products_list:
+        product_name = data.product.Product.Model_Name
+        product_image_url = data.product.PProduct_image.url
+        zone_name = data.bin_number.rack_finished_name.zone_finished_name.zone_name
+        rack_name = data.bin_number.rack_finished_name.rack_name
+        bin_name = data.bin_number.bin_name
+        product_quantity = data.product_quantity
+
+        # Add data to the row (excluding image, since we can't add it to Excel directly)
+        row = [product_name, product_image_url, zone_name, rack_name, bin_name, product_quantity]
+        ws.append(row)
+
+    # Create a response object to serve the Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="picklist_{picklist.picklist_no}.xlsx"'
+
+    # Save the workbook to the response object
+    wb.save(response)
+
+    return response
+
+
+
+
+def outward_scan_product_create(request):
+    return render(request,'finished_product/outward_scan_product_create.html')
+
+
+
+def outward_scan_serial_no_process(request):
+    print("in scan def")
+    if request.method == 'POST':
+        serial_no = request.POST.get('serialNo')
+        print(serial_no)
+        

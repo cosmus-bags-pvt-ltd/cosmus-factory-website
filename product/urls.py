@@ -160,6 +160,8 @@ urlpatterns = [
     path('deletepicklists/<int:pl_id>',views.deletepicklist , name = 'delete-picklists'),
     path('picklistview/<int:pl_id>',views.picklist_view , name = 'picklist-view'),
     path('picklistproductajax/',views.picklist_product_ajax , name = 'picklist-product-ajax'),
+    path('downloadpicklistpdf/<int:pl_id>',views.download_picklist_pdf , name = 'download-picklist-pdf'),
+    path('downloadpicklistexcel/<int:pl_id>',views.download_picklist_excel , name = 'download-picklist-excel'),
     # path('picklistbinajax/',views.picklist_bin_ajax , name = 'picklist-bin-ajax'),
 
     #subcategorys
@@ -365,7 +367,11 @@ urlpatterns = [
 
     
     path('excel_download_for_purchase_order/<int:p_id>/', views.excel_download_for_purchase_order, name='excel-download-for-purchase-order'),
-       
+      
+
+    
+    path('outwardscanproductcreate/', views.outward_scan_product_create, name='outward-scan-product-create'),
+      
 
 
 ]   

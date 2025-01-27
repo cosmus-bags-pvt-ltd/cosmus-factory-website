@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picklist PDF</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Picklist No: {{ picklist.picklist_no }}</h1>
+    <p>Created by: {{ picklist.c_user }}</p>
+    <p>Created Date: {{ picklist.created_date }}</p>
+    
+    <h3>Products List:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>IMG</th>
+                <th>Zone</th>
+                <th>Rack</th>
+                <th>Bin</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in products_list %}
+                <tr>
+                    <td>{{ data.product.Product.Model_Name }}</td>
+                    <td>
+                        <img src="{{ data.product_image_url }}" alt="Product Image" style="width: 60px; height: 40px;">
+                    </td>
+                    <td>{{ data.zone_name }}</td>
+                    <td>{{ data.rack_name }}</td>
+                    <td>{{ data.bin_name }}</td>
+                    <td>{{ data.product_quantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
