@@ -19,3 +19,18 @@ def subtract_datestime(date1, date2):
     return None
 
 
+
+@register.filter
+def subtract(value, arg):
+    """
+    Subtracts the arg from the value.
+    Usage: {{ value|subtract:arg }}
+    """
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return ''
+    
+
+
+

@@ -371,6 +371,7 @@ urlpatterns = [
 
     
     path('outwardscanproductcreate/', views.outward_scan_product_create, name='outward-scan-product-create'),
+    path('outwardscanserialnoprocess/', views.outward_scan_serial_no_process, name='outward-scan-serial-no-process'),
       
 
 
