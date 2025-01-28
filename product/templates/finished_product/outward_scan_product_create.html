@@ -2,45 +2,387 @@
 {% load static %} 
 
 {% block body %}
-<form action="{% url 'outward-scan-serial-no-process' %}" method="post">
-    <select name="" id="">
-        {% for picklist in pickilist_refrence %}
-        <option value="{{picklist.id}}">{{picklist.picklist_no}}</option>
-        {% endfor %}
-    </select>
-    {% csrf_token %}
-    <div class="mb-3">
-        <div class="d-flex">
-            <div class="mb-2">
-                <label for="inwordSerialNo" class="fw-bold me-2">Scan S/N :</label>
-                <input type="text" name="scanned_serial_number" class="item-select ms-4" id="inwordSerialNo">
-            </div>
-            <div class=""> 
-                <span id="responseMessage" class="ms-3 fw-bold"></span></div>
-            </div>
-        
-            <div class="d-flex ">
-                <div class="mb-2">
-                    <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
-                    <input type="text" name="manual_serial_number" class="item-select ms-3" id="id_manualSerialNo">
-                </div>
-                <div class="mb-2 ms-2">
-                    <button type="submit" class="acc-btn" id="manualAjaxButton">Fetch</button>
-                    
-                </div>
-            </div>
-        </div>
+<div class="mb-3">
+    <div class="d-flex">
+     <div class="mb-2">
+       <label for="inwordSerialNo" class="fw-bold me-2">Scan S/N :</label>
+       <input type="text" name="scanned_serial_number" class="item-select ms-4" id="inwordSerialNo">
+   </div>
+     <div class=""> 
+       <span id="responseMessage" class="ms-3 fw-bold"></span></div>
     </div>
-</form>
+    
+     <div class="d-flex ">
+         <div class="mb-2">
+             <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
+             <input type="text" name="manual_serial_number" class="item-select ms-3" id="id_manualSerialNo">
+         </div>
+         <div class="mb-2 ms-2">
+             <button type="button" class="acc-btn" id="manualAjaxButton">Fetch</button>
+         </div>
+     </div>
 
 <form method="POST">
     {% csrf_token %}
-    {{ formset.management_form }}
-    {% for form in formset %}
-        <div class="form-row">
-            {{ form.as_p }}
-        </div>
-    {% endfor %}
+    
+    <table class="table table-striped table-hover table-bordered">
+        <thead>
+            <tr>
+                <th>NO</th>
+                <th>Ref No</th>
+                <th>Model Name</th>
+                <th>Color</th>
+                <th>Sku</th>
+                <th>Image</th>
+                <th>Serial No</th>
+                <th>Bin</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ formset.management_form }}
+            {% for form in formset %}
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+        
+ 
     <button type="submit">Save</button>
 </form>
+<script>
+        $(document).ready(function () {
+    let debounceTimeout;
+ 
+
+    $('#inwordSerialNo').on('input', function () {
+        clearTimeout(debounceTimeout);
+        const manual_serial = $('#id_manualSerialNo');
+        manual_serial.val('');
+
+        const manualButton = $('#manualAjaxButton');
+        manualButton.prop('disabled', true);
+
+        const responseMessage = $('#responseMessage');
+        responseMessage.html(''); // Clear any previous messages
+
+        const inputField = $(this);
+
+        debounceTimeout = setTimeout(async function () {
+            let inputUrl = inputField.val();
+            let serialNo = '';
+
+            if (inputUrl.includes('=')) {
+                serialNo = inputUrl.split('=').pop();
+                inputField.val(serialNo);
+                inputField.css('color', 'black');
+            }
+
+            if (serialNo) {
+                try {
+                    const response = await sendSerialNumber(serialNo);
+                    $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                } catch (error) {
+                    const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
+                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                }
+            }
+        }, 500);
+    });
+
+    $('#id_manualSerialNo').on('input', function () {
+        $('#inwordSerialNo').val('');
+
+        const manualButton = $('#manualAjaxButton');
+        manualButton.prop('disabled', false); // Enable manual button
+
+        const responseMessage = $('#responseMessage');
+        responseMessage.html(''); // Clear any previous messages
+    });
+
+    $('#manualAjaxButton').on('click', async function () {
+        const manualSerialNo = $('#id_manualSerialNo').val();
+        if (manualSerialNo) {
+            try {
+                const response = await sendSerialNumber(manualSerialNo);
+                $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+            } catch (error) {
+                const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
+                $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+            }
+        } else {
+            $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
+        }
+    });
+
+    function populateRow(row, productResponse) {
+    row.find('[name$="-product_name"]').val(productResponse[0]);
+    row.find('[name$="-product_name_value"]').val(productResponse[1]);
+    row.find('[name^="product_color_"]').val(productResponse[2]);
+    row.find('[name^="product_Sku_"]').val(productResponse[0]);
+    row.find('[name$="-unique_serial_no"]').val(productResponse[3]);
+    row.find('[name$="-mrp"]').val(productResponse[5]);
+    row.find('[name$="-sale_price"]').val(productResponse[6]);
+    row.find('[name$="-gst"]').val(productResponse[4]);
+}
+
+async function sendSerialNumber(serialNo) {
+    const warehouseId = $('#id_selected_warehouse').val();
+    console.log('warehouseId',warehouseId)
+    try {
+        const response = await $.ajax({
+            url: '/salesscanproductdynamicajax/',
+            type: 'GET',
+            data: {
+                serialNo: serialNo,
+                warehouseId: warehouseId,
+            },
+        });
+
+        if (response.products && response.products.length > 0) {
+            const productResponse = response.products[0];
+            console.log('productResponse',productResponse)
+            const tableBody = $('#salesTable .mainTableList');
+            // const lastVisibleRow = tableBody.find('tr:visible').last();
+
+            let rowToPopulate = null;
+
+            // Find the first empty row
+            tableBody.find('tr').each(function () {
+                const row = $(this);
+                const inputField = row.find('[name$="-product_name_value"]');
+                console.log('inputField',inputField)
+                if (inputField.val().trim() === "") {
+                    rowToPopulate = row;
+                    return false; // Break the loop
+                }
+            });
+
+            if (rowToPopulate) {
+              console.log('empty row',rowToPopulate)
+                // Populate the first empty row
+                populateRow(rowToPopulate, productResponse);
+            } else {
+                // Add a new row and populate it
+                console.log('create row',rowToPopulate)
+                addNewRow();
+                const newRow = tableBody.find('tr').last();
+                populateRow(newRow, productResponse);
+            }
+        } else {
+            console.error("No products data found in response.");
+        }
+        
+
+        return response;
+    } catch (error) {
+        console.error("Error sending serial number:", error);
+        throw error;
+    }
+}
+ })
+</script>
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function () {
+       const inwardSearch = document.getElementById('inwordSerialNo');
+       const manualSearch = document.getElementById('id_manualSerialNo');
+       const stockTable = document.getElementById('stockTransferList');
+       const responseMessage = $('#responseMessage');
+       const id_voucher_no = document.getElementById('id_voucher_no').value;
+       const instancId = parseInt(document.getElementById('id_hiddenId').value);
+    
+     
+  
+       $.ajax({
+           url: '/stocktransferinstancelistpopup/${instancId}/${voucherType}',
+           type: 'GET',
+           data: { 
+               'id_voucher_no':id_voucher_no,
+           },
+
+       })
+       // Focus on input field and hide table initially for `inwordSerialNo`
+       inwardSearch.focus();
+
+       inwardSearch.addEventListener('input', function () {
+           inwardSearch.style.color = 'white';
+             responseMessage.html(''); // Clear any previous messages
+           if (inwardSearch.value) {
+               stockTable.style.display = "block";
+               manualSearch.value = ''; // Clear manual search if `inwordSerialNo` has input
+               inwardSearch.addEventListener('keydown',function(event){
+               
+                   if(event.key === "Tab"){
+                    event.preventDefault();
+                       selectBin.focus();
+                   }
+               })
+            }
+        });
+   
+          // Add similar event listener for `id_manualSerialNo`
+       manualSearch.addEventListener('input', function () {
+           
+           responseMessage.html(''); // Clear any previous messages
+           if (manualSearch.value) {
+               stockTable.style.display = "block";
+               inwardSearch.value = ''; // Clear inward search if `id_manualSerialNo` has input
+           }
+      
+       });
+   });
+   
+   $(document).ready(function () {
+       let debounceTimeout;
+   
+       // Handle input in inwordSerialNo
+       $('#inwordSerialNo').on('input', function () {
+           clearTimeout(debounceTimeout);
+   
+           // Clear id_manualSerialNo
+           const manual_serial = $('#id_manualSerialNo');
+           manual_serial.val('');
+           
+           const responseMessage = $('#responseMessage');
+           responseMessage.html(''); // Clear any previous messages
+
+           const inputField = $(this);
+   
+           debounceTimeout = setTimeout(async function () {
+               let inputUrl = inputField.val();
+               let serialNo = '';
+   
+               // Extract serial number
+               if (inputUrl.includes('=')) {
+                   serialNo = inputUrl.split('=').pop();
+                   inputField.val(serialNo);
+                   inputField.css('color', 'black');
+               }
+   
+               if (serialNo) {
+                   try {
+                       const response = await sendSerialNumber(serialNo);
+                       $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                   } catch (error) {
+                       const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                       $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                   }
+               }
+           }, 500); // Debounce delay
+       });
+   
+       // Handle input in id_manualSerialNo
+       $('#id_manualSerialNo').on('input', function () {
+           // Clear inwordSerialNo
+           $('#inwordSerialNo').val('');
+   
+           const responseMessage = $('#responseMessage');
+           responseMessage.html(''); // Clear any previous messages
+
+       });
+   
+       // Handle click on the normal button
+       $('#id_manualSerialNo').on('keydown', async function (event) {
+            if(event.key === 'Enter'){
+                event.preventDefault();
+                const manualSerialNo = $('#id_manualSerialNo').val();
+                const responseMessage = $('#responseMessage'); // Response message container
+                    if (manualSerialNo) {
+                        try {
+                            const response = await sendSerialNumber(manualSerialNo);
+                            
+                            $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                           
+                        } catch (error) {
+                            const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                            $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                            $('#id_manualSerialNo').val('');
+                            // $('#id_product').val('');
+                            // $('#id_product_sku').val('');
+                            // $('#id_product_color').val('');
+                         
+                        }
+                    } else {
+                        $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
+                        $('#id_manualSerialNo').val('');
+                        // $('#id_product').val('');
+                        // $('#id_product_sku').val('');
+                        // $('#id_product_color').val('');
+                    }
+                    
+            }
+           
+
+       });
+   
+       // Function to send serial number to the backend
+        async function sendSerialNumber(serialNo) {
+            const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+            const instance_number = $('#id_voucher_no').val();
+            const instance_type = $('#id_voucher_type').val();
+         
+            try {
+                const response = await $.ajax({
+                    url: '/processserialno/',
+                    type: 'POST',
+                    data: { 
+                        serialNo: serialNo, 
+                        csrfmiddlewaretoken: csrfToken,
+                        instance_number_post: instance_number,
+                        instance_type_post: instance_type
+                    },
+                });
+                
+                // Extract product SKU from response
+                const productSku = response.product_sku;
+                const mainsku = document.querySelectorAll('[name$="-product_sku"]');
+                console.log(productSku, typeof(productSku))
+               
+                // Check if any main SKU matches the product SKU
+                let isMatch = false;
+                mainsku.forEach(function (item) {
+                    const sku = parseInt(item.value);
+                    console.log(sku, typeof(sku))
+                    if (sku === productSku) {
+                        isMatch = true;
+                    }
+                });
+
+                if (!isMatch) {
+                    alert('SKU does not match!');
+                    throw new Error('SKU mismatch'); // Prevent further execution and returning the response
+                }
+
+                // $('#id_product').val(response.model_name);
+                // $('#id_product_sku').val(response.product_sku);
+                // $('#id_product_color').val(response.product_color);
+                // $('#productImgPreview').attr('src', response.product_image);
+
+              
+    
+              
+
+                return response;
+            } catch (error) {
+                console.error('Error:', error);
+                return null; // Optionally return null or handle the error further
+            }
+        }
+   })
+</script> -->
+
+
 {% endblock body %}
