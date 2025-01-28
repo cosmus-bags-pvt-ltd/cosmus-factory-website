@@ -1243,7 +1243,6 @@ class Picklist_products_list(models.Model):
 
 
 class outward_products(models.Model):
-    picklist_no = models.CharField(max_length = 252)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
