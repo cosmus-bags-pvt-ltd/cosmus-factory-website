@@ -2560,7 +2560,7 @@ picklistcreateformsetupdate = inlineformset_factory(Picklist_voucher_master , Pi
 class OutwardProductForm(forms.ModelForm):
     class Meta:
         model = outward_products
-        fields = ['picklist_no', 'product', 'unique_serial_no', 'bin_number', 'quantity']
+        fields = ['product', 'unique_serial_no', 'bin_number', 'quantity']
 
 
 OutwardProductFormSet = modelformset_factory(outward_products, form=OutwardProductForm, extra=1)
