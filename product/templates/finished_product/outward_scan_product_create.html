@@ -117,13 +117,11 @@
                             const response = await sendSerialNumber(manualSerialNo);
                             
                             $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                            $('#id_manualSerialNo').val('');
                            
                         } catch (error) {
                             const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
                             $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
-                            $('#id_manualSerialNo').val('');
-                      
-                         
                         }
                     } else {
                         $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
