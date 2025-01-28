@@ -75,7 +75,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, salesvouchermasterfinishGoodsForm,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, salesvoucherfinishGoodsForm, salesvouchermasterfinishGoodsForm,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -14247,15 +14247,56 @@ def download_picklist_excel(request,pl_id):
 
 
 def outward_scan_product_create(request):
-    pickilist_refrence = Picklist_voucher_master.objects.all()
+
     if request.method == 'POST':
         formset = OutwardProductFormSet(request.POST)
         if formset.is_valid():
-            formset.save()  # Save all the forms at once
-            return redirect('success')  # Redirect after saving
+            try:
+                with transaction.atomic():
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
+                    
+
+                    post_data = request.POST.dict()
+                    
+                    products = {}
+
+                    total_forms = int(post_data.get('form-TOTAL_FORMS', 0))
+
+                    for i in range(total_forms):
+                        product = post_data.get(f'form-{i}-product')
+                        quantity = int(post_data.get(f'form-{i}-quantity', 0))
+
+                        product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
+                        
+                        if product:
+                            if product in products:
+                                products[product]['quantity'] += quantity
+
+                            else:
+                                
+                                products[product] = {
+                                    'product_ref': post_data.get(f'form-{i}-product_RefNo'),
+                                    'product_name': post_data.get(f'form-{i}-product_name_value'),
+                                    'product': product,
+                                    'color': post_data.get(f'product_color_{i}'),
+                                    'quantity': quantity,
+                                    'mrp':product_info.Product.Product_MRP,
+                                    'customer_price':product_info.Product.Product_SalePrice_CustomerPrice,
+                                    'gst':product_info.Product.Product_GST.gst_percentage
+                                }
+                    product_list = list(products.values())
+                    print(product_list)
+                    formset = salesvouchercreateformset(initial = product_list)
+                    return render(request,'accounts/sales_invoice.html',{'formset': formset})
+                  
+            except Exception as e:
+                print(e)
     else:
-        formset = OutwardProductFormSet()
-    return render(request,'finished_product/outward_scan_product_create.html',{'pickilist_refrence':pickilist_refrence,'formset': formset})
+        formset = OutwardProductFormSet()       
+    return render(request,'finished_product/outward_scan_product_create.html',{'formset': formset})
 
 
 
