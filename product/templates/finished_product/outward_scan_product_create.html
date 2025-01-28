@@ -154,7 +154,7 @@ async function sendSerialNumber(serialNo) {
     console.log('warehouseId',warehouseId)
     try {
         const response = await $.ajax({
-            url: '/salesscanproductdynamicajax/',
+            url: '/outwardscanserialnoprocess/',
             type: 'GET',
             data: {
                 serialNo: serialNo,
