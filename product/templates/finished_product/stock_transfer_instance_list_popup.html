@@ -5,43 +5,47 @@
 <div class="mt-2">
     <form method="POST">
         {% csrf_token %}
-        <div class="mb-2">
-            {% if voucher_type == 'purchase' %}
-            <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
-            <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
-            <h5 class="fw-bold">Purchase No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
-            {% elif voucher_type == 'transfer' %}
-            <input type="hidden" value="transfer" name="voucher_type" id="id_voucher_type">
-            <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
-            <h5 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
-
-            {% endif %}
+        <div class="d-flex">
+            
+            
         
         </div>
-        <div class="mb-3">
-            <h4 class="fw-bold d-inline ">INWard Process</h4> <span id="responseMessage" class="mx-5 fw-bold"></span>
-            <div class="mb-2 mt-2">
-                <label for="inwordSerialNo" class="fw-bold">Scan S/N :</label>
-                <input type="text" name="scanned_serial_number" class="item-select ms-3" id="inwordSerialNo">
-            </div>
-            <div class="d-flex ">
+ 
+            <div class="row ">
+                <div class="col-lg-6">
+                    <div>
+                        {% if voucher_type == 'purchase' %}
+                    <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
+                    <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
+                    <h5 class="fw-bold">Purchase No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
+                    {% elif voucher_type == 'transfer' %}
+                    <input type="hidden" value="transfer" name="voucher_type" id="id_voucher_type">
+                    <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
+                    <h5 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
+        
+                    {% endif %}
+                    </div>
+                   
                 <div class="mb-2">
-                    <label for="id_manualSerialNo" class="fw-bold">Manual S/N :</label>
-                    <input type="text" name="manual_serial_number" class="item-select" id="id_manualSerialNo">
+                    <label for="inwordSerialNo" class="fw-bold">Scan :</label>
+                    <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
+                    <label for="id_manualSerialNo" class="fw-bold ms-1">M-Scan :</label>
+                    <input type="text" name="manual_serial_number" class="item-selects" id="id_manualSerialNo">
                 </div>
-                <div class="mb-2 ms-2 d-flex ms-2">
-                    <label for="id_bin_Name" class="fw-bold ms-5">Bin :</label>
-                    <select  class="productSelect" name="product_bin" id="id_bin_Name">
-                    </select>
-                    <!-- <div name="bin_Name" class="item-selects s-suggestion-containers" id="id_bin_Name" dir="auto" spellcheck="false" tabindex="0" aria-label="Bin Name" >
+                <div class="d-flex ">
+                    <div class="mb-2">
+                        <label for="id_bin_Name" class="fw-bold me-3">Bin :</label>
+                        <select  class="item-selects ms-3" name="product_bin" id="id_bin_Name">
+                        </select>
+                        <!-- <div name="bin_Name" class="item-selects s-suggestion-containers" id="id_bin_Name" dir="auto" spellcheck="false" tabindex="0" aria-label="Bin Name" >
+                                    
                                 
-                             
-                    </div> -->
+                        </div> -->
+                    </div>
                 </div>
-            </div>
-                     
-            <div class="row mb-3">
-                <div class="col-lg-7 " style="display:none" id="stockTransferList">
+                </div>
+                <div class="col-lg-6 " style="display:none" id="stockTransferList">
+                    <span id="responseMessage" class="ms-5 mb-1 fw-bold"></span>
                     <table class="table table-striped table-hover table-bordered" id="stockTransferInstanceTable">
                         <thead class="name_absolute">
                             <tr>
@@ -71,73 +75,78 @@
                    
                 </div>
             </div>
+                     
+            
           
-        </div>
-        <div class="mt-2">
+ 
+        <div class="">
                 <div class="row">
-                    <div class="col-lg-9">
-                        <h4 class="fw-bold">INWarded Product</h4>
-                        <table class="table table-striped table-hover table-bordered" id="inwordDateTable">
-                            <thead class="name_absolute sticky-top">
-                                <tr>
-                                    <th colspan="6"></th>
-                                    <th>Total :</th>
-                                    <th class="text-center"><span class="totalQty fw-bold " ></span></th>
-                                    <th class="text-center"><span class="totalentries text-success"></span></th>
-                                    <th colspan="3">Balance For inward :<span class="pendingQty text-danger ps-3"></span></th>
-                                   
-                                </tr>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Ref No</th>
-                                    <th>Model Name</th>
-                                    <th>Product SKU</th>
-                                    <th>Color</th>
-                                    <th>Image</th>
-                                    <th>Serial No</th>
-                                    <th>Quantity By Lots</th>
-                                    <th>Scan Qty</th>
-                                    <th>Balance Of Lots</th>
-                                    <th>Bin NO</th>
-                                    <th>Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-                                {% for entries in single_entries %}
-                            
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td><input type="text" class="productorderrawqty-input" value="{{ entries.product.Product.Product_Refrence_ID }}" readonly></td>
-                                    <td><input type="text" class="productShadeCutting_Material_input " value="{{ entries.product.Product.Model_Name }}" readonly></td>
-                                    <td><input type="number" class="productorder_input inwardedsku" value="{{ entries.product.PProduct_SKU }}" readonly></td>
-                                    <td><input type="text" class="productorderrawqty-input " value="{{ entries.product.PProduct_color.color_name }}" readonly></td>
-                                    <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_image.url }}" alt="Product" style="width: 60px; height: 60px;"></td>
-                                    <td><input type="text" class="productorder_input" value="{{ entries.unique_serial_no }}" readonly></td>
-                                    
-                                    {% if entries.related_purchase_item.quantity_total %}
-                                    <input type="hidden" value="purchase" class="recordtype">
-                                    <td class="text-nowrap"><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_purchase_item.quantity_total|default_if_none:0 }}" readonly>Lots</td>
-                                    {% else %}
-                                    <input type="hidden" value="transfer" class="recordtype">
-                                    <td class="text-nowrap"><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_transfer_record.product_quantity_transfer|default_if_none:0 }}" readonly>Lots</td>
-                                    
-                                    {% endif %}
-                                    <td><input type="number" class="productorderrawqty-input inwardedReceivedQty text-center" value="1" readonly></td> 
-                                    <td class="text-center balanceLots"></td>
-                                  
-                                    <td class="text-nowrap binvalue"><span>{{ entries.bin_number.bin_name|default_if_none:'' }} </span><span class="fw-bold text-primary binqty ps-3">{{entries.bin_number.product_size_in_bin}}- <span class="binsize text-success"></span></span></td>  
-                                    <td><span class="border-0 bg-transparent delete-btn" data-item-id="{{ entries.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
-                                        <input type="hidden" class="productbinValue" value="{{entries.bin_number.products_in_bin}}">
+                    <div class="col-lg-12">
+                        <h4 class="fw-bold">Product INWarded</h4>
+                        <div class="table-res">
+                            <table class="table table-striped table-hover table-bordered" id="inwordDateTable">
+                                <thead class="name_absolute sticky-top">
+                                    <tr>
+                                        <th colspan="6"></th>
+                                        <th>Total :</th>
+                                        <th class="text-center"><span class="totalQty fw-bold " ></span></th>
+                                        <th class="text-center"><span class="totalentries text-success"></span></th>
+                                        <th colspan="3">Balance For inward :<span class="pendingQty text-danger ps-3"></span></th>
+                                       
                                     </tr>
-                                {% endfor %}
-                            </tbody>    
-                        </table>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Ref No</th>
+                                        <th>Model Name</th>
+                                        <th>Product SKU</th>
+                                        <th>Color</th>
+                                        <th>Image</th>
+                                        <th>Serial No</th>
+                                        <th>Quantity By Lots</th>
+                                        <th>Scan Qty</th>
+                                        <th>Balance Of Lots</th>
+                                        <th>Bin NO</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="mainTableList" style="max-height: 350px; overflow-y: auto;">
+                                    {% for entries in single_entries %}
+                                
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td><input type="text" class="productorderrawqty-input" value="{{ entries.product.Product.Product_Refrence_ID }}" readonly></td>
+                                        <td><input type="text" class="productShadeCutting_Material_input " value="{{ entries.product.Product.Model_Name }}" readonly></td>
+                                        <td><input type="number" class="productorder_input inwardedsku" value="{{ entries.product.PProduct_SKU }}" readonly></td>
+                                        <td><input type="text" class="productorderrawqty-input " value="{{ entries.product.PProduct_color.color_name }}" readonly></td>
+                                        <td><img id="productImgPreview" name="product_img" src="{{ entries.product.PProduct_image.url }}" alt="Product" style="width: 60px; height: 60px;"></td>
+                                        <td><input type="text" class="productorder_input" value="{{ entries.unique_serial_no }}" readonly></td>
+                                        
+                                        {% if entries.related_purchase_item.quantity_total %}
+                                        <input type="hidden" value="purchase" class="recordtype">
+                                        <td class="text-nowrap"><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_purchase_item.quantity_total|default_if_none:0 }}" readonly>Lots</td>
+                                        {% else %}
+                                        <input type="hidden" value="transfer" class="recordtype">
+                                        <td class="text-nowrap"><input type="number" class="productorderrawqty-input inwardedQty text-center" value="{{ entries.related_transfer_record.product_quantity_transfer|default_if_none:0 }}" readonly>Lots</td>
+                                        
+                                        {% endif %}
+                                        <td><input type="number" class="productorderrawqty-input inwardedReceivedQty text-center" value="1" readonly></td> 
+                                        <td class="text-center balanceLots"></td>
+                                      
+                                        <td class="text-nowrap binvalue"><span>{{ entries.bin_number.bin_name|default_if_none:'' }} </span><span class="fw-bold text-primary binqty ps-3">{{entries.bin_number.product_size_in_bin}}- <span class="binsize text-success"></span></span></td>  
+                                        <td><span class="border-0 bg-transparent delete-btn" data-item-id="{{ entries.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td> 
+                                            <input type="hidden" class="productbinValue" value="{{entries.bin_number.products_in_bin}}">
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>    
+                            </table>
+                        </div>
+                        
                     </div>
                 </div>
         </div>
         
-        <div class="row mb-4">
-            <div class="col-lg-7">
+        <div class="row">
+            <div class="col-lg-12">
                 <table class="table table-striped table-hover table-bordered" id="inwardListproduct">
                     <thead class="name_absolute sticky-top">
                         <tr>
