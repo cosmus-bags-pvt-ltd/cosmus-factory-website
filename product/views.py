@@ -14261,9 +14261,41 @@ def outward_scan_product_create(request):
 
 def outward_scan_serial_no_process(request):
     print("in scan def")
-    if request.method == 'POST':
-        serial_no = request.POST.get('manual_serial_number')
-        print(serial_no)
+    try:
+        serialNo = request.GET.get('serialNo')
+        
+        if not serialNo:
+                return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
-    return redirect('outward-scan-product-create')
+        if sales_voucher_finish_Goods.objects.filter(unique_serial_no=serialNo).exists():
+            
+            return JsonResponse(
+                {'error': f'The serial number "{serialNo}" already exists. Please enter a different one.'},
+                status=400
+            )
+            
+        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_Refrence_ID','bin_number__bin_name'))
+
+
+        if filtered_product:
+            list_to_send = []
+
+            for query in filtered_product:
+                ref_no = query.get('product__Product__Product_Refrence_ID')
+                p_sku = query.get('product__PProduct_SKU')
+                serial_no = query.get('unique_serial_no')
+                product_model_name = query.get('product__Product__Model_Name')
+                color = query.get('product__PProduct_color__color_name')
+                bin = query.get('bin_number__bin_name')
+                qty = 1
+
+                list_to_send.append([ref_no,p_sku,product_model_name,color,serial_no,bin,qty])
+                
+            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
+            
+        return JsonResponse({'error': 'No items found.'}, status=404)
+        
+    except Exception as e:
+        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
+
         
