@@ -48,7 +48,8 @@
             
                 <td><img src="" id="product_img_{{forloop.counter0}}" width="30px" height="30px" alt="product"></td>
                 <td> <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" readonly></td>
-                <td><input type="text" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly></td>
+                <td><input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" readonly>
+                    <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly></td>
                 <td> <input type="number" name="{{form.prefix}}-quantity" value="" id="id_{{form.prefix}}-quantity" class="purchase-input" readonly></td>
             </tr>
 
@@ -117,13 +118,11 @@
                             const response = await sendSerialNumber(manualSerialNo);
                             
                             $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                            $('#id_manualSerialNo').val('');
                            
                         } catch (error) {
                             const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
                             $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
-                            $('#id_manualSerialNo').val('');
-                      
-                         
                         }
                     } else {
                         $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
@@ -141,14 +140,15 @@
     row.find('[name^="product_color_"]').val(productResponse[3]);
     row.find('[name$="-product"]').val(productResponse[1]);
     row.find('[name$="-unique_serial_no"]').val(productResponse[4]);
-    row.find('[name$="-bin_number"]').val(productResponse[5]);
+    row.find('[name$="-bin_number"]').val(productResponse[8]);
+    row.find('[name$="-bin_no"]').val(productResponse[5])
     row.find('[name$="-quantity"]').val(productResponse[6]);
     row.find('[id^="product_img_"]').attr("src", productResponse[7]);
   
 }
 
 async function sendSerialNumber(serialNo) {
-
+  
     try {
         const response = await $.ajax({
             url: '/outwardscanserialnoprocess/',
@@ -158,13 +158,13 @@ async function sendSerialNumber(serialNo) {
                 
             },
         });
-
+        if(serialNo){}
         if (response.products && response.products.length > 0) {
             const productResponse = response.products[0];
             console.log('productResponse',productResponse)
-            const tableBody = $('#outwardSales .mainTableList');
-     
 
+
+            const tableBody = $('#outwardSales .mainTableList');
             let rowToPopulate = null;
 
             // Find the first empty row
@@ -267,9 +267,20 @@ function isTableEmpty() {
         serialNoElement.name = `form-${formIndex}-unique_serial_no`;
         serialNoElement.value = '';
 
+        const binNameElement = lastRow.querySelector('input[name$="-bin_number"]');
+        binNameElement.id = `id_form-${formIndex}-bin_number`;
+        binNameElement.name = `form-${formIndex}-bin_number`;
+        binNameElement.value = '';
+
+        const binNoElement = lastRow.querySelector('input[name$="-bin_no"]');
+        binNoElement.id = `id_form-${formIndex}-bin_no`;
+        binNoElement.name = `form-${formIndex}-bin_no`;
+        binNoElement.value = '';
+
+
         const qunatityInputElement = lastRow.querySelector('[name$="-quantity"]');
         qunatityInputElement.id = `id_form-${formIndex}-quantity`;
-        qunatityInputElement.name = `form-${formIndex}-quantity`;
+        qunatityInputElement.name = `form-${formIndex}-quantity`; 
         qunatityInputElement.value="";
 
 
