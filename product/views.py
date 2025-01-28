@@ -14274,7 +14274,7 @@ def outward_scan_serial_no_process(request):
                 status=400
             )
             
-        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_Refrence_ID','bin_number__bin_name','product__PProduct_image'))
+        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_Refrence_ID','bin_number__bin_name','product__PProduct_image','bin_number'))
 
 
         if filtered_product:
@@ -14288,9 +14288,10 @@ def outward_scan_serial_no_process(request):
                 img = query.get('product__PProduct_image')
                 color = query.get('product__PProduct_color__color_name')
                 bin = query.get('bin_number__bin_name')
+                bin_id = query.get('bin_number')
                 qty = 1
 
-                list_to_send.append([ref_no,p_sku,product_model_name,color,serial_no,bin,qty,img])
+                list_to_send.append([ref_no,p_sku,product_model_name,color,serial_no,bin,qty,img,bin_id])
                 
             return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
             
