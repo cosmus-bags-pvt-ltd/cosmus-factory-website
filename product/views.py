@@ -14257,11 +14257,40 @@ def outward_scan_product_create(request):
                         if form.instance.pk:
                             form.instance.delete()
 
-                    for form in formset:
-                        form.save()
+                    
 
-                    print(request.POST)
-                    # return render(request,'accounts/sales_invoice.html',{'formset': formset})
+                    post_data = request.POST.dict()
+                    
+                    products = {}
+
+                    total_forms = int(post_data.get('form-TOTAL_FORMS', 0))
+
+                    for i in range(total_forms):
+                        product = post_data.get(f'form-{i}-product')
+                        quantity = int(post_data.get(f'form-{i}-quantity', 0))
+
+                        product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
+                        
+                        if product:
+                            if product in products:
+                                products[product]['quantity'] += quantity
+
+                            else:
+                                
+                                products[product] = {
+                                    'product_ref': post_data.get(f'form-{i}-product_RefNo'),
+                                    'product_name': post_data.get(f'form-{i}-product_name_value'),
+                                    'product': product,
+                                    'color': post_data.get(f'product_color_{i}'),
+                                    'quantity': quantity,
+                                    'mrp':product_info.Product.Product_MRP,
+                                    'customer_price':product_info.Product.Product_SalePrice_CustomerPrice,
+                                    'gst':product_info.Product.Product_GST.gst_percentage
+                                }
+                    product_list = list(products.values())
+                    print(product_list)
+                    formset = salesvouchercreateformset(initial = product_list)
+                    return render(request,'accounts/sales_invoice.html',{'formset': formset})
                   
             except Exception as e:
                 print(e)
