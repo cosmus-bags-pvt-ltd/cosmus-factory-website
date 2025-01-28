@@ -115,7 +115,6 @@
         {{ formset.management_form }}
         {% for forms in formset %}
         {{ forms.id }}
-        {% if forms.instance.id %}
         <tr>
           <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
           <td> 
@@ -159,51 +158,6 @@
         <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
         <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
       </tr>
-
-      {% elif not forms.instance.id %}
-      <tr>
-        <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
-        <td> 
-          
-        <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{{forms.initial.product}}"> 
-        <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{{forms.initial.product_name}}"> 
-          
-        
-        </td>
-        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.initial.color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
-
-        <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.initial.product}}" class="purchase-amount" readonly></td>
-
-        <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'' }}" ></td>
-
-        <td><input type="number" id="id_{{forms.prefix}}-mrp" class="purchase-input sales-mrp" name="{{forms.prefix}}-mrp" value="{{forms.initial.mrp}}" readonly></td>
-
-        <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.initial.customer_price}}" readonly></td>
-
-
-        <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" ></td>
-
-
-        <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" ></td>
-        <td>
-          <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
-      </td>
-      <td>
-          
-          <input type="text" id="id_{{forms.prefix}}-gst" class="purchase-mark purchase-gst" name="{{forms.prefix}}-gst" value="{{ forms.initial.gst }}" readonly >
-      </td>
-      <td>
-          <input type="number" id="id_{{forms.prefix}}-cgst" class="purchase-input purchase-cgst" name="{{forms.prefix}}-cgst" value=""readonly >
-      </td>
-      <td>
-          <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
-      </td>
-      <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
-      <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
-    </tr>
-
-        {% endif %}
-        
         {% endfor %}
       </tbody>
       <tbody>

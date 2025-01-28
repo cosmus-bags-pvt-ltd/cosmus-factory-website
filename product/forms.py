@@ -1282,5 +1282,5 @@ class OutwardProductForm(forms.ModelForm):
         fields = ['product', 'unique_serial_no', 'bin_number', 'quantity']
 
 
-OutwardProductFormSet = modelformset_factory(outward_products, form=OutwardProductForm, extra=0)
+OutwardProductFormSet = modelformset_factory(outward_products, form=OutwardProductForm, extra=1)
 
