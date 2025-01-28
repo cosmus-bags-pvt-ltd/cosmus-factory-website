@@ -75,7 +75,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, salesvouchermasterfinishGoodsForm,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, salesvoucherfinishGoodsForm, salesvouchermasterfinishGoodsForm,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -14247,15 +14247,27 @@ def download_picklist_excel(request,pl_id):
 
 
 def outward_scan_product_create(request):
-    pickilist_refrence = Picklist_voucher_master.objects.all()
+
     if request.method == 'POST':
         formset = OutwardProductFormSet(request.POST)
         if formset.is_valid():
-            formset.save()  # Save all the forms at once
-            return redirect('success')  # Redirect after saving
+            try:
+                with transaction.atomic():
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
+                    for form in formset:
+                        form.save()
+
+                    print(request.POST)
+                    # return render(request,'accounts/sales_invoice.html',{'formset': formset})
+                  
+            except Exception as e:
+                print(e)
     else:
-        formset = OutwardProductFormSet()
-    return render(request,'finished_product/outward_scan_product_create.html',{'pickilist_refrence':pickilist_refrence,'formset': formset})
+        formset = OutwardProductFormSet()       
+    return render(request,'finished_product/outward_scan_product_create.html',{'formset': formset})
 
 
 
