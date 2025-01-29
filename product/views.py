@@ -14290,7 +14290,7 @@ def outward_scan_product_create(request):
                     product_list = list(products.values())
                     print(product_list)
                     formset = salesvouchercreateformset(initial = product_list)
-                    return render(request,'accounts/sales_invoice.html',{'formset': formset})
+                    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset})
                   
             except Exception as e:
                 print(e)

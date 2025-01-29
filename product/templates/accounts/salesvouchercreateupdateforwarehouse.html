@@ -118,6 +118,7 @@
       {{ formset.management_form }}
       {% for forms in formset %}
       {{ forms.id }}
+      {% if forms.instance.id %}
       <tr>
         <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
         <td> 
@@ -128,6 +129,7 @@
         <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
 
         <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
+
 
         <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'1' }}" readonly></td>
 
@@ -156,12 +158,53 @@
       <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
       <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
     </tr>
+    {% elif not forms.instance.id %}
+    <tr>
+      <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
+      <td> 
+          
+          <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{forms.initial.product_name}}" readonly >
+        
+      </td>
+      <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.initial.color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+
+      <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.initial.product}}" class="purchase-amount" readonly></td>
+
+
+      <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.initial.quantity}}" readonly></td>
+
+      <td><input type="number" id="id_{{forms.prefix}}-mrp" class="purchase-input sales-mrp" name="{{forms.prefix}}-mrp" value="{{forms.initial.mrp}}" readonly></td>
+
+      <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.initial.customer_price}}" readonly></td>
+
+
+      <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="" ></td>
+
+
+      <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="" ></td>
+      <td>
+        <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="" readonly>
+    </td>
+    <td>
+        
+        <input type="number" id="id_{{forms.prefix}}-gst" class="purchase-mark purchase-gst" name="{{forms.prefix}}-gst" value="{{forms.initial.gst}}" readonly >
+    </td>
+    <td>
+        <input type="number" id="id_{{forms.prefix}}-cgst" class="purchase-input purchase-cgst" name="{{forms.prefix}}-cgst" value=""readonly >
+    </td>
+    <td>
+        <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
+    </td>
+    <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
+    <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
+    </tr>
+    {% endif %}
       {% endfor %}
     </tbody>
     <tbody>
       <tr>
           <td class="text-center fw-bold" ><span>Total</span></td>
-          <td colspan="4"></td>
+          <td colspan="3"></td>
           <td> <input type="number" class="purchase-input" style="border: 1px solid red;" name="grand_quantity" id ="id_grand_quantity" value="" maxlength="50" step=".01" readonly></td>
           <td colspan="4"></td>
           <td><input type="number" class="purchase-amount" style="border: 1px solid red;"  name="grand_taxableAmount" id ="id_grand_taxableAmount" value="" maxlength="50" step=".01" readonly ></td>
@@ -409,158 +452,7 @@ $(document).on('change', 'select[name^="party_name"]', function () {
 })
 </script>
 <script>
-$(document).ready(function () {
-   
- function sendSerialNumber() {
-   
-            const tableBody = $('#salesTable .mainTableList');
-            let rowToPopulate = null;
 
-            // Find the first empty row
-            tableBody.find('tr').each(function () {
-                const row = $(this);
-                const inputField = row.find('[name$="-product_name_value"]');
-                console.log('inputField',inputField)
-
-                if (inputField.val().trim() === "") {
-                    rowToPopulate = row;
-                    return false; // Break the loop
-                }
-            });
-
-            if (rowToPopulate) {
-              console.log('empty row',rowToPopulate)
-    
-        
-            } else {
-                // Add a new row and populate it
-                console.log('create row',rowToPopulate)
-                addNewRow();
-            }
-        return response;
-    
-}
-
-    function isTableEmpty() {
-    
-    return $('#salesTable .mainTableList tr').toArray().every(row => isRowEmpty($(row)));
-      }
-
-      function isRowEmpty(row) {
-          return row.find('td :input').filter(function () {
-            console.log('test',$(this).val().trim() )
-              return $(this).val().trim() !== "";
-          }).length === 0;
-      }
-
-
-    function addNewRow() {
-        const tableBody = document.querySelector('#salesTable .mainTableList');
-
-        tableBody.querySelectorAll('tr').forEach(row => {
-            if (window.getComputedStyle(row).display !== 'none') {
-                lastVisibleRow = row;
-            }
-        });
-
-        const formCountInput = document.getElementById("id_sales_voucher_finish_goods_set-TOTAL_FORMS");
-        const formCount = parseInt(formCountInput.value);
-        const formIndex = formCount;
-        const lastRow = lastVisibleRow.cloneNode(true);
-        lastRow.querySelectorAll("input select").forEach(function (e) {
-            e.value = "";
-        });
-
-        // Update the input name, id, and value of the last row
-        const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
-        rowElement.id = `rowNo_${formIndex}`;
-        rowElement.name = `rowNo_${formIndex}`;
-        rowElement.value = formIndex + 1;
-        rowElement.style.border = "none";
-
-
-        const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
-        inputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
-        inputElement.name = `sales_voucher_finish_goods_set-${formIndex}-product_name_value`;
-        inputElement.value = "";
-
-        const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
-        colorInputElement.id = `product_color_${formIndex}`;
-        colorInputElement.name = `product_color_${formIndex}`;
-        colorInputElement.value = "";
-
-        const skuInputElement = lastRow.querySelector('.purchase-amount[name^="product_Sku"]');
-        skuInputElement.id = `product_Sku_${formIndex}`;
-        skuInputElement.name = `product_Sku_${formIndex}`;
-        skuInputElement.value = "";
-
-        const qunatityInputElement = lastRow.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
-        qunatityInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-quantity`;
-        qunatityInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-quantity`;
-        qunatityInputElement.value="1";
-
-        const mrpInputElement = lastRow.querySelector('.sales-mrp[name^="sales_voucher_finish_goods_set-"][name$="-mrp"]');
-        mrpInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-mrp`;
-        mrpInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-mrp`;
-        mrpInputElement.value="";
-
-        const salesPriceInputElement = lastRow.querySelector('.sales_price[name$="-sale_price"]');
-        salesPriceInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sale_price`;
-        salesPriceInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-sale_price`;
-        salesPriceInputElement.value="";
-
-        const treadDiscInputElement = lastRow.querySelector('.sales-trade_disct[name$="-trade_disct"]');
-        treadDiscInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
-        treadDiscInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-trade_disct`;
-        treadDiscInputElement.value="";
-
-        const salesSplInputElement = lastRow.querySelector('.sales-spl_disct[name$="-spl_disct"]');
-        salesSplInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
-        salesSplInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-spl_disct`;
-        salesSplInputElement.value="";
-
-        const amountInputElement = lastRow.querySelector('.total-amount[name$="-amount"]');
-        amountInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-amount`;
-        amountInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-amount`;
-        amountInputElement.value="";
-
-        const gstElement = lastRow.querySelector('.purchase-gst[name$="-gst"]');
-        gstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-gst`;
-        gstElement.name = `sales_voucher_finish_goods_set-${formIndex}-gst`;
-        gstElement.value="";
-        
-        
-        const cgstElement = lastRow.querySelector('.purchase-cgst[name$="-cgst"]');
-        cgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-cgst`;
-        cgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-cgst`;
-        cgstElement.value="";
-
-        const sgstElement = lastRow.querySelector('.purchase-sgst[name$="-sgst"]');
-        sgstElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-sgst`;
-        sgstElement.name = `sales_voucher_finish_goods_set-${formIndex}-sgst`; 
-        sgstElement.value="";
-
-        const TotalAmountElement = lastRow.querySelector('.purchase-total[name$="-total_amount"]');
-        TotalAmountElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-total_amount`;
-        TotalAmountElement.name = `sales_voucher_finish_goods_set-${formIndex}-total_amount`;
-        TotalAmountElement.value="";
-
-        const deleteElement = lastRow.querySelector('input[name$="-DELETE"]');
-        deleteElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-DELETE`;
-        deleteElement.name = `sales_voucher_finish_goods_set-${formIndex}-DELETE`;
-        deleteElement.value= "";
-
-        formCountInput.value = formCount + 1;
-        tableBody.appendChild(lastRow);
-        bindRowListeners(lastRow);
-        calculateTaxSummary();
-        calculateTotalAmount();
-        calculateOtherTotal();
-        deleteRowData();
-        inputCheck();
-    }
-
-});
 
  function bindRowListeners(row) {
      const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
@@ -628,8 +520,6 @@ function deleteRowData(){
      }
  });
 });
-
-
 };
 
 function calculateTotalAmount() {
@@ -721,73 +611,72 @@ function calculateTotalAmount() {
          document.getElementById('id_grand_amount').value =isNaN(grandTotalAmount) ? '' : grandTotalAmount.toFixed(2);   
          calculateOtherTotal()   
  }
- // calculateTotalAmount()
- function calculateOtherTotal(grandTotal) {
 
-      const grandTotals = parseFloat(document.getElementById('id_grand_amount').value);
-     
-       let  grossTotal = grandTotals;      
+
+  function calculateOtherTotal(grandTotal) {
+  
+    const grandTotals = parseFloat(document.getElementById('id_grand_amount').value);
+    let  grossTotal = grandTotals;      
  
      // Set the calculated gross total value to the gross total input field
-     document.getElementById('id_gross_total').value =isNaN(grossTotal) ? '' : grossTotal.toFixed(2);
+    document.getElementById('id_gross_total').value =isNaN(grossTotal) ? '' : grossTotal.toFixed(2);
 
-     const cashDiscount = parseInt(document.getElementById('id_cash_disct').value);
-   
-     const taxablevalue = parseFloat(document.getElementById('id_grand_taxableAmount').value);
+    const cashDiscount = parseInt(document.getElementById('id_cash_disct').value);
+  
+    const taxablevalue = parseFloat(document.getElementById('id_grand_taxableAmount').value);
 
-     let cashdisc = taxablevalue * cashDiscount / 100;
+    let cashdisc = taxablevalue * cashDiscount / 100;
 
-     document.getElementById('id_cash_disct_value').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
-     const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
+    document.getElementById('id_cash_disct_value').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
+    const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
 
-     let finalTotal = grossTotal + cashdisc + frightTransport;
+    let finalTotal = grossTotal + cashdisc + frightTransport;
 
-     document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
+    document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
 
-       
-     let finalTotals = Math.round(finalTotal)
-     let roundOff = finalTotals - finalTotal;
+      
+    let finalTotals = Math.round(finalTotal)
+    let roundOff = finalTotals - finalTotal;
 
      document.getElementById('id_round_off').value =isNaN(roundOff) ? '' : roundOff.toFixed(2);
-     // Set the calculated grand total value to the grand total input field
      document.getElementById('id_grand_total').value = isNaN(finalTotals) ? '' : finalTotals.toFixed(2);
- }
- // Call the function initially to calculate total amount, GST, and grand total on page load
-  // Add onchange event handler to id_fright_transport
+  }
+    // Call the function initially to calculate total amount, GST, and grand total on page load
+      // Add onchange event handler to id_fright_transport
   document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
- document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
- document.getElementById('id_cash_disct').addEventListener('input', calculateOtherTotal);
+  document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
+  document.getElementById('id_cash_disct').addEventListener('input', calculateOtherTotal);
  
- function calculateTaxSummary(){
-   const row = document.querySelectorAll('#salesbody tr')
-   const taxSummary = {}; 
-   const isGstMatching = getGstNo();
+  function calculateTaxSummary(){
+    const row = document.querySelectorAll('#salesbody tr')
+    const taxSummary = {}; 
+    const isGstMatching = getGstNo();
 
-   row.forEach(row => {
-     if (row.style.display === 'none') return; // Skip hidden rows
-     const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
-     const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
- 
-     if (!taxSummary[gstRate]) {
-   // Initialize data for this GST rate
-       taxSummary[gstRate] = {
-         taxableValue: 0,
-         cgst: 0,
-         sgst: 0
-       };
-     }
-     taxSummary[gstRate].taxableValue += taxableValue;
-
-     if (isGstMatching) {
-       // GST numbers match: split equally into CGST and SGST
-       taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
-       taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
-     } else {
-       // GST numbers do not match: treat all as SGST (or IGST)
-       taxSummary[gstRate].cgst += 0; // No CGST
-       taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
-     }
+    row.forEach(row => {
+      if (row.style.display === 'none') return; // Skip hidden rows
+      const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
+      const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
+  
+      if (!taxSummary[gstRate]) {
     
+        taxSummary[gstRate] = {
+          taxableValue: 0,
+          cgst: 0,
+          sgst: 0
+        };
+      }
+      taxSummary[gstRate].taxableValue += taxableValue;
+
+      if (isGstMatching) {
+        // GST numbers match: split equally into CGST and SGST
+        taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
+        taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
+      } else {
+        // GST numbers do not match: treat all as SGST (or IGST)
+        taxSummary[gstRate].cgst += 0; // No CGST
+        taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
+      }
+      
    })
 
    const taxSummaryBody = document.querySelector('#taxSummary .mainTableList');
@@ -891,41 +780,9 @@ function calculateTotalAmount() {
 
 function inputCheck(){
 
-  const inwordscan = document.getElementById('inwordSerialNo');
-  const manualScan = document.getElementById('manualAjaxButton');
   const qtyValues = document.querySelectorAll('[name$="-quantity"]')
   var tableRows = document.querySelectorAll('#salesTable .mainTableList tr');
 
-  inwordscan.addEventListener('keydown',function(event){
-    if(event.key === "Tab"){
-      event.preventDefault();
-      var table = document.querySelectorAll('#salesTable .mainTableList tr');
-      table.forEach(function(row){
-        var qty = row.querySelector('[name$="-trade_disct"]')
-        var qtyvalue = qty.value;
-        if(qtyvalue === ''){
-          qty.focus()
-        }
-      }) 
-    }
-  })
-
-  manualScan.addEventListener('keydown',function(event){
-    if(event.key === "Tab"){
-      event.preventDefault();
-      var table = document.querySelectorAll('#salesTable .mainTableList tr');
-      table.forEach(function(row){
-        var qty = row.querySelector('[name$="-trade_disct"]')
-        var qtyvalue = qty.value;
-        if(qtyvalue === ''){
-          qty.focus()
-        }
-   
-      })
-      
-    }
-   
-  })
 
   tableRows.forEach(function (row, index) {
     const rate = row.querySelector('[name$="-spl_disct"]');
