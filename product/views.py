@@ -3108,97 +3108,6 @@ def salesvouchercreateupdate(request,s_id=None):
 
 
 
-def sales_voucher_create_update_for_warehouse(request,s_id=None):
-    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-    warehouse_names = Finished_goods_warehouse.objects.all()
-
-    dict_to_send = None
-
-    if s_id:
-        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
-        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
-        page_name = 'Edit Sales Invoice'
-        warehouse_id = voucher_instance.selected_warehouse.id
-        print('warehouse_id',warehouse_id)
-  
-        
-    else:
-        voucher_instance = None
-        master_form = salesvouchermasterfinishGoodsForm()
-        formset = salesvouchercreateformset()
-        page_name = 'Create Sales Invoice'
-
-        
-            
-    if request.method == "POST":
-        print(request.POST)
-        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        
-        # formset.forms = [form for form in formset.forms if form.has_changed()]
-
-        if not master_form.is_valid():
-            print("Form Errors:", master_form.errors)
-
-        if not formset.is_valid():
-            for form in formset:
-                if not form.is_valid():
-                    print("Form Errors:", form.errors)
-
-        
-
-        if master_form.is_valid() and formset.is_valid():
-            try:
-                with transaction.atomic():
-                    master_form_instance = master_form.save(commit=False)
-                    master_form_instance.save()
-                    
-                    selected_warehouse = master_form_instance.selected_warehouse
-
-                    for form in formset.deleted_forms:
-                        if form.instance.pk:
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-
-                            warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
-                            warehouse_qty_value.quantity = warehouse_qty_value.quantity + product_qty
-                            warehouse_qty_value.save()
-
-                            form.instance.delete()
-
-                    for form in formset:
-                        if not form.cleaned_data.get('DELETE'):
-                            form_instance = form.save(commit=False)
-                            form_instance.sales_voucher_master = master_form_instance
-                            form_instance.save()
-
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-
-                            if form.has_changed():
-
-                                old_product_name = form.initial.get('product_name')
-                                old_product_quantity = form.initial.get('quantity')
-                                
-                                if old_product_quantity:
-                                    print("in single")
-
-                                    warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
-
-                                    difference =  product_qty - old_product_quantity
-
-                                    warehouse_qty_value.quantity = warehouse_qty_value.quantity - difference
-                                    warehouse_qty_value.save()
-
-                                
-                    return redirect('sales-voucher-list')
-                
-            except Exception as e:
-                print(e)
-
-
-    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names,'dict_to_send':dict_to_send})
 
 
 
@@ -14244,8 +14153,14 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
+def decimal_to_float(obj):
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    raise TypeError("Type not serializable")
 
 
+
+from urllib.parse import urlencode
 def outward_scan_product_create(request):
     
     if request.method == 'POST':
@@ -14289,23 +14204,248 @@ def outward_scan_product_create(request):
                                     'gst':product_info.Product.Product_GST.gst_percentage
                                 }
                     product_list = list(products.values())
-                    print(product_list)
-
-                    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-                    warehouse_names = Finished_goods_warehouse.objects.all()
-
-                    salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list), can_delete=True)
-
-                    formset = salesvouchercreateformset(initial = product_list)
-
-                    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset,'party_name':party_name,'warehouse_names':warehouse_names,})
                     
-                  
+                    # print('product_list = ',product_list)
+
+                    # party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+                    # warehouse_names = Finished_goods_warehouse.objects.all()
+
+                    # salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list), can_delete=True)
+
+                    # formset = salesvouchercreateformset(initial = product_list)
+
+                    # return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset,'party_name':party_name,'warehouse_names':warehouse_names,})
+                    
+                    query_params = urlencode({'products': json.dumps(product_list, default=decimal_to_float)})
+                    return redirect(f'/salesvouchercreateupdateforwarehouse/?{query_params}')
             except Exception as e:
                 print(e)
     else:
         formset = OutwardProductFormSet(queryset=outward_products.objects.none())       
     return render(request,'finished_product/outward_scan_product_create.html',{'formset': formset})
+
+
+
+
+
+def sales_voucher_create_update_for_warehouse(request,s_id=None):
+    
+    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+    warehouse_names = Finished_goods_warehouse.objects.all()
+
+    if s_id:
+        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
+        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
+        page_name = 'Edit Sales Invoice'
+        warehouse_id = voucher_instance.selected_warehouse.id
+        print('warehouse_id',warehouse_id)
+
+    else:
+        voucher_instance = None
+        master_form = salesvouchermasterfinishGoodsForm()
+        page_name = 'Create Sales Invoice'
+
+        product_list = request.GET.get('products', '[]')
+        
+        product_list2 = json.loads(product_list) if product_list else []
+
+        salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list2), can_delete=True)
+
+        formset = salesvouchercreateformset(initial = product_list2)
+
+
+    if request.method == "POST":
+        print(request.POST)
+        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
+        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
+        
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+                    
+                    selected_warehouse = master_form_instance.selected_warehouse
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+
+
+                            print('product_name from function = ',product_name)
+                            
+                            # warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
+                            # warehouse_qty_value.quantity = warehouse_qty_value.quantity + product_qty
+                            # warehouse_qty_value.save()
+
+                            # form.instance.delete()
+
+                    # for form in formset:
+                    #     if not form.cleaned_data.get('DELETE'):
+                    #         form_instance = form.save(commit=False)
+                    #         form_instance.sales_voucher_master = master_form_instance
+                    #         form_instance.save()
+
+                            # product_name = form.instance.product_name
+                            # product_qty = form.instance.quantity
+
+                            # if form.has_changed():
+
+                            #     old_product_name = form.initial.get('product_name')
+                            #     old_product_quantity = form.initial.get('quantity')
+                                
+                            #     if old_product_quantity:
+                            #         print("in single")
+
+                            #         warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
+
+                            #         difference =  product_qty - old_product_quantity
+
+                            #         warehouse_qty_value.quantity = warehouse_qty_value.quantity - difference
+                            #         warehouse_qty_value.save()
+
+                                
+                    return redirect('sales-voucher-list')
+                
+            except Exception as e:
+                print(e)
+
+
+    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names})
+
+
+
+# def sales_voucher_create_update_for_warehouse(request,s_id=None):
+
+#     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+#     warehouse_names = Finished_goods_warehouse.objects.all()
+
+#     dict_to_send = None
+
+    
+    
+
+#     if s_id:
+#         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+#         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
+#         formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
+#         page_name = 'Edit Sales Invoice'
+#         warehouse_id = voucher_instance.selected_warehouse.id
+#         print('warehouse_id',warehouse_id)
+  
+        
+#     # else:
+#     #     voucher_instance = None
+#     #     master_form = salesvouchermasterfinishGoodsForm()
+#     #     formset = salesvouchercreateformset()
+#     #     page_name = 'Create Sales Invoice'
+
+#     else:
+#         voucher_instance = None
+#         master_form = salesvouchermasterfinishGoodsForm()
+#         page_name = 'Create Sales Invoice'
+
+#         product_list = request.GET.get('products', '[]')
+        
+#         product_list2 = json.loads(product_list) if product_list else []
+
+#         salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list2), can_delete=True)
+
+#         formset = salesvouchercreateformset(initial = product_list2)
+
+
+#     if request.method == "POST":
+#         print(request.POST)
+#         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
+#         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+        
+#         # formset.forms = [form for form in formset.forms if form.has_changed()]
+
+#         if not master_form.is_valid():
+#             print("Form Errors:", master_form.errors)
+
+#         if not formset.is_valid():
+#             for form in formset:
+#                 if not form.is_valid():
+#                     print("Form Errors:", form.errors)
+
+        
+
+#         if master_form.is_valid() and formset.is_valid():
+#             try:
+#                 with transaction.atomic():
+#                     master_form_instance = master_form.save(commit=False)
+#                     master_form_instance.save()
+                    
+#                     selected_warehouse = master_form_instance.selected_warehouse
+
+#                     for form in formset.deleted_forms:
+#                         if form.instance.pk:
+#                             product_name = form.instance.product_name
+#                             product_qty = form.instance.quantity
+#                             pass
+#                             # warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
+#                             # warehouse_qty_value.quantity = warehouse_qty_value.quantity + product_qty
+#                             # warehouse_qty_value.save()
+
+#                             # form.instance.delete()
+
+#                     for form in formset:
+#                         if not form.cleaned_data.get('DELETE'):
+#                             form_instance = form.save(commit=False)
+#                             form_instance.sales_voucher_master = master_form_instance
+#                             form_instance.save()
+
+#                             # product_name = form.instance.product_name
+#                             # product_qty = form.instance.quantity
+
+#                             # if form.has_changed():
+
+#                             #     old_product_name = form.initial.get('product_name')
+#                             #     old_product_quantity = form.initial.get('quantity')
+                                
+#                             #     if old_product_quantity:
+#                             #         print("in single")
+
+#                             #         warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
+
+#                             #         difference =  product_qty - old_product_quantity
+
+#                             #         warehouse_qty_value.quantity = warehouse_qty_value.quantity - difference
+#                             #         warehouse_qty_value.save()
+
+                                
+#                     return redirect('sales-voucher-list')
+                
+#             except Exception as e:
+#                 print(e)
+
+
+#     return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names,'dict_to_send':dict_to_send})
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
