@@ -127,42 +127,6 @@
     </form>
 </div>
 
-<!-- <script>
-  $(document).ready(function () {
-    $('#addRowButton').on('click',function(){
-        var table = $('#createpickListTable .mainTableList tr');
-
-        var previousRow = lastRow.prev(); //
-        
-        var qty = previousRow.find('[name$="-product_quantity"]').val();
-        var binNumber = previousRow.find('[name$="-bin_number"]').val();
-        var sku = previousRow.find('[name^="product_Sku_"]').val();
-
-        $.ajax({
-            url: '/picklistproductajax/',
-            method: 'GET',
-            data: { 
-                'sku':sku,
-                'qty': qty,
-                'binNumber':binNumber,
-             },
-            success: function (response) {
-                console.log(response)
-            },
-            error:function(error){
-                console.log(error) 
-            } 
-        })
-       
-    })
-    
-})
-
-</script> -->
-
-
-
-
 <script>
     //This ajax call is to populate the shade and color based on the selected item once retrive the value
     //When click the item name then append the shades with the color, per 
@@ -312,7 +276,7 @@
                     }
           
                 })
-               
+              
                 const selectBin = selectedValue[3]; // Array of objects
          
                 if (selectBin) {
@@ -320,24 +284,24 @@
                     var productmainQty = parseInt($(`#id_product_quantity-${purchaseValue}`).val())
                     var selectedBins = {}; 
                     productSelectBin.empty();
-                    productSelectBin.append('<option value="">Select Bin</option>');
+              
                     if (productSelectBin) {
                             selectBin.forEach(binObject => {
                                 Object.entries(binObject).forEach(([binKey, binArray]) => {
                                     if (Array.isArray(binArray) && binArray.length === 2) {
                                         const [binName, quantity] = binArray;
-                                        let balanceQty = quantity - productReserve - productmainQty;
+                                        let balanceQty = quantity - productReserve;
 
                                         console.log('Initial Balance Qty:', balanceQty);
 
                                         let optionHtml;
-                                        // if (balanceQty > 0) {
-                                            optionHtml = `<option value="${binKey}" data-bin="${binKey}" data-quantity="${quantity}" data-balance="${balanceQty}">
-                                                            ${binName} - ${quantity} -${balanceQty}
-                                                        </option>`;
-                                        // } else {
-                                        //     optionHtml = `<option value="${binKey}" data-bin="${binKey}" data-balance="0">Inward Qty Empty</option>`;
-                                        // }
+
+                                        if (balanceQty > 0) {
+                                            let optionHtml = `<option value="${binKey}" data-bin="${binKey}" data-quantity="${quantity}" data-balance="${balanceQty}">
+                                                                ${binName} - ${quantity} - ${balanceQty}
+                                                            </option>`;
+                                            productSelectBin.append(optionHtml);
+                                        }
 
                                         productSelectBin.append(optionHtml);
                                     } else {
@@ -352,54 +316,74 @@
 
                   
                     } 
-                    productSelectBin.on("change", function () {
-                            updateBalance();
-                        });
+                //  $('[name$="-product_quantity"]').on('input', function () {
+                //     updateBalance();
+                // });
+
+
 
                 function updateBalance() {
                     let selectedOption = productSelectBin.find("option:selected");
-                    console.log(selectedOption)
+          
                     let binKey = selectedOption.data("bin");
                     let selectedQuantity = parseInt(selectedOption.data("quantity"));
                     let availableBalance = parseInt(selectedOption.data("balance"));
+                    let productValue = $('[name$="-product_quantity"]').val();
+                    let currentRow = $(`input[name="picklist_products_list-${purchaseValue}-product_quantity"]`);
+                    let previousRow = currentRow.closest("tr").prev().find(`input[name^="picklist_products_list-"][name$="-product_quantity"]`);
 
-                    console.log("Selected Bin:", binKey, "Initial Balance:", availableBalance);
+                    console.log( "purchaseValue:", purchaseValue);
+                    let previousRowValue = parseInt(previousRow.val()) || 0; // Get previous row value
+                    let currentRowValue = parseInt(currentRow.val()) || 0;
+                
+                    console.log("Selected Bin:", binKey, "availableBalance:", availableBalance);
                     console.log("Selected Bin:", binKey, "selectedQuantity:", selectedQuantity);
-                    console.log( "productmainQty:", productmainQty);
-                    // Check if bin was previously selected and restore its balance
-                    if (selectedBins[binKey]) {
-                        availableBalance += selectedBins[binKey];
-                    }
+                    console.log( "previousRowValue:", previousRowValue);
+                    console.log( "currentRowValue:", currentRowValue);
+                   
+                    let remainingQty = availableBalance - previousRowValue;
+                    // ✅ Calculate new balance for the selected bin only
+                    
+                    console.log('Remaining Qty:', remainingQty);
 
-                    // Calculate new balance after selection
-                    let remainingQty =  selectedQuantity - productmainQty ;
-                    console.log('remainingQty',remainingQty)
                     if (remainingQty >= 0) {
-                        selectedBins[binKey] = selectedQuantity; // Store selected quantity for reference
-                        availableBalance = selectedQuantity;
+                        selectedOption.attr("data-balance", remainingQty); // Update balance in the selected option
                     } else {
-                        alert("Not enough balance available!");
-                        return;
+
+                        // currentRow.val(availableBalance);
+                     
                     }
 
-                    console.log("Updated Bin Balance:", availableBalance);
+                    console.log(`Updated Balance for Selected Bin (${binKey}):`, remainingQty);
 
-                    // ✅ Update balance display
-                    $("#balanceDisplay").text(`Remaining Product Quantity: ${remainingQty}`);
+                    if (remainingQty === 0) {
+                        selectedOption.remove(); // Remove the option from dropdown
+                    }
 
-                    // ✅ Disable the selected option to prevent multiple selections
-                    // selectedOption.attr("disabled", true);
 
-                    // ✅ Update all options dynamically with new balances
-                    // productSelectBin.find("option").each(function () {
-                    //     let currentBinKey = $(this).data("bin");
-                    //     let originalQty = parseInt($(this).data("quantity"));
+                    //✅ Update all options dynamically with new balances
+                    productSelectBin.find("option").each(function () {
+                        // let selectedOption = $(this).find("option:selected");
+                        let currentBinKey = $(this).data("bin");
+                        let originalQty = parseInt($(this).data("quantity"));
 
-                    //     // Adjust balance for other options
-                    //     let newBalance = originalQty - (selectedBins[currentBinKey] || 0);
-                    //     $(this).text(`${$(this).data("bin")} - ${originalQty} (Available: ${newBalance})`);
-                    //     $(this).data("balance", newBalance);
-                    // });
+                       // Adjust balance for other options
+                        let newBalance = originalQty - (selectedBins[currentBinKey] || 0);
+                        
+                        if (newBalance > 0) {
+                            $(this).text(`${$(this).data("bin")} - ${originalQty} - ${newBalance}`);
+                            $(this).data("balance", newBalance);
+                        } else {
+                            $(this).remove(); // Remove options with 0 balance
+                        }
+                    });
+
+                    if (productSelectBin.find("option").length > 0) {
+                        productSelectBin.find("option:first").prop("selected", true);
+                       
+                    } else {
+                        console.log("No more bins available.");
+                    }
                 }
                         
 
@@ -764,7 +748,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function updateForm(){
     var formId = document.getElementById('id_picklist_products_list-0-id').value;
-    console.log(typeof(formId))
+
     if(formId !== ''){
         
             var addButton = document.getElementById('addRowButton');
