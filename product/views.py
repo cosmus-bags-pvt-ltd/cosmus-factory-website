@@ -48,7 +48,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     gst, item_color_shade, item_godown_quantity_through_table,
                     item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item,
                     labour_workin_approval_report, labour_workout_childs, labour_workout_cutting_items,
-                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, 
+                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_products, 
                     packaging, product_2_item_through_table, product_godown_quantity_through_table, 
                     product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
@@ -14247,9 +14247,9 @@ def download_picklist_excel(request,pl_id):
 
 
 def outward_scan_product_create(request):
-
+    
     if request.method == 'POST':
-        formset = OutwardProductFormSet(request.POST)
+        formset = OutwardProductFormSet(request.POST, queryset=outward_products.objects.none())
         if formset.is_valid():
             try:
                 with transaction.atomic():
@@ -14257,7 +14257,8 @@ def outward_scan_product_create(request):
                         if form.instance.pk:
                             form.instance.delete()
 
-                    
+                    # for form in formset:
+                    #     form.save()
 
                     post_data = request.POST.dict()
                     
@@ -14289,13 +14290,21 @@ def outward_scan_product_create(request):
                                 }
                     product_list = list(products.values())
                     print(product_list)
+
+                    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+                    warehouse_names = Finished_goods_warehouse.objects.all()
+
+                    salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list), can_delete=True)
+
                     formset = salesvouchercreateformset(initial = product_list)
-                    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset})
+
+                    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset,'party_name':party_name,'warehouse_names':warehouse_names,})
+                    
                   
             except Exception as e:
                 print(e)
     else:
-        formset = OutwardProductFormSet()       
+        formset = OutwardProductFormSet(queryset=outward_products.objects.none())       
     return render(request,'finished_product/outward_scan_product_create.html',{'formset': formset})
 
 
