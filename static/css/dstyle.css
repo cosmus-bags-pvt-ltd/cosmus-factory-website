@@ -1672,6 +1672,13 @@ table>:not(caption)>*>*{
 .Serial_no:focus{
     outline: none;
 }
+.purchase-vNo{
+    width: 95px;
+    border: 1px solid  #cecdcd ;
+    border-radius: 2px;
+    padding-left: 5px; 
+    height: 33px; 
+}
 .purchase-itemName{
     width: 158px;
     border: 1px solid  #cecdcd ;

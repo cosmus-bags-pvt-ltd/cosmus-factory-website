@@ -5,23 +5,17 @@
 <div class="mt-2">
     <form method="POST">
         {% csrf_token %}
-        <div class="d-flex">
-            
-            
-        
-        </div>
- 
             <div class="row ">
                 <div class="col-lg-6">
                     <div>
                         {% if voucher_type == 'purchase' %}
                     <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
-                    <h5 class="fw-bold">Purchase No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
+                    <h6 class="fw-bold">Purchase No :<span class="text-danger ms-2">{{ purchase_number }}</span></h6>
                     {% elif voucher_type == 'transfer' %}
                     <input type="hidden" value="transfer" name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
-                    <h5 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h5>
+                    <h6 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h6>
         
                     {% endif %}
                     </div>
@@ -29,18 +23,14 @@
                 <div class="mb-2">
                     <label for="inwordSerialNo" class="fw-bold">Scan :</label>
                     <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
-                    <label for="id_manualSerialNo" class="fw-bold ms-1">M-Scan :</label>
-                    <input type="text" name="manual_serial_number" class="item-selects" id="id_manualSerialNo">
+                    <label for="id_bin_Name" class="fw-bold ms-2 me-3">Bin :</label>
+                    <select  class="item-selects ms-3" name="product_bin" id="id_bin_Name">
+                    </select>
                 </div>
                 <div class="d-flex ">
                     <div class="mb-2">
-                        <label for="id_bin_Name" class="fw-bold me-3">Bin :</label>
-                        <select  class="item-selects ms-3" name="product_bin" id="id_bin_Name">
-                        </select>
-                        <!-- <div name="bin_Name" class="item-selects s-suggestion-containers" id="id_bin_Name" dir="auto" spellcheck="false" tabindex="0" aria-label="Bin Name" >
-                                    
-                                
-                        </div> -->
+                        <label for="id_manualSerialNo" class="fw-bold">M-Scan :</label>
+                        <input type="text" name="manual_serial_number" class="item-selects" id="id_manualSerialNo">
                     </div>
                 </div>
                 </div>
@@ -62,7 +52,7 @@
                                 <td><input name="product_sku" type="number" class="productorder_input"  id="id_product_sku" value="" readonly></td>
                                 <td><input name="product_color" type="text" class="productorder_input"  id="id_product_color" value="" readonly></td>
                                 <td>
-                                    <img id="productImgPreview" name="product_img" src="" alt="Product Image" style="width: 60px; height: 60px;">
+                                    <img id="productImgPreview" name="product_img" src="" alt="Product" style="width: 30px; height: 30px;">
                                </td>
                             
                                 
@@ -71,18 +61,14 @@
                         </tbody>
                     </table>
                     
-                        <button type="submit"  class="newProductCreateBtn" name="save" value="Save" id="">Submit</button>
+                        <button type="submit"  class="newProductCreateBtn" name="save" value="Save" id="stockTarnsferBin">Submit</button>
                    
                 </div>
             </div>
-                     
-            
-          
- 
         <div class="">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h4 class="fw-bold">Product INWarded</h4>
+                        <h5 class="fw-bold">Product INWarded</h5>
                         <div class="table-res">
                             <table class="table table-striped table-hover table-bordered" id="inwordDateTable">
                                 <thead class="name_absolute sticky-top">
@@ -270,10 +256,7 @@
                manualSearch.value = ''; // Clear manual search if `inwordSerialNo` has input
                inwardSearch.addEventListener('keydown',function(event){
                
-                   if(event.key === "Tab"){
-                    event.preventDefault();
-                       selectBin.focus();
-                   }
+                   
                })
             }
         });
@@ -285,6 +268,8 @@
            if (manualSearch.value) {
                stockTable.style.display = "block";
                inwardSearch.value = ''; // Clear inward search if `id_manualSerialNo` has input
+
+              
            }
       
        });
@@ -398,7 +383,7 @@
                 const mainsku = document.querySelectorAll('[name$="-product_sku"]');
                 console.log(productSku, typeof(productSku))
                
-                // Check if any main SKU matches the product SKU
+              
                 let isMatch = false;
                 mainsku.forEach(function (item) {
                     const sku = parseInt(item.value);
@@ -426,44 +411,6 @@
                     binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
                 });
     
-                // Dynamically create the list of bins based on the response
-                // response.bin_to_dict.forEach(bin => {
-                //     binSelect.append(`
-                //         <div class="itemName-div itemName-div-suggestion" data-key="${bin.bin_id}">
-                //             ${bin.bin_name}
-                //             <span style="padding-left:20px;color: #007FFF;">${bin.bin_size}</span>-
-                //             <span style="color:#006400">${bin.products_in_bin}</span>
-                //         </div>
-                //     `);
-                // });
-
-                // Show the bin options list when clicking the container
-                // $('#id_bin_Name').on('click', function () {
-                //     $('.s-suggestion-containers').show();  // Show the options dropdown
-                // });
-
-                // // Hide the dropdown when an item is selected
-                // $(document).on('click', '.itemName-div-suggestion', function () {
-                //     let selectedBin = $(this).text().trim();  // Get text of selected bin
-                //     $('#id_bin_Name').text(selectedBin);  // Display selected bin name
-                //     $('.s-suggestion-containers').hide();  // Hide the suggestion container
-                // });
-
-                // // Handle Enter key press to select an item
-                // $(document).on('keydown', '.itemName-div-suggestion', function (e) {
-                //     if (e.key === "Enter") {
-                //         $(this).trigger('click');  // Trigger the click event on Enter key
-                //     }
-                // });
-
-                // // Hide suggestion container if clicked outside
-                // $(document).on('click', function (e) {
-                //     if (!$(e.target).closest('#id_bin_Name').length) {
-                //         $('.s-suggestion-containers').hide();  // Hide suggestions if clicked outside
-                //     }
-                // });
-
-
                 return response;
             } catch (error) {
                 console.error('Error:', error);
@@ -571,21 +518,66 @@
             // Update balance display in both balance column and bin size
             balanceCell.textContent = balance;  // Update balance in balance column
             if (binValueSpan) {
-                binValueSpan.textContent = balance;  // Update bin size span with balance
-                // Change background color of binValue to red if balance is 0
+                binValueSpan.textContent = balance;  
+              
                 if (balance === 0) {
-                    binValue.style.backgroundColor = '#ec6e6e';  // Set background color to red
+                    binValue.style.backgroundColor = '#ec6e6e';  
                 } else {
-                    binValue.style.backgroundColor = '';  // Reset background color
+                    binValue.style.backgroundColor = '';  
                 }
             }
-            // Store updated balance for this SKU
+           
             skuBalanceMap[sku] = balance;
         }
     });
 }
 
-updateQuantitiesAndBinSize()
+updateQuantitiesAndBinSize();
+
+function inputCheck() {
+    const inwardScan = document.getElementById('inwordSerialNo');
+    const manualScan = document.getElementById('id_manualSerialNo');
+    const binName = document.getElementById('id_bin_Name');
+    var submitButton = document.getElementById('stockTarnsferBin');
+
+    inwardScan.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(inwardScan.value === ''){
+                manualScan.focus();
+            }else{
+                binName.focus();
+            }
+        }
+    })
+    manualScan.addEventListener('keydown',function(event){
+        if(event.key === 'Enter'){
+            event.preventDefault();
+            if(manualScan.value === ''){
+                manualScan.focus();
+                return;
+            }else{
+                binName.focus()
+            }
+        }
+    })
+    binName.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(binName.value === ''){
+                binName.focus();
+                return;
+            }else{
+                submitButton.focus()
+            }
+        }
+    })
+    
+
+    
+}
+
+inputCheck()
 </script>
 
 {% endblock body %}

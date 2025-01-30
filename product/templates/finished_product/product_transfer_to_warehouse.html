@@ -9,9 +9,9 @@
       <div class="d-flex mb-2">
           <label for="id_voucher_no" class="">Voucher No:</label>
           {% if form.instance.pk %}
-          <input value="{{form.instance.voucher_no |default_if_none:''}}" class="item-select mx-3" type="text" name="voucher_no" id="id_voucher_no" readonly>
+          <input value="{{form.instance.voucher_no |default_if_none:''}}" class="purchase-vNo mx-3" type="text" name="voucher_no" id="id_voucher_no" readonly>
           {% elif not form.instance.pk %}
-          <input value="{{form.voucher_no.initial}}" required class="item-select mx-3" type="text" name="voucher_no" id="id_voucher_no">
+          <input value="{{form.voucher_no.initial}}" required class="purchase-vNo mx-3" type="text" name="voucher_no" id="id_voucher_no">
           {% endif %}
           <div>
               <label for="" class="item-form">Source warehouse:</label>
@@ -58,9 +58,7 @@
               </select>
           </div>
       </div>
-      <div class="d-flex mb-3">
-          
-      </div>
+    
      
       <div class="">
           <table class="table table-striped table-hover table-bordered" id="mainProductForm">

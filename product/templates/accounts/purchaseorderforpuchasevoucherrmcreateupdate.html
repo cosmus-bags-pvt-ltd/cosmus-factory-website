@@ -8,7 +8,7 @@
         <div class="d-flex">
             <div class="d-flex  mb-3">
                 <label for="id_po_no"  class="item-form">Po No :</label>
-                <input type="text" class="item-select" name="po_no" id ="id_po_no" value="{{master_form.instance.po_no| default_if_none:''}}" maxlength="255" required>
+                <input type="text" class="purchase-input" name="po_no" id ="id_po_no" value="{{master_form.instance.po_no| default_if_none:''}}" maxlength="255" required>
                 
             </div>
             <div class="d-flex ms-2">
@@ -33,18 +33,18 @@
             </div>
             <div class="d-flex ms-2">
                 <label for="id_GST_number" class="me-2" >Party GST No :</label>
-                    <input type="text" class="item-select" name="GST_number" id ="id_GST_number"  value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15" readonly required>
+                    <input type="text" class="item-selects" name="GST_number" id ="id_GST_number"  value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15" readonly required>
             </div>
         </div>
         <div class="d-flex mb-3">
             <div class="d-flex">
                 <label for="id_GST_numbers" class="me-2" >Company GST No :</label>
-                <input type="text" class="item-select" name="GST_numbers" id ="id_company_GST_numbers" value="27AAACG20210238" maxlength="50" readonly >
+                <input type="text" class="item-selects" name="GST_numbers" id ="id_company_GST_numbers" value="27AAACG20210238" maxlength="50" readonly >
             </div>
             
             <div class="d-flex ms-3">
                 <label for="id_payment_term"  class="me-2">Payment Term :</label>
-                <input type="text" class="item-select" name="payment_term" id ="id_payment_term" value="{{master_form.instance.payment_term |default_if_none:'' }}" maxlength="255" required >
+                <input type="text" class="purchase-input" name="payment_term" id ="id_payment_term" value="{{master_form.instance.payment_term |default_if_none:'' }}" maxlength="255" required >
             </div>
            
         </div>

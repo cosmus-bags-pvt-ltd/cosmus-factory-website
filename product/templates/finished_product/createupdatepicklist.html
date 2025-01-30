@@ -7,14 +7,16 @@
         <div class="d-flex mb-2">
             <label for="id_picklist_no" class="me-3">PickList No :</label>
             {% if master_form.instance.id %}
-            <input type="text" class="item-select" name="picklist_no" id="id_picklist_no" value="{{master_form.instance.picklist_no}}" maxlength="255" readonly>
+            <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{master_form.instance.picklist_no}}" maxlength="255" readonly>
             {% elif not master_form.instance.id %}
-            <input type="text" class="item-select" name="picklist_no" id="id_picklist_no" value="{{master_form.picklist_no.initial }}" maxlength="255" required>
+            <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{master_form.picklist_no.initial }}" maxlength="255" required>
             {% endif %}
+
+            <label for="pickListDate" class="ms-3 me-3">Date :</label>
+            <input type="date" class="item-selects" name="" id="pickListDate" >
         </div>
         <div class="d-flex mb-2">
-            <label for="pickListDate" class="me-3">Date :</label>
-            <input type="date" class="item-select" name="" id="pickListDate" >
+            
         </div>
         <!-- <div class="d-flex mb-2">
             <label for="idNameCreated" class="me-3">Create By:</label>
@@ -71,18 +73,18 @@
                         </td>
 
                         {% endif %}
-                        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color}}" class="purchase-input produc" readonly></td>
+                        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color}}" class="purchase-input" readonly></td>
 
                         <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly></td>
                         
                         {% if form.instance.id %}
                         <td><img src="{{form.instance.product.PProduct_image.url}}" id="id_productInward_img_{{forloop.counter0}}" alt="product" width="50px" height="50px"></td>
                         {% else %}
-                        <td><img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" width="50px" height="50px"></td>
+                        <td><img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" width="30px" height="30px"></td>
                         {% endif %}
                         
 
-                        <td><select name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number"  class="item-select" aria-label="Select Bin">
+                        <td><select name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number"  class="purchase-amount" aria-label="Select Bin">
                                 {% if form.instance.id %}
                                     <option value="{{form.instance.bin_number.id}}">{{form.instance.bin_number.bin_name}}</option>
                                 {% elif not form.instance.id %}
@@ -96,7 +98,7 @@
                         </td>
                         {% if form.instance.id %}
                         <td>
-                            <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity" readonly>
+                            <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity" readonly>
                             <input type="hidden" class="productQtyValue" name="product_quantity-{{forloop.counter0}}" id="id_product_quantity-{{forloop.counter0}}" value = '' readonly>
                         </td>
                         <td>
@@ -104,7 +106,7 @@
                         </td>
                         {% else %}
                         <td>
-                            <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity">
+                            <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity">
                             <input type="hidden" class="productQtyValue" name="product_quantity-{{forloop.counter0}}" id="id_product_quantity-{{forloop.counter0}}" value = ''>
                         </td>
                         <td>
@@ -140,7 +142,7 @@
 
         // This ajax request for a input type value send to the backend and show the product name 
         $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
-           var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
+                 purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
             var productnamevalue = $(this).val().trim();
             var selectNameValue = `select_product_name_${purchaseValue}`;
             var suggestionsContainer = $(`#${selectNameValue}`);
@@ -277,121 +279,9 @@
           
                 })
               
-                const selectBin = selectedValue[3]; // Array of objects
-         
-                if (selectBin) {
-                    var productSelectBin = $(`#id_picklist_products_list-${purchaseValue}-bin_number`);
-                    var productmainQty = parseInt($(`#id_product_quantity-${purchaseValue}`).val())
-                    var selectedBins = {}; 
-                    productSelectBin.empty();
-              
-                    if (productSelectBin) {
-                            selectBin.forEach(binObject => {
-                                Object.entries(binObject).forEach(([binKey, binArray]) => {
-                                    if (Array.isArray(binArray) && binArray.length === 2) {
-                                        const [binName, quantity] = binArray;
-                                        let balanceQty = quantity - productReserve;
+                const selectBin = selectedValue[3]; 
 
-                                        console.log('Initial Balance Qty:', balanceQty);
-
-                                        let optionHtml;
-
-                                        if (balanceQty > 0) {
-                                            let optionHtml = `<option value="${binKey}" data-bin="${binKey}" data-quantity="${quantity}" data-balance="${balanceQty}">
-                                                                ${binName} - ${quantity} - ${balanceQty}
-                                                            </option>`;
-                                            productSelectBin.append(optionHtml);
-                                        }
-
-                                        productSelectBin.append(optionHtml);
-                                    } else {
-                                        console.error(`Invalid binArray format at key ${binKey}:`, binArray);
-                                        productSelectBin.empty();
-                                    }
-                                });
-                            });
-
-                            productSelectBin.find("option:first").prop("selected", true);
-                            updateBalance(); // Update balance based on the selected option
-
-                  
-                    } 
-                //  $('[name$="-product_quantity"]').on('input', function () {
-                //     updateBalance();
-                // });
-
-
-
-                function updateBalance() {
-                    let selectedOption = productSelectBin.find("option:selected");
-          
-                    let binKey = selectedOption.data("bin");
-                    let selectedQuantity = parseInt(selectedOption.data("quantity"));
-                    let availableBalance = parseInt(selectedOption.data("balance"));
-                    let productValue = $('[name$="-product_quantity"]').val();
-                    let currentRow = $(`input[name="picklist_products_list-${purchaseValue}-product_quantity"]`);
-                    let previousRow = currentRow.closest("tr").prev().find(`input[name^="picklist_products_list-"][name$="-product_quantity"]`);
-
-                    console.log( "purchaseValue:", purchaseValue);
-                    let previousRowValue = parseInt(previousRow.val()) || 0; // Get previous row value
-                    let currentRowValue = parseInt(currentRow.val()) || 0;
-                
-                    console.log("Selected Bin:", binKey, "availableBalance:", availableBalance);
-                    console.log("Selected Bin:", binKey, "selectedQuantity:", selectedQuantity);
-                    console.log( "previousRowValue:", previousRowValue);
-                    console.log( "currentRowValue:", currentRowValue);
-                   
-                    let remainingQty = availableBalance - previousRowValue;
-                    // ✅ Calculate new balance for the selected bin only
-                    
-                    console.log('Remaining Qty:', remainingQty);
-
-                    if (remainingQty >= 0) {
-                        selectedOption.attr("data-balance", remainingQty); // Update balance in the selected option
-                    } else {
-
-                        // currentRow.val(availableBalance);
-                     
-                    }
-
-                    console.log(`Updated Balance for Selected Bin (${binKey}):`, remainingQty);
-
-                    if (remainingQty === 0) {
-                        selectedOption.remove(); // Remove the option from dropdown
-                    }
-
-
-                    //✅ Update all options dynamically with new balances
-                    productSelectBin.find("option").each(function () {
-                        // let selectedOption = $(this).find("option:selected");
-                        let currentBinKey = $(this).data("bin");
-                        let originalQty = parseInt($(this).data("quantity"));
-
-                       // Adjust balance for other options
-                        let newBalance = originalQty - (selectedBins[currentBinKey] || 0);
-                        
-                        if (newBalance > 0) {
-                            $(this).text(`${$(this).data("bin")} - ${originalQty} - ${newBalance}`);
-                            $(this).data("balance", newBalance);
-                        } else {
-                            $(this).remove(); // Remove options with 0 balance
-                        }
-                    });
-
-                    if (productSelectBin.find("option").length > 0) {
-                        productSelectBin.find("option:first").prop("selected", true);
-                       
-                    } else {
-                        console.log("No more bins available.");
-                    }
-                }
-                        
-
-                } else {
-                    console.error('selectBin is undefined or not iterable.');
-                }
-
-                
+                initalBinData(selectBin,purchaseValue,productReserve)
 
                 suggestionsContainer.css('display', 'none');
                 
@@ -399,9 +289,142 @@
         
         
         });
+        function initalBinData(selectBin,purchaseValue,productReserve){
+            console.log(selectBin)
+            if (selectBin) {
+                    var productSelectBin = $(`#id_picklist_products_list-${purchaseValue}-bin_number`);
+                    var productmainQty = parseInt($(`#id_product_quantity-${purchaseValue}`).val());
+                    let skucurrent = $(`input[name="product_Sku_${purchaseValue}"]`).val();
+                    var selectNameValue = `select_product_name_${purchaseValue}`;
+                    var suggestionsContainer = $(`#${selectNameValue}`);
+                    console.log('suggestionsContainer',suggestionsContainer)
+                    var selectedBins = {}; 
+                    productSelectBin.empty();
+                    let optionHtml;
+                    
 
+                   
+                   if (productSelectBin) {
+                 
+                 
+                    let updateCount = 0;  // Track how many times bins have been updated
+                    let updatedOptions = [];  // Keep track of bins that have been updated
+                    let allSkuFilled = true;
+
+                            selectBin.forEach(binObject => {
+                                Object.entries(binObject).forEach(([binKey, binArray]) => {
+                                    if (Array.isArray(binArray) && binArray.length === 2) {
+                                        const [binName, quantity] = binArray;
+                                        let optionHtml = `<option value="${binKey}" 
+                                                                data-bin-name="${binName}" 
+                                                                data-bin="${binKey}" 
+                                                                data-quantity="${quantity}" 
+                                                                data-balance="${quantity}"> 
+                                                                ${binName} - ${quantity} - ${quantity}
+                                                        </option>`;
+
+                                        productSelectBin.append(optionHtml);
+                                        productSelectBin.find("option:first").prop("selected", true);
+                                    } else {
+                                        console.error(`Invalid binArray format at key ${binKey}:`, binArray);
+                                        productSelectBin.empty();
+                                    }
+                                });
+                            });
+
+                            // Event listener to update only the first selected option
+                            $('[name^=product_color_]').on('focus', function () {
+                                let selectedOption = productSelectBin.find('option:selected');
+                                let remainingQty 
+                                console.log('selectedOption',selectedOption)
+                                if (!selectedOption.data('calculated')) {
+                                    let binKey = selectedOption.val();
+                                    let quantity = selectedOption.data('quantity');
+
+                               
+
+                                    // Iterate over SKU inputs to get total quantities
+                                    $('input[name^="product_Sku_"]').each(function () {
+                                        let skuValue = $(this).val();
+                                        if (skuValue && skuValue === skucurrent) {
+                                            
+                                            remainingQty = quantity - productmainQty - productReserve
+                                         
+                                        } else {
+                                             allSkuFilled = false; // Flag if any SKU is empty
+                                             remainingQty = quantity - productmainQty ;
+                                        }
+                                    });
+
+                                   
+                                   
+
+                                    // Update only the first selected option's data-balance
+                                    selectedOption.data('balance', remainingQty);
+                                    selectedOption.text(`${selectedOption.data('bin-name')} - ${quantity} - ${remainingQty}`);
+                                    selectedOption.attr('data-calculated', true); // Mark as calculated to prevent re-calculating
+
+                                    if (remainingQty === 0) {
+                                        selectedOption.remove(); // Remove the option if the remaining quantity is 0
+                                    }
+                                    // Add to updated options list
+                                    updatedOptions.push(binKey);
+                                    updateCount++; 
+                                }
+                                updateOptionsForNewRow()
+                            });
+
+                            // Function to update the options on row addition
+                            function updateOptionsForNewRow() {
+                                // Empty the select options before re-populating
+                                console.log('tesssssssssssssssssssssssssssssssttttttttttttttttttttttttttt')
+                                if (!allSkuFilled) {
+                                    console.log("Not all SKUs are filled, skipping update.");
+                                    return;
+                                }
+                                productSelectBin.empty();
+
+                                selectBin.forEach(binObject => {
+                                    Object.entries(binObject).forEach(([binKey, binArray]) => {
+                                        if (Array.isArray(binArray) && binArray.length === 2) {
+                                            const [binName, quantity] = binArray;
+                                            let remainingQty = quantity // Default to the original quantity
+                                            console.log()
+                                            // Only update the remainingQty for bins that were updated previously
+                                            if (updatedOptions.includes(binKey)) {
+                                                remainingQty = quantity - (productmainQty + productReserve) ;  // Update remainingQty calculation
+                                            }
+
+                                            if (remainingQty !== 0) {
+                                                // Append updated or unchanged option
+                                                let optionHtml = `<option value="${binKey}" 
+                                                                        data-bin-name="${binName}" 
+                                                                        data-bin="${binKey}" 
+                                                                        data-quantity="${quantity}" 
+                                                                        data-balance="${remainingQty}"> 
+                                                                        ${binName} - ${quantity} - ${remainingQty}
+                                                                    </option>`;
+
+                                                productSelectBin.append(optionHtml);
+                                            }
+                                        }
+                                    });
+                                });
+                            }
+
+// Call this function when a new row is added
+// updateOptionsForNewRow();
+                    } 
         
-        var index = 0; // Declare index outside of the event listener
+                        
+
+                } else {
+                    console.error('selectBin is undefined or not iterable.');
+                }   
+
+        }
+        
+        var index = 0; 
         var indexbool = true;
 
         $(document).on('keydown', 'input[name$="-product_name_value"]', function(event) {
@@ -492,7 +515,7 @@
              event.preventDefault();
             const itemEnterValue = $(this);
             const item_value = Number(itemEnterValue.attr('data-key'));
-            const purchasedata = itemEnterValue.closest('tr').find('[name^="product_color_"]').attr('name').match(/\d+/)[0];
+            purchaseValue = itemEnterValue.closest('tr').find('[name^="product_color_"]').attr('name').match(/\d+/)[0];
 
             nameDataKey = '';
             nameKey = '';
@@ -500,7 +523,7 @@
             indexbool = false;
             $dropdownOptions.css('display', 'none');
 
-            var selectedValue = searchedProductNameDic[item_value];
+                var selectedValue = searchedProductNameDic[item_value];
                 const productQty = selectedValue[2];
                 const namevalueCheck = selectedValue[0];
                 const productColor = selectedValue[1];
@@ -509,16 +532,16 @@
                 const url = selectedValue[6]
 
                 var newnameValue = namevalueCheck +'                                  '+productQty;
-                $(`input[name$="picklist_products_list-${purchasedata}-product"]`).val(item_value);
-                $(`input[name$="picklist_products_list-${purchasedata}-product_name_value"]`).val(newnameValue)
+                $(`input[name$="picklist_products_list-${purchaseValue}-product"]`).val(item_value);
+                $(`input[name$="picklist_products_list-${purchaseValue}-product_name_value"]`).val(newnameValue)
               
                   
                 
-                 var productcolorinput = document.querySelector('#product_color_' + purchasedata);
-                var skuIput = document.querySelector('#product_Sku_' + purchasedata);
-                var productRefNo = document.getElementById('id_picklist_products_list-' + purchasedata + '-product_refNo');                   
-                var imgUrl = document.getElementById('id_productInward_img_'+purchasedata );
-                var reserveValue = document.getElementById('id_reserver_Qty_'+ purchasedata);
+                 var productcolorinput = document.querySelector('#product_color_' + purchaseValue);
+                var skuIput = document.querySelector('#product_Sku_' + purchaseValue);
+                var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
+                var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
+                var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue);
 
                 productcolorinput.value = productColor;
                 skuIput.value = item_value;
@@ -540,44 +563,10 @@
                     }
           
                 })
-               
-                const selectBin = selectedValue[3]; // Array of objects
-         
-                if (selectBin) {
-                    var productSelectBin = $(`#id_picklist_products_list-${purchasedata}-bin_number`);
-                    var productmainQty = parseInt($(`#id_product_quantity-${purchasedata}`).val())
-             
-                    if (productSelectBin) {
-    
-                        selectBin.forEach(binObject => {
-                            Object.entries(binObject).forEach(([binKey, binArray]) => {
-                            
-                                // Ensure binArray is actually an array
-                                if (Array.isArray(binArray) && binArray.length === 2) {
-                                    const [binName, quantity] = binArray;
-                                    let optionHtml
-                                    let balanceQty = quantity - productReserve - productmainQty;
+                // initalBinAdd(selectedValue,purchaseValue)  
                 
-                                    if(balanceQty > 0){
-                                        optionHtml   = `<option value="${binKey}">${binName} - ${quantity}&nbsp;&nbsp;&nbsp;${(balanceQty)}</option>`;
-                                      
-                                    }else{
-                                        optionHtml = `<option value="${binKey}">Inward Qty Empty</option>`;
-                                    }
-                                    productSelectBin.append(optionHtml);
-                                } else {
-                                    console.error(`Invalid binArray format at key ${binKey}:`, binArray);
-                                }
-                            });
-                        });
-                    } else {
-                        console.error('Element with ID "id_picklist_products_list-' + purchasedata + '-bin_number" not found.');
-                    }
-                } else {
-                    console.error('selectBin is undefined or not iterable.');
-                }
 
-                        enterPressed = true;
+            enterPressed = true;
             hiddenValue.css("display" ,"none");
             $inputField.blur();
             
@@ -590,7 +579,12 @@
    
      });
 
-   
+    function initalBinAdd(selectedValue,purchaseValue){
+        
+            
+
+        
+        } 
 
 })
 
@@ -676,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     reservedElement.name = `reserver_Qty_${formIndex}`;
                     reservedElement.value="";
 
-                    const qunatityInputElement = lastRow.querySelector('.purchase-amount[name^="picklist_products_list-"][name$="-product_quantity"]');
+                    const qunatityInputElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-product_quantity"]');
                     qunatityInputElement.id = `id_picklist_products_list-${formIndex}-product_quantity`;
                     qunatityInputElement.name = `picklist_products_list-${formIndex}-product_quantity`;
                     qunatityInputElement.value="";
@@ -699,6 +693,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('id_productRow').value = '1';
                 deleteRowData()
                 inputCheck()
+              
             }   
              
         });

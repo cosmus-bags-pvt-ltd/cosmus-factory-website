@@ -5,23 +5,23 @@
 {% block body %}
 
 
-<form action="" method="post" id="stockTransferForm" class="mt-3">
+<form action="" method="post" id="stockTransferForm" class="mt-2">
     {% csrf_token %}
     <input type="hidden" id="id_godownData" value=" {{source_godown_items_dict|default_if_none:''}}">
    
-    <div class="d-flex mb-2">
+    <div class="d-flex mb-1">
         <label for="id_voucher_no" class="">Voucher No:</label>
         {% if masterstockform.instance.pk %}
-        <input value="{{masterstockform.instance.voucher_no}}" class="item-select mx-3" type="number" name="voucher_no" id="id_voucher_no" readonly>
+        <input value="{{masterstockform.instance.voucher_no}}" class="purchase-vNo mx-3" type="number" name="voucher_no" id="id_voucher_no" readonly>
         {% elif not masterstockform.instance.pk %}
-        <input value="{{masterstockform.voucher_no.initial}}" required class="item-select mx-3" type="number" name="voucher_no" id="id_voucher_no">
+        <input value="{{masterstockform.voucher_no.initial}}" required class="purchase-vNo mx-3" type="number" name="voucher_no" id="id_voucher_no">
         {% endif %}
         <div>
             <label for="" class="item-form">Source Godown:</label>
             <p>(Transfer from)</p>
         </div>
         <div class="d-flex mb-3 ms-3 my-2">
-            <select name="source_godown" required class="item-select" id="id_source_godown">
+            <select name="source_godown" required class="item-selects" id="id_source_godown">
 
                 {% if masterstockform.instance.pk %}
                 <option value="{{masterstockform.instance.source_godown.id}}">
@@ -42,16 +42,13 @@
             <p>(Transfer to)</p>
         </div>
         <div class=" d-flex mb-3 ms-3 my-2">
-            <select class="item-select destination_godowns" required name="destination_godown" id="id_destination_godown">
+            <select class="item-selects destination_godowns" required name="destination_godown" id="id_destination_godown">
                 {% if masterstockform.instance.pk %}
                 <option value="{{masterstockform.instance.destination_godown.id}}">
                     {{masterstockform.instance.destination_godown.godown_name_raw}}</option>
                 {% endif %}
             </select>
         </div>
-    </div>
-    <div class="d-flex mb-3">
-        
     </div>
    
     <div class="">

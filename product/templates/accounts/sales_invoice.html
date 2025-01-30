@@ -10,17 +10,16 @@
           <input type="hidden" id="productSaleDate" value="{{dict_to_send}}">
           <label for="" class="me-3">Type:</label>
           <h5 class="text-danger fw-bold">Finish Goods</h5>
-          <!-- <input type="text" class="item-select" name="" id="" value="Finish Goods" maxlength="255" readonly> -->
         </div>
         <div class="d-flex mb-3">
           <span id="purchaseError" class="error-messages"></span>
           <div class="d-flex">
             <label for="id_sales_no" class="me-5">Sales No:</label>
             {% if master_form.instance.id %}
-            <input type="text" class="item-select" name="sales_no" id="id_sales_no" value="{{master_form.instance.sales_no}}"
+            <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no" value="{{master_form.instance.sales_no}}"
               maxlength="255" required readonly>
             {% elif not master_form.instance.id %}
-            <input type="text" class="item-select" name="sales_no" id="id_sales_no"
+            <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no"
               value="{{master_form.sales_no.initial }}" maxlength="255" required>
             {% endif %}
           </div>
@@ -28,30 +27,30 @@
           <div class="d-flex ms-3">
             <label for="id_buyer_inv_no" class="me-5">Buyer Inv No :</label>
             {% if master_form.instance.id %}
-            <input type="text" class="item-select me-5" name="buyer_inv_no" id="id_buyer_inv_no"
+            <input type="text" class="purchase-vNo me-5" name="buyer_inv_no" id="id_buyer_inv_no"
               value="{{master_form.instance.buyer_inv_no}}" maxlength="255" readonly>
             {% elif not master_form.instance.id %}
-            <input type="text" class="item-select me-5" name="buyer_inv_no" id="id_buyer_inv_no"
+            <input type="text" class="purchase-vNo me-5" name="buyer_inv_no" id="id_buyer_inv_no"
               value="{{master_form.instance.buyer_inv_no}}" maxlength="255" required aria-required="true">
             {% endif %}
           </div>
           <div class="d-flex ms-3">
             <label for="id_company_gst" class="ms-1 me-3">Company GST No :</label>
-            <input type="text" class="item-select" name="company_gst" id="id_company_gst" value="27AAACG20210238"
+            <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
               maxlength="50" readonly>
           </div>
         </div>
         <div class="mb-3 d-flex">
           <div class="d-flex">
             <label for="id_ledger_type" class="me-3">ledger Type :</label>
-            <input type="text" class="item-select" name="ledger_type" id="id_ledger_type"
+            <input type="text" class="purchase-itemName" name="ledger_type" id="id_ledger_type"
               value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
               placeholder="Sales" readonly>
           </div>
           <span id="purchaseError" class="error-messages"></span>
           <div class="d-flex ms-3">
             <label for="id_party_name" class="me-3">Party A/C Name:</label>
-            <select class="product2Select text-black" name="party_name" required id="id_party_name">
+            <select class="item-select text-black" name="party_name" required id="id_party_name">
               {% if master_form.instance.id %}
               <option value="{{master_form.instance.party_name.id}}">
                 {{master_form.instance.party_name.name}}</option>
@@ -68,7 +67,7 @@
       
           <div class="d-flex ms-3">
             <label for="id_GST_number" class="me-2">Party GST No :</label>
-            <input type="text" class="item-select" name="GST_number" id="id_GST_number"
+            <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
               value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
               readonly required>
           </div>
