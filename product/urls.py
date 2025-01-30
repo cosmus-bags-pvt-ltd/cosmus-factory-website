@@ -145,12 +145,13 @@ urlpatterns = [
     path('salesvouchercreateupdate/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
     path('salesvouchercreateupdate/<int:s_id>/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
     path('salesvoucherlist/', views.salesvoucherlist, name = 'sales-voucher-list'),
-    path('salesvoucherlistwarehouse/', views.salesvoucherlistwarehouse, name = 'sales-voucher-list-warehouse'),
+    
     path('salesvoucherdelete/<int:pk>/', views.salesvoucherdelete, name = 'sales-voucher-delete'),
 
 
     path('salesvouchercreateupdateforwarehouse/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
     path('salesvouchercreateupdateforwarehouse/<int:s_id>/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
+    path('salesvoucherlistwarehouse/', views.salesvoucherlistwarehouse, name = 'sales-voucher-list-warehouse'),
     path('salesscanproductdynamicajax/', views.sales_scan_product_dynamic_ajax, name = 'sales-scan-product-dynamic-ajax'),
 
     #picklist

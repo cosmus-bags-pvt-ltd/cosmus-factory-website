@@ -55,9 +55,9 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
-                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods,
+                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total,
                     set_prod_item_part_name, shade_godown_items,
-                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items)
+                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_master_outward_scan,sales_voucher_outward_scan,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
@@ -75,7 +75,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, salesvoucherfinishGoodsForm, salesvouchermasterfinishGoodsForm,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -83,7 +83,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,salesvouchercreateformset,salesvoucherupdateformset,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,OutwardProductFormSet)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,OutwardProductFormSet,Salesvouchermasteroutwardscanform,salesvoucherfromscanupdateformset,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset)
     
 
 
@@ -3108,97 +3108,6 @@ def salesvouchercreateupdate(request,s_id=None):
 
 
 
-def sales_voucher_create_update_for_warehouse(request,s_id=None):
-    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-    warehouse_names = Finished_goods_warehouse.objects.all()
-
-    dict_to_send = None
-
-    if s_id:
-        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
-        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
-        page_name = 'Edit Sales Invoice'
-        warehouse_id = voucher_instance.selected_warehouse.id
-        print('warehouse_id',warehouse_id)
-  
-        
-    else:
-        voucher_instance = None
-        master_form = salesvouchermasterfinishGoodsForm()
-        formset = salesvouchercreateformset()
-        page_name = 'Create Sales Invoice'
-
-        
-            
-    if request.method == "POST":
-        print(request.POST)
-        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        
-        # formset.forms = [form for form in formset.forms if form.has_changed()]
-
-        if not master_form.is_valid():
-            print("Form Errors:", master_form.errors)
-
-        if not formset.is_valid():
-            for form in formset:
-                if not form.is_valid():
-                    print("Form Errors:", form.errors)
-
-        
-
-        if master_form.is_valid() and formset.is_valid():
-            try:
-                with transaction.atomic():
-                    master_form_instance = master_form.save(commit=False)
-                    master_form_instance.save()
-                    
-                    selected_warehouse = master_form_instance.selected_warehouse
-
-                    for form in formset.deleted_forms:
-                        if form.instance.pk:
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-
-                            warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
-                            warehouse_qty_value.quantity = warehouse_qty_value.quantity + product_qty
-                            warehouse_qty_value.save()
-
-                            form.instance.delete()
-
-                    for form in formset:
-                        if not form.cleaned_data.get('DELETE'):
-                            form_instance = form.save(commit=False)
-                            form_instance.sales_voucher_master = master_form_instance
-                            form_instance.save()
-
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-
-                            if form.has_changed():
-
-                                old_product_name = form.initial.get('product_name')
-                                old_product_quantity = form.initial.get('quantity')
-                                
-                                if old_product_quantity:
-                                    print("in single")
-
-                                    warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse ,product = product_name)
-
-                                    difference =  product_qty - old_product_quantity
-
-                                    warehouse_qty_value.quantity = warehouse_qty_value.quantity - difference
-                                    warehouse_qty_value.save()
-
-                                
-                    return redirect('sales-voucher-list')
-                
-            except Exception as e:
-                print(e)
-
-
-    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names,'dict_to_send':dict_to_send})
 
 
 
@@ -3261,7 +3170,7 @@ def salesvoucherlist(request):
 
 @login_required(login_url='login')
 def salesvoucherlistwarehouse(request):
-    sales_list = sales_voucher_master_finish_Goods.objects.all()
+    sales_list = sales_voucher_master_outward_scan.objects.all()
     return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list})
 
 
@@ -10035,24 +9944,6 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         messages.error(request, f'{e}')
                                         raise
 
-                                    try:
-                                        product_warehouse_obj =  Product_warehouse_quantity_through_table.objects.get(
-                                                warehouse=product_pur_items_instance.product_purchase_master.finished_godowns,
-                                                product=product_instance) 
-                                    
-                                        product_warehouse_obj.quantity = product_warehouse_obj.quantity - 1
-                                        product_warehouse_obj.save()
-
-                                        #here
-                                        print("Here for purchase")
-
-                                    except ObjectDoesNotExist:
-                                        messages.error(request, 'Product quantity in Warhouse not found')
-                                        raise
-                                    except Exception as e:
-                                        messages.error(request, f'Other exception {e}')
-                                        raise
-
                                     form.save()
                                     form_present = True
                                     messages.success(request,f'SerialNumber - {prathamesh} added to Bin - {bin_instance.bin_name} Sucessfully')
@@ -10089,25 +9980,6 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
                                     except Exception as e:
                                         messages.error(request, f'{e}')
-                                        raise
-
-                                    try:
-                                        product_warehouse_obj =  Product_warehouse_quantity_through_table.objects.get(
-                                                warehouse=product_transfer_items_instance.Finished_goods_Stock_TransferMasterinstance.destination_warehouse,
-                                                product=product_instance) 
-                                    
-                                        product_warehouse_obj.quantity = product_warehouse_obj.quantity - 1
-                                        product_warehouse_obj.save()
-
-                                        #here
-                                        print("Here for sales")
-
-                                    except ObjectDoesNotExist:
-                                        messages.error(request, 'Product quantity in Warhouse not found')
-                                        raise
-
-                                    except Exception as e:
-                                        messages.error(request, f'Other exception {e}')
                                         raise
 
                                     form.save()
@@ -14244,8 +14116,14 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
+def decimal_to_float(obj):
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    raise TypeError("Type not serializable")
 
 
+
+from urllib.parse import urlencode
 def outward_scan_product_create(request):
     
     if request.method == 'POST':
@@ -14289,23 +14167,103 @@ def outward_scan_product_create(request):
                                     'gst':product_info.Product.Product_GST.gst_percentage
                                 }
                     product_list = list(products.values())
-                    print(product_list)
-
-                    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-                    warehouse_names = Finished_goods_warehouse.objects.all()
-
-                    salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list), can_delete=True)
-
-                    formset = salesvouchercreateformset(initial = product_list)
-
-                    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset,'party_name':party_name,'warehouse_names':warehouse_names,})
                     
-                  
+                    # print('product_list = ',product_list)
+
+                    # party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+                    # warehouse_names = Finished_goods_warehouse.objects.all()
+
+                    # salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list), can_delete=True)
+
+                    # formset = salesvouchercreateformset(initial = product_list)
+
+                    # return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset,'party_name':party_name,'warehouse_names':warehouse_names,})
+                    
+                    query_params = urlencode({'products': json.dumps(product_list, default=decimal_to_float)})
+                    return redirect(f'/salesvouchercreateupdateforwarehouse/?{query_params}')
             except Exception as e:
                 print(e)
     else:
         formset = OutwardProductFormSet(queryset=outward_products.objects.none())       
     return render(request,'finished_product/outward_scan_product_create.html',{'formset': formset})
+
+
+
+
+
+def sales_voucher_create_update_for_warehouse(request,s_id=None):
+    
+    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+    warehouse_names = Finished_goods_warehouse.objects.all()
+    
+
+    if s_id:
+        voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
+        master_form = Salesvouchermasteroutwardscanform(request.POST or None,instance=voucher_instance)
+        formset = salesvoucherfromscanupdateformset(request.POST or None,instance=voucher_instance)
+        page_name = 'Edit Sales Invoice'
+        warehouse_id = voucher_instance.selected_warehouse.id
+        print('warehouse_id',warehouse_id)
+
+    else:
+        voucher_instance = None
+        master_form = Salesvouchermasteroutwardscanform()
+        page_name = 'Create Sales Invoice'
+        product_list = request.GET.get('products', '[]')
+        
+        product_list2 = json.loads(product_list) if product_list else []
+
+        salesvoucherfromscancreateformset = inlineformset_factory(sales_voucher_master_outward_scan,sales_voucher_outward_scan,form = SalesvoucheroutwardscanForm,extra=len(product_list2), can_delete=True)
+
+        formset = salesvoucherfromscancreateformset(initial = product_list2)
+
+
+    if request.method == "POST":
+        # print(request.POST)
+        master_form = Salesvouchermasteroutwardscanform(request.POST,instance=voucher_instance)
+        formset = salesvoucherfromscancreateformset(request.POST, instance=voucher_instance)
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+                    
+                    selected_warehouse = master_form_instance.selected_warehouse
+
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            form_instance = form.save(commit=False)
+                            form_instance.sales_voucher_master = master_form_instance
+                            form_instance.save()
+
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+
+                            print('product_name from function = ',product_name)
+                            
+                                
+                    return redirect('sales-voucher-list')
+                
+            except Exception as e:
+                print(e)
+
+
+    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -14317,12 +14275,6 @@ def outward_scan_serial_no_process(request):
         if not serialNo:
                 return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
-        if sales_voucher_finish_Goods.objects.filter(unique_serial_no=serialNo).exists():
-            
-            return JsonResponse(
-                {'error': f'The serial number "{serialNo}" already exists. Please enter a different one.'},
-                status=400
-            )
             
         filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_Refrence_ID','bin_number__bin_name','product__PProduct_image','bin_number'))
 

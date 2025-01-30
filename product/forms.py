@@ -3,7 +3,7 @@ from django import forms
 from django.shortcuts import get_object_or_404
 
 from core.models import Company
-from .models import AccountSubGroup, Color, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, shade_godown_items, shade_godown_items_temporary_table
+from .models import AccountSubGroup, Color, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, sales_voucher_master_outward_scan, sales_voucher_outward_scan,shade_godown_items, shade_godown_items_temporary_table
 from django.forms.models import inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.forms import BaseModelFormSet, modelformset_factory, BaseInlineFormSet 
@@ -1218,7 +1218,7 @@ and then to each formset in FinishedProductWarehouseBinFormSet
 class salesvouchermasterfinishGoodsForm(forms.ModelForm):
     class Meta:
         model = sales_voucher_master_finish_Goods
-        fields = ['sales_no','buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_godown','selected_warehouse']
+        fields = ['sales_no','buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_godown']
 
 
     def __init__(self, *args, **kwargs):
@@ -1237,11 +1237,13 @@ class salesvouchermasterfinishGoodsForm(forms.ModelForm):
 class salesvoucherfinishGoodsForm(forms.ModelForm):
     class Meta:
         model = sales_voucher_finish_Goods
-        fields = ['product_name','quantity','trade_disct','spl_disct','unique_serial_no']
+        fields = ['product_name','quantity','trade_disct','spl_disct']
 
 
 salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=1, can_delete=True)
 salesvoucherupdateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=0, can_delete=True)
+
+
 
 
 
@@ -1284,3 +1286,20 @@ class OutwardProductForm(forms.ModelForm):
 
 OutwardProductFormSet = modelformset_factory(outward_products, form=OutwardProductForm, extra=1)
 
+
+
+
+class Salesvouchermasteroutwardscanform(forms.ModelForm):
+    class Meta:
+        model = sales_voucher_master_outward_scan
+        fields = ['buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_warehouse']
+
+
+
+
+class SalesvoucheroutwardscanForm(forms.ModelForm):
+    class Meta:
+        model = sales_voucher_outward_scan
+        fields = ['product_name','quantity','trade_disct','spl_disct']
+
+salesvoucherfromscanupdateformset = inlineformset_factory(sales_voucher_master_outward_scan,sales_voucher_outward_scan,form = SalesvoucheroutwardscanForm,extra=0, can_delete=True)
