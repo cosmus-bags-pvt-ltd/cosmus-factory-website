@@ -1056,7 +1056,9 @@ class finished_product_warehouse_bin(models.Model):
 
         super().save(*args, **kwargs)
 
-
+    def __str__(self):
+        return self.bin_name
+    
 
 
 
@@ -1171,6 +1173,10 @@ class finishedgoodsbinallocation(models.Model):
     def __str__(self):
         return self.related_purchase_item.product_purchase_master.purchase_number
 
+
+
+
+
 class sales_voucher_master_finish_Goods(models.Model):
     sales_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
     buyer_inv_no = models.CharField(max_length = 100)
@@ -1178,7 +1184,6 @@ class sales_voucher_master_finish_Goods(models.Model):
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     selected_godown = models.ForeignKey(Godown_finished_goods, on_delete=models.PROTECT,null=True, blank=True)
-    selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
@@ -1191,13 +1196,11 @@ class sales_voucher_master_finish_Goods(models.Model):
 class sales_voucher_finish_Goods(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_finish_Goods,on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
-    unique_serial_no = models.CharField(max_length=25, unique=True, blank=True, null=True)
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-
 
 
 class purchase_order_master_for_puchase_voucher_rm(models.Model):
@@ -1242,12 +1245,42 @@ class Picklist_products_list(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
+class outward_product_master(models.Model):
+    outward_no = models.CharField(max_length = 100)
+    c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+
+
 class outward_products(models.Model):
+    outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     quantity = models.IntegerField(default = 1)
 
 
+class sales_voucher_master_outward_scan(models.Model):
+    outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
+    buyer_inv_no = models.CharField(max_length = 100)
+    company_gst = models.CharField(max_length = 100)
+    ledger_type = models.CharField(max_length = 20, default = 'sales')
+    party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
+    selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    created_date = models.DateTimeField(auto_now_add = True)
+    modified_date_time = models.DateTimeField(auto_now = True)
 
 
+class sales_voucher_outward_scan(models.Model):
+    sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.CASCADE)
+    product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    quantity = models.IntegerField()
+    trade_disct = models.IntegerField()
+    spl_disct = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)

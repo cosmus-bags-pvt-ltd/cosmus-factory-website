@@ -15,25 +15,20 @@
       <div class="d-flex mb-3">
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex">
-          <label for="id_sales_no" class="me-5">Sales No:</label>
-          {% if master_form.instance.id %}
-          <input type="text" class="item-select" name="sales_no" id="id_sales_no" value="{{master_form.instance.sales_no}}"
-            maxlength="255" required readonly>
-          {% elif not master_form.instance.id %}
-          <input type="text" class="item-select" name="sales_no" id="id_sales_no"
-            value="{{master_form.sales_no.initial }}" maxlength="255" required>
-          {% endif %}
+          <label for="id_outward_no" class="me-5">Sales No:</label>
+          
+          <input type="text" class="item-select" name="outward_no" id="id_outward_no" value="{{master_form.instance.outward_no}}" maxlength="255" required>
+          
         </div>
+
         <span id="SupplierError" class="error-messages"></span>
+
         <div class="d-flex ms-3">
           <label for="id_buyer_inv_no" class="me-5">Buyer Inv No :</label>
-          {% if master_form.instance.id %}
+          
           <input type="text" class="item-select me-5" name="buyer_inv_no" id="id_buyer_inv_no"
-            value="{{master_form.instance.buyer_inv_no}}" maxlength="255" readonly>
-          {% elif not master_form.instance.id %}
-          <input type="text" class="item-select me-5" name="buyer_inv_no" id="id_buyer_inv_no"
-            value="{{master_form.instance.buyer_inv_no}}" maxlength="255" required aria-required="true">
-          {% endif %}
+            value="{{master_form.instance.buyer_inv_no}}" maxlength="255">
+          
         </div>
         <div class="d-flex ms-3">
           <label for="id_company_gst" class="ms-1 me-3">Company GST No :</label>
@@ -388,7 +383,7 @@ function getGstNo() {
 
 
 $(document).ready(function(){
-var formsSale = $('#id_sales_voucher_finish_goods_set-0-id').val();
+var formsSale = $('#id_sales_voucher_outward_scan_set-0-id').val();
  if(formsSale === ''){
    $('#id_sales_no').on('focusout',function(){
          var sales_no = $(this).val();
@@ -456,10 +451,10 @@ $(document).on('change', 'select[name^="party_name"]', function () {
 
 
  function bindRowListeners(row) {
-     const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
-     const salePriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');;
-     const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_finish_goods_set-"][name$="-trade_disct"]');
-     const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_finish_goods_set-"][name$="-spl_disct"]');
+     const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_outward_scan_set-"][name$="-quantity"]');
+     const salePriceInput = row.querySelector('.sales_price[name^="sales_voucher_outward_scan_set-"][name$="-sale_price"]');;
+     const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_outward_scan_set-"][name$="-trade_disct"]');
+     const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_outward_scan_set-"][name$="-spl_disct"]');
      
      if (quantityInput) {
          quantityInput.addEventListener('input', calculateTotalAmount);
@@ -540,15 +535,15 @@ function calculateTotalAmount() {
    
      rows.forEach(function(row) {
          // Find the quantity, rate, and amount input fields for the current row
-         const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
-         const customPriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');
-         const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_finish_goods_set-"][name$="-trade_disct"]');
-         const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_finish_goods_set-"][name$="-spl_disct"]');
-         const amountInput = row.querySelector('.total-amount[name^="sales_voucher_finish_goods_set-"][name$="-amount"]');
-         const gstValue = row.querySelector('.purchase-gst[name^="sales_voucher_finish_goods_set-"][name$="-gst"]');
-         const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
-         const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
-         const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
+         const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_outward_scan_set-"][name$="-quantity"]');
+         const customPriceInput = row.querySelector('.sales_price[name^="sales_voucher_outward_scan_set-"][name$="-sale_price"]');
+         const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_outward_scan_set-"][name$="-trade_disct"]');
+         const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_outward_scan_set-"][name$="-spl_disct"]');
+         const amountInput = row.querySelector('.total-amount[name^="sales_voucher_outward_scan_set-"][name$="-amount"]');
+         const gstValue = row.querySelector('.purchase-gst[name^="sales_voucher_outward_scan_set-"][name$="-gst"]');
+         const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_outward_scan_set-"][name$="-cgst"]');
+         const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_outward_scan_set-"][name$="-sgst"]');
+         const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_outward_scan_set-"][name$="-total_amount"]');
       
          // Get the values of quantity and rate
          const quantity = parseFloat(quantityInput.value);
@@ -631,7 +626,7 @@ function calculateTotalAmount() {
     document.getElementById('id_cash_disct_value').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
     const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
 
-    let finalTotal = grossTotal + cashdisc + frightTransport;
+    let finalTotal = grossTotal - cashdisc + frightTransport;
 
     document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
 
