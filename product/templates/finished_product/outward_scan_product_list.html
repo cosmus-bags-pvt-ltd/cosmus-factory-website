@@ -1,0 +1,10 @@
+{% extends 'product/base.html' %} 
+{% load static %} 
+
+{% block body %}
+<a href="{% url 'outward-scan-product-create' %}">Add+</a>
+{% for i in outward_list %}
+<p>{{i.outward_no}}</p>
+<p>{{i.created_date}}</p>
+{% endfor %}
+{% endblock body %}

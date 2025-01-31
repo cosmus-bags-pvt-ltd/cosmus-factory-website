@@ -2,20 +2,28 @@
 {% load static %} 
 
 {% block body %}
-<div class="mb-3 mt-2">
-    <div class="d-flex">
-     <div class="">
-        <label for="inwordSerialNo" class="fw-bold me-2">Scan :</label>
-        <input type="text" name="scanned_serial_number" class="item-select ms-4" id="inwordSerialNo">
-        <label for="id_manualSerialNo" class="fw-bold ms-1">M-Scan :</label>
-        <input type="text" name="manual_serial_number" class="item-select ms-3" id="id_manualSerialNo">
-   </div>
-     <div class=""> 
-        <span id="responseMessage" class="ms-3 fw-bold"></span></div>
-    </div>
-</div>   
+
 <form method="POST">
     {% csrf_token %}
+
+    <div class="mb-3 mt-2">
+        <div class="d-flex">
+         <div class="">
+            <label for="id_outward_no" class="fw-bold me-2">Outward No :</label>
+            {% if master_form.instance.id %}
+            <input type="text" name="outward_no" class="item-select ms-4" id="id_outward_no">
+            {% elif not master_form.instance.id %}
+            <input type="text" name="outward_no" class="item-select ms-4" id="id_outward_no" required>
+            {% endif %}
+            <label for="inwordSerialNo" class="fw-bold me-2">Scan :</label>
+            <input type="text" name="scanned_serial_number" class="item-select ms-4" id="inwordSerialNo">
+            <label for="id_manualSerialNo" class="fw-bold ms-1">M-Scan :</label>
+            <input type="text" name="manual_serial_number" class="item-select ms-3" id="id_manualSerialNo">
+       </div>
+         <div class=""> 
+            <span id="responseMessage" class="ms-3 fw-bold"></span></div>
+        </div>
+    </div>   
     
     <table class="table table-striped table-hover table-bordered" id="outwardSales">
         <thead>

@@ -48,7 +48,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     gst, item_color_shade, item_godown_quantity_through_table,
                     item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item,
                     labour_workin_approval_report, labour_workout_childs, labour_workout_cutting_items,
-                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_products, 
+                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, 
                     packaging, product_2_item_through_table, product_godown_quantity_through_table, 
                     product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
@@ -61,8 +61,8 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
-                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, cutting_room_form,
+                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesvoucheroutwardscanForm, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -83,7 +83,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,OutwardProductFormSet,Salesvouchermasteroutwardscanform,salesvoucherfromscanupdateformset,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,Salesvouchermasteroutwardscanform,salesvoucherfromscanupdateformset,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet)
     
 
 
@@ -13953,7 +13953,7 @@ def picklist_product_ajax(request):
 
             # Fetch product bins and group them
             product_bins = finishedgoodsbinallocation.objects.filter(
-                product__PProduct_SKU=product_sku
+                product__PProduct_SKU=product_sku,outward=False
             ).values(
                 'bin_number', 'bin_number__bin_name'
             ).annotate(product_count=Count('bin_number')).order_by('created_date')
@@ -13968,16 +13968,11 @@ def picklist_product_ajax(request):
                 # Add to formatted_bins, summing counts for the same bin_id
                 if bin_id in formatted_bins:
                     formatted_bins[bin_id][1] += product_count  # Increment product_count
-
-                    
-
                 else:
                     formatted_bins[bin_id] = [bin_name, product_count]  # Initialize bin entry
 
             # Convert formatted_bins to a list of dictionaries
             formatted_bins_list = [{bin_id: bin_data} for bin_id, bin_data in formatted_bins.items()]
-
-
 
 
             # Calculate total reserved quantity for the product
@@ -14116,6 +14111,8 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
+
+
 def decimal_to_float(obj):
     if isinstance(obj, decimal.Decimal):
         return float(obj)
@@ -14124,68 +14121,99 @@ def decimal_to_float(obj):
 
 
 from urllib.parse import urlencode
-def outward_scan_product_create(request):
+def outward_scan_product_create(request,o_id=None):
+
+    if o_id:
+        outward_instance = get_object_or_404(outward_product_master,pk=o_id)
+        master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
+        formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
+    else:
+        outward_instance = None
+        master_form = Outwardproductmasterform()
+        formset = OutwardProductcreateFormSet()
     
+
     if request.method == 'POST':
-        formset = OutwardProductFormSet(request.POST, queryset=outward_products.objects.none())
-        if formset.is_valid():
+        # print(request.POST)
+        master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
+        formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
+
+        if master_form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
+
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.c_user = request.user
+                    master_form_instance.save()
+
                     for form in formset.deleted_forms:
                         if form.instance.pk:
                             form.instance.delete()
-
-                    # for form in formset:
-                    #     form.save()
-
-                    post_data = request.POST.dict()
                     
                     products = {}
 
-                    total_forms = int(post_data.get('form-TOTAL_FORMS', 0))
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            form_instance = form.save(commit=False)
+                            form_instance.outward_no = master_form_instance
+                            
 
-                    for i in range(total_forms):
-                        product = post_data.get(f'form-{i}-product')
-                        quantity = int(post_data.get(f'form-{i}-quantity', 0))
+                            post_data = request.POST.dict()
 
-                        product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
-                        
-                        if product:
-                            if product in products:
-                                products[product]['quantity'] += quantity
 
-                            else:
+                            total_forms = int(post_data.get('outward_products_set-TOTAL_FORMS', 0))
+
+                            for i in range(total_forms):
+                                product = post_data.get(f'outward_products_set-{i}-product')
+                                quantity = int(post_data.get(f'outward_products_set-{i}-quantity', 0))
+
+                                product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
                                 
-                                products[product] = {
-                                    'product_ref': post_data.get(f'form-{i}-product_RefNo'),
-                                    'product_name': post_data.get(f'form-{i}-product_name_value'),
-                                    'product': product,
-                                    'color': post_data.get(f'product_color_{i}'),
-                                    'quantity': quantity,
-                                    'mrp':product_info.Product.Product_MRP,
-                                    'customer_price':product_info.Product.Product_SalePrice_CustomerPrice,
-                                    'gst':product_info.Product.Product_GST.gst_percentage
-                                }
+                                if product:
+                                    if product in products:
+                                        products[product]['quantity'] += quantity
+
+                                    else:
+                                        
+                                        products[product] = {
+                                            'product_ref': post_data.get(f'outward_products_set-{i}-product_RefNo'),
+                                            'product_name': post_data.get(f'outward_products_set-{i}-product_name_value'),
+                                            'product': product,
+                                            'color': post_data.get(f'product_color_{i}'),
+                                            'quantity': quantity,
+                                            'mrp':product_info.Product.Product_MRP,
+                                            'customer_price':product_info.Product.Product_SalePrice_CustomerPrice,
+                                            'gst':product_info.Product.Product_GST.gst_percentage
+                                        }
+
+                            form_instance.save()
+                    # print(products)
                     product_list = list(products.values())
-                    
-                    # print('product_list = ',product_list)
-
-                    # party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-                    # warehouse_names = Finished_goods_warehouse.objects.all()
-
-                    # salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_list), can_delete=True)
-
-                    # formset = salesvouchercreateformset(initial = product_list)
-
-                    # return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'formset': formset,'party_name':party_name,'warehouse_names':warehouse_names,})
                     
                     query_params = urlencode({'products': json.dumps(product_list, default=decimal_to_float)})
                     return redirect(f'/salesvouchercreateupdateforwarehouse/?{query_params}')
+                
             except Exception as e:
                 print(e)
-    else:
-        formset = OutwardProductFormSet(queryset=outward_products.objects.none())       
-    return render(request,'finished_product/outward_scan_product_create.html',{'formset': formset})
+    
+    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset})
+
+
+
+
+def outward_scan_product_list(request):
+    outward_list = outward_product_master.objects.all()
+    # .annotate(total_qty=Sum('outward_product__quantity'))
+    return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
 
 
 
@@ -14196,7 +14224,6 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
     warehouse_names = Finished_goods_warehouse.objects.all()
     
-
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
         master_form = Salesvouchermasteroutwardscanform(request.POST or None,instance=voucher_instance)

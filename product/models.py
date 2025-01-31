@@ -1152,6 +1152,7 @@ class finishedgoodsbinallocation(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     source_type = models.CharField(max_length=20, choices=[('purchase', 'purchase'), ('transfer', 'transfer')])
+    outward = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
@@ -1254,7 +1255,7 @@ class outward_product_master(models.Model):
 
 
 class outward_products(models.Model):
-    outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
+    outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT,related_name='outward_product')
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
