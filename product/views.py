@@ -3168,10 +3168,7 @@ def salesvoucherlist(request):
 
 
 
-@login_required(login_url='login')
-def salesvoucherlistwarehouse(request):
-    sales_list = sales_voucher_master_outward_scan.objects.all()
-    return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list})
+
 
 
 
@@ -14151,60 +14148,57 @@ def outward_scan_product_create(request,o_id=None):
 
                     master_form_instance = master_form.save(commit=False)
                     master_form_instance.c_user = request.user
-                    # master_form_instance.save()
+                    master_form_instance.save()
 
                     for form in formset.deleted_forms:
                         if form.instance.pk:
                             form.instance.delete()
                     
-                    products = {}
+                    
 
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
                             form_instance.outward_no = master_form_instance
+                            form_instance.save()
+
+
+                    products = {}
+
+                    post_data = request.POST.dict()
+                    
+
+                    total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
+
+                    products[master_form_instance.outward_no] = []
+
+                    for i in range(total_forms):
+                        product = post_data.get(f'outward_product-{i}-product')
+                        quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
+
+                        print(product)
+
+                        found = False
+                        for p in products[master_form_instance.outward_no]:
+                            if p['product'] == product:
+                                p['quantity'] += quantity
+                                found = True
+                                break
                             
 
-
-                            post_data = request.POST.dict()
-                            
-
-                            total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
-
-                            for i in range(total_forms):
-                                product = post_data.get(f'outward_product-{i}-product')
-                                quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
-
-                                product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
-                                
-                                if product:
-                                    
-                                    products[master_form_instance.outward_no] = []
-                                    
-                                    found = False
-                                    for p in products[master_form_instance.outward_no]:
-                                        if p['product'] == product:
-                                            p['quantity'] += quantity
-                                            found = True
-                                            break
-
-                                    if not found:
-                                        products[master_form_instance.outward_no].append({
-                                            'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
-                                            'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
-                                            'product': product,
-                                            'color': post_data.get(f'product_color_{i}'),
-                                            'quantity': quantity,
-                                            'mrp': decimal_to_float(product_info.Product.Product_MRP),
-                                            'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
-                                            'gst': product_info.Product.Product_GST.gst_percentage
-                                        })
-
-                            # form_instance.save()
+                        if not found:
+                            product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
+                            products[master_form_instance.outward_no].append({
+                                'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
+                                'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
+                                'product': product,
+                                'color': post_data.get(f'product_color_{i}'),
+                                'quantity': quantity,
+                                'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                'gst': product_info.Product.Product_GST.gst_percentage
+                            })
                     
-                    
-                    print('products from upper = ',products)
-
                     request.session['products_data'] = products
 
                     return redirect('/salesvouchercreateupdateforwarehouse/')
@@ -14226,23 +14220,21 @@ def outward_scan_product_list(request):
 
 
 
-def sales_voucher_create_update_for_warehouse(request,s_id=None):
-    print("in sale ")
-    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+def sales_voucher_create_update_for_warehouse(request, s_id=None):
+    print("in sale")
+    party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
     warehouse_names = Finished_goods_warehouse.objects.all()
     
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
-        master_form = Salesvouchermasteroutwardscanform(request.POST or None,instance=voucher_instance)
-        formset = salesvoucherfromscanupdateformset(request.POST or None,instance=voucher_instance)
+        master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
+        formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
         warehouse_id = voucher_instance.selected_warehouse.id
-        print('warehouse_id',warehouse_id)
-
+        print('warehouse_id', warehouse_id)
     else:
         voucher_instance = None
-        outward_number = None
-        product_list2 = None
+
         page_name = 'Create Sales Invoice'
 
         products = request.session.get('products_data', None)
@@ -14253,26 +14245,38 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
                 product_list2 = val
                 break
 
+        master_form = Salesvouchermasteroutwardscanform(initial={'outward_no':outward_number})
 
-        master_form = Salesvouchermasteroutwardscanform(initial={'outward_no': outward_number})
-  
-        salesvoucherfromscancreateformset = inlineformset_factory(sales_voucher_master_outward_scan,sales_voucher_outward_scan,form = SalesvoucheroutwardscanForm,extra=len(product_list2), can_delete=True)
-
-        formset = salesvoucherfromscancreateformset(initial = product_list2)
-
-        del request.session['products_data']
+        salesvoucherfromscancreateformset = inlineformset_factory(sales_voucher_master_outward_scan, sales_voucher_outward_scan, form=SalesvoucheroutwardscanForm, extra=len(product_list2), can_delete=True)
+        
+        formset = salesvoucherfromscancreateformset(initial=product_list2)
 
     if request.method == "POST":
-        # print(request.POST)
-        master_form = Salesvouchermasteroutwardscanform(request.POST,instance=voucher_instance)
+        
+        master_form = Salesvouchermasteroutwardscanform(request.POST, instance=voucher_instance)
         formset = salesvoucherfromscancreateformset(request.POST, instance=voucher_instance)
+
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
 
         if master_form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
                     master_form_instance = master_form.save(commit=False)
+
+                    o_id = outward_product_master.objects.get(outward_no = outward_number)
+
+                    master_form_instance.outward_no = o_id
+
                     master_form_instance.save()
-                    
+
                     selected_warehouse = master_form_instance.selected_warehouse
 
                     for form in formset:
@@ -14284,29 +14288,30 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
                             product_name = form.instance.product_name
                             product_qty = form.instance.quantity
 
-                            print('product_name from function = ',product_name)
-                            
-                                
-                    return redirect('sales-voucher-list')
-                
+                            print('product_name from function = ', product_name)
+
+                    del request.session['products_data']
+
+                    return redirect('sales-voucher-list-warehouse')
+
             except Exception as e:
                 print(e)
 
-
-    return render(request,'accounts/salesvouchercreateupdateforwarehouse.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'warehouse_names':warehouse_names})
-
-
-
-
-
-
-
-
+    return render(request, 'accounts/salesvouchercreateupdateforwarehouse.html', {
+        'master_form': master_form,
+        'formset': formset,
+        'page_name': page_name,
+        'party_name': party_name,
+        'warehouse_names': warehouse_names,
+        'outward_number':outward_number
+    })
 
 
 
-
-
+@login_required(login_url='login')
+def salesvoucherlistwarehouse(request):
+    sales_list = sales_voucher_master_outward_scan.objects.all()
+    return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list})
 
 
 

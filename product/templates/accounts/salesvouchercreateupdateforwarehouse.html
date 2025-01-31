@@ -16,11 +16,12 @@
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex">
           <label for="id_outward_no" class="me-5">Outward No:</label>
-          {% if form.instance %}
+          <input type="text" class="item-select" name="" id="id_outward_no" value="{{outward_number}}" maxlength="255" readonly>
+          <!-- {% if form.instance %}
           <input type="text" class="item-select" name="outward_no" id="id_outward_no" value="{{master_form.instance.outward_no}}" maxlength="255" required>
-          {% else %}
+          {% elif not form.instance %}
           <input type="text" class="item-select" name="outward_no" id="id_outward_no" value="{{master_form.initial.outward_no}}" maxlength="255" required>
-          {% endif %}
+          {% endif %} -->
           
           
         </div>
