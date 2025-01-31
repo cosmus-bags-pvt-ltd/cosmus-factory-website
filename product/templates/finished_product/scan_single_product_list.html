@@ -12,6 +12,7 @@
     <table class="table table-striped table-hover table-bordered">
         <thead class="name_absolute sticky-top">
             <tr>
+                <th>voucher</th>
                 <th>No</th>
                 <th>Image</th>
                 <th>Ref No</th>
@@ -28,6 +29,11 @@
             {% for entry in instance_entries %}
             <tr>
                 <td>{{forloop.counter}}</td>
+                {% if entry.related_purchase_item %}
+                <td>puchase/{{entry.related_purchase_item.product_purchase_master.purchase_number}}</td>
+                {% else %}
+                <td>transfer/{{entry.related_transfer_record.Finished_goods_Stock_TransferMasterinstance.voucher_no}}</td> 
+                {% endif %}
                 <td><img id="productImgPreview" name="product_img" src="{{entry.product.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
                 <td class="refNo">{{entry.product.Product.Product_Refrence_ID}}</td>
                 <td>{{entry.product.Product.Model_Name}}</td>
