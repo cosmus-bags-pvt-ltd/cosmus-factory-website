@@ -9,16 +9,16 @@
     <div class="mb-3 mt-2">
         <div class="d-flex">
          <div class="">
-            <label for="id_outward_no" class="fw-bold me-2">Outward No :</label>
+            <label for="id_outward_no" class="fw-bold me-1">Outward No :</label>
             {% if master_form.instance.id %}
-            <input type="text" name="outward_no" class="item-select ms-4" id="id_outward_no">
+            <input type="text" name="outward_no" class="purchase-vNo ms-2" id="id_outward_no">
             {% elif not master_form.instance.id %}
-            <input type="text" name="outward_no" class="item-select ms-4" id="id_outward_no" required>
+            <input type="text" name="outward_no" class="purchase-vNo ms-2" id="id_outward_no" required>
             {% endif %}
-            <label for="inwordSerialNo" class="fw-bold me-2">Scan :</label>
-            <input type="text" name="scanned_serial_number" class="item-select ms-4" id="inwordSerialNo">
+            <label for="inwordSerialNo" class="fw-bold me-1">Scan :</label>
+            <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
             <label for="id_manualSerialNo" class="fw-bold ms-1">M-Scan :</label>
-            <input type="text" name="manual_serial_number" class="item-select ms-3" id="id_manualSerialNo">
+            <input type="text" name="manual_serial_number" class="item-selects ms-3" id="id_manualSerialNo">
        </div>
          <div class=""> 
             <span id="responseMessage" class="ms-3 fw-bold"></span></div>
@@ -253,7 +253,7 @@ function isTableEmpty() {
             }
         });
 
-        const formCountInput = document.getElementById("id_form-TOTAL_FORMS");
+        const formCountInput = document.getElementById("id_outward_product-TOTAL_FORMS");
         const formCount = parseInt(formCountInput.value);
         const formIndex = formCount;
         const lastRow = lastVisibleRow.cloneNode(true);
@@ -269,13 +269,13 @@ function isTableEmpty() {
         rowElement.style.border = "none";
 
         const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
-        inputSelectElement.id = `id_form-${formIndex}-product_RefNo`;
-        inputSelectElement.name = `form-${formIndex}-product_RefNo`;
+        inputSelectElement.id = `id_outward_product-${formIndex}-product_RefNo`;
+        inputSelectElement.name = `outward_product-${formIndex}-product_RefNo`;
         inputSelectElement.value = "";
 
         const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
-        inputElement.id = `id_form-${formIndex}-product_name_value`;
-        inputElement.name = `form-${formIndex}-product_name_value`;
+        inputElement.id = `id_outward_product-${formIndex}-product_name_value`;
+        inputElement.name = `outward_product-${formIndex}-product_name_value`;
         inputElement.value = "";
 
         const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
@@ -284,8 +284,8 @@ function isTableEmpty() {
         colorInputElement.value = "";
 
         const skuInputElement = lastRow.querySelector('.purchase-amount[name$="-product"]');
-        skuInputElement.id = `id_form-${formIndex}-product`;
-        skuInputElement.name = `form-${formIndex}-product`;
+        skuInputElement.id = `id_outward_product-${formIndex}-product`;
+        skuInputElement.name = `outward_product-${formIndex}-product`;
         skuInputElement.value = "";
 
         const imgElement = lastRow.querySelector('[id^="product_img_"]');
@@ -293,24 +293,24 @@ function isTableEmpty() {
         imgElement.src = "";
 
         const serialNoElement = lastRow.querySelector('input[name$="-unique_serial_no"]');
-        serialNoElement.id = `id_form-${formIndex}-unique_serial_no`;
-        serialNoElement.name = `form-${formIndex}-unique_serial_no`;
+        serialNoElement.id = `id_outward_product-${formIndex}-unique_serial_no`;
+        serialNoElement.name = `outward_product-${formIndex}-unique_serial_no`;
         serialNoElement.value = '';
 
         const binNameElement = lastRow.querySelector('input[name$="-bin_number"]');
-        binNameElement.id = `id_form-${formIndex}-bin_number`;
-        binNameElement.name = `form-${formIndex}-bin_number`;
+        binNameElement.id = `id_outward_product-${formIndex}-bin_number`;
+        binNameElement.name = `outward_product-${formIndex}-bin_number`;
         binNameElement.value = '';
 
         const binNoElement = lastRow.querySelector('input[name$="-bin_no"]');
-        binNoElement.id = `id_form-${formIndex}-bin_no`;
-        binNoElement.name = `form-${formIndex}-bin_no`;
+        binNoElement.id = `id_outward_product-${formIndex}-bin_no`;
+        binNoElement.name = `outward_product-${formIndex}-bin_no`;
         binNoElement.value = '';
 
 
         const qunatityInputElement = lastRow.querySelector('[name$="-quantity"]');
-        qunatityInputElement.id = `id_form-${formIndex}-quantity`;
-        qunatityInputElement.name = `form-${formIndex}-quantity`; 
+        qunatityInputElement.id = `id_outward_product-${formIndex}-quantity`;
+        qunatityInputElement.name = `outward_product-${formIndex}-quantity`; 
         qunatityInputElement.value="";
 
 
@@ -321,6 +321,64 @@ function isTableEmpty() {
 
 
  })
+
+
+ function inputCheck(){
+    document.getElementById('id_outward_no').focus();
+   
+    const outwardNo = document.getElementById('id_outward_no');
+    const inwardNo = document.getElementById('inwordSerialNo');
+    const mscanNo = document.getElementById('id_manualSerialNo')
+    const submit = document.getElementById('parentFormClick')
+    if(outwardNo){
+        outwardNo.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault()
+           
+                if(outwardNo.value === ''){
+             
+                    outwardNo.focus();
+                    return;
+                }else{
+                    inwardNo.focus() ;
+                }
+              
+            }
+        })
+    }
+    
+    if(inwardNo){
+        inwardNo.addEventListener('keydown', function(event) {
+            if (event.key === "Tab") {
+                event.preventDefault();
+          
+                if (inwardNo.value === '' ) {
+                    inwardNo.focus();
+                    return;
+                    
+                }  
+            }
+        })  
+    }
+    if(mscanNo){
+        mscanNo.addEventListener('keydown', function(event) {
+            if (event.key === "Tab") {
+                event.preventDefault();
+          
+                if (mscanNo.value === '' ) {
+                    mscanNo.focus();
+                    return;
+                    
+                }else{
+                    submit.focus();
+                }  
+            }
+        })
+    }
+    
+    }
+
+    inputCheck();
 </script>
 
 
