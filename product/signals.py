@@ -1,4 +1,5 @@
 
+from enum import unique
 from django.db.models.signals import pre_delete , post_save,pre_save
 from django.dispatch import receiver
 from django.forms import ValidationError
@@ -6,7 +7,7 @@ from django.core.exceptions import ValidationError , ObjectDoesNotExist
 from .models import (Finished_goods_transfer_records, Ledger, PProduct_Creation, Product, Product_warehouse_quantity_through_table, RawStockTrasferRecords,
                       account_credit_debit_master_table, finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,  item_purchase_voucher_master, 
                       item_godown_quantity_through_table,Item_Creation,item_color_shade, labour_workout_master, 
-                      opening_shade_godown_quantity, product_2_item_through_table, product_godown_quantity_through_table, product_purchase_voucher_items, purchase_order, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_raw_material_cutting,
+                      opening_shade_godown_quantity, outward_products, product_2_item_through_table, product_godown_quantity_through_table, product_purchase_voucher_items, purchase_order, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_raw_material_cutting,
                         purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, sales_voucher_finish_Goods, set_prod_item_part_name,
                           shade_godown_items)
 
@@ -514,12 +515,6 @@ def sales_voucher_stock_minus(sender, instance, created, **kwargs):
 
 
 
-
-
-
-
-
-
 @receiver(pre_delete, sender=finishedgoodsbinallocation)
 def single_entries_delete(sender, instance, **kwargs):
     try:
@@ -564,7 +559,23 @@ def single_entries_delete(sender, instance, **kwargs):
     except Exception as e:
         print(f"Error in single_entries_delete signal: {e}")
         
-    
+
+
+
+
+@receiver(post_save, sender=outward_products)
+def outward_scan_product_bin_count_minus(sender, instance, **kwargs):
+    try:
+        pass
+        product = instance.product
+        unique_serial_no = instance.unique_serial_no
+        bin_number = instance.bin_number
+
+        
+
+
+    except Exception as e:
+        print(f"Error in minus bin product count: {e}")
 
 
 

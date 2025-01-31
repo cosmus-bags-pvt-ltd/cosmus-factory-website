@@ -10156,9 +10156,6 @@ def warehouse_stock(request):
 
 
 
-
-
-
 def scan_single_product_list(request,sku):
     instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku)
     return render(request,'finished_product/scan_single_product_list.html',{'instance_entries':instance_entries})
@@ -14111,12 +14108,13 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
-
-
+from decimal import Decimal
 def decimal_to_float(obj):
-    if isinstance(obj, decimal.Decimal):
+    if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError("Type not serializable")
+
+
 
 
 
@@ -14153,7 +14151,7 @@ def outward_scan_product_create(request,o_id=None):
 
                     master_form_instance = master_form.save(commit=False)
                     master_form_instance.c_user = request.user
-                    master_form_instance.save()
+                    # master_form_instance.save()
 
                     for form in formset.deleted_forms:
                         if form.instance.pk:
@@ -14167,40 +14165,49 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.outward_no = master_form_instance
                             
 
+
                             post_data = request.POST.dict()
+                            
 
-
-                            total_forms = int(post_data.get('outward_products_set-TOTAL_FORMS', 0))
+                            total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
 
                             for i in range(total_forms):
-                                product = post_data.get(f'outward_products_set-{i}-product')
-                                quantity = int(post_data.get(f'outward_products_set-{i}-quantity', 0))
+                                product = post_data.get(f'outward_product-{i}-product')
+                                quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
 
                                 product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
                                 
                                 if product:
-                                    if product in products:
-                                        products[product]['quantity'] += quantity
+                                    
+                                    products[master_form_instance.outward_no] = []
+                                    
+                                    found = False
+                                    for p in products[master_form_instance.outward_no]:
+                                        if p['product'] == product:
+                                            p['quantity'] += quantity
+                                            found = True
+                                            break
 
-                                    else:
-                                        
-                                        products[product] = {
-                                            'product_ref': post_data.get(f'outward_products_set-{i}-product_RefNo'),
-                                            'product_name': post_data.get(f'outward_products_set-{i}-product_name_value'),
+                                    if not found:
+                                        products[master_form_instance.outward_no].append({
+                                            'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
+                                            'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
                                             'product': product,
                                             'color': post_data.get(f'product_color_{i}'),
                                             'quantity': quantity,
-                                            'mrp':product_info.Product.Product_MRP,
-                                            'customer_price':product_info.Product.Product_SalePrice_CustomerPrice,
-                                            'gst':product_info.Product.Product_GST.gst_percentage
-                                        }
+                                            'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                            'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                            'gst': product_info.Product.Product_GST.gst_percentage
+                                        })
 
-                            form_instance.save()
-                    # print(products)
-                    product_list = list(products.values())
+                            # form_instance.save()
                     
-                    query_params = urlencode({'products': json.dumps(product_list, default=decimal_to_float)})
-                    return redirect(f'/salesvouchercreateupdateforwarehouse/?{query_params}')
+                    
+                    print('products from upper = ',products)
+
+                    request.session['products_data'] = products
+
+                    return redirect('/salesvouchercreateupdateforwarehouse/')
                 
             except Exception as e:
                 print(e)
@@ -14220,7 +14227,7 @@ def outward_scan_product_list(request):
 
 
 def sales_voucher_create_update_for_warehouse(request,s_id=None):
-    
+    print("in sale ")
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
     warehouse_names = Finished_goods_warehouse.objects.all()
     
@@ -14234,16 +14241,26 @@ def sales_voucher_create_update_for_warehouse(request,s_id=None):
 
     else:
         voucher_instance = None
-        master_form = Salesvouchermasteroutwardscanform()
+        outward_number = None
+        product_list2 = None
         page_name = 'Create Sales Invoice'
-        product_list = request.GET.get('products', '[]')
-        
-        product_list2 = json.loads(product_list) if product_list else []
 
+        products = request.session.get('products_data', None)
+
+        if products:
+            for key, val in products.items():
+                outward_number = key
+                product_list2 = val
+                break
+
+
+        master_form = Salesvouchermasteroutwardscanform(initial={'outward_no': outward_number})
+  
         salesvoucherfromscancreateformset = inlineformset_factory(sales_voucher_master_outward_scan,sales_voucher_outward_scan,form = SalesvoucheroutwardscanForm,extra=len(product_list2), can_delete=True)
 
         formset = salesvoucherfromscancreateformset(initial = product_list2)
 
+        del request.session['products_data']
 
     if request.method == "POST":
         # print(request.POST)
