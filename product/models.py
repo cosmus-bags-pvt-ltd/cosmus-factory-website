@@ -1235,8 +1235,6 @@ class Picklist_voucher_master(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-
-
 class Picklist_products_list(models.Model):
     picklist_master_instance = models.ForeignKey(Picklist_voucher_master,on_delete=models.CASCADE,related_name="picklist_products_list")
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
@@ -1244,6 +1242,9 @@ class Picklist_products_list(models.Model):
     product_quantity = models.BigIntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
+
 
 
 class outward_product_master(models.Model):

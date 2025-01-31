@@ -13804,74 +13804,6 @@ def warehouse_navigator(request):
 
 
 
-def create_update_picklist(request,p_id=None):
-
-    if p_id:
-        voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
-        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
-        formset = picklistcreateformsetupdate(request.POST or None,instance=voucher_instance)
-    else:
-        voucher_instance = None
-        master_form  = Picklistvouchermasterform()
-        formset = picklistcreateformset()
-
-    
-    if request.method == "POST":
-        print(request.POST)
-        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
-        formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
-
-        if not master_form.is_valid():
-            print("Form Errors:", master_form.errors)
-
-        if not formset.is_valid():
-            for form in formset:
-                if not form.is_valid():
-                    print("Form Errors:", form.errors)
-
-        if master_form.is_valid() and formset.is_valid():
-            try:
-                with transaction.atomic():
-                    master_form_instance = master_form.save(commit=False)
-                    master_form_instance.c_user = request.user
-                    master_form_instance.save()
-
-
-                    for form in formset.deleted_forms:
-                        if form.instance.pk:
-                            form.instance.delete()
-
-                    for form in formset:
-                        if not form.cleaned_data.get('DELETE'):
-                            form_instance = form.save(commit=False)
-                            form_instance.picklist_master_instance = master_form_instance
-                            form_instance.save()
-                    return redirect('all-picklists-list')
-                
-            except Exception as e:
-                print(e)
-    return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
-
-
-def deletepicklist(request,pl_id):
-    picklist = Picklist_voucher_master.objects.get(pk=pl_id)
-    picklist.delete()
-    return redirect('all-picklists-list')
-
-
-
-
-def all_picklists_list(request):
-    all_picklists = Picklist_voucher_master.objects.prefetch_related('picklist_products_list__product').annotate(
-    total_quantity=Sum('picklist_products_list__product_quantity'))
-    return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
-
-
-
-
-
-
-
 
 def picklist_product_ajax(request):
     try:
@@ -13991,12 +13923,107 @@ def picklist_product_ajax(request):
 
         print('final_data -- ', final_data)
 
+        
 
         return JsonResponse({'products': final_data}, status=200)
 
     except Exception as e:
         logger.error(f"Error in picklist_product_ajax: {str(e)}")
         return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
+
+
+
+def temp_bin_quantity_ajax(request):
+    sku = request.GET.get('sku')
+    binName = request.GET.get('binName')
+    productQty = request.GET.get('productQty')
+    reserveQty = request.GET.get('reserveName')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def create_update_picklist(request,p_id=None):
+
+    if p_id:
+        voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
+        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
+        formset = picklistcreateformsetupdate(request.POST or None,instance=voucher_instance)
+    else:
+        voucher_instance = None
+        master_form  = Picklistvouchermasterform()
+        formset = picklistcreateformset()
+
+    
+    if request.method == "POST":
+        print(request.POST)
+        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
+        formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.c_user = request.user
+                    master_form_instance.save()
+
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            form_instance = form.save(commit=False)
+                            form_instance.picklist_master_instance = master_form_instance
+                            form_instance.save()
+                    return redirect('all-picklists-list')
+                
+            except Exception as e:
+                print(e)
+    return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
+
+
+def deletepicklist(request,pl_id):
+    picklist = Picklist_voucher_master.objects.get(pk=pl_id)
+    picklist.delete()
+    return redirect('all-picklists-list')
+
+
+
+
+def all_picklists_list(request):
+    all_picklists = Picklist_voucher_master.objects.prefetch_related('picklist_products_list__product').annotate(
+    total_quantity=Sum('picklist_products_list__product_quantity'))
+    return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -14103,6 +14130,9 @@ def download_picklist_excel(request,pl_id):
     wb.save(response)
 
     return response
+
+
+
 
 
 from decimal import Decimal
@@ -14351,4 +14381,5 @@ def outward_scan_serial_no_process(request):
     except Exception as e:
         return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
 
-        
+
+
