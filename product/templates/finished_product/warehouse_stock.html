@@ -4,8 +4,8 @@
 
 
 <div class="mt-3">
-    <table class="table table-striped table-hover table-bordered" id="warehouseTables">
-        <thead class="name_absolute sticky-top">
+    <table class="table table-bordered" id="warehouseTables">
+        <thead class="name_absolute sticky-top bg-white text-dark">
             <tr>
                 <th>No</th>
                 <th>Image</th>
@@ -20,7 +20,7 @@
                 <th>Total QTY</th>
             </tr>
         </thead>
-        <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+        <tbody class="mainTableList warehousestock" style="max-height: 450px; overflow-y: auto;">
             
             {% for data in merged_list %}
             <tr>
@@ -31,9 +31,7 @@
                 <td>{{data.color}}</td>
                 <td>{{data.product_sku}}</td>
                 <td><a href="{% url 'model-name-wise-purchase-transfer-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalValue" style="background-color: #bb43dc; text-decoration: none;">{{data.total}}</a></td>
-
                 <td><a href="{% url 'scan-single-product-list' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalInvard" style="background-color: #1030ff; text-decoration: none;">{{data.total_inward}}</a></td>
-
                 <td>{{data.total_balance}}</td>
                 <td><a href="{% url 'model-name-wise-purchase-transfer-sales-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4dc3ce; text-decoration: none;">{{data.total_sale}}</a></td>
                 <td>{{data.inward_minus_sales}}</td> 
@@ -45,27 +43,41 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded',function(){
-        var warehouseTables = document.querySelectorAll('#warehouseTables .mainTableList tr');
-        warehouseTables.forEach(function(row){
 
-            var totalValueElement = row.querySelector('.totalValue');
-            var inwardValueElement = row.querySelector('.totalInvard');
+function calculateValue() {
+    var warehouseTables = document.querySelectorAll('#warehouseTables .mainTableList tr');
+
+    console.log('Total Rows Found:', warehouseTables.length); // Debugging
+
+    warehouseTables.forEach(function (row, index) {
+        var totalValueElement = row.querySelector('.totalValue ');
+        var inwardValueElement = row.querySelector('.totalInvard ');
 
         // Ensure elements exist before accessing textContent
         if (totalValueElement && inwardValueElement) {
-            var totalValue = Number(totalValueElement.textContent.trim()) || 0;
-            var inwardValue = Number(inwardValueElement.textContent.trim()) || 0;
+            var totalValue = Number(totalValueElement.textContent.trim().replace(/,/g, '')) || 0;
+            var inwardValue = Number(inwardValueElement.textContent.trim().replace(/,/g, '')) || 0;
+
+
+            
 
             if (totalValue === inwardValue) {
-                row.style.background = '#90ee90'; // Green for matching values
+                row.style.setProperty("background-color", "#90ee90", "important"); // Green
             } else if (inwardValue === 0) {
-                row.style.background = '#FF3333'; // Red if inward value is 0
+                row.style.setProperty("background-color", "#FF3333", "important"); // Red
             } else {
-                row.style.background = '#ADD8E6'; // Light blue otherwise
+                row.style.setProperty("background-color", "#ADD8E6", "important"); // Light blue
             }
+        } else {
+            console.warn(`Missing elements in row ${index + 1}`);
         }
-        })
-    })
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(calculateValue, 500); // Delay execution in case of slow loading
+});
+document.addEventListener('DOMContentLoaded', calculateValue);
+
 </script>
 {% endblock body %}

@@ -1686,6 +1686,21 @@ table>:not(caption)>*>*{
     padding-left: 5px; 
     height: 33px; 
 }
+
+/* .warehousestock tr {
+    background-color: inherit !important;
+} */
+
+#warehouseTables {
+    --bs-table-bg: transparent !important;
+    --bs-table-color: inherit !important;
+    --bs-table-border-color: var(--bs-border-color);
+    
+}
+
+#warehouseTables .mainTableList tr {
+    background-color: inherit !important; /* Allow JS background changes */
+}
 .ledger-input{
     width: 225px;
     border: 1px solid  #cecdcd ;
