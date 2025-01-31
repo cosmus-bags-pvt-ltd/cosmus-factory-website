@@ -3,50 +3,64 @@
 
 {% block body %}
 <div>
-      
     <form class="mt-3" action="" method="POST" id="salesForm">
       {% csrf_token %}
-      <div class="d-flex mb-2">
-        <input type="hidden" id="productSaleDate" value="{{dict_to_send}}">
-        <label for="" class="me-3">Type:</label>
-        <h5 class="text-danger fw-bold">Finish Goods</h5>
-       
-      </div>
+     
       <div class="d-flex mb-3">
+        <div class="d-flex mb-1">
+          <input type="hidden" id="productSaleDate" value="{{dict_to_send}}">
+          <label for="" class="me-2">Type:</label>
+          <h6 class="text-danger fw-bold">Finish Goods</h6>
+         
+        </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex">
-          <label for="id_outward_no" class="me-5">Sales No:</label>
-          
-          <input type="text" class="item-select" name="outward_no" id="id_outward_no" value="{{master_form.instance.outward_no}}" maxlength="255" required>
+          <label for="id_outward_no" class="ms-2 me-2">OutWard No :</label>
+          <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{{master_form.instance.outward_no}}" maxlength="255" required>
           
         </div>
 
         <span id="SupplierError" class="error-messages"></span>
 
         <div class="d-flex ms-3">
-          <label for="id_buyer_inv_no" class="me-5">Buyer Inv No :</label>
+          <label for="id_sales_no" class="me-2">Sales No :</label>
           
-          <input type="text" class="item-select me-5" name="buyer_inv_no" id="id_buyer_inv_no"
-            value="{{master_form.instance.buyer_inv_no}}" maxlength="255">
+          <input type="text" class="purchase-vNo me-2" name="sales_no" id="id_sales_no"
+            value="{{master_form.instance.id_sales_no}}" maxlength="255" required>
           
         </div>
         <div class="d-flex ms-3">
-          <label for="id_company_gst" class="ms-1 me-3">Company GST No :</label>
-          <input type="text" class="item-select" name="company_gst" id="id_company_gst" value="27AAACG20210238"
+          <label for="id_company_gst" class="ms-1 me-1">Company GST No :</label>
+          <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
             maxlength="50" readonly>
+        </div>
+        <div class="d-flex ms-3">
+          <label for="id_ledger_type" class="me-1">ledger Type :</label>
+          <input type="text" class="purchase-vNo" name="ledger_type" id="id_ledger_type"
+            value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
+            placeholder="Sales" readonly>
         </div>
       </div>
       <div class="mb-3 d-flex">
-        <div class="d-flex">
-          <label for="id_ledger_type" class="me-3">ledger Type :</label>
-          <input type="text" class="item-select" name="ledger_type" id="id_ledger_type"
-            value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
-            placeholder="Sales" readonly>
+        <div class="">
+          <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
+          <select class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse">
+            {% if master_form.instance.id %}
+            <option value="{{master_form.instance.selected_warehouse.id}}">
+              {{master_form.instance.selected_warehouse.warehouse_name_finished}}</option>
+            {% else %}
+            {% comment %} <option value="" selected disabled>Select Warehouse</option> {% endcomment %}
+            {% for x in warehouse_names %}
+            <option value="{{x.id}}">{{x.warehouse_name_finished}}</option>
+            {% endfor %}
+            {% endif %}
+          </select>
+          
         </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex ms-3">
           <label for="id_party_name" class="me-3">Party A/C Name:</label>
-          <select class="product2Select text-black" name="party_name" required id="id_party_name">
+          <select class="item-select text-black" name="party_name" required id="id_party_name">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.party_name.id}}">
               {{master_form.instance.party_name.name}}</option>
@@ -59,33 +73,14 @@
           </select>
           <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
         </div>
-    
-    
         <div class="d-flex ms-3">
           <label for="id_GST_number" class="me-2">Party GST No :</label>
-          <input type="text" class="item-select" name="GST_number" id="id_GST_number"
+          <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
             value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
             readonly required>
         </div>
       </div>
-
     
-
-    <div class="d-flex mb-3">
-      <label for="id_selected_warehouse" class="me-4">Warehouse:</label>
-      <select class="item-select text-black" name="selected_warehouse" required id="id_selected_warehouse">
-        {% if master_form.instance.id %}
-        <option value="{{master_form.instance.selected_warehouse.id}}">
-          {{master_form.instance.selected_warehouse.warehouse_name_finished}}</option>
-        {% else %}
-        {% comment %} <option value="" selected disabled>Select Warehouse</option> {% endcomment %}
-        {% for x in warehouse_names %}
-        <option value="{{x.id}}">{{x.warehouse_name_finished}}</option>
-        {% endfor %}
-        {% endif %}
-      </select>
-      
-    </div>
     
     
 
@@ -214,7 +209,7 @@
 
   
   <div class="row">
-    <div class="col-lg-9">
+    <div class="col-lg-8">
         <div class="row">
           <div class="col-lg-10">
             <label class="fw-bold text-dark">Tax Summary :</label>
@@ -250,41 +245,41 @@
         </div>
        
     </div>
-  <div class="col-lg-3" id="saleTotal">
-    <div class="mb-4">
-        <div class=" mb-3">
+  <div class="col-lg-4" id="saleTotal">
+    <div class="mb-2 ms-5">
+        <div class="ms- mb-2">
             <label  class="purchase-lable fw-bold">Gross total</label>
             <span class="purchase-span">
                 <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
             </span>           
         </div>
-        <div class=" mb-3">
+        <div class=" mb-2">
           <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form.instance.cash_disct | default_if_none:'0'}}" maxlength="50" step=".01">% </label>
           <span class="purchase-span">
               <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="cash_disct_value" id ="id_cash_disct_value" value="" maxlength="50" step=".01" readonly >
           </span>
       </div>
-        <div class=" mb-3">
+        <div class=" mb-2">
             <label class="purchase-lable fw-bold">Fright & Transport</label>
             <span class="purchase-span">
                 <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
             </span>
         </div>
-        <div class=" mb-3">
+        <div class=" mb-2">
             <input type="hidden" id="temp_grand_total" value="">
             <label class="purchase-lable fw-bold">Round Of </label>
             <span class="purchase-span">
-                <input type="number" class="purchaseTableLabel-roundOf  purchase-amounts" name="round_off" id ="id_round_off" value="" maxlength="50" step=".01" readonly required>
+                <input type="number" class="purchaseTableLabel-roundOf purchase-amounts" name="round_off" id ="id_round_off" value="" maxlength="50" step=".01" readonly required>
             </span> 
         </div>
     
-        <div class=" mb-3">
+        <div class=" mb-2">
             <label class="purchase-lable fw-bold">Net Payable Amount</label>
-            <span class="purchase-span"><input type="number" class="purchaseTableLabel-total purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
+            <span class="purchase-span"><input type="number" class="purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
         </div>
     </div>
   </div>
-  </div>
+</div>
 <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
 
 
@@ -778,6 +773,75 @@ function inputCheck(){
 
   const qtyValues = document.querySelectorAll('[name$="-quantity"]')
   var tableRows = document.querySelectorAll('#salesTable .mainTableList tr');
+  const saleNo = document.getElementById('id_sales_no');
+  const warhouseNo = document.getElementById('id_selected_warehouse');
+  const partyName = document.getElementById('id_party_name');
+  const cashdic = document.getElementById('id_cash_disct');
+  const submitbtn = document.getElementById('parentFormClick')
+
+  if(saleNo){
+    saleNo.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault()
+          
+                if(saleNo.value === ''){
+      
+                  saleNo.focus();
+                    return;
+                }else{
+                  warhouseNo.focus() ;
+                }
+              
+            }
+        })
+  }
+  if(warhouseNo){
+    warhouseNo.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault()
+          
+                if(warhouseNo.value === ''){
+      
+                  warhouseNo.focus();
+                    return;
+                }else{
+                  partyName.focus() ;
+                }
+              
+            }
+        })
+  } 
+
+  if(partyName){
+    partyName.addEventListener('keydown',function(event){
+            if(event.key === "Tab"){
+                event.preventDefault()
+          
+                if(partyName.value === ''){
+      
+                  partyName.focus();
+                    return;
+                }else{
+                  var tableRow = document.querySelectorAll('#salesTable .mainTableList tr');
+                for (let row of tableRow) {
+                    var spdisc = row.querySelector('[name$="-spl_disct"]');
+                    var trDisc = row.querySelector('[name$="-trade_disct"]');
+
+                    if (trDisc && trDisc.value === '') {
+                      trDisc.focus();
+                        return; 
+                    } 
+                    // Check if quantity is empty, then focus on it
+                    else if (spdisc && spdisc.value === '') {
+                      spdisc.focus();
+                        return; 
+                    }
+                }
+                }
+              
+            }
+        })
+  }
 
 
   tableRows.forEach(function (row, index) {
@@ -829,6 +893,23 @@ function inputCheck(){
         });
     }
 });
+  
+  if(cashdic){
+    cashdic.addEventListener('keydown', function (event) {
+            if (event.key === "Tab") {
+                event.preventDefault(); // Prevent default tabbing behavior
+
+                if (cashdic.value === '') {
+                  cashdic.focus(); // Focus on tredDisc if it's empty
+                    return; // Stop further processing
+                } else {
+                  submitbtn.focus()
+                }
+
+            }
+        });
+  }
+
 
 }
 calculateTaxSummary()
