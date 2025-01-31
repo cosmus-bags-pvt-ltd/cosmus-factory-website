@@ -229,10 +229,14 @@
             suggestionsContainer.on('click', '.itemName-div', function(e) {
                 var item_value = $(this).data('key');
                 var itemNamevaluesCheck = $(this).text().trim();
+                var productcolorinput = document.querySelector('#product_color_' + purchaseValue);
+                var skuIput = document.querySelector('#product_Sku_' + purchaseValue);
+                var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
+                var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
+                var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue)
        
                 $(this).addClass('selected').siblings().removeClass('selected');
 
-             
                 var selectedValue = searchedProductNameDic[item_value];
                 const productQty = selectedValue[2];
                 const namevalueCheck = selectedValue[0];
@@ -245,12 +249,6 @@
                 $(`input[name$="picklist_products_list-${purchaseValue}-product"]`).val(item_value);
                 $(`input[name$="picklist_products_list-${purchaseValue}-product_name_value"]`).val(newnameValue)
               
-                   
-                var productcolorinput = document.querySelector('#product_color_' + purchaseValue);
-                var skuIput = document.querySelector('#product_Sku_' + purchaseValue);
-                var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
-                var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
-                var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue)
 
                 productcolorinput.value = productColor;
                 skuIput.value = item_value;
@@ -286,31 +284,8 @@
 
 
         $('[name$="-product_quantity"]').on('input',function(){
-            var purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
-            var productQty = parseInt($(this).val());
-            var sku = $(`#id_picklist_products_list-${purchaseValue}-product`).val();
-            var binName = $(`#id_picklist_products_list-${purchaseValue}-bin_number`).val();
-            var reserveName = $(`#id_reserver_Qty_${purchaseValue}`).val();
-            console.log('productQty',productQty);
-            console.log('sku',sku);
-            console.log('binName',binName);
-            console.log('reserveName',reserveName);
-            $.ajax({
-                url: '//',
-                method: 'GET',
-                data: { 
-                    'sku': sku ,
-                    'binName':binName,
-                    'productQty':productQty,
-                    'reserveName':reserveName
-                },
-                success: function (response) {
-                    console.log(response)
-                },
-                error : function(error){
-                    console.log(error)
-                }
-            })
+           
+            
 
         })
         function initalBinData(selectBin,purchaseValue,productReserve){
@@ -355,6 +330,43 @@
                                     }
                                 });
                             });
+
+
+                            
+                            let allRowsData = [];
+
+                            $("[id$='product_quantity']").each(function() {
+                                let rowIndex = $(this).attr("id").match(/\d+/)[0];  // Extract row index
+                                let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val())|| 0;
+                                let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
+                                let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
+                                let reserveName = $(`#id_reserver_Qty_${rowIndex}`).val();
+
+                                allRowsData.push({
+                                    sku: sku,
+                                    binName: binName,
+                                    productQty: productQty,
+                                    reserveName: reserveName
+                                });
+                            })
+
+                                                            // Logging all row data
+                                console.log(allRowsData);
+
+                                // Sending all rows data via AJAX
+                                $.ajax({
+                                    url: '//',
+                                    method: 'GET',
+                                    data: { rows: JSON.stringify(allRowsData) },  // Send as JSON string
+                                    success: function (response) {
+                                        console.log(response);
+                                    },
+                                    error: function (error) {
+                                        console.log(error);
+                                    }
+                                });
+
+
 
                             // // Event listener to update only the first selected option
                             // $('[name^=product_color_]').on('focus', function () {
