@@ -165,6 +165,7 @@
                             return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
                         }
                         searchedProductNameDic = response.products;
+                        console.log('searchedProductNameDic',searchedProductNameDic)
                         const searchQuery = productnamevalue.toLowerCase();
                         const searchTerms = searchQuery.split(/\s+/);
                         const convertStringData = searchTerms.toString();
@@ -283,11 +284,7 @@
         });
 
 
-        $('[name$="-product_quantity"]').on('input',function(){
-           
-            
-
-        })
+     
         function initalBinData(selectBin,purchaseValue,productReserve){
             console.log(selectBin)
             if (selectBin) {
