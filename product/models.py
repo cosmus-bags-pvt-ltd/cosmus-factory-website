@@ -1244,7 +1244,12 @@ class Picklist_products_list(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-
+class temp_product_bin_for_picklist(models.Model):
+    product_sku = models.CharField(max_length=252)
+    product_bin = models.CharField(max_length=252)
+    product_qty = models.IntegerField()
+    bin_qty = models.IntegerField()
+    res_qty = models.IntegerField()
 
 
 class outward_product_master(models.Model):
@@ -1265,6 +1270,7 @@ class outward_products(models.Model):
 
 class sales_voucher_master_outward_scan(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
+    sale_no = models.CharField(max_length = 100)
     buyer_inv_no = models.CharField(max_length = 100)
     company_gst = models.CharField(max_length = 100)
     ledger_type = models.CharField(max_length = 20, default = 'sales')
