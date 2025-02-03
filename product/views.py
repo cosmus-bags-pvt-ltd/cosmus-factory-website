@@ -14443,6 +14443,31 @@ def download_picklist_excel(request,pl_id):
 
 
 
+def outward_picklist_no_ajax(request):
+    picklistNo = request.GET.get('picklistNo')
+    try:
+        picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
+
+        return JsonResponse({"status": "success", "picklistNo": picklistNo, "picklisQty":picklist_qty['total_qty']}, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from decimal import Decimal
 def decimal_to_float(obj):
     if isinstance(obj, Decimal):
