@@ -14062,6 +14062,8 @@ def picklist_product_ajax(request):
 
             bin_id_list = [i['bin_number'] for i in product_bins]
 
+            print('bin_id_list = ', bin_id_list)
+
             check_if_present = temp_product_bin_for_picklist.objects.filter(product_sku = product_sku,product_bin__in = bin_id_list).exists()
 
             if check_if_present:
@@ -14079,11 +14081,14 @@ def picklist_product_ajax(request):
                     if bin_id in formatted_bins:
                         formatted_bins[bin_id][1] += product_count
                     else:
+                        
                         formatted_bins[bin_id] = [bin_name, product_count,sku]
-                
+
+                print('formatted_bins = ',formatted_bins)
+
                 formatted_bins_list_duplicate = [{bin_id:[bin_data[0],bin_data[1],bin_data[2]]} for bin_id, bin_data in formatted_bins.items() if bin_data[1] > 0]
                 
-
+                print('formatted_bins_list_duplicate = ',formatted_bins_list_duplicate)
 
                 for i in formatted_bins_list_duplicate:
                     for key,val in i.items():
@@ -14122,7 +14127,7 @@ def picklist_product_ajax(request):
                 
                 reserverd_qty_list = [{'sku': k[0], 'bin_no': k[1], 'qty': v} for k, v in reserved_qty_dict.items()]
 
-                # print('reserverd_qty_list =', reserverd_qty_list)
+                print('reserverd_qty_list =', reserverd_qty_list)
 
 
 
@@ -14148,6 +14153,8 @@ def picklist_product_ajax(request):
                 if reserverd_qty_list:
                     # Convert formatted_bins to a new dict to avoid modifying original while iterating
                     updated_bins = {bin_id: bin_data[:] for bin_id, bin_data in formatted_bins.items()}
+
+                    # print('updated_bins = ',updated_bins)
 
                     for data in reserverd_qty_list:
                         sku = data['sku']
@@ -14194,7 +14201,6 @@ def picklist_product_ajax(request):
     except Exception as e:
         logger.error(f"Error in picklist_product_ajax: {str(e)}")
         return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
-
 
 
 
@@ -14253,18 +14259,6 @@ def temp_bin_quantity_ajax(request):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 def create_update_picklist(request,p_id=None):
 
     if p_id:
@@ -14312,6 +14306,7 @@ def create_update_picklist(request,p_id=None):
             except Exception as e:
                 print(e)
     return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
+
 
 
 def deletepicklist(request,pl_id):
@@ -14443,6 +14438,31 @@ def download_picklist_excel(request,pl_id):
     wb.save(response)
 
     return response
+
+
+
+
+
+def outward_picklist_no_ajax(request):
+    picklistNo = request.GET.get('picklistNo')
+    try:
+        picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
+
+        return JsonResponse({"status": "success", "picklistNo": picklistNo, "picklisQty":picklist_qty['total_qty']}, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500) 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
