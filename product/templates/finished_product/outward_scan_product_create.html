@@ -33,7 +33,7 @@
     <div>
         <div class="row">
             <div class="col-lg-2">
-                <table class="table table-striped table-hover table-bordered">
+                <table class="table table-striped table-hover table-bordered" id="piclistTable">
                     <thead class="name_absolute">
                         <tr>
                             <th>pick NO</th>
@@ -41,10 +41,7 @@
                         </tr>
                     </thead>
                     <tbody class="mainTableList">
-                        <tr>
-                            <td></td>
-                            <td></td>
-                        </tr>
+                       
                     </tbody>
                 </table>
             </div>
@@ -55,11 +52,11 @@
     <table class="table table-striped table-hover table-bordered" id="outwardSales">
         <thead class="name_absolute">
             <tr>
-                <th>NO</th>
-                <th>Pick No</th>
+                <th>No</th>
+                <!-- <th>Pick No</th>
                 <th>pick Qty</th>
                 <th>Scan </th>
-                <th>Balance</th>
+                <th>Balance</th> -->
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
@@ -76,10 +73,10 @@
             {{form.id}}
             <tr>
                 <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
-                <td>PickList No</td>
-                <td>T PickList Qty</td>
-                <td>Scan Qty</td>
-                <td>Balance Qty</td>
+                <!-- <td></td>
+                <td></td>
+                <td></td>
+                <td></td> -->
                 <td><input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly > </td>
                 <td>  
                     <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="" readonly > 
@@ -121,6 +118,15 @@ $(document).ready(function () {
                 },  // Send as JSON string
                 success: function (response) {
                     console.log(response);
+                    var tables = $('#piclistTable .mainTableList');
+                    var row = $('<tr>');
+                        row.append('<td class="pickId"></td>');
+                    row.append('<td class="pickQty"></td>');
+
+                    // Appending the new row to the tbody
+                    tables.append(row);
+                        
+
                 },
                 error: function (error) {
                     console.log(error);
