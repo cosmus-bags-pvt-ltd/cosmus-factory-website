@@ -5,10 +5,10 @@
     {% if request.path == '' %}
   <span class=" fw-bold  py-1 px-2 ">PO List</span> ->
   {% elif request.path != '' %}
-  <a href="" class="bg-c-red border-0 py-1 px-2 rounded-4 text-decoration-none text-dark d-inline-block">PO List</a> ->
+  <a href="{% url 'purchase-order-for-puchase-voucher-rm-list' %}" class="bg-c-red border-0 py-1 px-2 rounded-4 text-decoration-none text-dark d-inline-block">PO List</a> ->
   {% endif %}
 
-  <a href="" class="bg-c-yellow border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block"> Negative Stock</a>
+  <a href="{% url 'negetive-stock' %}" class="bg-c-yellow border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block"> Negative Stock</a>
   
 </div>
 
@@ -103,104 +103,7 @@
             </div>
         </div> 
     </div>
-    <button type="button" class="edit_btn w-75 mb-2" id="NegativeList_btn">Negative Stock<span class="production_padding"><i class="fas fa-angle-right arrowBtn"></i></span></button><button type="submit" class="edit_btn mb-2" id="checkboxSubmit">Create PO +</button>
-    <div id="NegativeList" style="display: none;">
-        <div class="d-flex mb-3">
-            <form action="" method="GET" id="filterForm">
-                <div class="">
-                    <label>Sort by:</label>
-                    <button type="submit" class="filterButton" name="sort_name" value="highest" ><i class="fa-solid fa-sort-up"></i></button>
-                    <button type="submit" class="filterButton" name="sort_name" value="lowest" ><i class="fa-solid fa-sort-down"></i></button>        
-                </div>
-            </form>
-
-            <form action="" method="GET">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="me-3 ms-2">Fabric Group :</label>
-                    <input type="text" name="Fabric_Group" id="id_Fabric_Group" class="item-select" value="{{ selected_fabric_grp |default_if_none:''}}">
-                    <label class="me-3 ms-3">Less Than:</label>
-                    <input type="text" name="less_Number" id="id_lessNumber" class="purchase-input" value="{{ less_Number | default_if_none:''}}">
-                    <button type="submit" class="filterButton" id="parentClick">Filter</button>
-                    <button type="submit" class="filterButton" id="clear-filter" name='clear-filter'>clear</button>
-                    
-                </div>
-            </form>
-        </div>
-
-                <div class="stock_responsive">
-                    <table class="table table-striped table-hover table-bordered">
-                        <thead class="name_absolute sticky-top">
-                            <tr>
-                                <th>No</th>
-                                <th>M Code/Color Code</th>
-                                <th>Item Name</th>
-                                <th>F Group</th>
-                                <th>Color</th>
-                                <th>Quantity</th>
-                                <th>Units</th>
-                                <th>Cutting Pend QTY</th>
-                                <th>Cutting Aprv Pend QTY</th>
-                                <th>LWO Pend QTY</th>
-                                <th>Open PO Qty</th>
-                                <th>Net Balance Stock</th>
-                                <th>Select</th>
-                                <th>Last Buying seller</th>
-                                <th>Mobile No</th>
-                                <th>Email</th>
-                            </tr>
-                        </thead>
-                        <tbody class="mainTableList" style="max-height: 400px; overflow-y: auto;">
-                            {% for item in merged_data %}
-                            <tr>
-                                <input type="hidden" id="id_item_pk" value="{{item.id}}">
-                                <td>{{forloop.counter}}</td>
-                                <td>{{item.Material_code}}</td>
-                                <td>{{item.material_name}}</td>
-                                <td>{{item.Fabric_Group}}</td>
-                                <td>{{item.Item_Color}}</td>
-                                <td class="totalQty">{{item.total_qty}}</td>
-                                <td>{{item.unit_name}}</td>
-                                <td>{{item.cutting_consumption}}</td>
-                                <td>{{item.cutting_con_aprv_pen}}</td>
-                                <td>{{item.lwo_consumption}}</td>
-                                <td>{{item.po_qty |default_if_none:''}}</td>
-                                <td class="balanceValue">{{item.balance}}</td>
-                                <td><input type="checkbox" class="text-success purchaseCheckBox" id="checkbox-{{ forloop.counter }}"  value="{{ item.item_id }}"></td>
-                                <td>{{item.party_name | default_if_none:''}}</td>
-                                <td>{{item.mobile_no | default_if_none:''}}</td>
-                                <td></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                        
-                    </table>
-                
-                   
-                </div>
-       
-    </div>
-   
-
-</div>
-
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body" id="modal-body-text">
-            Are you sure you want to delete this product Purchase?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
-          <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
-        </div>
-      </div>
-    </div>
-</div>
+    
 <script>
     const FabricGroup = document.querySelector("#id_Fabric_Group")
     const lessNumber = document.querySelector("#id_lessNumber")

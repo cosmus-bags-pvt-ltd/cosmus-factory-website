@@ -365,6 +365,7 @@ urlpatterns = [
     path('purchaseorderforpuchasevoucherrmcreateupdate/', views.purchase_order_for_puchase_voucher_rm_create_update, name = 'purchase-order-for-puchase-voucher-rm-create-update'),
     path('purchaseorderforpuchasevoucherrmcreateupdate/<int:p_id>/', views.purchase_order_for_puchase_voucher_rm_create_update, name = 'purchase-order-for-puchase-voucher-rm-create-update'),
     path('purchaseorderforpuchasevoucherrmlist/', views.purchase_order_for_puchase_voucher_rm_list, name='purchase-order-for-puchase-voucher-rm-list'),
+    path('negetivestock/', views.negetive_stock, name='negetive-stock'),
     path('purchaseorderforpuchasevoucherrmdelete/<int:pk>/', views.purchase_order_for_purchase_rm_delete, name = 'purchase-order-for-puchase-voucher-rm-delete'),
 
     
