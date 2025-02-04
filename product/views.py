@@ -41,7 +41,7 @@ from xhtml2pdf import pisa
 from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
                     Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_products_list, Picklist_voucher_master, Product,
-                    Product2SubCategory, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, StockItem,
+                    Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, StockItem,
                     SubCategory, Unit_Name_Create, account_credit_debit_master_table, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
                     finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,
@@ -57,7 +57,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
                     raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total,
                     set_prod_item_part_name, shade_godown_items,
-                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_master_outward_scan,sales_voucher_outward_scan,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods, temp_product_bin_for_picklist)
+                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_master_outward_scan,sales_voucher_outward_scan,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
@@ -9933,6 +9933,12 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         form.instance.qc_recieved_qty = form.instance.qc_recieved_qty + 1
                                         form.instance.diffrence_qty = form.instance.diffrence_qty - 1
 
+                                        bin_qty_instance, created = Product_bin_quantity_through_table.objects.get_or_create(bin=bin_instance,product=product_instance,defaults={'product_quantity': 1})
+
+                                        if not created:
+                                            bin_qty_instance.product_quantity += 1
+                                            bin_qty_instance.save()
+
                                     except ValueError as ve:
                                         messages.error(request, f'{ve}')
                                         raise
@@ -9970,6 +9976,12 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         
                                         form.instance.qc_recieved_qty = form.instance.qc_recieved_qty + 1
                                         form.instance.diffrence_qty = form.instance.diffrence_qty - 1
+
+                                        bin_qty_instance, created = Product_bin_quantity_through_table.objects.get_or_create(bin=bin_instance,product=product_instance,defaults={'product_quantity': 1})
+                                        
+                                        if not created:
+                                            bin_qty_instance.product_quantity += 1
+                                            bin_qty_instance.save()
 
                                     except ValueError as ve:
                                         messages.error(request, f'{ve}')
@@ -13804,6 +13816,7 @@ def warehouse_navigator(request):
 
 
 
+
 # def picklist_product_ajax(request):
 #     try:
 #         product_name_typed = request.GET.get('productnamevalue')
@@ -13868,90 +13881,143 @@ def warehouse_navigator(request):
 #             for item in products_transfer
 #         ]
 
-
-
-
-#         # Combine purchase and transfer data
 #         merged_products = chain(standardized_purchase, standardized_transfer)
 
+#         final_data = {}
 
 #         for item in merged_products:
 #             product_sku = item['product_sku']
             
-            
-
 #             # Fetch product bins and group them
-#             product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU=product_sku,outward=False).values('bin_number', 'bin_number__bin_name').annotate(product_count=Count('bin_number')).order_by('created_date')
+#             product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU=product_sku,outward=False).values('bin_number', 'bin_number__bin_name','product__PProduct_SKU').annotate(product_count=Count('bin_number')).order_by('created_date')
 
+#             reserved_qty_queryset = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku)
 
 #             reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+
+#             bin_id_list = [i['bin_number'] for i in product_bins]
+
+#             print('bin_id_list = ', bin_id_list)
+
+#             check_if_present = temp_product_bin_for_picklist.objects.filter(product_sku = product_sku,product_bin__in = bin_id_list).exists()
+
+#             if check_if_present:
+
+#                 print('check_if_present')
+
+#                 formatted_bins = {}
+
+#                 for bin in product_bins:
+                    
+#                     bin_id = bin['bin_number']
+#                     bin_name = bin['bin_number__bin_name']
+#                     product_count = bin['product_count'] 
+#                     sku = bin['product__PProduct_SKU']
             
 
-#             formatted_bins = {}
-#             for bin in product_bins:
-#                 bin_id = bin['bin_number']
-#                 bin_name = bin['bin_number__bin_name']
-#                 product_count = bin['product_count'] - reserved_qty
-
-
-                
-#                 if bin_id in formatted_bins:
-#                     formatted_bins[bin_id][1] += product_count  
-#                 else:
-#                     formatted_bins[bin_id] = [bin_name, product_count] 
-
-
-#                 # Convert formatted_bins to a list of dictionaries
-#                 formatted_bins_list = []
-#                 for bin_id, bin_data in formatted_bins.items():
-                    
-#                     if bin_data[1] > reserved_qty:
-#                         bin_data[1] -= reserved_qty
-#                         formatted_bins_list.append({bin_id:bin_data})
+#                     if bin_id in formatted_bins:
+#                         formatted_bins[bin_id][1] += product_count
 #                     else:
-#                         formatted_bins_list.append({bin_id:bin_data})
-                    
+                        
+#                         formatted_bins[bin_id] = [bin_name, product_count,sku]
+                
+#                 print('formatted_bins = ',formatted_bins)
+
+
+#                 formatted_bins_list_duplicate = [{bin_id:[bin_data[0],bin_data[1],bin_data[2]]} for bin_id, bin_data in formatted_bins.items() if bin_data[1] > 0]
                 
 
-#                 bin_ids = list(formatted_bins.keys())
+#                 print('formatted_bins_list_duplicate = ',formatted_bins_list_duplicate)
 
-#                 check_if_present = temp_product_bin_for_picklist.objects.filter(product_sku = product_sku,product_bin__in = bin_ids).exists()
+#                 for i in formatted_bins_list_duplicate:
+#                     for key,val in i.items():
+#                         temp_bin_value = temp_product_bin_for_picklist.objects.filter(product_bin=key,product_sku = val[2]).first()
+#                         if temp_bin_value:
+#                             val[1] = int(temp_bin_value.bin_qty)
+                            
 
-#                 if check_if_present:
-
-#                     print("in check_if_present")
-
-#                     for i in formatted_bins_list:
-#                         for key,val in i.items():
-#                             temp_bin_value = temp_product_bin_for_picklist.objects.get(product_bin=key)
-#                             val[1] = temp_bin_value.bin_qty
-
-#                     print('formatted_bins_list =',formatted_bins_list)
+#                 formatted_bins_list = []
                 
+#                 for i in formatted_bins_list_duplicate:
+#                     for bin_id, bin_data in i.items():
+#                         if bin_data[1] > 0:
+#                             formatted_bins_list.append({bin_id:[bin_data[0],bin_data[1]]})
+
+#                 print('formatted_bins_list = ',formatted_bins_list)
+
+
+
+#             else:
+                
+#                 reserved_qty_dict = {}
+
+#                 for i in reserved_qty_queryset:
+#                     sku = i.product.PProduct_SKU
+#                     bin_no = i.bin_number.id
+#                     qty = i.product_quantity
+
+#                     key = (sku, bin_no)
+
+#                     if key in reserved_qty_dict:
+#                         reserved_qty_dict[key] += qty
+#                     else:
+#                         reserved_qty_dict[key] = qty 
+
+                
+#                 reserverd_qty_list = [{'sku': k[0], 'bin_no': k[1], 'qty': v} for k, v in reserved_qty_dict.items()]
+
+#                 print('reserverd_qty_list =', reserverd_qty_list)
+
+
+
+#                 formatted_bins = {}
+
+#                 for bin in product_bins:
+#                     bin_id = bin['bin_number']
+#                     bin_name = bin['bin_number__bin_name']
+#                     product_count = bin['product_count'] 
+#                     sku = bin['product__PProduct_SKU']
+
+#                     if bin_id in formatted_bins:
+#                         formatted_bins[bin_id][1] += product_count
+#                     else:
+#                         formatted_bins[bin_id] = [bin_name, product_count,sku]
+
+
+#                 # print('formatted_bins = ',formatted_bins)
+
+
+#                 formatted_bins_list = []
+
+#                 if reserverd_qty_list:
+#                     # Convert formatted_bins to a new dict to avoid modifying original while iterating
+#                     updated_bins = {bin_id: bin_data[:] for bin_id, bin_data in formatted_bins.items()}
+
+#                     # print('updated_bins = ',updated_bins)
+
+#                     for data in reserverd_qty_list:
+#                         sku = data['sku']
+#                         bin_no = data['bin_no']
+#                         qty = data['qty']
+
+#                         if bin_no in updated_bins and updated_bins[bin_no][1] > 0:  # Ensure bin exists and has stock
+#                             if updated_bins[bin_no][2] == sku:  # Ensure SKU matches
+#                                 updated_bins[bin_no][1] -= qty  # Deduct reserved quantity
+
+#                     # Convert back to list format and filter out bins with zero or negative stock
+#                     formatted_bins_list = [
+#                         {bin_id: [bin_data[0], bin_data[1]]}
+#                         for bin_id, bin_data in updated_bins.items()
+#                         if bin_data[1] > 0
+#                     ]
 #                 else:
-#                     print("in else part")
-#                     formatted_bins = {}
-#                     for bin in product_bins:
-#                         bin_id = bin['bin_number']
-#                         bin_name = bin['bin_number__bin_name']
-#                         product_count = bin['product_count'] 
+#                     formatted_bins_list = [
+#                         {bin_id: [bin_data[0], bin_data[1]]}
+#                         for bin_id, bin_data in formatted_bins.items()
+#                         if bin_data[1] > 0
+#                     ]
 
-
-#                         # Add to formatted_bins, summing counts for the same bin_id
-#                         if bin_id in formatted_bins:
-#                             formatted_bins[bin_id][1] += product_count
-#                         else:
-#                             formatted_bins[bin_id] = [bin_name, product_count]
-
-
-#                     formatted_bins_list = []
-#                     for bin_id, bin_data in formatted_bins.items():
-#                         if bin_data[1] > reserved_qty:
-#                             bin_data[1] -= reserved_qty
-#                             formatted_bins_list.append({bin_id:bin_data})
-#                         else:
-#                             formatted_bins_list.append({bin_id:bin_data})
-                    
+#                 # print('formatted_bins_list =', formatted_bins_list)
 
 #             if product_sku in final_data:
 #                 final_data[product_sku][2] += item['qc_received_qty']
@@ -13967,9 +14033,7 @@ def warehouse_navigator(request):
 #                     item['product_image']
 #                 ]
 
-#         print('final_data -- ', final_data)
 
-        
 
 #         return JsonResponse({'products': final_data}, status=200)
 
@@ -13980,32 +14044,22 @@ def warehouse_navigator(request):
 
 
 
-
-
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
-        final_data = {}
+        
 
         if not product_name_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
         
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
 
-        # Fetch and standardize product purchase data
-        products_purchase = product_purchase_voucher_items.objects.filter(
-            Q(product_name__PProduct_SKU__icontains=product_name_typed) |
-            Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |
-            Q(product_name__Product__Model_Name__icontains=product_name_typed),
-            qc_recieved_qty__gt=0
-        ).values(
-            'product_name__PProduct_SKU',
-            'product_name__PProduct_color__color_name',
-            'product_name__Product__Model_Name',
-            'qc_recieved_qty',
-            'product_name__Product__Product_Refrence_ID',
-            'product_name__PProduct_image',
-        )
+        products_purchase = product_purchase_voucher_items.objects.filter(Q(product_name__PProduct_SKU__icontains=product_name_typed) |Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |Q(product_name__Product__Model_Name__icontains=product_name_typed),qc_recieved_qty__gt=0).values('product_name__PProduct_SKU',
+        'product_name__PProduct_color__color_name',
+        'product_name__Product__Model_Name',
+        'qc_recieved_qty',
+        'product_name__Product__Product_Refrence_ID',
+        'product_name__PProduct_image',)
 
         standardized_purchase = [
             {
@@ -14019,7 +14073,6 @@ def picklist_product_ajax(request):
             for item in products_purchase
         ]
 
-        # Fetch and standardize product transfer data
         products_transfer = Finished_goods_transfer_records.objects.filter(
             Q(product__PProduct_SKU__icontains=product_name_typed) |
             Q(product__PProduct_color__color_name__icontains=product_name_typed) |
@@ -14047,153 +14100,32 @@ def picklist_product_ajax(request):
         ]
 
         merged_products = chain(standardized_purchase, standardized_transfer)
-
+        
         final_data = {}
 
         for item in merged_products:
-            product_sku = item['product_sku']
-            
-            # Fetch product bins and group them
-            product_bins = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU=product_sku,outward=False).values('bin_number', 'bin_number__bin_name','product__PProduct_SKU').annotate(product_count=Count('bin_number')).order_by('created_date')
 
-            reserved_qty_queryset = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku)
+            product_sku = item['product_sku']
 
             reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
-            bin_id_list = [i['bin_number'] for i in product_bins]
+            product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product = product_sku).order_by('-updated_date')
 
-            print('bin_id_list = ', bin_id_list)
-
-            check_if_present = temp_product_bin_for_picklist.objects.filter(product_sku = product_sku,product_bin__in = bin_id_list).exists()
-
-            if check_if_present:
-
-                print('check_if_present')
-
-                formatted_bins = {}
-
-                for bin in product_bins:
-                    bin_id = bin['bin_number']
-                    bin_name = bin['bin_number__bin_name']
-                    product_count = bin['product_count'] 
-                    sku = bin['product__PProduct_SKU']
-                
-                    if bin_id in formatted_bins:
-                        formatted_bins[bin_id][1] += product_count
-                    else:
-                        
-                        formatted_bins[bin_id] = [bin_name, product_count,sku]
-
-                print('formatted_bins = ',formatted_bins)
-
-                formatted_bins_list_duplicate = [{bin_id:[bin_data[0],bin_data[1],bin_data[2]]} for bin_id, bin_data in formatted_bins.items() if bin_data[1] > 0]
-                
-                print('formatted_bins_list_duplicate = ',formatted_bins_list_duplicate)
-
-                for i in formatted_bins_list_duplicate:
-                    for key,val in i.items():
-                        temp_bin_value = temp_product_bin_for_picklist.objects.filter(product_bin=key,product_sku = val[2]).first()
-                        if temp_bin_value:
-                            val[1] = int(temp_bin_value.bin_qty)
-                            
-
-                formatted_bins_list = []
-                
-                for i in formatted_bins_list_duplicate:
-                    for bin_id, bin_data in i.items():
-                        if bin_data[1] > 0:
-                            formatted_bins_list.append({bin_id:[bin_data[0],bin_data[1]]})
-
-                print('formatted_bins_list = ',formatted_bins_list)
-
-
-
-            else:
-                
-                reserved_qty_dict = {}
-
-                for i in reserved_qty_queryset:
-                    sku = i.product.PProduct_SKU
-                    bin_no = i.bin_number.id
-                    qty = i.product_quantity
-
-                    key = (sku, bin_no)
-
-                    if key in reserved_qty_dict:
-                        reserved_qty_dict[key] += qty
-                    else:
-                        reserved_qty_dict[key] = qty 
-
-                
-                reserverd_qty_list = [{'sku': k[0], 'bin_no': k[1], 'qty': v} for k, v in reserved_qty_dict.items()]
-
-                print('reserverd_qty_list =', reserverd_qty_list)
-
-
-
-                formatted_bins = {}
-
-                for bin in product_bins:
-                    bin_id = bin['bin_number']
-                    bin_name = bin['bin_number__bin_name']
-                    product_count = bin['product_count'] 
-                    sku = bin['product__PProduct_SKU']
-
-                    if bin_id in formatted_bins:
-                        formatted_bins[bin_id][1] += product_count
-                    else:
-                        formatted_bins[bin_id] = [bin_name, product_count,sku]
-
-
-                # print('formatted_bins = ',formatted_bins)
-
-
-                formatted_bins_list = []
-
-                if reserverd_qty_list:
-                    # Convert formatted_bins to a new dict to avoid modifying original while iterating
-                    updated_bins = {bin_id: bin_data[:] for bin_id, bin_data in formatted_bins.items()}
-
-                    # print('updated_bins = ',updated_bins)
-
-                    for data in reserverd_qty_list:
-                        sku = data['sku']
-                        bin_no = data['bin_no']
-                        qty = data['qty']
-
-                        if bin_no in updated_bins and updated_bins[bin_no][1] > 0:  # Ensure bin exists and has stock
-                            if updated_bins[bin_no][2] == sku:  # Ensure SKU matches
-                                updated_bins[bin_no][1] -= qty  # Deduct reserved quantity
-
-                    # Convert back to list format and filter out bins with zero or negative stock
-                    formatted_bins_list = [
-                        {bin_id: [bin_data[0], bin_data[1]]}
-                        for bin_id, bin_data in updated_bins.items()
-                        if bin_data[1] > 0
-                    ]
-                else:
-                    formatted_bins_list = [
-                        {bin_id: [bin_data[0], bin_data[1]]}
-                        for bin_id, bin_data in formatted_bins.items()
-                        if bin_data[1] > 0
-                    ]
-
-                # print('formatted_bins_list =', formatted_bins_list)
+            formatted_bins_list = [{i.bin.id : [i.bin.bin_name , i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0]
 
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']
                 
             else:
                 final_data[product_sku] = [
-                    item['product_model'],  # Model Name
-                    item['product_color'],  # Color Name
-                    item['qc_received_qty'],  # Total Received Quantity
-                    formatted_bins_list,  # List of bins with their details
-                    reserved_qty,  # Total Reserved Quantity
+                    item['product_model'],
+                    item['product_color'],
+                    item['qc_received_qty'],
+                    formatted_bins_list, 
+                    reserved_qty,
                     item['product_ref_id'],
                     item['product_image']
                 ]
-
 
 
         return JsonResponse({'products': final_data}, status=200)
@@ -14206,56 +14138,39 @@ def picklist_product_ajax(request):
 
 
 
-
-def temp_bin_quantity_ajax(request):
+def bin_quantity_ajax(request):
     """
-    Handles adding/updating bin quantity in the temporary picklist table.
+    Handles adding/updating bin quantity in the Product_bin_quantity_through_table table.
     Ensures real-time stock updates and prevents negative bin quantities.
     """
-    logger.info('Temp bin quantity function called')
+    logger.info('bin quantity function called')
 
     try:
-        # Fetch and validate request parameters
         sku = request.GET.get('sku')
         binName = request.GET.get('binName')
-        binQty = request.GET.get('binQty')
         productQty = request.GET.get('productQty')
-        reserveQty = request.GET.get('reserveQty')
-
+        
         if not sku or not binName:
             return JsonResponse({"error": "Missing required parameters"}, status=400)
 
         try:
-            binQty = int(binQty) if binQty and binQty.isdigit() else 0
-            reserveQty = int(reserveQty) if reserveQty and reserveQty.isdigit() else 0
             productQty = int(productQty) if productQty and productQty.isdigit() else 0
         except ValueError:
             return JsonResponse({"error": "Invalid quantity values"}, status=400)
 
-        temp_bin, created = temp_product_bin_for_picklist.objects.get_or_create(
-            product_sku=sku, 
-            product_bin=binName,
-            defaults={"res_qty": reserveQty, "bin_qty": binQty, "product_qty": productQty}
-        )
+        bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
+        bin_objects.product_quantity = bin_objects.product_quantity - productQty
+        bin_objects.save()
 
-        if created:
-            temp_bin.bin_qty = max(0, temp_bin.bin_qty - productQty)
-            temp_bin.res_qty = reserveQty
-            temp_bin.product_qty = productQty
-            temp_bin.save()
-        else:
-            temp_bin.bin_qty = max(0, temp_bin.bin_qty - productQty)
-            temp_bin.res_qty = reserveQty
-            temp_bin.product_qty = productQty
-            temp_bin.save()
-
-        logger.info(f"Updated temp bin data: SKU={sku}, Bin={binName}, Bin Qty={temp_bin.bin_qty}")
-
-        return JsonResponse({"status": "success", "bin_qty": temp_bin.bin_qty}, status=200)
+        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_quantity}")
 
     except Exception as e:
-        logger.error(f"Error in temp_bin_quantity_ajax: {str(e)}")
+        logger.error(f"Error in bin_quantity_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+
+
 
 
 
