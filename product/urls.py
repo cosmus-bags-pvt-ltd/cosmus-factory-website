@@ -164,6 +164,7 @@ urlpatterns = [
     path('downloadpicklistpdf/<int:pl_id>',views.download_picklist_pdf , name = 'download-picklist-pdf'),
     path('downloadpicklistexcel/<int:pl_id>',views.download_picklist_excel , name = 'download-picklist-excel'),
     path('binquantityajax/',views.bin_quantity_ajax , name = 'bin-quantity-ajax'),
+    path('deleteformquantityrevert/',views.delete_form_quantity_revert , name = 'delete-form-quantity-revert'),
 
     #subcategorys
     path('gstcreate/', views.gst_create_update, name = 'gst-create-list'),

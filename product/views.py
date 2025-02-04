@@ -13446,7 +13446,7 @@ def allfinishedgoodsstockreport(request):
     product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
 
 
-    product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(unique_serial_no = None,product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
+    product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
 
 
     product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
@@ -14224,8 +14224,46 @@ def create_update_picklist(request,p_id=None):
 
 
 
+def delete_form_quantity_revert(request):
+    """
+    Handles adding/updating bin quantity in the Product_bin_quantity_through_table table.
+    Ensures real-time stock updates and prevents negative bin quantities.
+    """
+    logger.info('delete_form_quantity_revert function called')
+
+    try:
+        sku = request.GET.get('skus')
+        binName = request.GET.get('binName')
+        productQty = request.GET.get('productQty')
+
+        if not sku or not binName:
+            return JsonResponse({"error": "Missing required parameters"}, status=400)
+
+        try:
+            productQty = int(productQty) if productQty and productQty.isdigit() else 0
+        except ValueError:
+            return JsonResponse({"error": "Invalid quantity values"}, status=400)
+
+        bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
+        bin_objects.product_quantity = bin_objects.product_quantity + productQty
+        bin_objects.save()
+
+        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_quantity}")
+
+
+    except Exception as e:
+        logger.error(f"Error in delete_form_quantity_revert: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+
 def deletepicklist(request,pl_id):
     picklist = Picklist_voucher_master.objects.get(pk=pl_id)
+    picklist_product_instance = Picklist_products_list.objects.filter(picklist_master_instance = pl_id)
+    for instance in picklist_product_instance:
+        bin_qty_object = Product_bin_quantity_through_table.objects.get(bin=instance.bin_number, product=instance.product)
+        bin_qty_object.product_quantity = instance.product_quantity + bin_qty_object.product_quantity
+        bin_qty_object.save()
     picklist.delete()
     return redirect('all-picklists-list')
 

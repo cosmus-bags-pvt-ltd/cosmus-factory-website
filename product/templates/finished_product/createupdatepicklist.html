@@ -300,45 +300,81 @@
         });
 
 
-        $(document).on('keydown', 'input[name$="-product_quantity"]', function(e){
-            if(e.key === "Tab"){
-                e.preventDefault();
-                if(this.value === ''){
-                    this.focus();
-                }else{
-                    
-                    let rowIndex = $(this).attr("id").match(/\d+/)[0];  // Extract row index
-                    let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val())|| 0;
-                    let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
-                    let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
-                    let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity'));
-                    let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val());
-                    console.log('productQty',productQty)
-                    if(productQty > binQty){
-                    $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty) 
-                    }
-                    // Sending all rows data via AJAX
-                    $.ajax({
-                        url: '/binquantityajax/',
-                        method: 'GET',
-                        data: { 
-                                "sku": sku,
-                                "binName": binName,
-                                "binQty":binQty,
-                                "productQty": productQty,
-                                "reserveQty": reserveQty
-                            },  // Send as JSON string
-                        success: function (response) {
-                            console.log(response);
-                        },
-                        error: function (error) {
-                            console.log(error);
-                        }
-                    });
-                }
-            }
-            
-        })
+        let timeout = null; // Declare timeout variable globally
+
+
+
+    $(document).on('input', 'input[name$="-product_quantity"]', function (e) {  
+
+    clearTimeout(timeout); // Clear previous timeout to prevent multiple requests
+
+
+
+    timeout = setTimeout(() => { // Wait before sending request
+
+        let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
+
+        let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val()) || 0;
+
+        let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
+
+        let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
+
+        let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity')) || 0;
+
+        let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val()) || 0;
+
+
+
+        if (productQty > binQty) {
+
+        $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty);
+
+        }
+
+
+
+        // Sending data via AJAX after debounce
+
+        $.ajax({
+
+        url: '/binquantityajax/',
+
+        method: 'GET',
+
+        data: { 
+
+            "sku": sku,
+
+            "binName": binName,
+
+            "binQty": binQty,
+
+            "productQty": productQty,
+
+            "reserveQty": reserveQty
+
+        },
+
+        success: function (response) {
+
+            console.log(response);
+
+        },
+
+        error: function (error) {
+
+            console.log(error);
+
+        }
+
+        });
+
+
+
+    }, 2000); // Adjust delay (in milliseconds) as needed, 500ms is a good default
+
+    });
 
         function initalBinData(selectBin,purchaseValue,productReserve){
       
@@ -686,7 +722,7 @@ document.addEventListener('DOMContentLoaded', function () {
               
 
                         $.ajax({
-                            url: '/binquantityajax/',
+                            url: '/deleteformquantityrevert/',
                             method: 'GET',
                             data: { 
                                'skus':sku,
