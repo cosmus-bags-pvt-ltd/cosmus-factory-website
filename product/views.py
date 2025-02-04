@@ -10661,6 +10661,12 @@ def purchase_order_for_puchase_voucher_rm_list(request):
 
     order_list_complete = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity'),total_demo_qty = Sum('purchase_order_for_puchase_voucher_rm__demo_quantity')).filter(total_qty = 0).order_by('po_no')
 
+    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'order_list_complete':order_list_complete})
+
+
+
+
+def negetive_stock(request):
     negetive_stock_sellerwise = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
 
     selected_vendor = negetive_stock_sellerwise.get(id=2)
@@ -12593,10 +12599,7 @@ def purchase_order_for_puchase_voucher_rm_list(request):
         less_Number = decimal.Decimal(less_Number)
         data_for_frontend = [item for item in merged_data if item["Fabric_Group"].lower() == selected_fabric_grp_lower and item["total_qty"] < less_Number]
 
-    return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number,'merged_data':data_for_frontend,'order_list_complete':order_list_complete})
-
-
-
+    return render(request,'accounts/negetive_stock.html',{'negetive_stock_report':negetive_stock_report ,'negetive_stock_sellerwise':negetive_stock_sellerwise,'selected_fabric_grp':selected_fabric_grp, 'less_Number':less_Number,'merged_data':data_for_frontend,})
 
 
 
