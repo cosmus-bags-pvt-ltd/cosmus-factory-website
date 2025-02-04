@@ -6,14 +6,14 @@
 <div class="row mt-3">
   <div class="col-lg-6">
     <div class="d-flex mb-3">
-      <label class="fw-bold">Refrence No :</label><span class="text-danger fw-bold ms-2 me-3">{{ labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID }}</span>
+      <label class="fw-bold">Ref No :</label><span class="text-danger fw-bold ms-2 me-3">{{ labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID }}</span>
       <label class="fw-bold">Model Name :</label><span class="text-danger fw-bold ms-2 me-3">{{ labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name }}</span>
       <label class="fw-bold">Challan No :</label>
       <span class="text-danger ms-2">{{labour_workout_child_instance.challan_no}}</span> 
     </div>
 
     <div class="mb-3">
-      <label class="fw-bold">Labour Workout Pcs  :</label>
+      <label class="fw-bold">LWO Pcs  :</label>
       <span class="text-danger ms-2">{{labour_workout_child_instance.total_process_pcs}}</span>  
       <label class="fw-bold ms-3">Returned Pcs :</label> 
       <span class="text-danger ms-2">{{labour_workout_child_instance.labour_workin_pcs}}</span>
@@ -22,13 +22,13 @@
     </div>
   </div>
   <div class="col-lg-6">
-    <label class="fw-bold ps-3">Images :</label>
+    <label class="fw-bold ps-3">IMG :</label>
     {% for img in labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.productdetails.all %}
 
       {% if img.PProduct_image %}
-          <img src="{{ img.PProduct_image.url }}" style="width: 60px; height: 60px; padding:2px; margin: 2px;">
+          <img src="{{ img.PProduct_image.url }}" style="width: 30px; height: 30px; cursor: pointer;"onclick="showLargeImage(this.src)">
       {% else %}
-          <img src="/path/to/default/image.jpg" style="width: 60px; height: 60px; padding:2px; margin: 2px;">
+          <img src="/path/to/default/image.jpg" style="width: 30px; height: 30px; cursor: pointer;"onclick="showLargeImage(this.src)">
       {% endif %}
 
     {% endfor %}
@@ -146,6 +146,25 @@
   </div>
 </div>
 
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+  <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+
+<script>
+  document.body.appendChild(document.getElementById('customModal'));
+  function showLargeImage(src) {
+   let modal = document.getElementById("customModal");
+   let modalImg = document.getElementById("modalImg");
+
+   modalImg.src = src;
+   modal.style.display = "flex";
+   modal.style.width = '100%'
+   // Clicking anywhere outside the image will close the modal
+   modal.onclick = function() {
+       modal.style.display = "none";
+   };
+}
+</script>
 <script>
 //document.body.appendChild(document.getElementById('exampleModalSpinner'));
   document.body.appendChild(document.getElementById('exampleModal'));
