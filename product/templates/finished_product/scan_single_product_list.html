@@ -12,8 +12,8 @@
     <table class="table table-striped table-hover table-bordered">
         <thead class="name_absolute sticky-top">
             <tr>
-                <th>voucher</th>
                 <th>No</th>
+                <th>voucher</th>
                 <th>Image</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
@@ -34,7 +34,7 @@
                 {% else %}
                 <td>transfer/{{entry.related_transfer_record.Finished_goods_Stock_TransferMasterinstance.voucher_no}}</td> 
                 {% endif %}
-                <td><img id="productImgPreview" name="product_img" src="{{entry.product.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
+                <td><img id="productImgPreview" name="product_img" src="{{entry.product.PProduct_image.url}}" alt="Product" style="width: 30px; height: 30px;" onclick="showLargeImage(this.src)"></td>
                 <td class="refNo">{{entry.product.Product.Product_Refrence_ID}}</td>
                 <td>{{entry.product.Product.Model_Name}}</td>
                 <td>{{entry.product.PProduct_color.color_name}}</td>
@@ -49,7 +49,23 @@
         </tbody>    
     </table>
 </div>
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+    <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+<script>
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
 
-
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
 
 {% endblock body %}

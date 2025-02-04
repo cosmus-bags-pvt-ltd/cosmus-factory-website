@@ -308,8 +308,7 @@
             let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
             let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity'));
             let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val());
-            console.log('binQty',binQty)
-            console.log('productQty',productQty)
+          
             if(productQty > binQty){
                $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty) 
             }
@@ -318,11 +317,11 @@
                 url: '/binquantityajax/',
                 method: 'GET',
                 data: { 
-                "sku": sku,
-                "binName": binName,
-                "binQty":binQty,
-                "productQty": productQty,
-                "reserveQty": reserveQty
+                        "sku": sku,
+                        "binName": binName,
+                        "binQty":binQty,
+                        "productQty": productQty,
+                        "reserveQty": reserveQty
                     },  // Send as JSON string
                 success: function (response) {
                     console.log(response);
@@ -351,9 +350,7 @@
                         Object.entries(binObject).forEach(([binKey, binArray]) => {
                             if (Array.isArray(binArray) && binArray.length === 2) {
                                 const [binName, quantity] = binArray;
-                                let optionHtml = `<option value="${binKey}" data-quantity ='${quantity}'> 
-                                                        ${binName} - ${quantity} 
-                                                </option>`;
+                                let optionHtml = `<option value="${binKey}" data-quantity ='${quantity}'> ${binName} - ${quantity} </option>`;
 
                                 productSelectBin.append(optionHtml);
                                 
@@ -364,12 +361,8 @@
                         });
                         productSelectBin.find("option:first").prop("selected", true);
                     });
-
                     
                 } 
-        
-                        
-
             } else {
                 console.error('selectBin is undefined or not iterable.');
             }   
@@ -548,6 +541,7 @@ document.addEventListener('DOMContentLoaded', function () {
             //         addInputRow = 1;
             //         return;
             //     }
+          
                 let lastVisibleRow = null;
                 tableBody.querySelectorAll('tr').forEach(row => {
                     if (window.getComputedStyle(row).display !== 'none') {
@@ -663,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.delete-btn').forEach(function (button) {
         button.addEventListener('click', function () {
             const rows =  getVisibleRows();
-     
+            console.log(rows.length)
         
             if (rows.length > 1) { // Find the row containing the clicked delete button
                 
@@ -736,6 +730,7 @@ function inputCheck(){
 const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
 const date = document.getElementById('pickListDate')
 var tableRows = document.querySelectorAll('#createpickListTable tr');
+
 itemNameInputsid.forEach((input, index) => {
   input.addEventListener("keydown", function (event) {
 
@@ -825,14 +820,46 @@ tableRows.forEach(function (row,index) {
             }
         });
     }
-    
-    
-
 });
 
 
-}
 
+}
+function buttonCheck(){
+    const addButtons= document.getElementById('addRowButton');
+
+    if(!addButtons){
+        console.error("Button with ID 'addRowButton' not found.");
+        return;
+    }
+    addButtons.addEventListener('click',function(){
+    var tableRow = document.querySelectorAll('#createpickListTable tr');
+
+    tableRow.forEach(function(row){
+        var productName = row.querySelector('[name$="-product_name_value"]');
+        var binNames = row.querySelector('[name$="-bin_number"]')
+        var prdocutQty = row.querySelector('[name$="-product_quantity"]')
+        if(productName){
+        
+            productName.setAttribute('readonly', true);
+        
+        }
+        if(binNames){
+         
+            binNames.setAttribute('readonly', true);
+        
+        }
+        if(prdocutQty){
+          
+            prdocutQty.setAttribute('readonly', true);
+        
+        }
+       
+    })
+})
+
+}
+buttonCheck()
 inputCheck()
 deleteRowData()
 </script>
