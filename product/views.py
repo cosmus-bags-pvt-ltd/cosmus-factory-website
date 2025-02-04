@@ -14226,6 +14226,11 @@ def create_update_picklist(request,p_id=None):
 
 def deletepicklist(request,pl_id):
     picklist = Picklist_voucher_master.objects.get(pk=pl_id)
+    picklist_product_instance = Picklist_products_list.objects.filter(picklist_master_instance = pl_id)
+    for instance in picklist_product_instance:
+        bin_qty_object = Product_bin_quantity_through_table.objects.get(bin=instance.bin_number, product=instance.product)
+        bin_qty_object.product_quantity = instance.product_quantity + bin_qty_object.product_quantity
+        bin_qty_object.save()
     picklist.delete()
     return redirect('all-picklists-list')
 
