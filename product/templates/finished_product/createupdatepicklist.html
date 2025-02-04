@@ -581,6 +581,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     inputElement.id = `id_picklist_products_list-${formIndex}-product_name_value`;
                     inputElement.name = `picklist_products_list-${formIndex}-product_name_value`;
                     inputElement.value="";
+                    inputElement.removeAttribute('readonly');
                     
                     const selectElement = lastRow.querySelector('.product-name[name^="select_product_name_"]');
                     selectElement.id = `select_product_name_${formIndex}`;
@@ -606,6 +607,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     binElement.id = `id_picklist_products_list-${formIndex}-bin_number`;
                     binElement.name = `picklist_products_list-${formIndex}-bin_number`;
                     binElement.innerHTML = '';
+                    binElement.removeAttribute('readonly');
 
                     const reservedElement = lastRow.querySelector('input[name^="reserver_Qty_"]');
                     reservedElement.id = `id_reserver_Qty_${formIndex}`;
@@ -616,6 +618,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     qunatityInputElement.id = `id_picklist_products_list-${formIndex}-product_quantity`;
                     qunatityInputElement.name = `picklist_products_list-${formIndex}-product_quantity`;
                     qunatityInputElement.value="";
+                    qunatityInputElement.removeAttribute('readonly');
 
                     const qunatityhiddenElement = lastRow.querySelector('input[name^="product_quantity"]');
                     qunatityhiddenElement.id = `id_product_quantity-${formIndex}`;
