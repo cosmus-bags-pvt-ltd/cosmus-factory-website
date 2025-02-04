@@ -4,7 +4,7 @@ from django.db.models.signals import pre_delete , post_save,pre_save
 from django.dispatch import receiver
 from django.forms import ValidationError
 from django.core.exceptions import ValidationError , ObjectDoesNotExist
-from .models import (Finished_goods_transfer_records, Ledger, PProduct_Creation, Product, Product_warehouse_quantity_through_table, RawStockTrasferRecords,
+from .models import (Finished_goods_transfer_records, Ledger, PProduct_Creation, Product, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table, RawStockTrasferRecords,
                       account_credit_debit_master_table, finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,  item_purchase_voucher_master, 
                       item_godown_quantity_through_table,Item_Creation,item_color_shade, labour_workout_master, 
                       opening_shade_godown_quantity, outward_products, product_2_item_through_table, product_godown_quantity_through_table, product_purchase_voucher_items, purchase_order, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_raw_material_cutting,
@@ -515,6 +515,7 @@ def sales_voucher_stock_minus(sender, instance, created, **kwargs):
 
 
 
+
 @receiver(pre_delete, sender=finishedgoodsbinallocation)
 def single_entries_delete(sender, instance, **kwargs):
     try:
@@ -535,11 +536,15 @@ def single_entries_delete(sender, instance, **kwargs):
             purchase_item.save()
 
             warehouse = purchase_item.product_purchase_master.finished_godowns
-            model_name = purchase_item.product_name.PProduct_SKU
+            sku = purchase_item.product_name.PProduct_SKU
 
-            warehouse_object,created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=model_name)
+            warehouse_object,created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=sku)
             warehouse_object.quantity = warehouse_object.quantity + 1
             warehouse_object.save()
+
+            bin_qty_instance,created = Product_bin_quantity_through_table.objects.get_or_create(bin=bin_no,product=sku)
+            bin_qty_instance.product_quantity -= 1
+            bin_qty_instance.save()
 
         # Update transfer record quantities
         elif transfer_record:
@@ -548,11 +553,16 @@ def single_entries_delete(sender, instance, **kwargs):
             transfer_record.save()
 
             warehouse = transfer_record.Finished_goods_Stock_TransferMasterinstance.destination_warehouse
-            model_name = transfer_record.product.PProduct_SKU
+            sku = transfer_record.product.PProduct_SKU
 
-            warehouse_object,created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=model_name)
+            warehouse_object,created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=sku)
             warehouse_object.quantity = warehouse_object.quantity + 1
             warehouse_object.save()
+
+            bin_qty_instance,created = Product_bin_quantity_through_table.objects.get_or_create(bin=bin_no,product=sku)
+            bin_qty_instance.product_quantity -= 1
+            bin_qty_instance.save()
+
         else:
             print("No related purchase or transfer record found.")
 
