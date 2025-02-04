@@ -13446,7 +13446,7 @@ def allfinishedgoodsstockreport(request):
     product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
 
 
-    product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(unique_serial_no = None,product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
+    product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
 
 
     product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
