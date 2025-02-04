@@ -1285,6 +1285,19 @@ class Outwardproductmasterform(forms.ModelForm):
         fields = ['outward_no']
 
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        last_item = outward_product_master.objects.order_by('id').last()
+
+        if last_item:
+
+            self.fields['outward_no'].initial = last_item.id + 1
+        else:
+            self.fields['outward_no'].initial = 1
+
+
+
 class OutwardProductForm(forms.ModelForm):
     class Meta:
         model = outward_products
@@ -1300,9 +1313,18 @@ OutwardProductupdateFormSet = inlineformset_factory(outward_product_master,outwa
 class Salesvouchermasteroutwardscanform(forms.ModelForm):
     class Meta:
         model = sales_voucher_master_outward_scan
-        fields = ['buyer_inv_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_warehouse']
+        fields = ['sale_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_warehouse']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+        last_item = sales_voucher_master_outward_scan.objects.order_by('id').last()
+
+        if last_item:
+
+            self.fields['sale_no'].initial = last_item.id + 1
+        else:
+            self.fields['sale_no'].initial = 1
 
 
 class SalesvoucheroutwardscanForm(forms.ModelForm):

@@ -1282,7 +1282,6 @@ class outward_products(models.Model):
 class sales_voucher_master_outward_scan(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
     sale_no = models.CharField(max_length = 100)
-    buyer_inv_no = models.CharField(max_length = 100)
     company_gst = models.CharField(max_length = 100)
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)

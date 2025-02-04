@@ -7,9 +7,9 @@
         <div class="d-flex mb-2">
             <label for="id_picklist_no" class="me-3">PickList No :</label>
             {% if master_form.instance.id %}
-            <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{master_form.instance.picklist_no}}" maxlength="255" readonly>
+            <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{ master_form.instance.picklist_no}}" maxlength="255" readonly>
             {% elif not master_form.instance.id %}
-            <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{master_form.picklist_no.initial }}" maxlength="255" required>
+            <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{ master_form.picklist_no.initial }}" maxlength="255" required>
             {% endif %}
 
             <label for="pickListDate" class="ms-3 me-3">Date :</label>
@@ -308,30 +308,30 @@
 
     clearTimeout(timeout); // Clear previous timeout to prevent multiple requests
 
+    let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
+
+    let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val()) || 0;
+
+    let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
+
+    let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
+
+    let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity')) || 0;
+
+    let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val()) || 0;
+
+
+
+    if (productQty > binQty) {
+
+    $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty);
+
+    }
 
 
     timeout = setTimeout(() => { // Wait before sending request
 
-        let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
-
-        let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val()) || 0;
-
-        let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
-
-        let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
-
-        let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity')) || 0;
-
-        let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val()) || 0;
-
-
-
-        if (productQty > binQty) {
-
-        $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty);
-
-        }
-
+       
 
 
         // Sending data via AJAX after debounce
@@ -372,7 +372,7 @@
 
 
 
-    }, 2000); // Adjust delay (in milliseconds) as needed, 500ms is a good default
+    }, 500); // Adjust delay (in milliseconds) as needed, 500ms is a good default
 
     });
 
