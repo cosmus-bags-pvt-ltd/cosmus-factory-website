@@ -300,36 +300,44 @@
         });
 
 
-        $(document).on('focusout', 'input[name$="-product_quantity"]', function(e){
-          
-            let rowIndex = $(this).attr("id").match(/\d+/)[0];  // Extract row index
-            let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val())|| 0;
-            let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
-            let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
-            let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity'));
-            let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val());
-          
-            if(productQty > binQty){
-               $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty) 
-            }
-            // Sending all rows data via AJAX
-            $.ajax({
-                url: '/binquantityajax/',
-                method: 'GET',
-                data: { 
-                        "sku": sku,
-                        "binName": binName,
-                        "binQty":binQty,
-                        "productQty": productQty,
-                        "reserveQty": reserveQty
-                    },  // Send as JSON string
-                success: function (response) {
-                    console.log(response);
-                },
-                error: function (error) {
-                    console.log(error);
+        $(document).on('keydown', 'input[name$="-product_quantity"]', function(e){
+            if(e.key === "Tab"){
+                e.preventDefault();
+                if(this.value === ''){
+                    this.focus();
+                }else{
+                    
+                    let rowIndex = $(this).attr("id").match(/\d+/)[0];  // Extract row index
+                    let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val())|| 0;
+                    let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
+                    let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
+                    let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity'));
+                    let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val());
+                    console.log('productQty',productQty)
+                    if(productQty > binQty){
+                    $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty) 
+                    }
+                    // Sending all rows data via AJAX
+                    $.ajax({
+                        url: '/binquantityajax/',
+                        method: 'GET',
+                        data: { 
+                                "sku": sku,
+                                "binName": binName,
+                                "binQty":binQty,
+                                "productQty": productQty,
+                                "reserveQty": reserveQty
+                            },  // Send as JSON string
+                        success: function (response) {
+                            console.log(response);
+                        },
+                        error: function (error) {
+                            console.log(error);
+                        }
+                    });
                 }
-            });
+            }
+            
         })
 
         function initalBinData(selectBin,purchaseValue,productReserve){
@@ -806,7 +814,8 @@ date.addEventListener('keydown', function(event) {
 
 tableRows.forEach(function (row,index) {
     const qty = row.querySelector('[name$="-product_quantity"]');
-    const bin_no = row.querySelector('[name$="-bin_number"]')
+    const bin_no = row.querySelector('[name$="-bin_number"]');
+    const addBtn = document.getElementById('addRowButton')
     if(bin_no){
         bin_no.addEventListener('keydown', function (event) {
             if (event.key === "Tab") {
@@ -814,11 +823,13 @@ tableRows.forEach(function (row,index) {
                 if (bin_no.value === '') {
          
                     bin_no.focus();
-                } else if(qty) {
+                } else if(qty.value === '') {
                    
                     qty.focus();
                   
                     
+                }else{
+                    addBtn.focus();
                 }
             }
         });
