@@ -14269,7 +14269,7 @@ def create_update_picklist(request,p_id=None):
         voucher_instance = None
         master_form  = Picklistvouchermasterform()
         formset = picklistcreateformset()
-        temp_product_bin_for_picklist.objects.all().delete()
+        # temp_product_bin_for_picklist.objects.all().delete()
     
     if request.method == "POST":
         print(request.POST)

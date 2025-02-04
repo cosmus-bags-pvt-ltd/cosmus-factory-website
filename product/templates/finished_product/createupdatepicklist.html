@@ -115,7 +115,7 @@
             </table>
         </div>
         <div class="ms-2 mb-5">
-            <input type="number" class="product_row" name="productRow" id="id_productRow" value="1">
+            <!-- <input type="number" class="product_row" name="productRow" id="id_productRow" value="1"> -->
             <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
         </div>
         <button type="submit" class="ms-5 newProductCreateBtn" id="picklistSubmit">Submit</button>
@@ -531,12 +531,12 @@ document.addEventListener('DOMContentLoaded', function () {
     
     if(addButton && tableBody){
         addButton.addEventListener('click', function() {
-            let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
+            // let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
 
-                if (isNaN(addInputRow) || addInputRow <= 0) {
-                    addInputRow = 1;
-                    return;
-                }
+            //     if (isNaN(addInputRow) || addInputRow <= 0) {
+            //         addInputRow = 1;
+            //         return;
+            //     }
                 let lastVisibleRow = null;
                 tableBody.querySelectorAll('tr').forEach(row => {
                     if (window.getComputedStyle(row).display !== 'none') {
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (lastVisibleRow) {
                 const formCountInput = document.getElementById("id_picklist_products_list-TOTAL_FORMS");
                
-                for(let i = 0; i<addInputRow; i++){
+                // for(let i = 0; i<addInputRow; i++){
                     const formCount = parseInt(formCountInput.value); 
                     const formIndex = formCount;
                     const lastRow = lastVisibleRow.cloneNode(true);
@@ -626,8 +626,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     formCountInput.value = formCount + 1; 
                     tableBody.appendChild(lastRow);
 
-                }
-                document.getElementById('id_productRow').value = '1';
+                // }
+                // document.getElementById('id_productRow').value = '1';
                 deleteRowData()
                 inputCheck()
               
