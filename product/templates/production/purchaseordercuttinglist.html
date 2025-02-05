@@ -4,7 +4,7 @@
 <div class="mb-3 pt-2">
   <div class="mb-3">
     <div class="d-flex mb-3">
-      <label class="fw-bold">Refrence No :</label><span class="text-danger fw-bold ms-2 me-3">{{p_o_number.product_reference_number.Product_Refrence_ID}}</span>
+      <label class="fw-bold">Ref No :</label><span class="text-danger fw-bold ms-2 me-3">{{p_o_number.product_reference_number.Product_Refrence_ID}}</span>
       <label class="fw-bold">Model Name :</label><span class="text-danger fw-bold ms-2 me-3">{{p_o_number.product_reference_number.Model_Name}}</span>
       <label class="fw-bold">Party Name :</label><span class="text-danger fw-bold ms-2 me-3">{{p_o_number.ledger_party_name.name}}</span>
     </div>
@@ -14,7 +14,7 @@
       <label class="fw-bold">Processed Qty :</label><span class="text-danger fw-bold ms-2 me-3">{{p_o_number.cutting_total_processed_qty}}</span>
       <label class="fw-bold">Total Balance :</label><span id="total_balance" class="text-danger fw-bold ms-2 me-3">{{p_o_number.balance_number_of_pieces}}</span> 
       <div class="ms-3"></div>
-        <label class="fw-bold ps-3">Images :</label>
+        <label class="fw-bold ps-3">IMG :</label>
         {% for img in p_o_number.product_reference_number.productdetails.all %}
         {% if img.PProduct_image.url is not None %}
         <img src="{{img.PProduct_image.url}}" style="width: 30px; height: 30px; cursor: pointer;"onclick="showLargeImage(this.src)">

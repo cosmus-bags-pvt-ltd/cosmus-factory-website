@@ -7,7 +7,7 @@
           <form action="" method="POST" id="colorForm">
             {% csrf_token %}
             <div class="d-flex">
-              <label for="id_zone_name" class="item-form">Zone Name :</label>
+              <label for="id_zone_name" class="item-form fw-bold">Zone :</label>
               <input type="text" class="item-select rounded" value="{{ form.instance.zone_name }}" name="zone_name" maxlength="255" required id="id_zone_name">
             </div>
             <button type="submit" id="submitButtoncreateColorUpdate" class="create-btn mt-4" name="save" value="save">Save</button>

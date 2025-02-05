@@ -3,9 +3,9 @@
 {% block body %}
 
 <div class="mt-2 mb-3">
-    <Label class="fw-bold">Refrence ID : <span class="text-danger ms-2 me-4">{{product_instance.Product_Refrence_ID}}</span></Label>
-    <label class="fw-bold">Model No: <span class="text-danger ms-2 me-4"> {{product_instance.Model_Name}}</span></label>
-    <label class="fw-bold">Images :</label>
+    <Label class="fw-bold">Ref No : <span class="text-danger ms-2 me-4">{{product_instance.Product_Refrence_ID}}</span></Label>
+    <label class="fw-bold">Model Name: <span class="text-danger ms-2 me-4"> {{product_instance.Model_Name}}</span></label>
+    <label class="fw-bold">IMG :</label>
         {% for record in product_instance.productdetails.all %}
         {% if record.PProduct_image.url is not None %}
         <img src="{{record.PProduct_image.url}}" style="width: 60px; height: 60px; padding:2px; margin: 2px;" alt="Img">

@@ -9,7 +9,7 @@
     {% csrf_token %}
     <h2 class="mb-3 mt-4">Create Ledger Type</h2>
     <div class="d-flex">
-      <label for="id_type_name" class="form-label create_color_lable">Name :</label>
+      <label for="id_type_name" class="form-label create_color_lable fw-bold">Type :</label>
       <input type="text" class="item-select" value="{{ form.instance.color_name }}" name="type_name" maxlength="255" required id="id_type_name">
     </div>
     <button type="submit" class="create-btn mt-4">Submit</button>
