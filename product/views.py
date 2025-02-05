@@ -12849,6 +12849,7 @@ def productdynamicsearchajax(request):
                     product.get('Product__Product_SalePrice_CustomerPrice', ''),
                     product.get('quantity', '') if product.get('quantity', '') else 0,
                     product.get('Product__Product_Refrence_ID', ''),
+                    product.get('Product__id', '')
 
                 ] for product in products
             }
@@ -13832,7 +13833,7 @@ def picklist_product_ajax(request):
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
         
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
-        
+        print(e)
 
         products_purchase = product_purchase_voucher_items.objects.filter(Q(product_name__PProduct_SKU__icontains=product_name_typed) |Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |Q(product_name__Product__Model_Name__icontains=product_name_typed),qc_recieved_qty__gt=0).values('product_name__PProduct_SKU',
         'product_name__PProduct_color__color_name',
