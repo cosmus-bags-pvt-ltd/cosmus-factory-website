@@ -163,7 +163,8 @@ urlpatterns = [
     path('picklistproductajax/',views.picklist_product_ajax , name = 'picklist-product-ajax'),
     path('downloadpicklistpdf/<int:pl_id>',views.download_picklist_pdf , name = 'download-picklist-pdf'),
     path('downloadpicklistexcel/<int:pl_id>',views.download_picklist_excel , name = 'download-picklist-excel'),
-    # path('picklistbinajax/',views.picklist_bin_ajax , name = 'picklist-bin-ajax'),
+    path('binquantityajax/',views.bin_quantity_ajax , name = 'bin-quantity-ajax'),
+    path('deleteformquantityrevert/',views.delete_form_quantity_revert , name = 'delete-form-quantity-revert'),
 
     #subcategorys
     path('gstcreate/', views.gst_create_update, name = 'gst-create-list'),
@@ -364,6 +365,7 @@ urlpatterns = [
     path('purchaseorderforpuchasevoucherrmcreateupdate/', views.purchase_order_for_puchase_voucher_rm_create_update, name = 'purchase-order-for-puchase-voucher-rm-create-update'),
     path('purchaseorderforpuchasevoucherrmcreateupdate/<int:p_id>/', views.purchase_order_for_puchase_voucher_rm_create_update, name = 'purchase-order-for-puchase-voucher-rm-create-update'),
     path('purchaseorderforpuchasevoucherrmlist/', views.purchase_order_for_puchase_voucher_rm_list, name='purchase-order-for-puchase-voucher-rm-list'),
+    path('negetivestock/', views.negetive_stock, name='negetive-stock'),
     path('purchaseorderforpuchasevoucherrmdelete/<int:pk>/', views.purchase_order_for_purchase_rm_delete, name = 'purchase-order-for-puchase-voucher-rm-delete'),
 
     
@@ -374,6 +376,7 @@ urlpatterns = [
     path('outwardscanproductcreate/', views.outward_scan_product_create, name='outward-scan-product-create'),
     path('outwardscanproductlist/', views.outward_scan_product_list, name='outward-scan-product-list'),
     path('outwardscanserialnoprocess/', views.outward_scan_serial_no_process, name='outward-scan-serial-no-process'),
+    path('outwardpicklistnoajax/', views.outward_picklist_no_ajax, name='outward-picklist-no-ajax'),
       
 
 

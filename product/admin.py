@@ -23,15 +23,13 @@ class ProductAdmin(admin.ModelAdmin):
 # admin.site.register(StockItem)
 # admin.site.register(gst)
 # admin.site.register(item_godown_quantity_through_table)
-
-
 admin.site.register(outward_products)
 admin.site.register(outward_product_master)
 
-# admin.site.register(sales_voucher_master_outward_scan)
-# admin.site.register(sales_voucher_outward_scan)
 
-admin.site.register(finished_product_warehouse_bin)
+
+
+
 
 
 

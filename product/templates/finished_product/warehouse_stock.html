@@ -25,23 +25,40 @@
             {% for data in merged_list %}
             <tr>
                 <td>{{forloop.counter}}</td>
-                <td><img id="productImgPreview" name="product_img" src="{{data.product_name.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
+                <td><img id="productImgPreview" name="product_img" src="{{data.product_name.PProduct_image.url}}" alt="Product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
                 <td>{{data.ref_id}}</td>
                 <td>{{data.model_name}}</td>
                 <td>{{data.color}}</td>
                 <td>{{data.product_sku}}</td>
-                <td><a href="{% url 'model-name-wise-purchase-transfer-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalValue" style="background-color: #bb43dc; text-decoration: none;">{{data.total}}</a></td>
-                <td><a href="{% url 'scan-single-product-list' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalInvard" style="background-color: #1030ff; text-decoration: none;">{{data.total_inward}}</a></td>
-                <td>{{data.total_balance}}</td>
-                <td><a href="{% url 'model-name-wise-purchase-transfer-sales-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4dc3ce; text-decoration: none;">{{data.total_sale}}</a></td>
-                <td>{{data.inward_minus_sales}}</td> 
+                <td class="text-center"><a href="{% url 'model-name-wise-purchase-transfer-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalValue" style="background-color: #bb43dc; text-decoration: none;">{{data.total}}</a></td>
+                <td class="text-center"><a href="{% url 'scan-single-product-list' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalInvard" style="background-color: #1030ff; text-decoration: none;">{{data.total_inward}}</a></td>
+                <td class="text-center">{{data.total_balance}}</td>
+                <td class="text-center"><a href="{% url 'model-name-wise-purchase-transfer-sales-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4dc3ce; text-decoration: none;">{{data.total_sale}}</a></td>
+                <td class="text-center">{{data.inward_minus_sales}}</td> 
              </tr>
             {% endfor %}
       
         </tbody>    
     </table>
 </div>
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+    <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+<script>
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
 
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
 <script>
 
 function calculateValue() {
@@ -64,7 +81,7 @@ function calculateValue() {
             if (totalValue === inwardValue) {
                 row.style.setProperty("background-color", "#90ee90", "important"); // Green
             } else if (inwardValue === 0) {
-                row.style.setProperty("background-color", "#FF3333", "important"); // Red
+                row.style.setProperty("background-color", "#F19D9D", "important"); // Red
             } else {
                 row.style.setProperty("background-color", "#ADD8E6", "important"); // Light blue
             }

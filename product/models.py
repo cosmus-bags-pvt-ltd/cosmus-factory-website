@@ -1,5 +1,6 @@
 
 from hashlib import blake2b
+from urllib import request
 from django.db import models
 from django.conf import settings
 from django.forms import CharField, ValidationError
@@ -1046,7 +1047,6 @@ class finished_product_warehouse_bin(models.Model):
             current_bin_size = current_instance.product_size_in_bin  
              
             current_bin_count = self.finishedgoodsbinallocation_set.count()
-
             
             if self.product_size_in_bin < current_bin_count:
                 raise ValueError(
@@ -1056,10 +1056,6 @@ class finished_product_warehouse_bin(models.Model):
 
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.bin_name
-    
-
 
 
 class Product_warehouse_quantity_through_table(models.Model):
@@ -1068,9 +1064,22 @@ class Product_warehouse_quantity_through_table(models.Model):
     quantity =  models.PositiveBigIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
-
     class Meta:
         unique_together = [['warehouse','product']]
+
+
+
+
+class Product_bin_quantity_through_table(models.Model):
+    bin = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
+    product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
+    product_quantity = models.BigIntegerField()
+    created_date = models.DateTimeField(auto_now_add = True)
+    updated_date = models.DateTimeField(auto_now = True)
+
+
+
+
 
 
 class product_purchase_voucher_master(models.Model):
@@ -1152,23 +1161,18 @@ class finishedgoodsbinallocation(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     source_type = models.CharField(max_length=20, choices=[('purchase', 'purchase'), ('transfer', 'transfer')])
-    outward = models.BooleanField(default=False)
+    outward = models.BooleanField(default = False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
 
     def save(self, *args, **kwargs):
-        
         parent_bin_size = self.bin_number.product_size_in_bin
-
-        
         current_bin_count = finishedgoodsbinallocation.objects.filter(bin_number=self.bin_number).count()
 
-        
         if current_bin_count >= parent_bin_size:
             raise ValueError(f"The bin {self.bin_number.bin_name} is full. Cannot allocate more items.")
 
-        
         super().save(*args, ** kwargs)
 
     def __str__(self):
@@ -1235,15 +1239,23 @@ class Picklist_voucher_master(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-
-
 class Picklist_products_list(models.Model):
     picklist_master_instance = models.ForeignKey(Picklist_voucher_master,on_delete=models.CASCADE,related_name="picklist_products_list")
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
+    # use_all_qty = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
+# class temp_product_bin_for_picklist(models.Model):
+#     product_sku = models.CharField(max_length=252)
+#     product_bin = models.CharField(max_length=252)
+#     product_qty = models.IntegerField()
+#     bin_qty = models.IntegerField()
+#     res_qty = models.IntegerField()
+#     utilize_all = models.BooleanField(default=False)
 
 
 class outward_product_master(models.Model):
@@ -1264,6 +1276,7 @@ class outward_products(models.Model):
 
 class sales_voucher_master_outward_scan(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
+    sale_no = models.CharField(max_length = 100)
     buyer_inv_no = models.CharField(max_length = 100)
     company_gst = models.CharField(max_length = 100)
     ledger_type = models.CharField(max_length = 20, default = 'sales')

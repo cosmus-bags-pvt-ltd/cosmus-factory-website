@@ -12,11 +12,11 @@
             
             <div class="d-flex mb-3">
                 <label for="id_purchase_order_number" class="">P.O No :</label>
-                <input type="text" name="purchase_order_number" class="purchase-amount ms-2 me-4" value="{{form.instance.purchase_order_number | default_if_none:''}}" required id="id_purchase_order_number">
+                <input type="text" name="purchase_order_number" class="purchase-vNo ms-2 me-2" value="{{form.instance.purchase_order_number | default_if_none:''}}" required id="id_purchase_order_number">
             </div>
-            <div class="d-flex mb-3 ms-5">
-                <label for="id_product_reference_number" class="">Reference No:</label>
-                <select name="product_reference_number" class="item-select ms-2 me-4" required id="id_product_reference_number">
+            <div class="d-flex mb-3 ms-2">
+                <label for="id_product_reference_number" class="">Ref No :</label>
+                <select name="product_reference_number" class="item-selects ms-2 me-2" required id="id_product_reference_number">
                     {% if form.instance.id %}
                     <option value="{{form.instance.product_reference_number.id}}">{{form.instance.product_reference_number.Product_Refrence_ID}}</option>
                     {% for product in products %}
@@ -31,7 +31,7 @@
                 </select>
             </div>
             <div class="d-flex mb-3">
-                <label for="id_ledger_party_name" class="">Party Name:</label>
+                <label for="id_ledger_party_name" class="">Party Name :</label>
                 <select name="ledger_party_name" class="item-select ms-2" id="id_ledger_party_name">
                     {% if form.instance.id %}
                     <option value="{{form.instance.ledger_party_name.id}}">{{form.instance.ledger_party_name.name}}</option>
@@ -46,20 +46,20 @@
                     {% endif %}
                 </select>
             </div>
-
-        </div>
-        <div class="d-flex">
-            <div class="d-flex mb-3">
-                <label for="id_target_date" class="">Target date:</label>
+            <div class="d-flex ms-2">
+                <label for="id_target_date" class="">Target date :</label>
                 <input type="date" name="target_date" class="item-select ms-2 me-4" value="{{ form.instance.target_date|date:'Y-m-d' }}" required id="id_target_date">
             </div>
-            <div class="d-flex mb-3">
-                <label for="id_number_of_pieces" class="">Total P.O Qty:</label>
-                <input type="number" name="number_of_pieces" class="item-select ms-2" value="{{form.instance.number_of_pieces}}" required id="id_number_of_pieces">
+        </div>
+        <div class="d-flex mb-2">
+            
+            <div class="d-flex">
+                <label for="id_number_of_pieces" class="">Total P.O Qty :</label>
+                <input type="number" name="number_of_pieces" class="purchase-vNo ms-2" value="{{form.instance.number_of_pieces}}" required id="id_number_of_pieces">
             </div>
-            <div class="d-flex mb-3 ms-3">
-                <label for="id_temp_godown_select" class="">Godown Select:</label>
-                <select name="temp_godown_select" class="item-select ms-2" id="id_temp_godown_select">
+            <div class="d-flex ms-3">
+                <label for="id_temp_godown_select" class="">Godown Select :</label>
+                <select name="temp_godown_select" class="item-selects ms-2" id="id_temp_godown_select">
                     {% if form.instance.id %}
                     <option value="{{form.instance.temp_godown_select.id}}">{{form.instance.temp_godown_select.godown_name_raw}}</option>
                     {% for godown in raw_material_godowns %}
@@ -87,10 +87,10 @@
         <label class="fw-bold ">Balance :</label>
         <input type=" number" class="productinput ms-2  text-danger pb-2" name="balance_quantity" id="id_balance_quantity" value="" maxlength="50" step=".01" readonly>
         <div class="mb-2 ms-1">
-            <label class="fw-bold">Images :</label>
+            <label class="fw-bold">IMG :</label>
             {% for img in model_images.all %}
             {% if img.PProduct_image.url is not None %}
-            <img src="{{img.PProduct_image.url}}" alt="images" style="width: 70px; padding:2px ;">
+            <img src="{{img.PProduct_image.url}}" alt="images" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
             {% endif %}
             {% endfor %}
         </div>
@@ -150,7 +150,24 @@
         </div>
     </div> 
 </div>
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+    <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+<script>
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
 
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
 <script>
     document.body.appendChild(document.getElementById('exampleModal'));
     $(document).ready(function(){
