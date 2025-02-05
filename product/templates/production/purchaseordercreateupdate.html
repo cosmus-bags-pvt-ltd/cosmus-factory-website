@@ -481,15 +481,15 @@
         var itemName;
         var purchaseValue;
 
-        $(document).on('click input keyup focus keydown', 'input[name^="product_reference_number_input"]', function () {
-            itemName = $(this).closest('tr').find('input[name$="-product_quantity_transfer"]').attr('name');
-            purchaseValue = itemName.split('-')[1];
+        // $(document).on('click input keyup focus keydown', 'input[name^="product_reference_number_input"]', function () {
+        //     itemName = $(this).closest('tr').find('input[name$="-product_quantity_transfer"]').attr('name');
+        //     purchaseValue = itemName.split('-')[1];
                             
-        });
+        // });
                 $(document).on('input', 'input[name^="product_reference_number_input"]', function(e) {
-                    var refValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
+                    //var refValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
                     var productnamevalue = $(this).val().trim();
-                    var selectNameValue = `select_Refrance_No_${refValue}`;
+                    var selectNameValue = `select_Refrance_No`;
                     var suggestionsContainer = $(`#${selectNameValue}`);
                  
                     if (productnamevalue === 'None' || productnamevalue === '') {
@@ -512,7 +512,7 @@
                     }
                     searchedProductNameDic = response.products; 
                     console.log('searchedProductNameDic',searchedProductNameDic)
-                    const searchQuery = nameValue.toLowerCase();
+                    const searchQuery = productnamevalue.toLowerCase();
                     const searchTerms = searchQuery.split(/\s+/);
                     const convertStringData = searchTerms.toString();
                 
@@ -524,36 +524,34 @@
     
                     const filteredOptions = Object.entries(searchedProductNameDic).filter(
                     ([key, value]) => {
-                        const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
-                        const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
-                        const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
+                        const normalizedKey = normalizeSpaces(value[7].toString().toLowerCase());
+                        const normalizedProductName = normalizeSpaces(value[6].toString().toLowerCase());
+                        //const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
                     
                         const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
         
                         return normalizedKey.includes(normalizedQuery) ||
-                            normalizedProductName.includes(normalizedQuery) ||
-                            normalizedColor.includes(normalizedQuery);
+                            normalizedProductName.includes(normalizedQuery);
+                            //normalizedColor.includes(normalizedQuery);
                     });
         
                     suggestionsContainer.empty();
                     // Generate suggestions for matching options
                     filteredOptions.forEach(([key, value], index) => {
                         // Extract relevant fields
-                        const productName = value[3]; // Product name
-                        const productSKU = key; // SKU
-                        const productColor = value[1];
-                        const productQty = value[2];
+                        const productRefIdName = value[6]; // Product name
+                        const productRefId = value[7]; // SKU
+                       
 
                         // Highlight matches in name, SKU, and color
-                        const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
-                        const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
-                        const highlightedColor = productColor.replace(regex, '<span class="highlight">$1</span>');
-                        // const highlightedQty = productQty.replace(regex, '<span class="highlight">$1</span>');
+                        // const highlightedText = productRefId.replace(regex, '<span class="highlight">$1</span>');
+                        // const highlightedSKU = productRefId.replace(regex, '<span class="highlight">$1</span>');
+                    
 
                         // Add the suggestion to the container
                         suggestionsContainer.append(`
-                            <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
-                                ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
+                            <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${value[7]}">
+                                ${productRefIdName}
                             </div>
                         `);
                         

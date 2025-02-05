@@ -12837,7 +12837,7 @@ def productdynamicsearchajax(request):
             Q(Product__Product_Name__icontains=product_name_typed) |
             Q(Product__Product_Refrence_ID__icontains=product_name_typed)
         ).annotate(quantity=Subquery(product_godown_quantity_through_table.objects.filter(product_color_name=OuterRef('pk')).values('quantity'))).distinct().values('PProduct_SKU', 'PProduct_color__color_name', 
-                            'Product__Model_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice','quantity','Product__Product_Refrence_ID')
+                            'Product__Model_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice','quantity','Product__Product_Refrence_ID','Product__id')
         
         if products.exists():
             product_searched_dict = {
