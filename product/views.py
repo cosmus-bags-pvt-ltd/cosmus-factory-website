@@ -12836,8 +12836,8 @@ def productdynamicsearchajax(request):
             Q(PProduct_color__color_name__icontains=product_name_typed) |
             Q(Product__Product_Name__icontains=product_name_typed) |
             Q(Product__Product_Refrence_ID__icontains=product_name_typed)
-        ).annotate(quantity=Subquery(product_godown_quantity_through_table.objects.filter(product_color_name=OuterRef('pk')).values('quantity'))).distinct().values('PProduct_SKU', 'PProduct_color__color_name', 
-                            'Product__Model_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice','quantity','Product__Product_Refrence_ID','Product__id')
+        ).annotate(quantity=Subquery(product_godown_quantity_through_table.objects.filter(product_color_name=OuterRef('pk')
+        ).values('quantity'))).distinct().values('PProduct_SKU', 'PProduct_color__color_name', 'Product__Model_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice','quantity','Product__Product_Refrence_ID')
         
         if products.exists():
             product_searched_dict = {
@@ -12849,7 +12849,7 @@ def productdynamicsearchajax(request):
                     product.get('Product__Product_SalePrice_CustomerPrice', ''),
                     product.get('quantity', '') if product.get('quantity', '') else 0,
                     product.get('Product__Product_Refrence_ID', ''),
-                    product.get('Product__id', '')
+                    product.get('Product', '')
 
                 ] for product in products
             }
@@ -14443,20 +14443,32 @@ def outward_scan_serial_no_process(request):
 
 def ref_no_search_ajax(request):
     try:
-        ref_no_typed = request.GET.get('')
+        ref_no_typed = request.GET.get('productnamevalue')
 
+        if not ref_no_typed:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+        
         logger.info(f"Search initiated by {request.user}: {ref_no_typed}")
 
         try:
-            pass
+            reference_no = PProduct_Creation.objects.filter(Product__Product_Refrence_ID__icontains = ref_no_typed).values('Product__Product_Refrence_ID','Product__id')
 
+            if reference_no.exists():
+
+                reference_no_dict = {product['Product__id']: [product.get('Product__Product_Refrence_ID', ''),product.get('Product', '')] for product in reference_no}
+
+                logger.info(f"Search results for {ref_no_typed}: {reference_no_dict}")
+
+                return JsonResponse({'reference_no': reference_no_dict}, status=200)
+            
+            return JsonResponse({'error': 'No items found.'}, status=404)
+        
         except Exception as e:
             print(e)
 
     except Exception as e:
         logger.error(f"Error in ref_no_search_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
-
 
 
 def party_name_search_ajax(request):
