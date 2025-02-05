@@ -14455,7 +14455,7 @@ def ref_no_search_ajax(request):
 
             if reference_no.exists():
 
-                reference_no_dict = {product['Product__id']: [product.get('Product__Product_Refrence_ID', ''),product.get('Product', '')] for product in reference_no}
+                reference_no_dict = {product['Product__id']: [product.get('Product__Product_Refrence_ID', '')] for product in reference_no}
 
                 logger.info(f"Search results for {ref_no_typed}: {reference_no_dict}")
 

@@ -15,7 +15,7 @@
                 <input type="text" name="purchase_order_number" class="purchase-vNo ms-2 me-2" value="{{form.instance.purchase_order_number | default_if_none:''}}" required id="id_purchase_order_number">
             </div>
             <div class="d-flex mb-3 ms-2">
-                <label for="id_product_reference_number" class="">Ref No :</label>
+                <label for="id_product_reference_number" class="me-2">Ref No :</label>
                 <!-- <select name="product_reference_number" class="item-selects ms-2 me-2" required id="id_product_reference_number">
                     {% if form.instance.id %}
                     <option value="{{form.instance.product_reference_number.id}}">{{form.instance.product_reference_number.Product_Refrence_ID}}</option>
@@ -29,9 +29,9 @@
                     {% endfor %}
                     {% endif %}
                 </select> -->
-                <div class="custom-dropdown-container">
+                <div class="custom-dropdown-container-ref">
                     <input type="hidden" name="product_reference_number" id="id_product_reference_number" value="{% if form.instance.id %}{{form.instance.product_reference_number.id}}{% endif %}" readonly> 
-                      <input type="number" name="product_reference_number_input" id="id_product_reference_number_input" class="item-select"  placeholder="Refrance No" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product_reference_number.Product_Refrence_ID}}{% endif %}"> 
+                      <input type="number" name="product_reference_number_input" id="id_product_reference_number_input" class="item-select refernceName"  placeholder="Refrance No" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product_reference_number.Product_Refrence_ID}}{% endif %}"> 
                       <div name="select_Refrance_No" class="item-select  s-suggestion-container reference_input" id="select_Refrance_No" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
 
                        </div>
@@ -65,7 +65,7 @@
                 <input type="number" name="number_of_pieces" class="purchase-vNo ms-2" value="{{form.instance.number_of_pieces}}" required id="id_number_of_pieces">
             </div>
             <div class="d-flex ms-3">
-                <label for="id_temp_godown_select" class="">Godown Select :</label>
+                <label for="id_temp_godown_select" class="">Godown :</label>
                 <select name="temp_godown_select" class="item-selects ms-2" id="id_temp_godown_select">
                     {% if form.instance.id %}
                     <option value="{{form.instance.temp_godown_select.id}}">{{form.instance.temp_godown_select.godown_name_raw}}</option>
@@ -481,260 +481,219 @@
         var itemName;
         var purchaseValue;
 
-        // $(document).on('click input keyup focus keydown', 'input[name^="product_reference_number_input"]', function () {
-        //     itemName = $(this).closest('tr').find('input[name$="-product_quantity_transfer"]').attr('name');
-        //     purchaseValue = itemName.split('-')[1];
-                            
-        // });
-                $(document).on('input', 'input[name^="product_reference_number_input"]', function(e) {
-                    //var refValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
-                    var productnamevalue = $(this).val().trim();
-                    var selectNameValue = `select_Refrance_No`;
-                    var suggestionsContainer = $(`#${selectNameValue}`);
-                 
-                    if (productnamevalue === 'None' || productnamevalue === '') {
-                    suggestionsContainer.css('display', 'none').empty();
-                        $(this).attr('data-key', '');
-                        return;
-                    }
-                    if(!enterPressed){
-                        suggestionsContainer.css('display', 'block');
-                    }
-                    enterPressed = false;
-                    $.ajax({
-                        
-                    url: '/productdynamicsearchajax/',
-                    method: 'GET',
-                    data: { 'productnamevalue': productnamevalue },
-                    success: function (response) {
-                        function escapeRegExp(string) {
-                        return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
-                    }
-                    searchedProductNameDic = response.products; 
-                    console.log('searchedProductNameDic',searchedProductNameDic)
-                    const searchQuery = productnamevalue.toLowerCase();
-                    const searchTerms = searchQuery.split(/\s+/);
-                    const convertStringData = searchTerms.toString();
+       
+        $(document).on('input', 'input[name^="product_reference_number_input"]', function(e) {
+            
+            var productnamevalue = $(this).val().trim();
+            var selectNameValue = `select_Refrance_No`;
+            var suggestionsContainer = $(`#${selectNameValue}`);
+            
+            if (productnamevalue === 'None' || productnamevalue === '') {
+            suggestionsContainer.css('display', 'none').empty();
+                $(this).attr('data-key', '');
+                return;
+            }
+            if(!enterPressed){
+                suggestionsContainer.css('display', 'block');
+            }
+            enterPressed = false;
+            $.ajax({
                 
-                    const escapedTerms = searchTerms.map(escapeRegExp);
+            url: '/refnosearchajax/',
+            method: 'GET',
+            data: { 'productnamevalue': productnamevalue },
+            success: function (response) {
+                function escapeRegExp(string) {
+                return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+            }
+            searchedProductNameDic = response.reference_no; 
+            console.log('searchedProductNameDic',searchedProductNameDic)
+            const searchQuery = productnamevalue.toLowerCase();
+            const searchTerms = searchQuery.split(/\s+/);
+            const convertStringData = searchTerms.toString();
+        
+            const escapedTerms = searchTerms.map(escapeRegExp);
 
-                    const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+            const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
 
-                    const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+            const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+
+            const filteredOptions = Object.entries(searchedProductNameDic).filter(
+            ([key, value]) => {
+                const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
+                const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
+            
+                const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+
+                return normalizedKey.includes(normalizedQuery) ||
+                    normalizedProductName.includes(normalizedQuery);
+
+            });
+
+            suggestionsContainer.empty();
+            // Generate suggestions for matching options
+            filteredOptions.forEach(([key, value], index) => {
+                // Extract relevant fields
+                const productRefIdName = key; // Product name
+                const productRefId = String(value[0] || ''); // Convert to string safely
     
-                    const filteredOptions = Object.entries(searchedProductNameDic).filter(
-                    ([key, value]) => {
-                        const normalizedKey = normalizeSpaces(value[7].toString().toLowerCase());
-                        const normalizedProductName = normalizeSpaces(value[6].toString().toLowerCase());
-                        //const normalizedColor = normalizeSpaces(value[1].toString().toLowerCase());
-                    
-                        const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+                console.log('productRefId:', productRefId, 'Type:', typeof productRefId);
+                
+                const highlightedText = productRefId.replace(regex, '<span class="highlight">$1</span>');
+
+                        
+                suggestionsContainer.append(`
+                    <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
+                        ${highlightedText}
+                    </div>
+                `);
+                
+            });
+            if(filteredOptions == ''){
+                suggestionsContainer.show();
+                suggestionsContainer.empty();
+                suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+            }
+                
+            suggestionsContainer.on('click', '.itemName-div', function(e) {
+                var refId = $(this).data('key');
+                var referenceNameCheck = $(this).text().trim();
+                
+                $(this).closest('.custom-dropdown-container-ref').find('.refernceName').val(referenceNameCheck);
+                $(this).closest('.custom-dropdown-container-ref').find('[name^="product_reference_number]').val(refId)
+                $(this).addClass('selected').siblings().removeClass('selected');
+
         
-                        return normalizedKey.includes(normalizedQuery) ||
-                            normalizedProductName.includes(normalizedQuery);
-                            //normalizedColor.includes(normalizedQuery);
-                    });
-        
-                    suggestionsContainer.empty();
-                    // Generate suggestions for matching options
-                    filteredOptions.forEach(([key, value], index) => {
-                        // Extract relevant fields
-                        const productRefIdName = value[6]; // Product name
-                        const productRefId = value[7]; // SKU
-                       
-
-                        // Highlight matches in name, SKU, and color
-                        // const highlightedText = productRefId.replace(regex, '<span class="highlight">$1</span>');
-                        // const highlightedSKU = productRefId.replace(regex, '<span class="highlight">$1</span>');
-                    
-
-                        // Add the suggestion to the container
-                        suggestionsContainer.append(`
-                            <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${value[7]}">
-                                ${productRefIdName}
-                            </div>
-                        `);
-                        
-                    });
-                    if(filteredOptions == ''){
-                        suggestionsContainer.show();
-                        suggestionsContainer.empty();
-                        suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
-                    }
-                        
-                    suggestionsContainer.on('click', '.itemName-div', function(e) {
-                        var item_value = $(this).data('key');
-                        var itemNamevaluesCheck = $(this).text().trim();
-                        
-                        $(this).closest('.custom-dropdown-container').find('.search-input').val(newNameValue);
-                        $(this).closest('.custom-dropdown-container').find('[name$="-product"]').val(item_value)
-                        $(this).addClass('selected').siblings().removeClass('selected');
-
-                        if (item_value !== undefined) {
-                            var selectedValue = searchedProductNameDic[item_value];
-                            var namevalueCheck = selectedValue[3];
-                            const productQty = selectedValue[2];
-                            var newNameValue = namevalueCheck + '                             '+ productQty;
-                    
-                                $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(newNameValue);
-                                $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product_quantity_transfer"]`).focus();
-                              
-                        }
-                    
-                        suggestionsContainer.css('display', 'none');
-                        
-                    })
-                    },
-                    error: function (xhr) {
-                        console.log(xhr.status + ": " + xhr.responseText);
-                        if (xhr.status === 404) {
-                            
-                            suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
-                        }
-                    }
-                    })
-                    
-                    
-
+                suggestionsContainer.css('display', 'none');
+                
             })
-           
-           
+            },
+            error: function (xhr) {
+                console.log(xhr.status + ": " + xhr.responseText);
+                if (xhr.status === 404) {
+                    
+                    suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                }
+            }
+            })
+            
             
 
-                var index = 0; // Declare index outside of the event listener
-                var indexbool = true;
+    })
+           
+        var index = 0; // Declare index outside of the event listener
+        var indexbool = true;
 
-                $(document).on('keydown', 'input[name$="-products"]', function(event) {
-                    const $inputField = $(this);
-                    const $dropdownOptions = $inputField.next('.stock_input_name');
-                    const $options = $dropdownOptions.find('.itemName-div');
-                    const optionsCount = $options.length - 1;
-                    const searchText = $inputField.val().trim();
-                    const hiddenValue = $inputField.closest('.custom-dropdown-container').find(`#select_product_name_${purchaseValue}`);
-                    if (searchText === '') {
-                        index = 0;
-                        return;
+        $(document).on('keydown', 'input[name^="product_reference_number_input"]', function(event) {
+            const $inputField = $(this);
+            const $dropdownOptions = $inputField.next('.reference_input');
+            const $options = $dropdownOptions.find('.itemName-div');
+            const optionsCount = $options.length - 1;
+            const searchText = $inputField.val().trim();
+            const hiddenValue = $inputField.closest('.custom-dropdown-container-ref').find(`#select_Refrance_No`);
+            if (searchText === '') {
+                index = 0;
+                return;
+            }
+            const newHeight = $inputField.offset();
+            const windowHeight = $(window).height();
+            const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
+    
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+
+                if (index <= optionsCount) {
+                
+                    const $selectedItem = $options.eq(index);
+                    const $nextItem = $selectedItem.next();
+                    const nameDataKey = $selectedItem.text();
+                    const nameKey = $selectedItem.data('key');
+
+                    $inputField.attr('data-key', nameKey);
+                
+                    $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                    const itemOffsetTop = $nextItem.position().top;
+                    const itemHeight = $nextItem.outerHeight();
+                    const selectScrollTop = $dropdownOptions.scrollTop();
+                    const selectHeight = $dropdownOptions.height();
+
+                    if (itemOffsetTop + itemHeight > selectHeight) {
+                        $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                    } else if (itemOffsetTop < 0) {
+                        $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
                     }
-                    const newHeight = $inputField.offset();
-                    const windowHeight = $(window).height();
-                    const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
+                    $selectedItem.addClass('selected');
+                    if (index !== optionsCount) {
+                        index += 1;
+                        indexbool = true;
+                    }
+                } else {
+                    index = 0;
+                }
+            }
+
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+
+                if (index != 0 && indexbool == true) {
+                    index -= 1;
+                }
+
+                if (index <= optionsCount) {
+                
+                    const $selectedItem = $options.eq(index);
+                    const $prevItem = $selectedItem.prev();
+                    const nameDataKey = $selectedItem.text();
+                    const nameKey = $selectedItem.data('key');
+
+                    $inputField.attr('data-key', nameKey);
+                    
+                    $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                    
+                    const itemOffsetTop = $prevItem.position().top;
+                    const itemHeight = $prevItem.outerHeight();
+                    const selectScrollTop = $dropdownOptions.scrollTop();
+                    const selectHeight = $dropdownOptions.height();
+
+                    if (itemOffsetTop < 0) {
+                        $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                    } else if (itemOffsetTop + itemHeight > selectHeight) {
+                        $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                    }
+
+                    $selectedItem.addClass('selected');
+                } else {
+                    index = 0;
+                }
+            }
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const itemEnterValue = $(this);
+                const refKey = itemEnterValue.attr('data-key');
+
+                nameDataKey = '';
+                nameKey = '';
+                index = 0;
+                indexbool = false;
             
+                if(refKey !== undefined){
+                    var refId = searchedProductNameDic[refKey];
+                    var referenceName = refId[0];
+                    $(`input[name^="product_reference_number"]`).val(refKey);
+                    $(`input[name^="product_reference_number_input"]`).val(referenceName);
+                }
 
-                    if (event.key === 'ArrowDown') {
-                        event.preventDefault();
-
-                        if (index <= optionsCount) {
-                        
-                            const $selectedItem = $options.eq(index);
-                            const $nextItem = $selectedItem.next();
-                            const nameDataKey = $selectedItem.text();
-                            const nameKey = $selectedItem.data('key');
-
-                            $inputField.attr('data-key', nameKey);
-                        
-                            $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
-                            const itemOffsetTop = $nextItem.position().top;
-                            const itemHeight = $nextItem.outerHeight();
-                            const selectScrollTop = $dropdownOptions.scrollTop();
-                            const selectHeight = $dropdownOptions.height();
-
-                            if (itemOffsetTop + itemHeight > selectHeight) {
-                                $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
-                            } else if (itemOffsetTop < 0) {
-                                $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
-                            }
-                            $selectedItem.addClass('selected');
-                            if (index !== optionsCount) {
-                                index += 1;
-                                indexbool = true;
-                            }
-                        } else {
-                            index = 0;
-                        }
-                    }
-
-                    if (event.key === 'ArrowUp') {
-                        event.preventDefault();
-
-                        if (index != 0 && indexbool == true) {
-                            index -= 1;
-                        }
-
-                        if (index <= optionsCount) {
-                        
-                            const $selectedItem = $options.eq(index);
-                            const $prevItem = $selectedItem.prev();
-                            const nameDataKey = $selectedItem.text();
-                            const nameKey = $selectedItem.data('key');
-
-                            $inputField.attr('data-key', nameKey);
-                            
-                            $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
-                            
-                            const itemOffsetTop = $prevItem.position().top;
-                            const itemHeight = $prevItem.outerHeight();
-                            const selectScrollTop = $dropdownOptions.scrollTop();
-                            const selectHeight = $dropdownOptions.height();
-
-                            if (itemOffsetTop < 0) {
-                                $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
-                            } else if (itemOffsetTop + itemHeight > selectHeight) {
-                                $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
-                            }
-
-                            $selectedItem.addClass('selected');
-                        } else {
-                            index = 0;
-                        }
-                    }
-
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        const itemEnterValue = $(this);
-                        const item_value = itemEnterValue.attr('data-key');
-
-                        nameDataKey = '';
-                        nameKey = '';
-                        index = 0;
-                        indexbool = false;
-                        if (item_value !== undefined) {
-                        var selectedValue = searchedProductNameDic[item_value];
-                        var namevalueCheck = selectedValue[3];
-                        const productQty = selectedValue[2];
-                        var newNameValue = namevalueCheck + '                             '+ productQty;
-        
-                        $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product"]`).val(item_value);
-                        $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-products"]`).val(newNameValue);
-                        $(`input[name$="finished_goods_transfer_records_set-${purchaseValue}-product_quantity_transfer"]`).focus();
-
-                            const productColor = selectedValue[1];
-                            
-                            const productRefId = selectedValue[4];
-                            const productUnit = selectedValue[5];
-
-
-                            var productcolorinput = document.querySelector('#id_stock_color_' + purchaseValue);
-                            var productQtyinputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_quantity_transfer');
-                            var productSkuInputs = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_sku');                    
-                            var productRefNoValue = document.getElementById('id_finished_goods_transfer_records_set-' + purchaseValue + '-product_refNo');
-                            var UnitsValue = document.getElementById('id_stock_per_' + purchaseValue );
-                            productcolorinput.value = productColor;
-                            // productQtyinputs.value = productQty ;
-                            productSkuInputs.value = item_value;
-                            productRefNoValue.value = productRefId;
-                            UnitsValue.value =productUnit;
-                        }
-
-
-                        enterPressed = true;
-                        hiddenValue.css("display" ,"none");
-                        $inputField.blur();
-                    }
-                    if (event.key === 'Tab' && enterPressed) {
-                    enterPressed = false; // Reset Enter key handling
-                    return true; // Allow default Tab behavior
-                    }
-                })
+                enterPressed = true;
+                hiddenValue.css("display" ,"none");
+                $inputField.blur();
+            }
+            if (event.key === 'Tab' && enterPressed) {
+            enterPressed = false; // Reset Enter key handling
+            return true; // Allow default Tab behavior
+            }
+        })
     })
      
 </script>
