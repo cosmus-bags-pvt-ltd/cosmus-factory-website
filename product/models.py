@@ -1162,7 +1162,7 @@ class finishedgoodsbinallocation(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     source_type = models.CharField(max_length=20, choices=[('purchase', 'purchase'), ('transfer', 'transfer')])
-    # outward = models.BooleanField(default=False)
+    outward_done = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
