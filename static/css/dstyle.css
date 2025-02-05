@@ -1612,7 +1612,7 @@ table>:not(caption)>*>*{
     outline: none;
 }
 .productinput{
-    width: 110px;
+    width: 80px;
     border: none ;
     border-radius: 3px;
     padding-left: 5px;
@@ -1782,7 +1782,7 @@ table>:not(caption)>*>*{
 }
 .custom-dropdown-container-ref {
     position: relative;
-    width: 285px;
+    width: 255px;
 }
 /* .search-input {
     width: 100%;

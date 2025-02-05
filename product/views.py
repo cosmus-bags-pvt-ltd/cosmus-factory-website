@@ -14493,7 +14493,7 @@ def party_name_search_ajax(request):
 
                 logger.info(f"Search results for {party_name_typed}: {party_name_dict}")
 
-                return JsonResponse({'reference_no': party_name_dict}, status=200)
+                return JsonResponse({'party_name': party_name_dict}, status=200)
             
             return JsonResponse({'error': 'No items found.'}, status=404)
 
