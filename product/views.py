@@ -48,21 +48,21 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     gst, item_color_shade, item_godown_quantity_through_table,
                     item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item,
                     labour_workin_approval_report, labour_workout_childs, labour_workout_cutting_items,
-                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, 
+                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master,
                     packaging, product_2_item_through_table, product_godown_quantity_through_table, 
                     product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
-                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total,
+                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
-                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_master_outward_scan,sales_voucher_outward_scan,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
+                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
                     CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesvoucheroutwardscanForm, cutting_room_form,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -83,7 +83,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,Salesvouchermasteroutwardscanform,salesvoucherfromscanupdateformset,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset)
     
 
 
@@ -12834,9 +12834,10 @@ def productdynamicsearchajax(request):
         products = PProduct_Creation.objects.filter(
             Q(PProduct_SKU__icontains=product_name_typed) |
             Q(PProduct_color__color_name__icontains=product_name_typed) |
-            Q(Product__Product_Name__icontains=product_name_typed)
+            Q(Product__Product_Name__icontains=product_name_typed) |
+            Q(Product__Product_Refrence_ID__icontains=product_name_typed)
         ).annotate(quantity=Subquery(product_godown_quantity_through_table.objects.filter(product_color_name=OuterRef('pk')).values('quantity'))).distinct().values('PProduct_SKU', 'PProduct_color__color_name', 
-                            'Product__Model_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice','quantity')
+                            'Product__Model_Name', 'Product__Product_GST__gst_percentage','Product__Product_MRP','Product__Product_SalePrice_CustomerPrice','quantity','Product__Product_Refrence_ID')
         
         if products.exists():
             product_searched_dict = {
@@ -12847,6 +12848,7 @@ def productdynamicsearchajax(request):
                     product.get('Product__Product_MRP', ''),
                     product.get('Product__Product_SalePrice_CustomerPrice', ''),
                     product.get('quantity', '') if product.get('quantity', '') else 0,
+                    product.get('Product__Product_Refrence_ID', ''),
 
                 ] for product in products
             }
@@ -13830,6 +13832,7 @@ def picklist_product_ajax(request):
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
         
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
+        
 
         products_purchase = product_purchase_voucher_items.objects.filter(Q(product_name__PProduct_SKU__icontains=product_name_typed) |Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |Q(product_name__Product__Model_Name__icontains=product_name_typed),qc_recieved_qty__gt=0).values('product_name__PProduct_SKU',
         'product_name__PProduct_color__color_name',
@@ -14048,18 +14051,8 @@ def deletepicklist(request,pl_id):
 
 
 def all_picklists_list(request):
-    all_picklists = Picklist_voucher_master.objects.prefetch_related('picklist_products_list__product').annotate(
-    total_quantity=Sum('picklist_products_list__product_quantity'))
+    all_picklists = Picklist_voucher_master.objects.prefetch_related('picklist_products_list__product').annotate(total_quantity=Sum('picklist_products_list__product_quantity'))
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
-
-
-
-
-
-
-
-
-
 
 
 
@@ -14447,3 +14440,23 @@ def outward_scan_serial_no_process(request):
 
 
 
+def ref_no_search_ajax(request):
+    try:
+        ref_no_typed = request.GET.get('')
+
+        logger.info(f"Search initiated by {request.user}: {ref_no_typed}")
+
+        try:
+            pass
+
+        except Exception as e:
+            print(e)
+
+    except Exception as e:
+        logger.error(f"Error in ref_no_search_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+
+def party_name_search_ajax(request):
+    pass

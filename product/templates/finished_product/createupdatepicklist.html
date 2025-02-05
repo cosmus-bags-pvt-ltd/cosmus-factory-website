@@ -73,7 +73,7 @@
                         {% if form.instance.id %}
                         <td><img src="{{form.instance.product.PProduct_image.url}}" id="id_productInward_img_{{forloop.counter0}}" alt="product"  style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
                         {% else %}
-                        <td><img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" width="30px" height="30px"></td>
+                        <td><img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
                         {% endif %}
                         
 
@@ -850,7 +850,8 @@ date.addEventListener('keydown', function(event) {
 
 tableRows.forEach(function (row,index) {
     const qty = row.querySelector('[name$="-product_quantity"]');
-    const bin_no = row.querySelector('[name$="-bin_number"]')
+    const bin_no = row.querySelector('[name$="-bin_number"]');
+    const addBtn = document.getElementById('addRowButton')
     if(bin_no){
         bin_no.addEventListener('keydown', function (event) {
             if (event.key === "Tab") {
@@ -858,11 +859,13 @@ tableRows.forEach(function (row,index) {
                 if (bin_no.value === '') {
          
                     bin_no.focus();
-                } else if(qty) {
+                } else if(qty.value === '') {
                    
                     qty.focus();
                   
                     
+                }else{
+                    addBtn.focus();
                 }
             }
         });

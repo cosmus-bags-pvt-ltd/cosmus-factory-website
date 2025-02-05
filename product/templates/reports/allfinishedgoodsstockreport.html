@@ -24,7 +24,8 @@
             <tr class="text-nowrap">
                 <td>{{forloop.counter}}</td>
                 <td>{% if query.PProduct_image.url is not None %}
-                    <img src=" {{query.PProduct_image.url}}" alt="product" style="width: 50px; height: 50px; padding:2px;">
+                    <img src=" {{query.PProduct_image.url}}" alt="product" style="width: 30px; height: 30px; cursor: pointer;" 
+                    onclick="showLargeImage(this.src)">
                     {% endif %}</td>
                 <td class="refrenceId">{{query.Product.Product_Refrence_ID}}</td>
                 <td>{{query.Product.Model_Name}}</td>
@@ -41,7 +42,24 @@
         
     </table>
 </div>
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+    <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+<script>
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
 
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
 <script>
     function totalValueCheck(){
         var  totalqty = document.querySelectorAll('.toatlQty');

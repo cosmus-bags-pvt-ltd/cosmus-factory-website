@@ -13,9 +13,9 @@
         {% endfor %}
     
         
-</div class="mt-2"> 
-<label  class="fw-bold" for="">Approval Pending Qty : </label><span class="text-danger"> {{purchase_order_instance.total_approval_pending}}</span>
-<label  class="fw-bold" for="">Total Approved QTY : </label><span class="text-danger"> {{product_quantity.total_quantity}}</span>
+</div class="mt-1"> 
+<label  class="fw-bold " for="">Approval Pending Qty : </label><span class="text-danger"> {{purchase_order_instance.total_approval_pending |default_if_none:0}}</span>
+<label  class="fw-bold ms-3" for="">Total Approved QTY : </label><span class="text-danger"> {{product_quantity.total_quantity}}</span>
 <div>
 
 </div>
