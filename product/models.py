@@ -1080,8 +1080,6 @@ class Product_bin_quantity_through_table(models.Model):
 
 
 
-
-
 class product_purchase_voucher_master(models.Model):
 
     ACTIONS = [
@@ -1122,6 +1120,7 @@ class product_purchase_voucher_items(models.Model):
     
     
 
+
 class Finished_goods_Stock_TransferMaster(models.Model):
 
     ACTIONS = [
@@ -1138,6 +1137,8 @@ class Finished_goods_Stock_TransferMaster(models.Model):
     updated_date = models.DateTimeField(auto_now = True)
     transnfer_cancelled = models.BooleanField(default = False)
     actions = models.CharField(max_length=20, choices = ACTIONS)
+
+
 
 
 class Finished_goods_transfer_records(models.Model):
@@ -1161,7 +1162,7 @@ class finishedgoodsbinallocation(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     source_type = models.CharField(max_length=20, choices=[('purchase', 'purchase'), ('transfer', 'transfer')])
-    outward = models.BooleanField(default=False)
+    # outward = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
@@ -1254,14 +1255,6 @@ class Picklist_products_list(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-# class temp_product_bin_for_picklist(models.Model):
-#     product_sku = models.CharField(max_length=252)
-#     product_bin = models.CharField(max_length=252)
-#     product_qty = models.IntegerField()
-#     bin_qty = models.IntegerField()
-#     res_qty = models.IntegerField()
-#     utilize_all = models.BooleanField(default=False)
-
 
 class outward_product_master(models.Model):
     outward_no = models.CharField(max_length = 100)
@@ -1282,7 +1275,6 @@ class outward_products(models.Model):
 class sales_voucher_master_outward_scan(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
     sale_no = models.CharField(max_length = 100)
-    buyer_inv_no = models.CharField(max_length = 100)
     company_gst = models.CharField(max_length = 100)
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)

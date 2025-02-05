@@ -16,12 +16,12 @@
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex">
           <label for="id_outward_no" class="ms-2 me-2">Outward No:</label>
+          
+          {% if master_form.instance %}
+          <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{{master_form.instance.outward_no.outward_no}}" maxlength="255" required>
+          {% elif not master_form.instance %}
           <input type="text" class="purchase-vNo" name="" id="id_outward_no" value="{{outward_number}}" maxlength="255" readonly>
-          <!-- {% if form.instance %}
-          <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{{master_form.instance.outward_no}}" maxlength="255" required>
-          {% elif not form.instance %}
-          <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{{master_form.initial.outward_no}}" maxlength="255" required>
-          {% endif %} -->
+          {% endif %}
           
           
         </div>
@@ -30,10 +30,13 @@
 
         <div class="d-flex ms-3">
           <label for="id_sales_no" class="me-2">Sales No :</label>
-          
-          <input type="text" class="purchase-vNo me-2" name="sales_no" id="id_sales_no"
-            value="{{master_form.instance.id_sales_no}}" maxlength="255" required>
-          
+          {% if master_form.instance %}
+          <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
+            value="{{master_form.instance.sale_no}}" maxlength="255" required>
+            {% elif not master_form.instance %}
+            <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
+            value="{{master_form.sale_no.initial }}" maxlength="255" required>
+            {% endif %}
         </div>
         <div class="d-flex ms-3">
           <label for="id_company_gst" class="ms-1 me-1">Company GST No :</label>

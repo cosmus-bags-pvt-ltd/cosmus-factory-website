@@ -15,12 +15,14 @@
             {% elif not master_form.instance.id %}
             <input type="text" name="pickList_no" class="purchase-mark  ms-1" id="id_pickList_no">
             {% endif %}
+
             <label for="id_outward_no" class="fw-bold me-1">Outward No :</label>
             {% if master_form.instance.id %}
             <input type="text" name="outward_no" class="purchase-vNo ms-2" id="id_outward_no">
             {% elif not master_form.instance.id %} 
-            <input type="text" name="outward_no" class="purchase-vNo ms-2" id="id_outward_no" required>
+            <input type="text" name="outward_no" class="purchase-vNo ms-2" value="{{ master_form.outward_no.initial }}" id="id_outward_no" required>
             {% endif %}
+
             <label for="inwordSerialNo" class="fw-bold me-1">Scan :</label>
             <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
             <label for="id_manualSerialNo" class="fw-bold ms-1">M-Scan :</label>
