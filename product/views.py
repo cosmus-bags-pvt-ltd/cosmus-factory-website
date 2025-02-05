@@ -14471,5 +14471,35 @@ def ref_no_search_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
+
+
+
 def party_name_search_ajax(request):
-    pass
+    try:
+        party_name_typed = request.GET.get('productnamevalue')
+
+        if not party_name_typed:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+        
+        logger.info(f"Search initiated by {request.user} : {party_name_typed}")
+
+        try:
+
+            party_names = Ledger.objects.filter(name__icontains = party_name_typed).values('id','name')
+
+            if party_names.exists():
+
+                party_name_dict = {data['id']: [data.get('name', '')] for data in party_names}
+
+                logger.info(f"Search results for {party_name_typed}: {party_name_dict}")
+
+                return JsonResponse({'reference_no': party_name_dict}, status=200)
+            
+            return JsonResponse({'error': 'No items found.'}, status=404)
+
+        except Exception as e:
+            print(e)
+
+    except Exception as e:
+        logger.error(f"Error in party_name_search_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
