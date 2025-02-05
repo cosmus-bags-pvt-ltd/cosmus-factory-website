@@ -11,9 +11,9 @@
          <div class="">
             <label for="id_pickList_no" class="fw-bold">Add Picklist+ :</label>
             {% if master_form.instance.id %}
-            <input type="text" name="pickList_no" class="purchase-mark ms-1" id="id_pickList_no">
+            <input type="text" name="pickList_no" class="purchase-mark ms-1" id="id_pickList_no" readonly>
             {% elif not master_form.instance.id %}
-            <input type="text" name="pickList_no" class="purchase-mark  ms-1" id="id_pickList_no" required>
+            <input type="text" name="pickList_no" class="purchase-mark  ms-1" id="id_pickList_no">
             {% endif %}
             <label for="id_outward_no" class="fw-bold me-1">Outward No :</label>
             {% if master_form.instance.id %}
