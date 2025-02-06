@@ -478,41 +478,44 @@ def pproduct_list(request):
     product_search = request.GET.get('product_search','')
     
     if product_search != '':
-        queryset = Product.objects.filter(Q(Product_Name__icontains=product_search)|
-                                            Q(Model_Name__icontains=product_search)|
-                                            Q(Product_Refrence_ID__icontains=product_search)|
-                                            Q(productdetails__PProduct_SKU__icontains=product_search)).distinct()
+        queryset = Product.objects.filter(
+            Q(Product_Name__icontains=product_search)|
+            Q(Model_Name__icontains=product_search)|
+            Q(Product_Refrence_ID__icontains=product_search)|
+            Q(productdetails__PProduct_SKU__icontains=product_search)
+            ).distinct()
     
     
-    paginator = Paginator(queryset, 10)  
+    # paginator = Paginator(queryset, 10)  
     
     
-    page_number = request.GET.get('page')
+    # page_number = request.GET.get('page')
     
-    try:
-        products = paginator.page(page_number)
-    except PageNotAnInteger:
+    # try:
+    #     products = paginator.page(page_number)
+    # except PageNotAnInteger:
         
-        products = paginator.page(1)
-    except EmptyPage:
+    #     products = paginator.page(1)
+    # except EmptyPage:
         
-        products = paginator.page(paginator.num_pages)
+    #     products = paginator.page(paginator.num_pages)
 
     
-    index = products.number - 1
-    max_index = len(paginator.page_range)
-    start_index = index - 2 if index >= 2 else 0
-    end_index = index + 3 if index <= max_index - 3 else max_index
-    page_range = list(paginator.page_range)[start_index:end_index]
+    # index = products.number - 1
+    # max_index = len(paginator.page_range)
+    # start_index = index - 2 if index >= 2 else 0
+    # end_index = index + 3 if index <= max_index - 3 else max_index
+    # page_range = list(paginator.page_range)[start_index:end_index]
 
     context = {
-        'products': products,
-        'page_range': page_range,
+        'products': queryset,
+        # 'page_range': page_range,
         'product_search':product_search,
         'page_name':'Product List'
     }
 
     return render(request,'product/pproduct_list.html',context=context)
+
 
 
 @login_required(login_url='login')
@@ -524,6 +527,7 @@ def pproduct_delete(request, pk):
     except IntegrityError as e:
         messages.error(request,f'Cannot delete {product.Product_Name} because it is referenced by other objects.')
     return redirect('pproductlist')
+
 
 
 
@@ -552,6 +556,8 @@ def add_product_images(request, pk):
             return render(request, 'product/add_product_images.html', {'formset': formset, 'product': product})
 
     return render(request, 'product/add_product_images.html', {'formset': formset, 'product': product})
+
+
 
 
 @login_required(login_url='login')
@@ -605,16 +611,22 @@ def definemaincategoryproduct(request,pk=None):
 
     
     form = product_main_category_form(instance=instance)
+    
     if request.method == 'POST':
+
         form = product_main_category_form(request.POST, instance= instance)
+
         if form.is_valid():
             form_instance  = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
+
             if message == 'created':
                 messages.success(request,'Main Category created sucessfully')
+
             if message == 'updated':
                 messages.success(request,'Main Category updated sucessfully')
+
             return redirect('define-main-category-product')
         else:
             return render(request,'product/definemaincategoryproduct.html',{'form':form,'main_cats':queryset,
@@ -651,7 +663,7 @@ def definesubcategoryproduct(request, pk=None):
         page_name = 'Add Sub Category'
 
     main_categories = MainCategory.objects.all()
-    sub_category = SubCategory.objects.all()
+    # sub_category = SubCategory.objects.all().select_related('product_main_category')
 
     if request.method == 'POST':
         print(request.POST)
@@ -665,13 +677,13 @@ def definesubcategoryproduct(request, pk=None):
                 form_instance.c_user = request.user
 
                 form_instance.save()
-                
+
+                return redirect('define-sub-category-product')
         except Exception as e:
             print(e)
             messages.error(request,f'An Exception occoured - {e}')
 
-    return render(request,'product/definesubcategoryproduct.html',{'main_categories':main_categories, 
-                        'sub_category':sub_category,'form':form,'page_name':page_name,})
+    return render(request,'product/definesubcategoryproduct.html',{'main_categories':main_categories, 'form':form,'page_name':page_name,})
 
 
 
@@ -686,19 +698,22 @@ def assign_bin_to_product_ajax(request):
     main_categories = MainCategory.objects.all()
     zones = finished_goods_warehouse_zone.objects.all()
 
-    # Retrieve data from request
+
 
     main_category = request.POST.get('mainProduct')
     product_main_category_id = request.POST.get('product_main_category')
     zone_id = request.POST.get('zone')
     rack_id = request.POST.get('rack')
 
+    
+
     racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id).exclude(pk=rack_id)
+
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         
         zonename = request.GET.get('mainZone')
-        rack_id = request.GET.get('rack')
+        # rack_id = request.GET.get('rack')
 
         if zonename:
             racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zonename)
@@ -706,7 +721,7 @@ def assign_bin_to_product_ajax(request):
             return JsonResponse({'racks_data': racks_data})
 
     if rack_id:
-        bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name=rack_id)
+        bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name=rack_id).select_related('rack_finished_name','sub_catergory_id')
         formset = sub_category_and_bin_formset(queryset=bin_queryset,form_kwargs={'sub_cat_instance': main_category})
         # print(formset)
 
@@ -733,7 +748,9 @@ def assign_bin_to_product_ajax(request):
 
 
 def save_bin_to_subcategory(request,sub_id):
+
     print("in savebintosubcategory")
+    
     if sub_id:
         instance = MainCategory.objects.get(pk=sub_id)
         title = 'Update'
@@ -875,31 +892,25 @@ def update_bin_to_subcategory(request,sub_id,r_id,bin_id=None):
 
 
 def subcategory_bin_list(request):
-    # subcategories = SubCategory.objects.prefetch_related('sub_categories').all()
-    subcategories = finished_product_warehouse_bin.objects.filter(sub_catergory_id__isnull = False)
+    
+    subcategories = finished_product_warehouse_bin.objects.filter(sub_catergory_id__isnull=False).select_related( 
+            'rack_finished_name',
+            'rack_finished_name__zone_finished_name',
+            'rack_finished_name__zone_finished_name__warehouse_finished_name',
+            'sub_catergory_id'
+        ).values(
+            'id',
+            'bin_name',
+            'rack_finished_name__rack_name', 
+            'rack_finished_name__id',
+            'rack_finished_name__zone_finished_name__zone_name',
+            'rack_finished_name__zone_finished_name__warehouse_finished_name__warehouse_name_finished',
+            'sub_catergory_id__product_category_name',
+            'product_size_in_bin',
+            'sub_catergory_id__id'
+        )
 
     return render(request, 'product/subcategorybinlist.html',{'subcategories': subcategories})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -9823,7 +9834,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
             completed_formset = stock_transfer_instance_formset_only_for_update(queryset = completed_qs, instance=stock_transfer_instance)
 
-            entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no = purchase_number)
+            entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no = purchase_number).select_related('related_transfer_record','related_transfer_record__Finished_goods_Stock_TransferMasterinstance','product','bin_number')
 
             
             # print(entries)
@@ -9842,7 +9853,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
             completed_formset = product_purchase_voucher_items_instance_formset_only_for_update(queryset=completed_qs, instance=product_purchase_voucher_items_instance)
 
-            entries = finishedgoodsbinallocation.objects.filter(related_purchase_item__product_purchase_master__purchase_number = purchase_number)
+            entries = finishedgoodsbinallocation.objects.filter(related_purchase_item__product_purchase_master__purchase_number = purchase_number).select_related('related_purchase_item','related_purchase_item__product_purchase_master','product','bin_number')
             # print(entries)
 
     except Exception as e:
@@ -10020,9 +10031,13 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 
 def scan_product_qty_list(request):
-    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0)
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0)
+
+    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name')
+
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0).select_related( 'Finished_goods_Stock_TransferMasterinstance', 'product')
+
     merged_queryset = chain(product_purchase_voucher, stock_transfer_voucher)
+
     merged_list = list(merged_queryset)
 
     return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list})
@@ -10030,16 +10045,31 @@ def scan_product_qty_list(request):
 
 
 
-
-
 def scan_product_list(request,pk,v_type):
-    
+
     if v_type == "purchase":
 
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk)
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number').values(
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date'
+            )
 
     elif v_type == "transfer":
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk)
+
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number').values(
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date'
+            )
 
     return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries})
 
@@ -13711,7 +13741,6 @@ def finished_goods_sorting_list(request):
         total_diff_qty = Sum('product_purchase_voucher_items__diffrence_qty'),
         total_boxex_qty = Sum('product_purchase_voucher_items__product_name__Product__Product_QtyPerBox')
         )
-    
 
     finished_goods_transfer_m_instances = Finished_goods_Stock_TransferMaster.objects.filter(transnfer_cancelled=False).annotate(
     total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer'), 

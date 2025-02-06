@@ -28,11 +28,17 @@
             {% for entry in instance_entries %}
             <tr>
                 <td>{{forloop.counter}}</td>
-                <td><img id="productImgPreview" name="product_img" src="{{entry.product.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
-                <td class="refNo">{{entry.product.Product.Product_Refrence_ID}}</td>
-                <td>{{entry.product.Product.Model_Name}}</td>
-                <td>{{entry.product.PProduct_color.color_name}}</td>
-                <td>{{entry.product.PProduct_SKU}}</td>
+                <td>
+                    {% if entry.product__PProduct_image %}
+                        <img id="productImgPreview" name="product_img" src="{{entry.product__PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;">
+                    {% else %}
+                        <span>No Image Available</span>
+                    {% endif %}
+                </td>
+                <td class="refNo">{{entry.product__Product__Product_Refrence_ID}}</td>
+                <td>{{entry.product__Product__Model_Name}}</td>
+                <td>{{entry.product__PProduct_color__color_name}}</td>
+                <td>{{entry.product__PProduct_SKU}}</td>
                 <td>{{entry.unique_serial_no}}</td>
                 <td>{{entry.created_date}}</td>
                 <td class="text-center">1</td>
@@ -43,7 +49,5 @@
         </tbody>    
     </table>
 </div>
-
-
 
 {% endblock body %}
