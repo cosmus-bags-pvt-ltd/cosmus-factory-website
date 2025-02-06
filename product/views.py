@@ -14089,7 +14089,6 @@ def outward_picklist_no_ajax(request):
 
         picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
 
-        
         picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance')
 
         dict_to_send = {}
@@ -14119,7 +14118,7 @@ def outward_picklist_no_ajax(request):
         print('dict_to_send = ', dict_to_send)
 
         
-        return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklisQty": picklist_qty['total_qty']}, status=200)
+        return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklistNo":picklistNo, "picklisQty": picklist_qty['total_qty']}, status=200)
 
     except Exception as e:
         return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
