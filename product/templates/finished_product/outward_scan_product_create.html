@@ -8,6 +8,7 @@
 
     <div class="mb-3 mt-2">
         <div class="d-flex">
+            <input type="hidden" id="picklistHiddenData" value="">
          <div class="">
             <label for="id_pickList_no" class="fw-bold">Add Picklist+ :</label>
             {% if master_form.instance.id %}
@@ -73,6 +74,7 @@
             {% for form in formset %}
             {{form.id}}
             <tr>
+                <input type="hidden" name="picklistNo_{{forloop.counter0}}" id="id_picklistNo_{{forloop.counter0}}" value="">
                 <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
                 <td><input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly > </td>
                 <td>  
@@ -104,48 +106,184 @@
 <div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
     <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
 </div>
-<script>
-  
-</script>
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">PickList Products</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <table class="table table-bordered " id="picklistProductTable">
+                <thead class="name_absolute">
+                    <tr>
+                        <th>Model Name</th>
+                        <th>Sku</th>
+                        <th>Color</th>
+                        <th>Qty</th>
+                        <th>Balance</th>
+                       
+                    </tr>
+                </thead>
+                <tbody class="mainTableList">
+
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
 <script>
 
 $(document).ready(function () {
-    $('#id_pickList_no').on('keydown',function(event){
-        if(event.key === "Tab"){
-            var picklistNo = parseInt($(this).val());
-            console.log(picklistNo)
-            if(picklistNo){
-                $.ajax({
-                    url: '/outwardpicklistnoajax/',
-                    method: 'GET',
-                    data: { 
-                    "picklistNo": picklistNo,
-                
-                    },  // Send as JSON string
-                    success: function (response) {
-                        console.log(response);
-                        var tables = $('#piclistTable .mainTableList');
-                        if(response.picklisQty !== null){
-                        var row = $('<tr>');
-                        row.append(`<td><span class="pickId">${response.picklistNo}</span></td>`);
-                        row.append(`<td><span class="pickQty">${response.picklisQty}</span></td>`);
-                        row.append('<td><span class="pickBalance"></span></td>');
-                        row.append('<td><input type="radio" class="picklistRadio" name="picklistRadio"></td>');
-                        // Appending the new row to the tbody
-                        tables.append(row);
-                        }      
+    // Event listener for when the picklist number is entered
+    $('#id_pickList_no').on('blur', function () { // Trigger when focus is lost
+        var picklistNo = parseInt($(this).val());
+        console.log(picklistNo);
 
-                    },
-                    error: function (error) {
-                        console.log(error);
+        // Only proceed if picklistNo is valid
+        if (picklistNo) {
+            $.ajax({
+                url: '/outwardpicklistnoajax/',
+                method: 'GET',
+                data: { "picklistNo": picklistNo },
+                success: function (response) {
+                    var productPickList = response.picklistDict;
+                    console.log(productPickList);
+
+                    if (response.picklistDict && response.picklisQty !== null) {
+                        var picklistKey = Object.keys(response.picklistDict)[0]; // Get the first key dynamically
+                        var picklistData = response.picklistDict[picklistKey]; // Get the data for that key
+
+                        // Retrieve existing data from the hidden field or initialize empty array
+                        var hiddenData = $('#picklistHiddenData').val();
+                        var currentData = hiddenData ? JSON.parse(hiddenData) : {};
+
+                        if (!Array.isArray(currentData[picklistKey])) {
+                            currentData[picklistKey] = []; // Initialize as empty array if it doesn't exist
+                            }
+
+                            // Append all items to the array
+                            picklistData.forEach(item => {
+                                currentData[picklistKey].push({
+                                    sku: item.sku,
+                                    model_name: item.model_name,
+                                    color: item.color,
+                                    qty: item.qty
+                                });
+                            });
+                        // Update the hidden input field with the new data
+                        $('#picklistHiddenData').val(JSON.stringify(currentData));
+                        
+                        
+                        // Optionally, dynamically display the data (e.g., in a table or UI)
+                        var tables = $('#piclistTable .mainTableList');
+                        var row = $(`
+                            <tr>
+                                <td><span class="pickId">${response.picklistNo}</span></td>
+                                <td>
+                                    <button type="button" class="item-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                        <span class="pickQty">${response.picklisQty}</span>
+                                    </button>
+                                </td>
+                                <td><span class="pickBalance"></span></td>
+                                <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
+                            </tr>
+                        `);
+                        tables.append(row);
                     }
-                });
-            }
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
         }
-    })
-})
+    });
+
+    // Event listener for button click to retrieve data from localStorage
+    $(document).on('click', 'button.item-btn', function () {
+    var productTable = $('#picklistProductTable .mainTableList');
+    productTable.empty(); // Clear the table before appending new data
+
+    var productKey = $(this).closest('tr').find('.pickId').text().trim(); // Picklist Number
+    var storedData = $('#picklistHiddenData').val();
+
+    if (!storedData) {
+        console.log("No picklist data found in localStorage.");
+        return;
+    }
+
+    var parsedData = JSON.parse(storedData);
+    console.log('Parsed Data:', parsedData);
+
+    if (!parsedData.hasOwnProperty(productKey) || !Array.isArray(parsedData[productKey])) {
+        console.warn("No data found for this picklistNo:", productKey);
+        return;
+    }
+
+    var totalQty = {}; // Object to accumulate total quantities per SKU
+
+    var productSingSku = $('[name$="-product"]'); // Get all SKUs in the form
+
+    productSingSku.each(function () {
+        var sku = $(this).val().trim(); // SKU from form input
+        var row = $(this).closest('tr');
+        var pickNos = row.find('[name^="picklistNo_"]').val()?.trim(); // Picklist number from form
+        var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0; // Get quantity
+
+        console.log('Form SKU:', sku);
+        console.log('Form Picklist No:', pickNos);
+
+        if (!pickNos) {
+            console.warn('Picklist No is undefined in form.');
+            return;
+        }
+
+        if (productKey === pickNos) {
+            if (!totalQty[sku]) {
+                totalQty[sku] = 0;
+            }
+            totalQty[sku] += qty; // Accumulate total quantity for each SKU
+        }
+    });
+
+    console.log('Total Quantities:', totalQty);
+
+    // Now update only the `balanceqty` for the matching SKU
+    parsedData[productKey].forEach(item => {
+        if (totalQty[item.sku]) {
+            item.qty -= totalQty[item.sku]; // Subtract total outward quantity
+
+            var newRow = $(`
+                <tr class="picklistRow" data-sku="${item.sku}" data-picklistno="${productKey}">
+                    <td><span class="modelName">${item.model_name}</span></td>
+                    <td><span class="sku">${item.sku}</span></td>
+                    <td><span class="color">${item.color}</span></td>
+                    <td><span class="qty">${item.qty + totalQty[item.sku]}</span></td>
+                    <td><span class="balanceqty">${item.qty}</span></td> 
+                </tr>
+            `);
+
+            productTable.append(newRow);
+        }
+    });
+});
+
+});
+
+
+
 
 // image priview on click on image 
+document.body.appendChild(document.getElementById('staticBackdrop'));
 document.body.appendChild(document.getElementById('customModal'));
     function showLargeImage(src) {
      let modal = document.getElementById("customModal");
@@ -235,7 +373,6 @@ $(document).ready(function () {
 
     function populateRow(row, productResponse) {
       
-        // row.find('[name^="product_pickListNo_"]').val()
         row.find('[name$="-product_RefNo"]').val(productResponse[0]);
         row.find('[name$="-product_name_value"]').val(productResponse[2]);
         row.find('[name^="product_color_"]').val(productResponse[3]);
@@ -245,11 +382,11 @@ $(document).ready(function () {
         row.find('[name$="-bin_no"]').val(productResponse[5])
         row.find('[name$="-quantity"]').val(productResponse[6]);
         row.find('[id^="product_img_"]').attr("src", productResponse[7]);
+        row.find('[name^="picklistNo_"]').val(productResponse[9])
         picklistQtyCheck()
     }
 
-function picklistQtyCheck() {
-
+    function picklistQtyCheck() {
     var checkedRadio = $('input[name="picklistRadio"]:checked');
 
     if (checkedRadio.length === 0) {
@@ -257,23 +394,34 @@ function picklistQtyCheck() {
         $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
         return;
     }
-    var selectedRow = checkedRadio.closest('tr'); // Get the selected row
-    var total = 0; // Total outward quantity to be deducted
-    var serialNoQty = $('[name$="-quantity"]');
 
-    // Calculate total outward quantity
+    var selectedRow = checkedRadio.closest('tr'); // Get the selected row
+    var pickNo = parseInt(selectedRow.find('.pickId').text().trim()); // Selected Picklist No.
+    var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Selected Picklist Quantity
+   
+    var total = 0; // Total outward quantity
+
+    console.log('Selected Picklist No:', pickNo);
+    console.log('Selected Picklist Qty:', pickQty);
+   
+
+    var serialNoQty = $('[name$="-quantity"]'); // All outward qty inputs
+
     serialNoQty.each(function () {
         var outwardQty = parseInt($(this).val(), 10) || 0;
-        if (outwardQty > 0) {
-            total += outwardQty;
+        var row = $(this).closest('tr');
+        var tablePicklistNo = parseInt(row.find('[name^="picklistNo_"]').val()) || 0;
+        var tableSku = parseInt(row.find('[name$="-product"]').val())
+
+        console.log('tableSku:', tableSku);
+        
+
+        if (outwardQty > 0 && pickNo === tablePicklistNo) {
+            total += outwardQty; // Add outward quantity if conditions match
         }
     });
 
     console.log('Total Outward Quantity:', total);
-
-    var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Get pickQty for checked row
-
-    console.log('Selected Picklist Qty:', pickQty);
 
     if (total === 0) {
         console.warn("Total outward quantity is zero.");
@@ -287,13 +435,13 @@ function picklistQtyCheck() {
         return;
     }
 
-    // Set the balance for the selected row
+    // Update the balance for the selected row
     selectedRow.find('.pickBalance').text(pickQty - total);
 }
 
 
 async function sendSerialNumber(serialNo) {
-    console.log('serialNo',serialNo)
+ 
     var checkedRadio = $('input[name="picklistRadio"]:checked');
 
         if (checkedRadio.length === 0) {
@@ -438,6 +586,10 @@ function isTableEmpty() {
         rowElement.value = formIndex + 1;
         rowElement.style.border = "none";
  
+        const picklistElement = lastRow.querySelector('[name^="picklistNo_"]')
+        picklistElement.id = `id_picklistNo_${formIndex}`;
+        picklistElement.name = `picklistNo_${formIndex}`;
+        picklistElement.value = "";
 
         const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
         inputSelectElement.id = `id_outward_product-${formIndex}-product_RefNo`;
