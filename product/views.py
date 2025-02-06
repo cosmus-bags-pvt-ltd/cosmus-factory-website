@@ -14079,65 +14079,101 @@ def download_picklist_excel(request,pl_id):
 
 
 
-# def outward_picklist_no_ajax(request):
-#     picklistNo = request.GET.get('picklistNo')
-#     try:
-#         picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
-
-#         return JsonResponse({"status": "success", "picklistNo": picklistNo, "picklisQty":picklist_qty['total_qty']}, status=200)
-
-#     except Exception as e:
-#         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
-
-
-
 
 
 def outward_picklist_no_ajax(request):
+
     picklistNo = request.GET.get('picklistNo')
-    
-    if not picklistNo:
-        return JsonResponse({'error': 'Invalid picklist number'}, status=400)
 
     try:
-        # Get existing session data or initialize an empty dictionary
-        picklists_data = request.session.get('picklists_data', {})
 
-        # Fetch picklist items
-        picklist_items = Picklist_products_list.objects.filter(
-            picklist_master_instance__picklist_no=picklistNo
-        ).select_related('picklist_master_instance', 'product')
+        picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
 
-        for item in picklist_items:
-            picklist_no = item.picklist_master_instance.picklist_no
-            sku = item.product.PProduct_SKU
+        
+        picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance')
 
-            if picklist_no not in picklists_data:
-                picklists_data[picklist_no] = []
+        dict_to_send = {}
 
-            # Check if SKU already exists
-            existing_sku = next((entry for entry in picklists_data[picklist_no] if entry['sku'] == sku), None)
 
-            if existing_sku:
-                existing_sku['qty'] += item.product_quantity
+        for i in picklist_data:
+            sku = i.product.PProduct_SKU
+
+            
+            if picklistNo not in dict_to_send:
+                dict_to_send[picklistNo] = []
+
+            
+            check_sku = next((j for j in dict_to_send[picklistNo] if j['sku'] == sku), None)
+
+            if check_sku:
+                check_sku['qty'] += i.product_quantity  # Add quantity if SKU exists
             else:
-                picklists_data[picklist_no].append({
+                
+                dict_to_send[picklistNo].append({
                     'sku': sku,
-                    'qty': item.product_quantity
+                    'model_name': i.product.Product.Model_Name,
+                    'color': i.product.PProduct_color.color_name,
+                    'qty': i.product_quantity
                 })
 
-        # Update session without overwriting existing data
-        request.session['picklists_data'] = picklists_data
-        request.session.modified = True  # Ensure Django saves the session
+        print('dict_to_send = ', dict_to_send)
 
-        get_data_pick = request.session.get('picklists_data')
-
-        print('get_data_pick = ', get_data_pick)
-
-        return JsonResponse({'success': True, 'picklists_data': picklists_data})
+        
+        return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklisQty": picklist_qty['total_qty']}, status=200)
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
+
+
+
+
+
+
+# def outward_picklist_no_ajax(request):
+#     picklistNo = request.GET.get('picklistNo')
+    
+#     if not picklistNo:
+#         return JsonResponse({'error': 'Invalid picklist number'}, status=400)
+
+#     try:
+#         # Get existing session data or initialize an empty dictionary
+#         picklists_data = request.session.get('picklists_data', {})
+
+#         # Fetch picklist items
+#         picklist_items = Picklist_products_list.objects.filter(
+#             picklist_master_instance__picklist_no=picklistNo
+#         ).select_related('picklist_master_instance', 'product')
+
+#         for item in picklist_items:
+#             picklist_no = item.picklist_master_instance.picklist_no
+#             sku = item.product.PProduct_SKU
+
+#             if picklist_no not in picklists_data:
+#                 picklists_data[picklist_no] = []
+
+#             # Check if SKU already exists
+#             existing_sku = next((entry for entry in picklists_data[picklist_no] if entry['sku'] == sku), None)
+
+#             if existing_sku:
+#                 existing_sku['qty'] += item.product_quantity
+#             else:
+#                 picklists_data[picklist_no].append({
+#                     'sku': sku,
+#                     'qty': item.product_quantity
+#                 })
+
+#         # Update session without overwriting existing data
+#         request.session['picklists_data'] = picklists_data
+#         request.session.modified = True  # Ensure Django saves the session
+
+#         get_data_pick = request.session.get('picklists_data')
+
+#         print('get_data_pick = ', get_data_pick)
+
+#         return JsonResponse({'success': True, 'picklists_data': picklists_data})
+
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
 
 
 
@@ -14150,7 +14186,7 @@ def outward_scan_serial_no_process(request):
     print("in scan def")
     try:
         serialNo = request.GET.get('serialNo')
-        # picklistNo = request.GET.get('')
+        picklistNo = request.GET.get('pickNo')
 
         if not serialNo:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
@@ -14158,7 +14194,7 @@ def outward_scan_serial_no_process(request):
         filtered_product = finishedgoodsbinallocation.objects.get(unique_serial_no = serialNo)
 
         list_to_send = []
-        
+
         product_image_url = request.build_absolute_uri(filtered_product.product.PProduct_image.url)
 
         list_to_send.append(
@@ -14170,7 +14206,8 @@ def outward_scan_serial_no_process(request):
         filtered_product.product.PProduct_color.color_name,
         filtered_product.bin_number.bin_name,
         filtered_product.bin_number.id,
-        1])
+        1,
+        picklistNo])
 
         return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
         
@@ -14191,7 +14228,7 @@ def decimal_to_float(obj):
 from urllib.parse import urlencode
 def outward_scan_product_create(request,o_id=None):
 
-    request.session.flush()
+    # request.session.flush()
 
     if o_id:
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
