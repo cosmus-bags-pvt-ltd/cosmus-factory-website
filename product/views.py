@@ -14228,13 +14228,13 @@ def outward_scan_serial_no_process(request):
         list_to_send.append(
         [filtered_product.product.Product.Product_Refrence_ID,
         filtered_product.product.PProduct_SKU,
-        filtered_product.unique_serial_no,
         filtered_product.product.Product.Model_Name,
-        product_image_url,
         filtered_product.product.PProduct_color.color_name,
+        filtered_product.unique_serial_no,
         filtered_product.bin_number.bin_name,
-        filtered_product.bin_number.id,
         1,
+        product_image_url,
+        filtered_product.bin_number.id,
         picklistNo])
 
         return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
