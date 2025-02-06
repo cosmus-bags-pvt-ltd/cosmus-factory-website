@@ -38,9 +38,10 @@
                 <table class="table table-striped table-hover table-bordered table-warning" id="piclistTable">
                     <thead class="name_absolute">
                         <tr>
-                            <th>pick NO</th>
+                            <th>Pick No</th>
                             <th>Qty</th>
                             <th>Balance</th>
+                            <th>check</th>
                         </tr>
                     </thead>
                     <tbody class="mainTableList">
@@ -56,10 +57,6 @@
         <thead class="name_absolute">
             <tr>
                 <th>No</th>
-                <!-- <th>Pick No</th> -->
-                <!-- <th>pick Qty</th>
-                <th>Scan </th>
-                <th>Balance</th> -->
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
@@ -68,6 +65,7 @@
                 <th>Serial No</th>
                 <th>Bin</th>
                 <th>Quantity</th>
+                <th>Delete</th>
             </tr>
         </thead>
         <tbody class="mainTableList">
@@ -76,10 +74,6 @@
             {{form.id}}
             <tr>
                 <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
-                <!-- <td><input type="text" name="product_pickListNo_{{forloop.counter0}}" id="product_pickListNo_{{forloop.counter0}}" class="purchase-mark" value="" readonly > </td></td> -->
-                <!-- <td></td>
-                <td></td>
-                <td></td> -->
                 <td><input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly > </td>
                 <td>  
                     <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="" readonly > 
@@ -94,6 +88,7 @@
                 <td><input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" readonly>
                     <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly></td>
                 <td> <input type="number" name="{{form.prefix}}-quantity" value="" id="id_{{form.prefix}}-quantity" class="purchase-input" readonly></td>
+                <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span></td>  
             </tr>
 
             {% endfor %}
@@ -110,21 +105,10 @@
     <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
 </div>
 <script>
-    document.body.appendChild(document.getElementById('customModal'));
-    function showLargeImage(src) {
-     let modal = document.getElementById("customModal");
-     let modalImg = document.getElementById("modalImg");
-
-     modalImg.src = src;
-     modal.style.display = "flex";
-     modal.style.width = '100%'
-     // Clicking anywhere outside the image will close the modal
-     modal.onclick = function() {
-         modal.style.display = "none";
-     };
- }
+  
 </script>
 <script>
+
 $(document).ready(function () {
     $('#id_pickList_no').on('keydown',function(event){
         if(event.key === "Tab"){
@@ -146,6 +130,7 @@ $(document).ready(function () {
                         row.append(`<td><span class="pickId">${response.picklistNo}</span></td>`);
                         row.append(`<td><span class="pickQty">${response.picklisQty}</span></td>`);
                         row.append('<td><span class="pickBalance"></span></td>');
+                        row.append('<td><input type="radio" class="picklistRadio" name="picklistRadio"></td>');
                         // Appending the new row to the tbody
                         tables.append(row);
                         }      
@@ -160,11 +145,25 @@ $(document).ready(function () {
     })
 })
 
+// image priview on click on image 
+document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
+
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
 </script>
 <script>
+
 $(document).ready(function () {
     let debounceTimeout;
- 
 
     $('#inwordSerialNo').on('input', function () {
         clearTimeout(debounceTimeout);
@@ -250,51 +249,72 @@ $(document).ready(function () {
     }
 
 function picklistQtyCheck() {
-    var tableRows = $('#piclistTable .mainTableList tr'); // Select all table rows
+
+    var checkedRadio = $('input[name="picklistRadio"]:checked');
+
+    if (checkedRadio.length === 0) {
+        console.warn("No picklist selected.");
+        $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
+        return;
+    }
+    var selectedRow = checkedRadio.closest('tr'); // Get the selected row
     var total = 0; // Total outward quantity to be deducted
     var serialNoQty = $('[name$="-quantity"]');
 
     // Calculate total outward quantity
     serialNoQty.each(function () {
-        var outwardQty = parseInt($(this).val()) || 0;
-        total += outwardQty;
-    });
-    console.log('Total Outward Quantity:', total);
-
-    var remainingTotal = total; // Remaining quantity to distribute across rows
-
-    // Iterate over table rows and distribute total quantity
-    tableRows.each(function (index, row) {
-        var qty = parseInt($(row).find('.pickQty').text().trim()) || 0; // Get pickQty
-        console.log('Row:', index, 'Qty:', qty, 'Remaining Total:', remainingTotal);
-
-        if (remainingTotal > 0) {
-            // If remaining total is greater than the row qty, set balance to 0 and reduce remainingTotal
-            if (remainingTotal >= qty) {
-                $(row).find('.pickBalance').text(0);
-                remainingTotal -= qty;
-            } else {
-                // Otherwise, just subtract remaining total from current qty and set the balance
-                $(row).find('.pickBalance').text(qty - remainingTotal);
-                remainingTotal = 0;
-            }
-        } else {
-            // If no remaining total to distribute, balance remains the same as qty
-            $(row).find('.pickBalance').text(qty);
+        var outwardQty = parseInt($(this).val(), 10) || 0;
+        if (outwardQty > 0) {
+            total += outwardQty;
         }
     });
+
+    console.log('Total Outward Quantity:', total);
+
+    var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Get pickQty for checked row
+
+    console.log('Selected Picklist Qty:', pickQty);
+
+    if (total === 0) {
+        console.warn("Total outward quantity is zero.");
+        $('#responseMessage').html('<span class="text-warning">Total outward quantity must be greater than zero.</span>');
+        return;
+    }
+
+    if (total > pickQty) {
+        console.warn("Total outward quantity exceeds picklist quantity.");
+        $('#responseMessage').html('<span class="text-danger">Outward quantity cannot be greater than picklist quantity.</span>');
+        return;
+    }
+
+    // Set the balance for the selected row
+    selectedRow.find('.pickBalance').text(pickQty - total);
 }
 
 
 async function sendSerialNumber(serialNo) {
-  
+    console.log('serialNo',serialNo)
+    var checkedRadio = $('input[name="picklistRadio"]:checked');
+
+        if (checkedRadio.length === 0) {
+            console.warn("No picklist selected.");
+            $('#responseMessage').html('<span class="text-danger">Please select a picklist before scanning.</span>');
+            return; // Stop execution if no radio button is checked
+        }
+
+        // Get the Picklist ID from the selected row
+        var selectedRow = checkedRadio.closest('tr');
+        var pickNo = parseInt(selectedRow.find('.pickId').text().trim(), 10);
+
+        console.log('Selected Picklist No:', pickNo);
+
     try {
         const response = await $.ajax({
             url: '/outwardscanserialnoprocess/',
             type: 'GET',
             data: {
                 serialNo: serialNo,
-                
+                pickNo: pickNo,
             },
         });
        
@@ -346,8 +366,8 @@ async function sendSerialNumber(serialNo) {
            tableRow.find('tr').each(function () {
                 const row = $(this);
                 const balance = parseInt(row.find('.pickQty').text().trim()) || 0;
-                console.log('balance',balance)
-                console.log('total',total)
+                // console.log('balance',balance)
+                // console.log('total',total)
                 if (balance !== total ) {
                     totalBalanceZero = false;
                     return false; // Stop if there's any balance left
@@ -417,12 +437,7 @@ function isTableEmpty() {
         rowElement.name = `rowNo_${formIndex}`;
         rowElement.value = formIndex + 1;
         rowElement.style.border = "none";
-
-        // const pickListElement = lastRow.querySelector('input[name^="product_pickListNo_"]');
-        // pickListElement.id = `product_pickListNo_${formIndex}`;
-        // pickListElement.name = `product_pickListNo_${formIndex}`;
-        // pickListElement.value = '';
-       
+ 
 
         const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
         inputSelectElement.id = `id_outward_product-${formIndex}-product_RefNo`;
@@ -478,7 +493,52 @@ function isTableEmpty() {
 
  })
 
+ function getVisibleRows() {
+    // Select all rows that are not hidden (excluding those with display: none)
+    const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
+    return visibleRows;
+}
+   function deleteRowData(){
+    // Add click event listener to all delete buttons
+    document.querySelectorAll('.delete-btn').forEach(function (button) {
+    button.addEventListener('click', function () {
+        // Find all rows in the table
+        const rows =  getVisibleRows();
+        console.log(rows)
+        // Check if more than one row exists
+        if (rows.length > 1) {
+            // Find the row containing the clicked delete button
+            const row = this.closest('tr');
 
+            if (row) {
+                // Find the checkbox for deletion in the row
+                const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+
+                if (checkRow) {
+                    checkRow.checked = true; // Mark as checked
+                    checkRow.value = 'true'; // Set the value to 'true'
+
+                    // Optionally hide the row visually
+                    row.style.display = 'none';
+
+                    // Call functions to recalculate totals or perform other updates
+
+                    inputCheck();
+                    
+                } else {
+                    console.error("Checkbox for deletion not found in this row");
+                }
+            }
+        } else {
+            // If only one row remains, alert the user
+            alert('Cannot delete this row; at least one row must remain.');
+        }
+    });
+});
+
+ 
+  }
+  deleteRowData()
  function inputCheck(){
     document.getElementById('id_outward_no').focus();
    
