@@ -352,33 +352,33 @@ async function sendSerialNumber(serialNo) {
             if (isDuplicate) {
                 return;
             }
-            var serialNoQty = $('[name$="-quantity"]');
+        //     var serialNoQty = $('[name$="-quantity"]');
 
                   
-            serialNoQty.each(function () {
-                var outwardQty = parseInt($(this).val()) || 0;
-                console.log('outwardQty',outwardQty)
-                total += outwardQty;
+        //     serialNoQty.each(function () {
+        //         var outwardQty = parseInt($(this).val()) || 0;
+        //         console.log('outwardQty',outwardQty)
+        //         total += outwardQty;
                 
-            });
+        //     });
 
-           let totalBalanceZero = true;
-           tableRow.find('tr').each(function () {
-                const row = $(this);
-                const balance = parseInt(row.find('.pickQty').text().trim()) || 0;
-                // console.log('balance',balance)
-                // console.log('total',total)
-                if (balance !== total ) {
-                    totalBalanceZero = false;
-                    return false; // Stop if there's any balance left
-                }
-            });
+        //    let totalBalanceZero = true;
+        //    tableRow.find('tr').each(function () {
+        //         const row = $(this);
+        //         const balance = parseInt(row.find('.pickQty').text().trim()) || 0;
+        //         // console.log('balance',balance)
+        //         // console.log('total',total)
+        //         if (balance !== total ) {
+        //             totalBalanceZero = false;
+        //             return false; // Stop if there's any balance left
+        //         }
+        //     });
 
-            if (totalBalanceZero) {
-              alert('Picklist qty will be zero add new picklist.')
-                console.log('No more serial numbers can be added as balance is zero.');
-                return; // Stop further processing
-            }
+            // if (totalBalanceZero) {
+            //   alert('Picklist qty will be zero add new picklist.')
+            //     console.log('No more serial numbers can be added as balance is zero.');
+            //     return; // Stop further processing
+            // }
             
         if (rowToPopulate) {
             populateRow(rowToPopulate, productResponse);
