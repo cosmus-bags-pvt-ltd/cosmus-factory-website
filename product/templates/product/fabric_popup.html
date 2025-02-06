@@ -8,7 +8,7 @@
     {% csrf_token %}
     <h2 class="mb-3 mt-4">Create Fabric Group</h2>
     <div class="d-flex">
-      <label for="id_fab_grp_name" class="item-form px-2">Fabric Name:</label>
+      <label for="id_fab_grp_name" class="item-form fw-bold">Fabric Group :</label>
       <input type="text" class="item-select" value="{{ form.instance.fab_grp_name }}" name="fab_grp_name" maxlength="255" required id="id_fab_grp_name">
     </div>
 

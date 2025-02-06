@@ -5,7 +5,7 @@
     <form method="POST">
         {% csrf_token %}
         <div class="mb-3">
-            <label class="item-form">Material Godown Id :</label>
+            <label class="item-form fw-bold">Material Godown Id :</label>
             <select type="text" class="item-select" name="raw_material_godown_id" id="id_raw_material_godown_id">
                 {% if product_estimation_form.instance.id %}
                 <option value="{{product_estimation_form.instance.raw_material_godown_id.id}}">{{product_estimation_form.instance.raw_material_godown_id.godown_name_raw}}</option>

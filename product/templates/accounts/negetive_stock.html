@@ -7,7 +7,7 @@
         
         <div class="" style="padding-left: 400px;">
             {% if request.path == '' %}
-        <span class=" fw-bold  py-1 px-2 ">PO List</span> ->
+        <span class=" fw-bold  py-1 px-2 ">PO List </span> ->
         {% elif request.path != '' %}
         <a href="{% url 'purchase-order-for-puchase-voucher-rm-list' %}" class="bg-c-red border-0 py-1 px-2 rounded-4 text-decoration-none text-dark d-inline-block">PO List</a> ->
         {% endif %}

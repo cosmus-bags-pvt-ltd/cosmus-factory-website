@@ -9,9 +9,9 @@
         <label class="fw-bold ms-3">Total LWO :</label><span class="text-danger ms-2">{{total_labour_workout.total_process_pcs}}</span>
     </div>
     <div class="col-lg-6">
-        <label class="fw-bold">Images :</label>
+        <label class="fw-bold">IMG :</label>
         {%  for img in product_instance.productdetails.all %}
-        <img src="{{img.PProduct_image.url}}" style="width: 60px; height: 60px; padding:2px; margin: 2px;">
+        <img src="{{img.PProduct_image.url}}" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
         {% endfor %}
     </div>
 
@@ -64,7 +64,24 @@
     </div>
 
 </div>
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+    <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+<script>
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
 
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
 <script>
 
     function colorChanges() {

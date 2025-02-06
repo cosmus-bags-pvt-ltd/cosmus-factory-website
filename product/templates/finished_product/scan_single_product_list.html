@@ -34,7 +34,7 @@
                 {% else %}
                 <td>transfer/{{entry.related_transfer_record.Finished_goods_Stock_TransferMasterinstance.voucher_no}}</td> 
                 {% endif %}
-                <td><img id="productImgPreview" name="product_img" src="{{entry.product.PProduct_image.url}}" alt="Product" style="width: 30px; height: 30px;" onclick="showLargeImage(this.src)"></td>
+                <td><img id="productImgPreview" name="product_img" src="{{entry.product.PProduct_image.url}}" alt="Product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
                 <td class="refNo">{{entry.product.Product.Product_Refrence_ID}}</td>
                 <td>{{entry.product.Product.Model_Name}}</td>
                 <td>{{entry.product.PProduct_color.color_name}}</td>
@@ -54,7 +54,7 @@
 </div>
 <script>
     document.body.appendChild(document.getElementById('customModal'));
-    function showLargeImage(src) {
+function showLargeImage(src) {
      let modal = document.getElementById("customModal");
      let modalImg = document.getElementById("modalImg");
 
@@ -65,7 +65,7 @@
      modal.onclick = function() {
          modal.style.display = "none";
      };
- }
+}
 </script>
 
 {% endblock body %}

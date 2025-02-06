@@ -7,7 +7,7 @@
     <form action="" method="POST" id="colorForm">
       {% csrf_token %}
       <div class="d-flex">
-        <label for="id_color_name" class="item-form create_color_lable">Color Name:</label>
+        <label for="id_color_name" class="item-form fw-bold ">Color :</label>
         <input type="text" class="item-select rounded" value="{{ form.instance.color_name }}" name="color_name" maxlength="255" required id="id_color_name">
       </div>
       <button type="submit" id="submitButtoncreateColorUpdate" class="create-btn mt-4" name="save" value="save">Save</button>

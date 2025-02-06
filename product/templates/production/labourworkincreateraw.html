@@ -8,12 +8,12 @@
         <div class="col-lg-5">
             <span id="labourWorkInError" class="error-messagescuttingCreate"></span>
             <div class="d-flex mb-2">
-                <label for="id_voucher_number" class="item-form">GRN No:</label>
+                <label for="id_voucher_number" class="item-form">GRN No :</label>
                 <input type="number" class="item-select" name="voucher_number" value="{{master_form.voucher_number.initial}}" required id="id_voucher_number">
             </div>
             
             <div class="d-flex mb-2">
-                <label for="id_labour_name" class="item-form">Labour Name:</label>
+                <label for="id_labour_name" class="item-form">Labour Name :</label>
                 <div class="custom-dropdown-container">
                     <input  type="text" name="labour_name" id="id_labour_name" class="item-select search-input"  placeholder="Labour Name" autocomplete="off" value="{% if master_form.instance.instance.id %}{{master_form.instance.labour_voucher_number.labour_name.name}}{% endif %}"  > 
                     <div name="labour_search" class="item-select item-name s-suggestion-container item-select_input" id="labour_search" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Labour Name"  >
@@ -49,31 +49,31 @@
         <div class="row" >
             <div class="col-lg-5">
                 <div class="d-flex mb-2">
-                    <label for="id_challan_no" class="item-form">Challan no:</label>
+                    <label for="id_challan_no" class="item-form">Challan no :</label>
                     <input type="text" class="item-select" name="challan_no" value="{{master_form.challan_no.initial | default_if_none:''}}"required id="id_challan_no" readonly style="border: 1px solid blue; outline: none;">
                 </div>
                 <div class="d-flex mb-2">
-                    <label for="id_purchase_order_no" class="item-form">PO.No:</label>
+                    <label for="id_purchase_order_no" class="item-form">PO.No :</label>
                     <input type="text" class="item-select" name="purchase_order_no" value="{{master_form.purchase_order_no.initial | default_if_none:''}}" required id="id_purchase_order_no" readonly style="border: 1px solid blue; outline: none;">
                 </div>
                 <div class="d-flex mb-2">
-                    <label for="id_refrence_number" class="item-form">Refrence No:</label>
+                    <label for="id_refrence_number" class="item-form">Ref No :</label>
                     <input type="number" class="item-select" name="refrence_number" value="{{master_form.refrence_number.initial | default_if_none:''}}" required id="id_refrence_number" readonly style="border: 1px solid blue; outline: none;">
                 </div>
                 <div class="d-flex mb-2">
-                    <label for="id_model_name" class="item-form">Model Name:</label>
+                    <label for="id_model_name" class="item-form">Model Name :</label>
                     <input type="text" class="item-select" name="model_name" value="{{master_form.model_name.initial | default_if_none:''}}" required id="id_model_name" readonly style="border: 1px solid blue; outline: none;" >
                 </div>
                 <div class="d-flex mb-2">
-                    <label for="id_total_p_o_qty" class="item-form">Total PO. Qty:</label>
+                    <label for="id_total_p_o_qty" class="item-form">Total PO. Qty :</label>
                     <input type="number" class="item-select" name="total_p_o_qty" value="{{master_form.total_p_o_qty.initial | default_if_none:''}}" id="id_total_p_o_qty" readOnly style="border: 1px solid blue; outline: none;" readonly>
                 </div>
                 <div class="d-flex mb-2">
-                    <label for="id_labour_workout_qty" class="item-form">Total Issued Qty:</label>
+                    <label for="id_labour_workout_qty" class="item-form">Total Issued Qty :</label>
                     <input type="number" class="item-select" name="labour_workout_qty" value="{{master_form.labour_workout_qty.initial | default_if_none:''}}" required id="id_labour_workout_qty" readonly style="border: 1px solid blue; outline: none;">
                 </div>
                 <div class="d-flex mb-2">
-                    <label for="id_description" class="item-form">Naration:</label>
+                    <label for="id_description" class="item-form">Naration :</label>
                     <input type="text" class="item-select" name="description" maxlength="100" value="{{master_form.instance.description | default_if_none:''}}" id="id_description">
                 </div>
             </div>
@@ -108,11 +108,11 @@
                <div class="row">
                 <div class="col-lg-5">
                     <div class="d-flex mb-2">
-                        <label for="id_total_balance_pcs" class="item-form">Pending Pcs:</label>
+                        <label for="id_total_balance_pcs" class="item-form">Pending Pcs :</label>
                         <input type="number" class="product_color" name="total_balance_pcs" value="{{ master_form.total_balance_pcs.initial | default_if_none:'' }}"  required id="id_total_balance_pcs" readonly style="border: 1px solid blue; outline: none;">
                     </div>
                     <div class="d-flex mb-2">
-                        <label for="id_total_return_pcs" class="item-form">T Return Pcs:</label>
+                        <label for="id_total_return_pcs" class="item-form">T Return Pcs :</label>
                         <input type="number" class="product_color" name="total_return_pcs" value="" required id="id_total_return_pcs" readonly style="border: 1px solid blue; outline: none;">
                     </div>
                     <div class="d-flex mb-2">
@@ -120,11 +120,11 @@
                         <input type="number" class="product_color" name="labour_charges"value="{{master_form.labour_charges.initial | default_if_none:''}}" required id="id_labour_charges" >
                     </div>
                     <div class="d-flex mb-2">
-                        <label for="id_other_charges" class="item-form">Other Charges:</label>
+                        <label for="id_other_charges" class="item-form">Other Charges :</label>
                         <input type="number" class="product_color" value="0" name="other_charges"  required id="id_other_charges">
                     </div>
                     <div class="d-flex mb-2">
-                        <label for="id_amount" class="item-form">Amount:</label>
+                        <label for="id_amount" class="item-form">Amount :</label>
                         <input type="number" class="product_color" name="amount"  value="0" required id="id_amount" readonly style="border: 1px solid blue; outline: none;">
                     </div>
                     <input type="hidden" id="childId" name="labour_workout_child_instance_id" value="">

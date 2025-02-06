@@ -1612,7 +1612,7 @@ table>:not(caption)>*>*{
     outline: none;
 }
 .productinput{
-    width: 110px;
+    width: 80px;
     border: none ;
     border-radius: 3px;
     padding-left: 5px;
@@ -1739,10 +1739,10 @@ table>:not(caption)>*>*{
     margin-left: 20px;
 }
 .purchaseTableLabel-Gtotal{
-    margin-left: 78px;
+    margin-left: 74px;
 }
 .purchaseTableLabel-transport{
-    margin-left: 21px;
+    margin-left: 19px;
 }
 .purchaseTableLabel-roundOf{
     margin-left: 88px;
@@ -1780,7 +1780,10 @@ table>:not(caption)>*>*{
     position: relative;
     width: 300px;
 }
-
+.custom-dropdown-container-ref {
+    position: relative;
+    width: 255px;
+}
 /* .search-input {
     width: 100%;
     padding: 8px;
@@ -1875,7 +1878,7 @@ table>:not(caption)>*>*{
     z-index: 1000;
     top: 100%;
     left: 0;
-    width: 100%;
+    /* width: 100%; */
     background-color: #fff;
     border: 1px solid #ccc;
     border-top: none;

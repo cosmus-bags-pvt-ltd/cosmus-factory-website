@@ -59,6 +59,13 @@
                         {% endfor %}
                         {% endif%}
                     </select>
+                    <!-- <div class="custom-dropdown-container-ref">
+                        <input type="hidden" name="party_name" id="id_party_name" value="{% if master_form.instance.id %}{{master_form.instance.party_name.id}}{% endif %}" readonly> 
+                          <input type="text" name="ledger_party_name_input" id="id_ledger_party_name_input" class="stock-Input refernceName"  placeholder="Party Name" autocomplete="off" value="{% if master_form.instance.id %}{{master_form.instance.party_name.name}}{% endif %}"> 
+                          <div name="select_partyName" class="stock-Input  s-suggestion-container partyName_input" id="select_partyName" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
+    
+                           </div>
+                    </div> -->
                 
                   
                 </div>
@@ -174,19 +181,19 @@
             </div>
             <div class="col-lg-3">
                 <div class="mb-4">
-                    <div class=" mb-3">
+                    <div class="mb-2">
                         <label  class="purchase-lable fw-bold">Gross total</label>
                         <span class="purchase-span">
                             <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
                         </span>           
                     </div>
-                    <div class=" mb-3">
+                    <div class="mb-2">
                         <label class="purchase-lable fw-bold">Fright & Transport</label>
                         <span class="purchase-span">
                             <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
                         </span>
                     </div>
-                    <div class=" mb-3">
+                    <div class="mb-2">
                         <input type="hidden" id="temp_grand_total" value="">
                         <label class="purchase-lable fw-bold">Round Of </label>
                         <span class="purchase-span">
@@ -194,15 +201,14 @@
                         </span> 
                     </div>
                 
-                    <div class=" mb-3">
+                    <div class="mb-2">
                         <label class="purchase-lable fw-bold">Grand total</label>
-                        <span class="purchase-span"><input type="number" class="purchaseTableLabel-total purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
+                        <span class="purchase-span">
+                            <input type="number" class="purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" style="margin-left: 70px;" readonly required>
+                        </span> 
                     </div>
                 </div>
-            </div>
-            
-            
-            
+            </div> 
         </div>
 
         <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
@@ -210,25 +216,11 @@
 </div>
 
 
-<!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-transparent border-0">
-      <div class="modal-body justify-content-center text-center">
-        <img src="../../../static/images/Cosmus.png" alt="loading..." height="120px" width="120px" class="spinner_image">
-        </div>
-        </div>
-    </div> 
-</div> -->
+
 
 <!--This script use for party name add which use in ledger create popup-->
 <script>
-    // document.body.appendChild(document.getElementById('exampleModal'));
-    // $('#newForm').off('submit').on('submit', function(e) {
-    //       var $submitButton = $('#id_submitPurchaseOrderCutting');  // The submit button
-    //       var originalButtonValue = $('#exampleModal');  // Store original button text
-    //       originalButtonValue.show();
-    //   });
-
+ 
   var popUpNewWindow = null;
     function openPurchasePartyPopup(button){
     openNewPopup(button, '{% url "ledger-popup-create" %}');
@@ -284,13 +276,19 @@
         }
 
     }
-
     window.addEventListener('message', function(event) {
     const data = event.data;
         if (data.ledger_labour) {
             populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
         }
     });
+
+    // window.addEventListener('message', function(event) {
+    // const data = event.data;
+    //     if (data.ledger_labour) {
+    //         populateDropdownLedger(data.ledger_labour, '#id_ledger_party_name_input', 'name', 'Select Name');
+    //     }
+    // });
 
     function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
         const dropdown = $(dropdownSelector);
@@ -343,12 +341,12 @@
             })
           }   
         })
- 
-            //this ajax is for gst no 
+
+             //this ajax is for gst no 
         $(document).on('change', 'select[name^="party_name"]', function () {
 
             const selected_party_name = $(this).val()
-            const int_selected_party_name = parseInt(selected_party_name)
+            // const int_selected_party_name = parseInt(selected_party_name)
 
             $.ajax({
                 url: '/purchasevouchercreate/',
@@ -368,7 +366,7 @@
                 }
             })
         })
-
+ 
         var checkbox = $('#id_opening_po');
         checkbox.on('change',function(){
             if(checkbox.prop('checked')){
@@ -1525,5 +1523,216 @@ function inputCheck(){
 
     inputCheck();
 </script>
+<!-- <script>
+    $(document).ready(function(){
 
+var searchedItemNameDict;
+var enterPressed = false;
+var index = 0; // Declare index outside of the event listener
+var indexbool = true;
+
+function fetchSuggestions(inputSelector, url, suggestionsContainerId) {
+    $(document).on('input', inputSelector, function(e) {
+    
+        var productnamevalue = $(this).val().trim();
+        var suggestionsContainer = $(`#${suggestionsContainerId}`);
+        
+        if (productnamevalue === 'None' || productnamevalue === '') {
+            suggestionsContainer.hide().empty();
+            $(this).attr('data-key', '');
+            return;
+        }
+        if(!enterPressed){
+            suggestionsContainer.show();
+        }
+        enterPressed = false;
+        $.ajax({
+            
+            url: url,
+            method: 'GET',
+            data: { 'productnamevalue': productnamevalue },
+            success: function (response) {
+        
+             searchedProductNameDic = response.party_name; 
+                searchinputneworder(searchedProductNameDic ,suggestionsContainer,productnamevalue)
+        
+            },
+            error: function (xhr) {
+                console.log(xhr.status + ": " + xhr.responseText);
+                if (xhr.status === 404) {
+                    
+                    suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                }
+            }
+        })
+    })
+}
+
+function searchinputneworder(searchedProductNameDic,suggestionsContainer,productnamevalue){
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+    }
+        
+    const searchQuery = productnamevalue.toLowerCase();
+    const searchTerms = searchQuery.split(/\s+/);
+    const convertStringData = searchTerms.toString();
+
+    const escapedTerms = searchTerms.map(escapeRegExp);
+
+    const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+
+    const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+
+    const filteredOptions = Object.entries(searchedProductNameDic).filter(
+    ([key, value]) => {
+        const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
+        const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
+    
+        const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+
+        return normalizedKey.includes(normalizedQuery) || normalizedProductName.includes(normalizedQuery);
+    });
+
+    suggestionsContainer.empty();
+
+    filteredOptions.forEach(([key, value], index) => {
+        
+        const productRefIdName = key;
+        const productRefId = String(value[0] || ''); 
+        
+        const highlightedText = productRefId.replace(regex, '<span class="highlight">$1</span>');
+
+                
+        suggestionsContainer.append(`
+            <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
+                ${highlightedText}
+            </div>
+        `);
+        
+    });
+    if(filteredOptions == ''){
+        suggestionsContainer.show();
+        suggestionsContainer.empty();
+        suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+    }
+}
+
+function handleSelection(inputSelector, hiddenInputSelector, suggestionsContainerId) {
+   
+    $(document).on('click',`#${suggestionsContainerId} .itemName-div`, function(e) {
+        var refId = $(this).data('key');
+        var referenceNameCheck = $(this).text().trim();
+        
+        if(refId !== undefined){
+        
+            $(inputSelector).val(referenceNameCheck);
+            $(hiddenInputSelector).val(refId);
+            const selected_party_name = refId;
+            $.ajax({
+                url: '/purchasevouchercreate/',
+                method: 'GET',
+                data: {
+                    'selected_party_name': selected_party_name,
+                },
+                success: function (response) {
+                    const party_gst_no_response = response.party_gst_no
+                    const gst_no_input = document.getElementById('id_GST_number')
+                    gst_no_input.value = party_gst_no_response
+                    getGstNo()
+                    calculateTotalAmount()
+                },
+                error: function (xhr, errmsg, err) {
+                    console.log('Error sending value to the backend');
+                }
+            })
+        }
+        
+        
+        $(this).addClass('selected').siblings().removeClass('selected');
+
+
+        $(`#${suggestionsContainerId}`).hide();
+        
+    })
+}
+
+function handleKeyNavigation(inputSelector,hiddenInputSelector, suggestionsContainerId) {
+    $(document).on('keydown', inputSelector, function(event) {
+        const $inputField = $(this);
+        const $dropdownOptions = $inputField.next(`#${suggestionsContainerId}`);
+        const $options = $dropdownOptions.find('.itemName-div');
+        const optionsCount = $options.length - 1;
+
+        if ($options.length === 0) return;
+        const searchText = $inputField.val().trim();
+        
+        if (searchText === '') {
+            index = 0;
+            return;
+        }
+        const newHeight = $inputField.offset();
+        const windowHeight = $(window).height();
+        const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
+
+
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            index = event.key === 'ArrowDown' ? Math.min(index + 1, optionsCount) : Math.max(index - 1, 0);
+            $options.removeClass('bg-highlight').eq(index).addClass('bg-highlight');
+        }
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const selectedOption = $options.eq(index);
+            
+            if (selectedOption.length) {
+                const refKey = selectedOption.data('key'); 
+                const referenceName = selectedOption.text().trim();
+
+                if (refKey) {
+                    // Assign values correctly
+                    $inputField.val(referenceName).attr('data-key', refKey);
+                    $(hiddenInputSelector).val(refKey);
+
+                    const selected_party_name = refKey;
+                    $.ajax({
+                        url: '/purchasevouchercreate/',
+                        method: 'GET',
+                        data: {
+                            'selected_party_name': selected_party_name,
+                        },
+                        success: function (response) {
+                            const party_gst_no_response = response.party_gst_no
+                            const gst_no_input = document.getElementById('id_GST_number')
+                            gst_no_input.value = party_gst_no_response
+                            getGstNo()
+                            calculateTotalAmount()
+                        },
+                        error: function (xhr, errmsg, err) {
+                            console.log('Error sending value to the backend');
+                        }
+                    })
+                }
+
+                enterPressed = true;
+                $dropdownOptions.hide();
+            }
+        }
+        if (event.key === 'Tab' && enterPressed) {
+        enterPressed = false; // Reset Enter key handling
+        return true; // Allow default Tab behavior
+        }
+    })
+
+}
+
+
+
+    // Initialize functions for Party Name
+fetchSuggestions('input[name^="ledger_party_name_input"]', '/partynamesearchajax/', 'select_partyName');
+handleSelection('#id_ledger_party_name_input', '#id_party_name', 'select_partyName');
+handleKeyNavigation('input[name^="ledger_party_name_input"]','#id_party_name', 'select_partyName');
+
+
+}) -->
+</script>
 {% endblock body %}

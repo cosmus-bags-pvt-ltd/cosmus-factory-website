@@ -6,7 +6,7 @@
     <div class="col-lg-6">
       <div class="d-flex mb-3">
 
-        <label class="fw-bold">Refrence No :</label><span class="text-danger fw-bold ms-2 me-3">{{ ref_no }}</span>
+        <label class="fw-bold">Ref No :</label><span class="text-danger fw-bold ms-2 me-3">{{ ref_no }}</span>
 
         <label class="fw-bold">Model Name :</label><span class="text-danger fw-bold ms-2 me-3">{{ model_name }}</span>
 
@@ -40,11 +40,11 @@
                     
                     {% if item.voucher_type == "purchase(product)" %}
 
-                    <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color: rgb(255, 219, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'product-purchase-voucher-update' item.instance_id %}">{{ item.voucher_no }}</a></button></td>
+                    <td><a href="{% url 'product-purchase-voucher-update' item.instance_id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-dark" style="background-color: rgb(250, 202, 68); text-decoration: none;">{{ item.voucher_no }}</a></td>
 
                     {% else %}
 
-                    <td><button class="border-0 rounded  mb-1 px-2 py-1" style= "color: rgb(255, 255, 255); background-color:rgb(255, 219, 16);"><a style="color: rgb(32, 32, 32); text-decoration: none;" href="{% url 'warehouse-product-transfer-update' item.instance_id %}">{{ item.voucher_no }}</a></button></td>
+                    <td><a href="{% url 'warehouse-product-transfer-update' item.instance_id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-dark" style="background-color: rgb(250, 202, 68); text-decoration: none;">{{ item.voucher_no }}</a></td>
 
                     {% endif %}
 
