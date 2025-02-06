@@ -319,7 +319,7 @@ urlpatterns = [
     path('allfinishedgoodsstockreport/', views.allfinishedgoodsstockreport, name = 'all-finished-goods-stock-report'),
     path('finishedgoodsmodelwisereport/<int:ref_id>', views.finished_goods_model_wise_report, name = 'finished-goods-model-wise-report'),
     path('qcapprovedmodelwisereport/<int:ref_id>', views.qc_approved_model_wise_report, name = 'qc_approved-goods-model-wise-report'),
-    path('lwipendingreport', views.lwi_pending_report, name = 'lwi-pending-report'),
+
 
 
     path('labourworkinapprovalsplit/<int:ref_id>', views.labour_workin_approval_split, name= 'labour-workin-approval-split'),
@@ -333,15 +333,15 @@ urlpatterns = [
     path('deletesigleentries/<int:e_id>/<str:voucher_type>/', views.delete_sigle_entries, name="delete-sigle-entries"),
 
     path('addzoneinwarehouse/<int:id>/', views.add_zone_in_warehouse, name="add-zone-in-warehouse"),
-    path('editzoneinwarehouse/<int:zone_id>/', views.edit_zone_in_warehouse, name="edit-zone-in-warehouse"),
+    path('editzoneinwarehouse/<int:id>/<int:zone_id>/', views.add_zone_in_warehouse, name="edit-zone-in-warehouse"),
     path('deletezoneinwarehouse/<int:zone_id>/', views.delete_zone_in_warehouse, name="delete-zone-in-warehouse"),
 
     path('addrackinzone/<int:zone_id>/', views.add_rack_in_zone, name="add-rack-in-zone"),
-    path('editrackinzone/<int:rack_id>/', views.edit_rack_in_zone, name="edit-rack-in-zone"),
+    path('editrackinzone/<int:zone_id>/<int:rack_id>/', views.add_rack_in_zone, name="edit-rack-in-zone"),
     path('deleterackinzone/<int:rack_id>/', views.delete_rack_in_zone, name="delete-rack-in-zone"),
 
     path('addbininrack/<int:rack_id>/',views.add_bin_in_rack, name="add-bin-in-rack"),
-    path('editbininrack/<int:bin_id>/',views.edit_bin_in_rack, name="edit-bin-in-rack"),
+    path('editbininrack/<int:rack_id>/<int:bin_id>/',views.add_bin_in_rack, name="edit-bin-in-rack"),
     path('deletebininrack/<int:bin_id>/',views.delete_bin_in_rack, name="delete-bin-in-rack"),
     
     path('warehousenavigator/',views.warehouse_navigator, name="warehouse-navigator"),

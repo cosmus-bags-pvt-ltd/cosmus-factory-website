@@ -62,7 +62,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
                     CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, cutting_room_form,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -640,82 +640,45 @@ def definemaincategoryproductdelete(request,pk):
 
 @login_required(login_url='login')
 def definesubcategoryproduct(request, pk=None):
+
     if pk:
         instance = SubCategory.objects.get(pk=pk)
-        title = 'Update'
-        message = 'updated'
+        form = product_sub_category_form(request.POST or None, instance = instance)
         page_name = 'Edit Sub Category'
     else:
         instance = None
-        title = 'Create'
-        message = 'created'
-        page_name = 'Create Sub Category'
+        form = product_sub_category_form()
+        page_name = 'Add Sub Category'
 
     main_categories = MainCategory.objects.all()
     sub_category = SubCategory.objects.all()
-
-    sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
-    form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
-
-    bin_queryset = finished_product_warehouse_bin.objects.all()
-    
-    formset = sub_category_and_bin_formset(queryset = bin_queryset, form_kwargs={'sub_cat_instance': instance}) 
-   
-    form = product_sub_category_form(instance = instance)
 
     if request.method == 'POST':
         print(request.POST)
         try:
             form = product_sub_category_form(request.POST, instance = instance)
-            
-            formset = sub_category_and_bin_formset(request.POST, form_kwargs={'sub_cat_instance': instance})
-            
-            if form.is_valid() and formset.is_valid():
+
+            if form.is_valid():
                 
                 form_instance = form.save(commit=False)
+
                 form_instance.c_user = request.user
+
                 form_instance.save()
-                print(formset.cleaned_data)
-                for form in formset:
-                    
-                    if form.cleaned_data.get('check_if_added_all') != False:
-                        
-                        if form.cleaned_data.get('check_if_added') == True:
-                            formset_instance = form.save(commit=False)
-                            formset_instance.sub_catergory_id = form_instance
-                            formset_instance.save()
-
-                        elif form.cleaned_data.get('check_if_added') == False :
-                            formset_instance = form.save(commit=False)
-                            formset_instance.sub_catergory_id = None
-                            formset_instance.save()
-
-                if message == 'created':
-                    messages.success(request,'Sub-Category created sucessfully')
-
-                if message == 'updated':
-                    messages.success(request,'Sub-Category updated sucessfully')
-            
-                return redirect('define-sub-category-product')
-            
-            else:
-                print(formset.non_form_errors())
-                print(form.errors)
-                logger.error(formset.non_form_errors)
-
                 
-        
         except Exception as e:
-            print(formset.non_form_errors())
             print(e)
             messages.error(request,f'An Exception occoured - {e}')
 
     return render(request,'product/definesubcategoryproduct.html',{'main_categories':main_categories, 
-                        'sub_category':sub_category,'form':form,'title':title,'page_name':page_name,'formset':formset})
+                        'sub_category':sub_category,'form':form,'page_name':page_name,})
 
 
 
 
+
+
+@login_required(login_url='login')
 def assign_bin_to_product_ajax(request):
     formset = None
     rack_id = None
@@ -2153,12 +2116,6 @@ def godownlist(request):
     godowns_raw = Godown_raw_material.objects.all()
     godowns_finished = Godown_finished_goods.objects.all()
     warehouses = Finished_goods_warehouse.objects.all()
-    
-    
-    
-        
-    
-    
     
 
     return render(request,'misc/godown_list.html',{'godowns_raw':godowns_raw, 
@@ -10092,12 +10049,12 @@ def scan_product_list(request,pk,v_type):
 
 def warehouse_stock(request):
 
-    purchase_sales_quantity_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
+    purchase_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
     
     product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty')))
 
 
-    transfer_sales_quantity_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
+    transfer_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
 
 
     stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
@@ -10158,8 +10115,6 @@ def warehouse_stock(request):
                 }
             merged_list.append(dict_to_append)
 
-
-    print('merged_list -- ', merged_list)
 
     return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list})
 
@@ -10371,7 +10326,7 @@ def process_serial_no(request):
                     bin_to_dict = []
                     
                     for qs in flatterned_bins_related_to_product_list:
-                        products_in_bin = finishedgoodsbinallocation.objects.filter(bin_number=qs).count()
+                        products_in_bin = finishedgoodsbinallocation.objects.filter(bin_number=qs,outward_done=False).count()
 
                         dict_to_append = {
                             'bin_id' : qs.id,
@@ -10415,51 +10370,38 @@ def process_serial_no(request):
 
 
 
-def add_zone_in_warehouse(request,id):
+def add_zone_in_warehouse(request,id,zone_id=None):
+
+    zones = finished_goods_warehouse_zone.objects.filter(warehouse_finished_name = id).select_related("warehouse_finished_name")
+
     warehouse_id = get_object_or_404(Finished_goods_warehouse, id=id)
-    warehouse_name = warehouse_id.warehouse_name_finished
-    warehouses = Finished_goods_warehouse.objects.filter(warehouse_name_finished = warehouse_name).prefetch_related('warehouses__zones__racks').all()
 
-    # print(warehouses)
+    warehouses = Finished_goods_warehouse.objects.filter(id = warehouse_id.id).prefetch_related(
+    'warehouses',
+    'warehouses__zones',
+    'warehouses__zones__racks'
+    )
 
-    # for warehouse in warehouses:
-    #     for zone in warehouse.warehouses.all():
-    #         print(zone.zone_name)
-
+    if zone_id:
+        zone_instanace = finished_goods_warehouse_zone.objects.get(pk = zone_id)
+        form = finished_goods_warehouse_zone_form(request.POST or None, instance=zone_instanace)
+        page_name = 'Edit Zone'
+    else:
+        zone_instanace = None
+        form = finished_goods_warehouse_zone_form(request.POST or None, instance=zone_instanace)
+        page_name = 'Add Zone'
+        
     if request.method == "POST":
-        form = finished_goods_warehouse_zone_form(request.POST)
-
+        form = finished_goods_warehouse_zone_form(request.POST, instance=zone_instanace)
         if form.is_valid():
             zone = form.save(commit=False)
             zone.warehouse_finished_name = warehouse_id
             zone.save()
 
-    form = finished_goods_warehouse_zone_form()
-    zones = finished_goods_warehouse_zone.objects.filter(warehouse_finished_name = warehouse_id)
-
-    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'zones':zones,'warehouse_name':warehouse_name,'warehouses':warehouses})
-
-
-
-
-def edit_zone_in_warehouse(request,zone_id):
-    zone = finished_goods_warehouse_zone.objects.get(id = zone_id)
-
-    warehouse_id = finished_goods_warehouse_zone.objects.get(id = zone_id).warehouse_finished_name
-
-    warehouse_name = warehouse_id.warehouse_name_finished
-
-    zones = finished_goods_warehouse_zone.objects.filter(warehouse_finished_name = warehouse_id)
-
-    if request.method == "POST":
-        form = finished_goods_warehouse_zone_form(request.POST,instance=zone)
-        if form.is_valid():
-            form.save()
-            return redirect('add-zone-in-warehouse',id=warehouse_id.id)
-    form = finished_goods_warehouse_zone_form(instance=zone)
-
-    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'zones':zones,'warehouse_name':warehouse_name})
-
+            return redirect(reverse('add-zone-in-warehouse', args=[id]))
+    
+    
+    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'warehouse_id':warehouse_id,'warehouses':warehouses,'zones':zones,'page_name':page_name})
 
 
 
@@ -10474,13 +10416,25 @@ def delete_zone_in_warehouse(request,zone_id):
 
 
 
-def add_rack_in_zone(request,zone_id):
-    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id)
+def add_rack_in_zone(request,zone_id,rack_id=None):
+
+    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id).select_related("zone_finished_name")
+
     zone = finished_goods_warehouse_zone.objects.get(id = zone_id)
-    zone_name = zone.zone_name
+
+    if rack_id:
+        rack_instance = finished_goods_warehouse_racks.objects.get(pk=rack_id)
+        page_name = 'Edit Rack'
+        form = finished_goods_warehouse_racks_form(request.POST or None, instance=rack_instance)
+    else:
+        rack_instance = None
+        page_name = 'Add Rack'
+        form = finished_goods_warehouse_racks_form()
+
 
     if request.method == "POST":
-        form = finished_goods_warehouse_racks_form(request.POST)
+
+        form = finished_goods_warehouse_racks_form(request.POST or None, instance=rack_instance)
 
         if form.is_valid():
             rack = form.save(commit=False)
@@ -10488,33 +10442,8 @@ def add_rack_in_zone(request,zone_id):
             rack.save()
 
             return redirect('add-rack-in-zone', zone_id=zone_id)
-    form = finished_goods_warehouse_racks_form()
-    return render(request,"finished_product/add_rack_in_zone.html",{'form':form,'racks':racks,'zone_name':zone_name})
-
-
-
-
-
-
-
-def edit_rack_in_zone(request,rack_id):
-    rack_instance = finished_goods_warehouse_racks.objects.get(id=rack_id)
-    rack_zone = finished_goods_warehouse_racks.objects.get(id = rack_id).zone_finished_name
-    zone_name = rack_zone.zone_name
-    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=rack_zone)
-    if request.method == 'POST':
-        form = finished_goods_warehouse_racks_form(request.POST,instance=rack_instance)
-        if form.is_valid():
-            form.save()
-            
-            return redirect('add-rack-in-zone', zone_id=rack_zone.id)
-
-    form = finished_goods_warehouse_racks_form(instance=rack_instance)
-    return render(request,"finished_product/add_rack_in_zone.html",{'form':form,'racks':racks,'zone_name':zone_name})
-
-
-
-
+    
+    return render(request,"finished_product/add_rack_in_zone.html",{'form':form,'racks':racks,'zone':zone,'page_name':page_name})
 
 
 
@@ -10528,41 +10457,32 @@ def delete_rack_in_zone(request,rack_id):
 
 
 
-def add_bin_in_rack(request,rack_id):
-    bins = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
-    rack = finished_goods_warehouse_racks.objects.get(id=rack_id)
-    rack_name = rack.rack_name
+def add_bin_in_rack(request,rack_id,bin_id=None):
+
+    bins = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id).select_related("rack_finished_name")
+
+    rack = get_object_or_404(finished_goods_warehouse_racks,id=rack_id)
+
+    if bin_id:
+        bin_instance = finished_product_warehouse_bin.objects.get(id=bin_id)
+        page_name = "Edit Bin"
+        form = finished_product_warehouse_bin_form(request.POST or None, instance = bin_instance)
+    else:
+        bin_instance = None
+        page_name = "Add Bin"
+        form = finished_product_warehouse_bin_form()
 
     if request.method == "POST":
-        form = finished_product_warehouse_bin_form(request.POST)
+        form = finished_product_warehouse_bin_form(request.POST or None, instance = bin_instance)
 
         if form.is_valid():
             bin = form.save(commit=False)
             bin.rack_finished_name = rack
             bin.save()
             return redirect('add-bin-in-rack', rack_id=rack_id)
-    form = finished_product_warehouse_bin_form()
-    return render(request,"finished_product/add_bin_in_rack.html",{'form':form,'bins':bins,'rack_name':rack_name})
+    
+    return render(request,"finished_product/add_bin_in_rack.html",{'form':form,'bins':bins,'rack':rack,'page_name':page_name})
 
-
-
-
-
-
-
-def edit_bin_in_rack(request,bin_id):
-    bin_instance = finished_product_warehouse_bin.objects.get(id=bin_id)
-    bin_rack = finished_product_warehouse_bin.objects.get(id=bin_id).rack_finished_name
-    rack_name = bin_rack.rack_name
-    bins = finished_product_warehouse_bin.objects.filter(rack_finished_name = bin_rack)
-
-    if request.method == "POST":
-        form = finished_product_warehouse_bin_form(request.POST,instance=bin_instance)
-        if form.is_valid():
-            form.save()
-            return redirect("add-bin-in-rack" ,rack_id = bin_rack.id)
-    form = finished_product_warehouse_bin_form(instance=bin_instance)
-    return render(request,"finished_product/add_bin_in_rack.html",{'form':form,'bins':bins,'rack_name':rack_name})
 
 
 
@@ -10574,11 +10494,13 @@ def delete_bin_in_rack(request,bin_id):
 
 
 
+
+
+
+
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
     selected_item_id = request.GET.get('selectedItemId')
-
-    
 
     if p_id:
 
@@ -12950,6 +12872,11 @@ def UniqueValidCheckAjax(request):
         searched_value = request.GET.get('sales_no').strip()
         model_name = sales_voucher_master_finish_Goods
         col_name = 'sales_no'
+
+    elif 'sales_no' in searched_from:
+        searched_value = request.GET.get('sales_no').strip()
+        model_name = sales_voucher_master_outward_scan
+        col_name = 'sales_no'
     
     else:
         model_name = None
@@ -13464,18 +13391,6 @@ def allfinishedgoodsstockreport(request):
 
 
 
-
-
-def lwi_pending_report(request,ref_id):
-
-    return render(request,'reports/lwipendingreport.html')
-
-
-
-
-
-
-
 @login_required(login_url='login')
 def qc_approved_model_wise_report(request,ref_id):
     
@@ -13828,12 +13743,11 @@ def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
         
-
         if not product_name_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
         
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
-        print(e)
+        
 
         products_purchase = product_purchase_voucher_items.objects.filter(Q(product_name__PProduct_SKU__icontains=product_name_typed) |Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |Q(product_name__Product__Model_Name__icontains=product_name_typed),qc_recieved_qty__gt=0).values('product_name__PProduct_SKU',
         'product_name__PProduct_color__color_name',
@@ -13907,7 +13821,7 @@ def picklist_product_ajax(request):
                     item['product_ref_id'],
                     item['product_image']
                 ]
-
+        print(final_data)
 
         return JsonResponse({'products': final_data}, status=200)
 
@@ -14168,14 +14082,98 @@ def download_picklist_excel(request,pl_id):
 
 
 def outward_picklist_no_ajax(request):
+
     picklistNo = request.GET.get('picklistNo')
+
     try:
+
         picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
 
-        return JsonResponse({"status": "success", "picklistNo": picklistNo, "picklisQty":picklist_qty['total_qty']}, status=200)
+        
+        picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance')
+
+        dict_to_send = {}
+
+
+        for i in picklist_data:
+            sku = i.product.PProduct_SKU
+
+            
+            if picklistNo not in dict_to_send:
+                dict_to_send[picklistNo] = []
+
+            
+            check_sku = next((j for j in dict_to_send[picklistNo] if j['sku'] == sku), None)
+
+            if check_sku:
+                check_sku['qty'] += i.product_quantity  # Add quantity if SKU exists
+            else:
+                
+                dict_to_send[picklistNo].append({
+                    'sku': sku,
+                    'model_name': i.product.Product.Model_Name,
+                    'color': i.product.PProduct_color.color_name,
+                    'qty': i.product_quantity
+                })
+
+        print('dict_to_send = ', dict_to_send)
+
+        
+        return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklisQty": picklist_qty['total_qty']}, status=200)
 
     except Exception as e:
-        return JsonResponse({"error": "An error occurred while processing the request."}, status=500) 
+        return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
+
+
+
+
+
+
+# def outward_picklist_no_ajax(request):
+#     picklistNo = request.GET.get('picklistNo')
+    
+#     if not picklistNo:
+#         return JsonResponse({'error': 'Invalid picklist number'}, status=400)
+
+#     try:
+#         # Get existing session data or initialize an empty dictionary
+#         picklists_data = request.session.get('picklists_data', {})
+
+#         # Fetch picklist items
+#         picklist_items = Picklist_products_list.objects.filter(
+#             picklist_master_instance__picklist_no=picklistNo
+#         ).select_related('picklist_master_instance', 'product')
+
+#         for item in picklist_items:
+#             picklist_no = item.picklist_master_instance.picklist_no
+#             sku = item.product.PProduct_SKU
+
+#             if picklist_no not in picklists_data:
+#                 picklists_data[picklist_no] = []
+
+#             # Check if SKU already exists
+#             existing_sku = next((entry for entry in picklists_data[picklist_no] if entry['sku'] == sku), None)
+
+#             if existing_sku:
+#                 existing_sku['qty'] += item.product_quantity
+#             else:
+#                 picklists_data[picklist_no].append({
+#                     'sku': sku,
+#                     'qty': item.product_quantity
+#                 })
+
+#         # Update session without overwriting existing data
+#         request.session['picklists_data'] = picklists_data
+#         request.session.modified = True  # Ensure Django saves the session
+
+#         get_data_pick = request.session.get('picklists_data')
+
+#         print('get_data_pick = ', get_data_pick)
+
+#         return JsonResponse({'success': True, 'picklists_data': picklists_data})
+
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
 
 
 
@@ -14184,10 +14182,37 @@ def outward_picklist_no_ajax(request):
 
 
 
+def outward_scan_serial_no_process(request):
+    print("in scan def")
+    try:
+        serialNo = request.GET.get('serialNo')
+        picklistNo = request.GET.get('pickNo')
 
+        if not serialNo:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
+        filtered_product = finishedgoodsbinallocation.objects.get(unique_serial_no = serialNo)
 
+        list_to_send = []
 
+        product_image_url = request.build_absolute_uri(filtered_product.product.PProduct_image.url)
+
+        list_to_send.append(
+        [filtered_product.product.Product.Product_Refrence_ID,
+        filtered_product.product.PProduct_SKU,
+        filtered_product.unique_serial_no,
+        filtered_product.product.Product.Model_Name,
+        product_image_url,
+        filtered_product.product.PProduct_color.color_name,
+        filtered_product.bin_number.bin_name,
+        filtered_product.bin_number.id,
+        1,
+        picklistNo])
+
+        return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
+        
+    except Exception as e:
+        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
 
 
 
@@ -14200,10 +14225,10 @@ def decimal_to_float(obj):
 
 
 
-
-
 from urllib.parse import urlencode
 def outward_scan_product_create(request,o_id=None):
+
+    # request.session.flush()
 
     if o_id:
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
@@ -14246,7 +14271,15 @@ def outward_scan_product_create(request,o_id=None):
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
+
                             form_instance.outward_no = master_form_instance
+
+                            serial_no = form_instance.unique_serial_no
+
+                            inward_instance = finishedgoodsbinallocation.objects.get(unique_serial_no = serial_no)
+                            inward_instance.outward_done = True
+                            inward_instance.save()
+
                             form_instance.save()
 
 
@@ -14404,40 +14437,7 @@ def salesvoucherlistwarehouse(request):
 
 
 
-def outward_scan_serial_no_process(request):
-    print("in scan def")
-    try:
-        serialNo = request.GET.get('serialNo')
-        
-        if not serialNo:
-                return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
-            
-        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_Refrence_ID','bin_number__bin_name','product__PProduct_image','bin_number'))
-
-
-        if filtered_product:
-            list_to_send = []
-
-            for query in filtered_product:
-                ref_no = query.get('product__Product__Product_Refrence_ID')
-                p_sku = query.get('product__PProduct_SKU')
-                serial_no = query.get('unique_serial_no')
-                product_model_name = query.get('product__Product__Model_Name')
-                img = query.get('product__PProduct_image')
-                color = query.get('product__PProduct_color__color_name')
-                bin = query.get('bin_number__bin_name')
-                bin_id = query.get('bin_number')
-                qty = 1
-
-                list_to_send.append([ref_no,p_sku,product_model_name,color,serial_no,bin,qty,img,bin_id])
-                
-            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
-            
-        return JsonResponse({'error': 'No items found.'}, status=404)
-        
-    except Exception as e:
-        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
 
 
 

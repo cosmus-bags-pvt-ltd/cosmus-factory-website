@@ -320,7 +320,7 @@ async function sendSerialNumber(serialNo) {
        
         if (response.products && response.products.length > 0) {
             const productResponse = response.products[0];
-           
+           console.log('productResponse = ',productResponse)
             const tableBody = $('#outwardSales .mainTableList');
             const tableRow = $('#piclistTable .mainTableList')
             let rowToPopulate = null;
