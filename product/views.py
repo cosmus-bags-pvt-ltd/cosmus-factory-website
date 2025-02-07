@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 import logging
 import urllib.parse
 from django.contrib import messages
+# from networkx import difference
 from openpyxl.utils import get_column_letter
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Protection
@@ -48,7 +49,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     gst, item_color_shade, item_godown_quantity_through_table,
                     item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item,
                     labour_workin_approval_report, labour_workout_childs, labour_workout_cutting_items,
-                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master,
+                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products,
                     packaging, product_2_item_through_table, product_godown_quantity_through_table, 
                     product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
@@ -57,7 +58,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
                     raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
-                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
+                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods, temp_product_bin_for_picklist)
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
@@ -13767,23 +13768,29 @@ def warehouse_navigator(request):
 
 
 
-
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
         
         if not product_name_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
-        
-        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
-        
 
-        products_purchase = product_purchase_voucher_items.objects.filter(Q(product_name__PProduct_SKU__icontains=product_name_typed) |Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |Q(product_name__Product__Model_Name__icontains=product_name_typed),qc_recieved_qty__gt=0).values('product_name__PProduct_SKU',
-        'product_name__PProduct_color__color_name',
-        'product_name__Product__Model_Name',
-        'qc_recieved_qty',
-        'product_name__Product__Product_Refrence_ID',
-        'product_name__PProduct_image',)
+        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
+
+        
+        products_purchase = product_purchase_voucher_items.objects.filter(
+            Q(product_name__PProduct_SKU__icontains=product_name_typed) |
+            Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |
+            Q(product_name__Product__Model_Name__icontains=product_name_typed),
+            qc_recieved_qty__gt=0
+        ).values(
+            'product_name__PProduct_SKU',
+            'product_name__PProduct_color__color_name',
+            'product_name__Product__Model_Name',
+            'qc_recieved_qty',
+            'product_name__Product__Product_Refrence_ID',
+            'product_name__PProduct_image',
+        )
 
         standardized_purchase = [
             {
@@ -13791,12 +13798,13 @@ def picklist_product_ajax(request):
                 'product_color': item['product_name__PProduct_color__color_name'],
                 'product_model': item['product_name__Product__Model_Name'],
                 'qc_received_qty': item['qc_recieved_qty'],
-                'product_ref_id':item['product_name__Product__Product_Refrence_ID'],
-                'product_image':item['product_name__PProduct_image'],
+                'product_ref_id': item['product_name__Product__Product_Refrence_ID'],
+                'product_image': item['product_name__PProduct_image'],
             }
             for item in products_purchase
         ]
 
+        
         products_transfer = Finished_goods_transfer_records.objects.filter(
             Q(product__PProduct_SKU__icontains=product_name_typed) |
             Q(product__PProduct_color__color_name__icontains=product_name_typed) |
@@ -13817,8 +13825,8 @@ def picklist_product_ajax(request):
                 'product_color': item['product__PProduct_color__color_name'],
                 'product_model': item['product__Product__Model_Name'],
                 'qc_received_qty': item['qc_recieved_qty'],
-                'product_ref_id':item['product__Product__Product_Refrence_ID'],
-                'product_image':item['product__PProduct_image'],
+                'product_ref_id': item['product__Product__Product_Refrence_ID'],
+                'product_image': item['product__PProduct_image'],
             }
             for item in products_transfer
         ]
@@ -13832,14 +13840,35 @@ def picklist_product_ajax(request):
             product_sku = item['product_sku']
 
             reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+            
+            product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product__PProduct_SKU=product_sku).order_by('-updated_date')
 
-            product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product = product_sku).order_by('-updated_date')
+            formatted_bins_list = [{i.bin.id: [i.bin.bin_name, i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0]
 
-            formatted_bins_list = [{i.bin.id : [i.bin.bin_name , i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0]
+            bin_id_list = [i.bin.id for i in product_bin_queryset]
+
+            check_if_present = temp_product_bin_for_picklist.objects.filter(product_sku = product_sku,product_bin__in = bin_id_list).exists()
+
+            if check_if_present:
+
+                print('check_if_present')
+
+                formatted_bins_list_duplicate  = [{i.bin.id: [i.bin.bin_name, i.product_quantity, i.product.PProduct_SKU]} for i in product_bin_queryset if i.product_quantity > 0]
+
+                for i in formatted_bins_list_duplicate:
+
+                    for key,val in i.items():
+                        
+                        temp_bin_value = temp_product_bin_for_picklist.objects.filter(product_bin=key,product_sku = val[2]).first()
+
+                        if temp_bin_value:
+                            val[1] = int(temp_bin_value.bin_qty)
+
+
+                formatted_bins_list = [{bin_id: [bin_data[0], bin_data[1]]} for i in formatted_bins_list_duplicate for bin_id, bin_data in i.items() if bin_data[1] > 0]
 
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']
-                
             else:
                 final_data[product_sku] = [
                     item['product_model'],
@@ -13850,7 +13879,8 @@ def picklist_product_ajax(request):
                     item['product_ref_id'],
                     item['product_image']
                 ]
-        print(final_data)
+
+        logger.info(f"Final Product Data: {final_data}")
 
         return JsonResponse({'products': final_data}, status=200)
 
@@ -13863,42 +13893,51 @@ def picklist_product_ajax(request):
 
 
 def bin_quantity_ajax(request):
-    """
-    Handles adding/updating bin quantity in the Product_bin_quantity_through_table table.
-    Ensures real-time stock updates and prevents negative bin quantities.
-    """
-    logger.info('bin quantity function called')
+    
+    logger.info('Temp bin quantity function called')
 
     try:
+        # Fetch and validate request parameters
         sku = request.GET.get('sku')
         binName = request.GET.get('binName')
+        binQty = request.GET.get('binQty')
         productQty = request.GET.get('productQty')
-        
+
         if not sku or not binName:
             return JsonResponse({"error": "Missing required parameters"}, status=400)
 
         try:
+            binQty = int(binQty) if binQty and binQty.isdigit() else 0
             productQty = int(productQty) if productQty and productQty.isdigit() else 0
         except ValueError:
             return JsonResponse({"error": "Invalid quantity values"}, status=400)
 
-        bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
-        bin_objects.product_quantity = bin_objects.product_quantity - productQty
-        bin_objects.save()
+        temp_bin, created = temp_product_bin_for_picklist.objects.get_or_create(
+            product_sku=sku, 
+            product_bin=binName,
+            defaults={"bin_qty": binQty, "product_qty": productQty}
+        )
+        
 
-        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_quantity}")
+        temp_bin.bin_qty = max(0, temp_bin.bin_qty - productQty)
+        temp_bin.product_qty = productQty
+        temp_bin.save()
+        
+        logger.info(f"Updated temp bin data: SKU={sku}, Bin={binName}, Bin Qty={temp_bin.bin_qty}")
+
+        return JsonResponse({"status": "success", "bin_qty": temp_bin.bin_qty}, status=200)
 
     except Exception as e:
-        logger.error(f"Error in bin_quantity_ajax: {str(e)}")
+        logger.error(f"Error in temp_bin_quantity_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
 
 
 
-
-
 def create_update_picklist(request,p_id=None):
+
+    temp_product_bin_for_picklist.objects.all().delete()
 
     if p_id:
         voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
@@ -13930,21 +13969,33 @@ def create_update_picklist(request,p_id=None):
                     master_form_instance.c_user = request.user
                     master_form_instance.save()
 
-
                     for form in formset.deleted_forms:
                         if form.instance.pk:
                             form.instance.delete()
 
                     for form in formset:
+
                         if not form.cleaned_data.get('DELETE'):
+
                             form_instance = form.save(commit=False)
                             form_instance.picklist_master_instance = master_form_instance
+
+                            sku = form_instance.product.PProduct_SKU
+                            bin_id = form_instance.bin_number
+                            qty = form_instance.product_quantity
+
+                            bin_qty_object,created = Product_bin_quantity_through_table.objects.get_or_create(product = sku,bin = bin_id)
+                            bin_qty_object.product_quantity -= qty
+                            bin_qty_object.save()
+
                             form_instance.save()
                     return redirect('all-picklists-list')
                 
             except Exception as e:
                 print(e)
     return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
+
+
 
 
 
@@ -14218,6 +14269,13 @@ def outward_scan_serial_no_process(request):
 
         if not serialNo:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+
+        
+        check_if_exist = outward_products.objects.filter(unique_serial_no=serialNo).exists()
+
+        if check_if_exist:
+            return JsonResponse({'error': 'Serial No already exists'}, status=400)
+        
 
         filtered_product = finishedgoodsbinallocation.objects.get(unique_serial_no = serialNo)
 
