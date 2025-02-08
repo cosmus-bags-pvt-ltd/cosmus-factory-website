@@ -496,8 +496,8 @@ $(document).ready(function () {
 
         var total = 0; // Total outward quantity
 
-            console.log('Selected Picklist No:', pickNo);
-            console.log('Selected Picklist Qty:', pickQty);
+            // console.log('Selected Picklist No:', pickNo);
+            // console.log('Selected Picklist Qty:', pickQty);
 
         var serialNoQty = $('[name$="-quantity"]'); // All outward qty inputs
 
@@ -829,6 +829,7 @@ $(document).ready(function () {
         if (!storedData) return;
 
         let parsedData = JSON.parse(storedData);
+        console.log()
         let totalQty = {};
 
         // ✅ Only include visible rows in calculation
@@ -859,6 +860,7 @@ $(document).ready(function () {
         
 
         if (parsedData.hasOwnProperty(pickNo)) {
+          
             let item = parsedData[pickNo].find(i => i.sku === sku);
             if (item) {
                 let outwardQty = totalQty.hasOwnProperty(sku) ? totalQty[sku] : 0;
