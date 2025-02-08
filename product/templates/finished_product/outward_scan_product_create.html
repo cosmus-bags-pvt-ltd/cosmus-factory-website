@@ -17,7 +17,7 @@
 
             <label for="id_outward_no" class="fw-bold ms-1 me-1">Outward No :</label>
             {% if master_form.instance.id %}
-            <input type="text" name="outward_no" class="purchase-vNo ms-1 me-1" id="id_outward_no">
+            <input type="text" name="outward_no" value = "{{ master_form.instance.outward_no }}" class="purchase-vNo ms-1 me-1" id="id_outward_no" readonly>
             {% elif not master_form.instance.id %} 
             <input type="text" name="outward_no" class="purchase-vNo ms-1 me-1" value="{{ master_form.outward_no.initial }}" id="id_outward_no" required>
             {% endif %}
@@ -74,25 +74,98 @@
             {{ formset.management_form }}
             {% for form in formset %}
             {{form.id}}
-            <tr>
-                <input type="hidden" name="picklistNo_{{forloop.counter0}}" id="id_picklistNo_{{forloop.counter0}}" value="">
-                <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
-                <td><input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly > </td>
-                <td>  
-                    <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="" readonly > 
-                  
-                </td>
-                <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="" class="purchase-input" style="margin-left: 10px;" readonly></td>
+                {% if form.instance.id %}
+                <tr>
+                    <input type="hidden" name="picklistNo_{{forloop.counter0}}" id="id_picklistNo_{{forloop.counter0}}" value="">
 
-                <td><input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="" class="purchase-amount" readonly></td>
+                    <td>
+                        <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
+                    </td>
+
+                    <td>
+                        <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly>
+                    </td>
+
+                    <td>  
+                        <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{form.instance.product.Product.Model_Name}}" readonly> 
+                    </td>
+
+                    <td>
+                        <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color.color_name}}" class="purchase-input"  readonly>
+                    </td>
+    
+                    <td>
+                        <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly>
+                    </td>
+                
+                    <td>
+                        <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
+                    </td>
+                    <td>
+                        <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" value="{{ form.instance.unique_serial_no }}" readonly>
+                    </td>
+
+                    <td>
+                        <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" value="{{form.instance.bin_number.bin_name}}" readonly>
+                        <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" value="{{ form.instance.bin_number.id }}" readonly>
+                    </td>
+
+                    <td>
+                        <input type="number" name="{{form.prefix}}-quantity" id="id_{{form.prefix}}-quantity" class="purchase-input" value="{{ form.instance.quantity }}" readonly>
+                    </td>
+
+                    <!-- <td>
+                        <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
+                    </td>   -->
+                </tr>
+
+
+                {% elif not form.instance.id %}
+                <tr>
+                    <input type="hidden" name="picklistNo_{{forloop.counter0}}" id="id_picklistNo_{{forloop.counter0}}" value="">
+
+                    <td>
+                        <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
+                    </td>
+
+                    <td>
+                        <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly>
+                    </td>
+
+                    <td>  
+                        <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="" readonly> 
+                    </td>
+
+                    <td>
+                        <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="" class="purchase-input" style="margin-left: 10px;" readonly>
+                    </td>
+    
+                    <td>
+                        <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="" class="purchase-amount" readonly>
+                    </td>
+                
+                    <td>
+                        <img src="" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
+                    </td>
+                    <td>
+                        <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" readonly>
+                    </td>
+
+                    <td>
+                        <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" readonly>
+                        <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly>
+                    </td>
+
+                    <td>
+                        <input type="number" name="{{form.prefix}}-quantity" value="" id="id_{{form.prefix}}-quantity" class="purchase-input" readonly>
+                    </td>
+
+                    <td>
+                        <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
+                    </td>  
+                </tr>
+                {% endif %}
             
-                <td><img src="" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)"></td>
-                <td> <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" readonly></td>
-                <td><input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" readonly>
-                    <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly></td>
-                <td> <input type="number" name="{{form.prefix}}-quantity" value="" id="id_{{form.prefix}}-quantity" class="purchase-input" readonly></td>
-                <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span></td>  
-            </tr>
 
             {% endfor %}
 
@@ -230,9 +303,9 @@ $(document).ready(function () {
 
     $(document).on('click', 'span.outwardPick-btn', function () {
         var productTable = $('#picklistProductTable .mainTableList');
-        productTable.empty(); // Clear the table before appending new data
+        productTable.empty();
 
-        var productKey = $(this).closest('tr').find('.pickId').text().trim(); // Picklist Number
+        var productKey = $(this).closest('tr').find('.pickId').text().trim();
         var storedData = $('#picklistHiddenData').val();
 
         if (!storedData) {
@@ -241,24 +314,23 @@ $(document).ready(function () {
         }
 
         var parsedData = JSON.parse(storedData);
-        // console.log('Parsed Data:', parsedData);
+      
 
         if (!parsedData.hasOwnProperty(productKey) || !Array.isArray(parsedData[productKey])) {
             console.warn("No data found for this picklistNo:", productKey);
             return;
         }
 
-        var totalQty = {}; // Object to store total outward quantity per SKU
-        var picklistSelected = false; // Flag to check if any checkbox is selected
+        var totalQty = {}; 
+        var picklistSelected = false; 
 
-        // Iterate over all form rows to find matching picklist & SKU
         $('[name$="-product"]').each(function () {
-            var sku = String($(this).val()).trim(); // Ensure SKU is a string & trimmed
+            var sku = String($(this).val()).trim(); 
             var row = $(this).closest('tr');
-            var pickNos = row.find('[name^="picklistNo_"]').val()?.trim(); // Picklist number from form
-            var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0; // Quantity from form
-            var checkboxChecked = row.find('.picklistRadio'); // Check if checkbox is selected
-            //console.log('checkboxChecked',checkboxChecked)
+            var pickNos = row.find('[name^="picklistNo_"]').val()?.trim(); 
+            var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0; 
+            var checkboxChecked = row.find('.picklistRadio'); 
+        
             if (checkboxChecked) picklistSelected = true; // At least one checkbox is selected
 
             if (!pickNos || pickNos !== productKey) return; // Skip if picklist doesn't match
@@ -269,29 +341,14 @@ $(document).ready(function () {
             totalQty[sku] += qty; // Accumulate quantity per SKU
         });
 
-        // console.log('Final TotalQty:', totalQty);
-        // console.log('TotalQty Keys:', Object.keys(totalQty)); 
-        // console.log('picklistSelected:', picklistSelected);
-        //var totalBalanceQty = 0;
-        // Update balance quantities
         parsedData[productKey].forEach(item => {
             let sku = String(item.sku).trim(); // Ensure SKU is a string
             let qty = item.qty;
-
-            console.log('Processing SKU:', sku,typeof(sku),qty);
-            // console.log("Checking SKU:", sku, "Exists:", totalQty.hasOwnProperty(sku), "Value:", totalQty[sku]);
            
             let outwardQty = picklistSelected ? (totalQty[String(sku)] ?? 0) : 0; // Ensure correct lookup
             let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty; 
 
-            // console.log('Outward Qty for', sku, ':', outwardQty);
-            // console.log('Balance Qty for', sku, ':', balanceQty);
-
-            //totalBalanceQty += balanceQty;
-            // if(balanceQty === 0){
-            //     alert(`Picklist product count for SKU ${sku} is zero and cannot be processed.`);
-            //     return;
-            // }
+        
             var newRow = $(`
                 <tr class="picklistRow" data-sku="${sku}" data-picklistno="${productKey}">
                     <td><span class="modelName">${item.model_name}</span></td>
@@ -304,8 +361,7 @@ $(document).ready(function () {
 
             productTable.append(newRow);
         });
-        // console.log("Total Balance Quantity:", totalBalanceQty);
-        //$(".pickBalance").text(totalBalanceQty);
+    
     });
 
 
@@ -373,7 +429,7 @@ $(document).ready(function () {
 
        });
 
-       $('#id_manualSerialNo').on('keydown', async function (event) {
+    $('#id_manualSerialNo').on('keydown', async function (event) {
             if(event.key === 'Enter'){
                 event.preventDefault();
                 const manualSerialNo = $('#id_manualSerialNo').val();
@@ -411,8 +467,9 @@ $(document).ready(function () {
         row.find('[name$="-bin_no"]').val(productResponse[5])
         row.find('[name$="-quantity"]').val(productResponse[6]);
         row.find('[id^="product_img_"]').attr("src", productResponse[7]);
-        row.find('[name^="picklistNo_"]').val(productResponse[9])
-        picklistQtyCheck()
+        row.find('[name^="picklistNo_"]').val(productResponse[9]);
+
+        picklistQtyCheck();
     }
 
     function picklistQtyCheck() {
@@ -431,7 +488,7 @@ $(document).ready(function () {
         }
 
         var parsedData = JSON.parse(storedData);
-    // console.log('Parsed Data:', parsedData);
+        // console.log('Parsed Data:', parsedData);
 
         var selectedRow = checkedRadio.closest('tr'); // Get the selected row
         var pickNo = parseInt(selectedRow.find('.pickId').text().trim(), 10); // Selected Picklist No.
@@ -439,8 +496,8 @@ $(document).ready(function () {
 
         var total = 0; // Total outward quantity
 
-        // console.log('Selected Picklist No:', pickNo);
-        // console.log('Selected Picklist Qty:', pickQty);
+            console.log('Selected Picklist No:', pickNo);
+            console.log('Selected Picklist Qty:', pickQty);
 
         var serialNoQty = $('[name$="-quantity"]'); // All outward qty inputs
 
@@ -456,11 +513,9 @@ $(document).ready(function () {
             if (pickNo === tablePicklistNo) {
                 //console.log(`Picklist ${pickNo} matched`);
 
-                // Check if parsedData contains this picklist
                 if (parsedData.hasOwnProperty(pickNo)) {
                     let picklistItems = parsedData[pickNo];
 
-                    // Find matching SKU in parsedData
                     let matchingItem = picklistItems.find(item => String(item.sku).trim() === tableSku);
 
                     if (matchingItem) {
@@ -545,7 +600,7 @@ $(document).ready(function () {
             }
 
             var parsedData = JSON.parse(storedData);
-            console.log('Parsed Data:', parsedData);
+            // console.log('Parsed Data:', parsedData);
 
             // **Step 1: Validate Picklist No**
             if (pickNo !== responsePicklistNo) {
@@ -569,27 +624,6 @@ $(document).ready(function () {
                 $('#responseMessage').html('<span class="text-danger">SKU mismatch! This item is not in the picklist.</span>');
                 return;
             }
-
-            // // **Step 3: Calculate Total Outward Quantity**
-            // tableBody.find('tr').each(function () {
-            //     const row = $(this);
-            //     const rowSku = String(row.find('[name$="-product"]').val()).trim();
-            //     const rowPicklistNo = parseInt(row.find('[name^="picklistNo_"]').val(), 10);
-            //     const outwardQty = parseInt(row.find('[name$="-quantity"]').val(), 10) || 0;
-
-            //     console.log(`Checking row: Picklist No = ${rowPicklistNo}, SKU = ${rowSku}, Qty = ${outwardQty}`);
-
-            //     // ✅ Only add to `totalQty` if Picklist No and SKU match
-            //     if (rowPicklistNo === pickNo && rowSku === sku) {
-            //         totalQty += outwardQty;
-            //     }
-            // });
-
-            // console.log(`Total Outward Qty for SKU ${sku}:`, totalQty);
-
-            // // **Step 4: Calculate Balance Qty**
-            // let balanceQty = Math.max(0, matchingItem.qty - totalQty); // Prevent negative values
-            // console.log(`Balance Qty for SKU ${sku}:`, balanceQty);
 
             // **Step 5: Prevent Insertion if Balance is Zero**
             if (pickBalance < 1) {
@@ -643,14 +677,13 @@ $(document).ready(function () {
     }
 
 
-function isTableEmpty() {
-    //   console.log($('#outwardSales .mainTableList tr').toArray().every(row => isRowEmpty($(row))))
+    function isTableEmpty() {
+   
     return $('#outwardSales .mainTableList tr').toArray().every(row => isRowEmpty($(row)));
       }
 
       function isRowEmpty(row) {
           return row.find('td :input').filter(function () {
-            console.log('test',$(this).val().trim() )
               return $(this).val().trim() !== "";
           }).length === 0;
       }
@@ -733,114 +766,180 @@ function isTableEmpty() {
 
         formCountInput.value = formCount + 1;
         tableBody.appendChild(lastRow);
-      
+        deleteRowData();
+        inputCheck()
     }
 
+    function getVisibleRows() {
+        // Select all rows that are not hidden (excluding those with display: none)  
+        return document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');;
+    }
+
+       function deleteRowData(){
+        // Add click event listener to all delete buttons
+        document.querySelectorAll('.delete-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                // Find all rows in the table
+                const rows =  getVisibleRows();
+              
+                if (rows.length > 1) {
+                    const row = this.closest('tr');
+        
+                    if (row) {
+                        const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+        
+                        if (checkRow) {
+                            checkRow.checked = true; 
+                            checkRow.value = 'true'; 
+                            row.style.display = 'none';
+                            
+                            var checkedRadio = $('input[name="picklistRadio"]:checked');
+
+                            if (checkedRadio.length === 0) {
+                                console.warn("No picklist selected.");
+                                $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
+                                return;
+                            }
+                
+
+                            var selectedRow = checkedRadio.closest('tr'); // Get the selected row
+                            var pickNo = parseInt(selectedRow.find('.pickId').text().trim(), 10); // Selected Picklist No.
+                            var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Selected Picklist Quantity
+
+
+                            recalculatePicklistBalances(pickNo);
+        
+                            inputCheck();
+                            //picklistQtyCheck()
+                            
+                        } else {
+                            console.error("Checkbox for deletion not found in this row");
+                        }
+                    }
+                } else {
+                    // If only one row remains, alert the user
+                    alert('Cannot delete this row; at least one row must remain.');
+                }
+            });
+        }); 
+    }
+
+    function recalculatePicklistBalances(pickNo) {
+        let storedData = $('#picklistHiddenData').val();
+        if (!storedData) return;
+
+        let parsedData = JSON.parse(storedData);
+        let totalQty = {};
+
+        // ✅ Only include visible rows in calculation
+        $('[name$="-product"]').each(function () {
+            let row = $(this).closest('tr');
+            if (row.css('display') === 'none') return; // Skip hidden rows
+
+            let sku = String($(this).val()).trim();
+            let pickNos = row.find('[name^="picklistNo_"]').val()?.trim();
+            let qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
+
+            console.log('sku',sku)
+            console.log('pickNos',pickNos)
+            console.log('qty',qty)
+        
+            if (!pickNos) return;
+
+            if (!totalQty[sku]) {
+                totalQty[sku] = 0;
+            }
+            totalQty[sku] += qty;
+        
+        });
+        console.log('totalQty',totalQty)
+        // ✅ Update balance quantities only for visible rows
+        console.log("Executing balance update function...");
+
+        
+
+        if (parsedData.hasOwnProperty(pickNo)) {
+            let item = parsedData[pickNo].find(i => i.sku === sku);
+            if (item) {
+                let outwardQty = totalQty.hasOwnProperty(sku) ? totalQty[sku] : 0;
+                let balanceQty = Math.max(0, item.qty - outwardQty);
+
+                console.log(`✅ SKU: ${sku}, Outward Qty: ${outwardQty}, Balance Qty: ${balanceQty}`);
+
+                row.find('.balanceqty').text(balanceQty);
+            } else {
+                console.warn(`⚠️ No item found in parsedData for SKU: ${sku}`);
+            }
+        } else {
+            console.warn(`⚠️ No picklist data found for Picklist No: ${picklistNo}`);
+        }
+    
+
+
+
+}
+
+      //deleteRowData()
+     function inputCheck(){
+        document.getElementById('id_outward_no').focus();
+       
+        const outwardNo = document.getElementById('id_outward_no');
+        const inwardNo = document.getElementById('inwordSerialNo');
+        const mscanNo = document.getElementById('id_manualSerialNo')
+        const submit = document.getElementById('parentFormClick')
+        if(outwardNo){
+            outwardNo.addEventListener('keydown',function(event){
+                if(event.key === "Tab"){
+                    event.preventDefault()
+               
+                    if(outwardNo.value === ''){
+                 
+                        outwardNo.focus();
+                        return;
+                    }else{
+                        inwardNo.focus() ;
+                    }
+                  
+                }
+            })
+        }
+        
+        if(inwardNo){
+            inwardNo.addEventListener('keydown', function(event) {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+              
+                    if (inwardNo.value === '' ) {
+                        inwardNo.focus();
+                        return;
+                        
+                    }  
+                }
+            })  
+        }
+        if(mscanNo){
+            mscanNo.addEventListener('keydown', function(event) {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+              
+                    if (mscanNo.value === '' ) {
+                        mscanNo.focus();
+                        return;
+                        
+                    }else{
+                        submit.focus();
+                    }  
+                }
+            })
+        }
+        
+        }
+    
+        inputCheck();
 
  })
 
- function getVisibleRows() {
-    // Select all rows that are not hidden (excluding those with display: none)
-    const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
-    return visibleRows;
-}
-   function deleteRowData(){
-    // Add click event listener to all delete buttons
-    document.querySelectorAll('.delete-btn').forEach(function (button) {
-    button.addEventListener('click', function () {
-        // Find all rows in the table
-        const rows =  getVisibleRows();
-        console.log(rows)
-        // Check if more than one row exists
-        if (rows.length > 1) {
-            // Find the row containing the clicked delete button
-            const row = this.closest('tr');
-
-            if (row) {
-                // Find the checkbox for deletion in the row
-                const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
-
-                if (checkRow) {
-                    checkRow.checked = true; // Mark as checked
-                    checkRow.value = 'true'; // Set the value to 'true'
-
-                    // Optionally hide the row visually
-                    row.style.display = 'none';
-
-                    // Call functions to recalculate totals or perform other updates
-
-                    inputCheck();
-                    
-                } else {
-                    console.error("Checkbox for deletion not found in this row");
-                }
-            }
-        } else {
-            // If only one row remains, alert the user
-            alert('Cannot delete this row; at least one row must remain.');
-        }
-    });
-});
-
  
-  }
-  deleteRowData()
- function inputCheck(){
-    document.getElementById('id_outward_no').focus();
-   
-    const outwardNo = document.getElementById('id_outward_no');
-    const inwardNo = document.getElementById('inwordSerialNo');
-    const mscanNo = document.getElementById('id_manualSerialNo')
-    const submit = document.getElementById('parentFormClick')
-    if(outwardNo){
-        outwardNo.addEventListener('keydown',function(event){
-            if(event.key === "Tab"){
-                event.preventDefault()
-           
-                if(outwardNo.value === ''){
-             
-                    outwardNo.focus();
-                    return;
-                }else{
-                    inwardNo.focus() ;
-                }
-              
-            }
-        })
-    }
-    
-    if(inwardNo){
-        inwardNo.addEventListener('keydown', function(event) {
-            if (event.key === "Tab") {
-                event.preventDefault();
-          
-                if (inwardNo.value === '' ) {
-                    inwardNo.focus();
-                    return;
-                    
-                }  
-            }
-        })  
-    }
-    if(mscanNo){
-        mscanNo.addEventListener('keydown', function(event) {
-            if (event.key === "Tab") {
-                event.preventDefault();
-          
-                if (mscanNo.value === '' ) {
-                    mscanNo.focus();
-                    return;
-                    
-                }else{
-                    submit.focus();
-                }  
-            }
-        })
-    }
-    
-    }
-
-    inputCheck();
 </script>
 
 
