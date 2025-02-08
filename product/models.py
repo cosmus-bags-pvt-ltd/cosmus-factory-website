@@ -1077,7 +1077,8 @@ class Product_bin_quantity_through_table(models.Model):
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
 
-
+    def __str__(self):
+        return f"{self.product.Product.Model_Name} -- {self.product.PProduct_color.color_name}"
 
 
 class product_purchase_voucher_master(models.Model):
@@ -1254,6 +1255,12 @@ class Picklist_products_list(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
+
+class temp_product_bin_for_picklist(models.Model):
+    product_sku = models.CharField(max_length=252)
+    product_bin = models.CharField(max_length=252)
+    product_qty = models.IntegerField()
+    bin_qty = models.IntegerField()
 
 
 class outward_product_master(models.Model):
