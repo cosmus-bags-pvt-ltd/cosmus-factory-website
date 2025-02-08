@@ -14046,12 +14046,6 @@ def create_update_picklist(request, p_id=None):
 
 
 
-
-
-
-
-
-
 def delete_form_quantity_revert(request):
     """
     Handles reverting bin quantity when a product is deleted from the picklist.
@@ -14380,8 +14374,6 @@ def decimal_to_float(obj):
 from urllib.parse import urlencode
 def outward_scan_product_create(request,o_id=None):
 
-    # request.session.flush()
-
     if o_id:
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
@@ -14419,7 +14411,7 @@ def outward_scan_product_create(request,o_id=None):
                             form.instance.delete()
                     
                     
-
+                    formset.forms = [form for form in formset.forms if form.has_changed()]
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
@@ -14435,43 +14427,43 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.save()
 
 
-                    products = {}
+                        products = {}
 
-                    post_data = request.POST.dict()
-                    
+                        post_data = request.POST.dict()
+                        
 
-                    total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
+                        total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
 
-                    products[master_form_instance.outward_no] = []
+                        products[master_form_instance.outward_no] = []
 
-                    for i in range(total_forms):
-                        product = post_data.get(f'outward_product-{i}-product')
-                        quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
+                        for i in range(total_forms):
+                            product = post_data.get(f'outward_product-{i}-product')
+                            quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
 
-                        print(product)
+                            print(product)
 
-                        found = False
-                        for p in products[master_form_instance.outward_no]:
-                            if p['product'] == product:
-                                p['quantity'] += quantity
-                                found = True
-                                break
-                            
+                            found = False
+                            for p in products[master_form_instance.outward_no]:
+                                if p['product'] == product:
+                                    p['quantity'] += quantity
+                                    found = True
+                                    break
+                                
 
-                        if not found:
-                            product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
-                            products[master_form_instance.outward_no].append({
-                                'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
-                                'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
-                                'product': product,
-                                'color': post_data.get(f'product_color_{i}'),
-                                'quantity': quantity,
-                                'mrp': decimal_to_float(product_info.Product.Product_MRP),
-                                'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
-                                'gst': product_info.Product.Product_GST.gst_percentage
-                            })
-                    
-                    request.session['products_data'] = products
+                            if not found:
+                                product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
+                                products[master_form_instance.outward_no].append({
+                                    'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
+                                    'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
+                                    'product': product,
+                                    'color': post_data.get(f'product_color_{i}'),
+                                    'quantity': quantity,
+                                    'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                    'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                    'gst': product_info.Product.Product_GST.gst_percentage
+                                })
+                        
+                        request.session['products_data'] = products
 
                     return redirect('/salesvouchercreateupdateforwarehouse/')
                 
@@ -14484,7 +14476,7 @@ def outward_scan_product_create(request,o_id=None):
 
 
 def outward_scan_product_list(request):
-    outward_list = outward_product_master.objects.all()
+    outward_list = outward_product_master.objects.all().annotate(total_qty = Sum('outward_product__quantity'))
     # .annotate(total_qty=Sum('outward_product__quantity'))
     return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
 
@@ -14505,6 +14497,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         warehouse_id = voucher_instance.selected_warehouse.id
         outward_number = None
         print('warehouse_id', warehouse_id)
+
     else:
         voucher_instance = None
 

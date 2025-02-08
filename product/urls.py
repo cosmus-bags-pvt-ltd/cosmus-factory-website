@@ -376,6 +376,7 @@ urlpatterns = [
 
     
     path('outwardscanproductcreate/', views.outward_scan_product_create, name='outward-scan-product-create'),
+    path('outwardscanproductupdate/<int:o_id>/', views.outward_scan_product_create, name='outward-scan-product-update'),
     path('outwardscanproductlist/', views.outward_scan_product_list, name='outward-scan-product-list'),
     path('outwardscanserialnoprocess/', views.outward_scan_serial_no_process, name='outward-scan-serial-no-process'),
     path('outwardpicklistnoajax/', views.outward_picklist_no_ajax, name='outward-picklist-no-ajax'),
