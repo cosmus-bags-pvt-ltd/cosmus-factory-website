@@ -65,7 +65,7 @@
 
               <td><button type="button" data-id="{{ cutting_order.processed_qty }}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"  class="border-0 bg-transparent " onclick="cuttingPkValue(this)"><i class="fa-solid fa-person-circle-check px-3 fs-5"></i></button></td>
 
-              <td> <a href="{% url 'excel-download-production' 'purchase_order_cutting' cutting_order.raw_material_cutting_id %}"><i class="fa-regular fa-file-excel px-3 fs-5"></i></a></td>
+              <td> <a href="{% url 'excel-download-production' 'purchase_order_cutting' cutting_order.raw_material_cutting_id %}"><img src="../../../static/images/icons8-excel-file-48.png" class="" width="20px"></a></td>
 
               <td><button class="border-0 bg-transparent delete-btn" data-item-id="" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa-solid fa-xmark text-danger px-3 fs-5"></i></button></td>
               <input type="hidden" class="cuttingCancelled" value= "{{cutting_order.cutting_cancelled}}">

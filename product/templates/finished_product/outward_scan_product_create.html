@@ -510,135 +510,135 @@ $(document).ready(function () {
         var pickNo = parseInt(selectedRow.find('.pickId').text().trim(), 10);
         var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10)
         var pickBalance = parseInt(selectedRow.find('.pickBalance').text().trim(), 10)
-        console.log('Selected Picklist No:', pickNo);
-        console.log('Selected Picklist qty:', pickQty);
-        console.log('Selected Picklist pickBalance:', pickBalance);
+        // console.log('Selected Picklist No:', pickNo);
+        // console.log('Selected Picklist qty:', pickQty);
+        // console.log('Selected Picklist pickBalance:', pickBalance);
         try {
-    const response = await $.ajax({
-        url: '/outwardscanserialnoprocess/',
-        type: 'GET',
-        data: {
-            serialNo: serialNo,
-            pickNo: pickNo,
-        },
-    });
+            const response = await $.ajax({
+                url: '/outwardscanserialnoprocess/',
+                type: 'GET',
+                data: {
+                    serialNo: serialNo,
+                    pickNo: pickNo,
+                },
+            });
 
-    if (response.products && response.products.length > 0) {
-        const productResponse = response.products[0];
-        console.log('productResponse', productResponse);
+        if (response.products && response.products.length > 0) {
+            const productResponse = response.products[0];
+            console.log('productResponse', productResponse);
 
-        let totalQty = 0; // Store total outward quantity
-        const tableBody = $('#outwardSales .mainTableList');
-        let rowToPopulate = null;
-        let isDuplicate = false;
+            let totalQty = 0; // Store total outward quantity
+            const tableBody = $('#outwardSales .mainTableList');
+            let rowToPopulate = null;
+            let isDuplicate = false;
 
-        const sku = productResponse[1];  // SKU from response
-        const serialNo = productResponse[4]; // Serial No from response
-        const responsePicklistNo = parseInt(productResponse[9], 10); // Picklist No from response
-        const itemQty = parseInt(productResponse[6], 10) || 0; // Initial item quantity
+            const sku = productResponse[1];  // SKU from response
+            const serialNo = productResponse[4]; // Serial No from response
+            const responsePicklistNo = parseInt(productResponse[9], 10); // Picklist No from response
+            const itemQty = parseInt(productResponse[6], 10) || 0; // Initial item quantity
 
-        var storedData = $('#picklistHiddenData').val();
+            var storedData = $('#picklistHiddenData').val();
 
-        if (!storedData) {
-            console.log("No picklist data found.");
-            return;
-        }
-
-        var parsedData = JSON.parse(storedData);
-        console.log('Parsed Data:', parsedData);
-
-        // **Step 1: Validate Picklist No**
-        if (pickNo !== responsePicklistNo) {
-            console.error("Picklist No mismatch!");
-            $('#responseMessage').html('<span class="text-danger">Product not available in picklist.</span>');
-            return;
-        }
-
-        // **Step 2: Validate SKU**
-        if (!parsedData.hasOwnProperty(pickNo)) {
-            console.error("Picklist No not found in stored data.");
-            $('#responseMessage').html('<span class="text-danger">Invalid Picklist No.</span>');
-            return;
-        }
-
-        let picklistItems = parsedData[pickNo]; // Get items under this picklist
-        let matchingItem = picklistItems.find(item => String(item.sku).trim() === String(sku).trim());
-
-        if (!matchingItem) {
-            console.error("SKU does not match the selected Picklist.");
-            $('#responseMessage').html('<span class="text-danger">SKU mismatch! This item is not in the picklist.</span>');
-            return;
-        }
-
-        // // **Step 3: Calculate Total Outward Quantity**
-        // tableBody.find('tr').each(function () {
-        //     const row = $(this);
-        //     const rowSku = String(row.find('[name$="-product"]').val()).trim();
-        //     const rowPicklistNo = parseInt(row.find('[name^="picklistNo_"]').val(), 10);
-        //     const outwardQty = parseInt(row.find('[name$="-quantity"]').val(), 10) || 0;
-
-        //     console.log(`Checking row: Picklist No = ${rowPicklistNo}, SKU = ${rowSku}, Qty = ${outwardQty}`);
-
-        //     // ✅ Only add to `totalQty` if Picklist No and SKU match
-        //     if (rowPicklistNo === pickNo && rowSku === sku) {
-        //         totalQty += outwardQty;
-        //     }
-        // });
-
-        // console.log(`Total Outward Qty for SKU ${sku}:`, totalQty);
-
-        // // **Step 4: Calculate Balance Qty**
-        // let balanceQty = Math.max(0, matchingItem.qty - totalQty); // Prevent negative values
-        // console.log(`Balance Qty for SKU ${sku}:`, balanceQty);
-
-        // **Step 5: Prevent Insertion if Balance is Zero**
-        if (pickBalance < 1) {
-            console.error("No stock available. Balance is zero.");
-            $('#responseMessage').html('<span class="text-danger">Balance is zero. Cannot scan this product.</span>');
-            return;
-        }
-
-        // **Step 6: Check for Duplicate Serial No**
-        tableBody.find('tr').each(function () {
-            const row = $(this);
-            const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
-
-            if (serialValue && serialNo === serialValue) {
-                $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
-                isDuplicate = true;
-                return false; // Stop looping
+            if (!storedData) {
+                console.log("No picklist data found.");
+                return;
             }
 
-            // If no duplicate is found and this row is empty, assign it
-            if (!isDuplicate && row.find('[name$="-product_name_value"]').val().trim() === "") {
-                rowToPopulate = row;
-                return false; // Stop looping
+            var parsedData = JSON.parse(storedData);
+            console.log('Parsed Data:', parsedData);
+
+            // **Step 1: Validate Picklist No**
+            if (pickNo !== responsePicklistNo) {
+                console.error("Picklist No mismatch!");
+                $('#responseMessage').html('<span class="text-danger">Product not available in picklist.</span>');
+                return;
             }
-        });
 
-        if (isDuplicate) {
-            return;
-        }
+            // **Step 2: Validate SKU**
+            if (!parsedData.hasOwnProperty(pickNo)) {
+                console.error("Picklist No not found in stored data.");
+                $('#responseMessage').html('<span class="text-danger">Invalid Picklist No.</span>');
+                return;
+            }
 
-        // **Step 7: Insert Data**
-        if (rowToPopulate) {
-            populateRow(rowToPopulate, productResponse);
+            let picklistItems = parsedData[pickNo]; // Get items under this picklist
+            let matchingItem = picklistItems.find(item => String(item.sku).trim() === String(sku).trim());
+
+            if (!matchingItem) {
+                console.error("SKU does not match the selected Picklist.");
+                $('#responseMessage').html('<span class="text-danger">SKU mismatch! This item is not in the picklist.</span>');
+                return;
+            }
+
+            // // **Step 3: Calculate Total Outward Quantity**
+            // tableBody.find('tr').each(function () {
+            //     const row = $(this);
+            //     const rowSku = String(row.find('[name$="-product"]').val()).trim();
+            //     const rowPicklistNo = parseInt(row.find('[name^="picklistNo_"]').val(), 10);
+            //     const outwardQty = parseInt(row.find('[name$="-quantity"]').val(), 10) || 0;
+
+            //     console.log(`Checking row: Picklist No = ${rowPicklistNo}, SKU = ${rowSku}, Qty = ${outwardQty}`);
+
+            //     // ✅ Only add to `totalQty` if Picklist No and SKU match
+            //     if (rowPicklistNo === pickNo && rowSku === sku) {
+            //         totalQty += outwardQty;
+            //     }
+            // });
+
+            // console.log(`Total Outward Qty for SKU ${sku}:`, totalQty);
+
+            // // **Step 4: Calculate Balance Qty**
+            // let balanceQty = Math.max(0, matchingItem.qty - totalQty); // Prevent negative values
+            // console.log(`Balance Qty for SKU ${sku}:`, balanceQty);
+
+            // **Step 5: Prevent Insertion if Balance is Zero**
+            if (pickBalance < 1) {
+                console.error("No stock available. Balance is zero.");
+                $('#responseMessage').html('<span class="text-danger">Balance is zero. Cannot scan this product.</span>');
+                return;
+            }
+
+            // **Step 6: Check for Duplicate Serial No**
+            tableBody.find('tr').each(function () {
+                const row = $(this);
+                const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+
+                if (serialValue && serialNo === serialValue) {
+                    $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                    isDuplicate = true;
+                    return false; // Stop looping
+                }
+
+                // If no duplicate is found and this row is empty, assign it
+                if (!isDuplicate && row.find('[name$="-product_name_value"]').val().trim() === "") {
+                    rowToPopulate = row;
+                    return false; // Stop looping
+                }
+            });
+
+            if (isDuplicate) {
+                return;
+            }
+
+            // **Step 7: Insert Data**
+            if (rowToPopulate) {
+                populateRow(rowToPopulate, productResponse);
+            } else {
+                addNewRow();
+                const newRow = tableBody.find('tr').last();
+                populateRow(newRow, productResponse);
+            }
         } else {
-            addNewRow();
-            const newRow = tableBody.find('tr').last();
-            populateRow(newRow, productResponse);
+            console.error("No products data found in response.");
+            $('#responseMessage').html('<span class="text-danger">No product found for this serial number.</span>');
         }
-    } else {
-        console.error("No products data found in response.");
-        $('#responseMessage').html('<span class="text-danger">No product found for this serial number.</span>');
-    }
 
-    return response;
-} catch (error) {
-    console.error("Error sending serial number:", error);
-    $('#responseMessage').html('<span class="text-danger">Error processing request.</span>');
-    throw error;
-}
+        return response;
+        } catch (error) {
+            console.error("Error sending serial number:", error);
+            $('#responseMessage').html('<span class="text-danger">Error processing request.</span>');
+            throw error;
+        }
 
     }
 
