@@ -58,7 +58,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
                     raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
-                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods, temp_product_bin_for_picklist)
+                    shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
@@ -13768,16 +13768,22 @@ def warehouse_navigator(request):
 
 
 
+
+
+
+
+
+
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
-        
+
         if not product_name_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
 
-        
+        # Fetch products from purchases
         products_purchase = product_purchase_voucher_items.objects.filter(
             Q(product_name__PProduct_SKU__icontains=product_name_typed) |
             Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |
@@ -13804,7 +13810,7 @@ def picklist_product_ajax(request):
             for item in products_purchase
         ]
 
-        
+        # Fetch products from transfers
         products_transfer = Finished_goods_transfer_records.objects.filter(
             Q(product__PProduct_SKU__icontains=product_name_typed) |
             Q(product__PProduct_color__color_name__icontains=product_name_typed) |
@@ -13832,38 +13838,41 @@ def picklist_product_ajax(request):
         ]
 
         merged_products = chain(standardized_purchase, standardized_transfer)
-        
+
         final_data = {}
 
-        for item in merged_products:
+        # Retrieve session-stored bin data
+        temp_bins = request.session.get('temp_bins', {})
 
+        for item in merged_products:
             product_sku = item['product_sku']
 
+            # Fetch reserved quantity
             reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
-            
+
+            # Fetch bin data
             product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product__PProduct_SKU=product_sku).order_by('created_date')
 
-            formatted_bins_list = [{i.bin.id: [i.bin.bin_name, i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0]
+            formatted_bins_list = [
+                {i.bin.id: [i.bin.bin_name, i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0
+            ]
 
             bin_id_list = [i.bin.id for i in product_bin_queryset]
 
-            check_if_present = temp_product_bin_for_picklist.objects.filter(product_sku = product_sku,product_bin__in = bin_id_list).exists()
+            # Check if the SKU-bin combination exists in the session
+            formatted_bins_list_duplicate = [
+                {i.bin.id: [i.bin.bin_name, i.product_quantity, i.product.PProduct_SKU]} for i in product_bin_queryset if i.product_quantity > 0
+            ]
 
-            if check_if_present:
+            for i in formatted_bins_list_duplicate:
+                for bin_id, bin_data in i.items():
+                    key = f"{bin_data[2]}_{bin_id}"
+                    if key in temp_bins:
+                        bin_data[1] = int(temp_bins[key]['balance_qty'])
 
-                formatted_bins_list_duplicate  = [{i.bin.id: [i.bin.bin_name, i.product_quantity, i.product.PProduct_SKU]} for i in product_bin_queryset if i.product_quantity > 0]
-
-                for i in formatted_bins_list_duplicate:
-
-                    for key,val in i.items():
-                        
-                        temp_bin_value = temp_product_bin_for_picklist.objects.filter(product_bin=key,product_sku = val[2]).first()
-
-                        if temp_bin_value:
-                            val[1] = int(temp_bin_value.balance_qty)
-
-
-                formatted_bins_list = [{bin_id: [bin_data[0], bin_data[1]]} for i in formatted_bins_list_duplicate for bin_id, bin_data in i.items() if bin_data[1] > 0]
+            formatted_bins_list = [
+                {bin_id: [bin_data[0], bin_data[1]]} for i in formatted_bins_list_duplicate for bin_id, bin_data in i.items() if bin_data[1] > 0
+            ]
 
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']
@@ -13872,7 +13881,7 @@ def picklist_product_ajax(request):
                     item['product_model'],
                     item['product_color'],
                     item['qc_received_qty'],
-                    formatted_bins_list, 
+                    formatted_bins_list,
                     reserved_qty,
                     item['product_ref_id'],
                     item['product_image']
@@ -13883,7 +13892,7 @@ def picklist_product_ajax(request):
         return JsonResponse({'products': final_data}, status=200)
 
     except Exception as e:
-        logger.error(f"Error in picklist_product_ajax: {str(e)}")
+        logger.error(f"Error in picklist_product_ajax: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
 
 
@@ -13891,7 +13900,7 @@ def picklist_product_ajax(request):
 
 
 def bin_quantity_ajax(request):
-    logger.info('Temp bin quantity function called')
+    logger.info('Temp bin quantity function called using sessions')
 
     try:
         # Fetch and validate request parameters
@@ -13909,32 +13918,42 @@ def bin_quantity_ajax(request):
         except ValueError:
             return JsonResponse({"status": "error", "message": "Invalid quantity values"}, status=400)
 
-        # Get or create the temp bin record
-        temp_bin, created = temp_product_bin_for_picklist.objects.get_or_create(
-            product_sku=sku, 
-            product_bin=binName,
-            defaults={"bin_qty": binQty, "product_qty": productQty, "balance_qty": max(0, binQty - productQty)}
-        )
+        # Initialize session storage if not present
+        if 'temp_bins' not in request.session:
+            request.session['temp_bins'] = {}
 
-        if not created:
-            previous_qty = temp_bin.product_qty
-            temp_bin.product_qty = productQty
-            temp_bin.bin_qty = binQty
+        temp_bins = request.session['temp_bins']
+
+        # Create a unique key for SKU and binName
+        key = f"{sku}_{binName}"
+
+        if key in temp_bins:
+            previous_qty = temp_bins[key]['product_qty']
+            temp_bins[key]['product_qty'] = productQty
+            temp_bins[key]['bin_qty'] = binQty
 
             # Corrected balance calculation
-            temp_bin.balance_qty = max(0, temp_bin.bin_qty - temp_bin.product_qty)
+            temp_bins[key]['balance_qty'] = max(0, binQty - productQty)
 
-            logger.info(f"Updated existing record: SKU={sku}, Bin={binName}, New Product Qty={productQty}, New Balance Qty={temp_bin.balance_qty}")
+            logger.info(f"Updated existing record in session: SKU={sku}, Bin={binName}, New Product Qty={productQty}, New Balance Qty={temp_bins[key]['balance_qty']}")
         else:
-            logger.info(f"Created new record: SKU={sku}, Bin={binName}, Bin Qty={binQty}, Product Qty={productQty}, Balance Qty={temp_bin.balance_qty}")
+            temp_bins[key] = {
+                "sku": sku,
+                "bin_name": binName,
+                "bin_qty": binQty,
+                "product_qty": productQty,
+                "balance_qty": max(0, binQty - productQty),
+            }
+            logger.info(f"Created new record in session: SKU={sku}, Bin={binName}, Bin Qty={binQty}, Product Qty={productQty}, Balance Qty={temp_bins[key]['balance_qty']}")
 
-        temp_bin.save()
+        # Save the updated session
+        request.session.modified = True
 
         return JsonResponse({
             "status": "success",
-            "bin_qty": temp_bin.bin_qty,
-            "product_qty": temp_bin.product_qty,
-            "balance_qty": temp_bin.balance_qty
+            "bin_qty": temp_bins[key]['bin_qty'],
+            "product_qty": temp_bins[key]['product_qty'],
+            "balance_qty": temp_bins[key]['balance_qty']
         }, status=200)
 
     except Exception as e:
@@ -13944,32 +13963,37 @@ def bin_quantity_ajax(request):
 
 
 
-def create_update_picklist(request,p_id=None):
 
-    temp_product_bin_for_picklist.objects.all().delete()
 
+
+def create_update_picklist(request, p_id=None):
+    # Delete only relevant temp records
+    
+    if 'temp_bins' in request.session:
+        del request.session['temp_bins']
+        request.session.modified = True
+    
     if p_id:
-        voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
-        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
-        formset = picklistcreateformsetupdate(request.POST or None,instance=voucher_instance)
+        voucher_instance = get_object_or_404(Picklist_voucher_master, id=p_id)
+        master_form = Picklistvouchermasterform(request.POST or None, instance=voucher_instance)
+        formset = picklistcreateformsetupdate(request.POST or None, instance=voucher_instance)
     else:
         voucher_instance = None
-        master_form  = Picklistvouchermasterform()
+        master_form = Picklistvouchermasterform()
         formset = picklistcreateformset()
-        # temp_product_bin_for_picklist.objects.all().delete()
-    
+
     if request.method == "POST":
-        print(request.POST)
-        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
-        formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
+        logger.info(f"Received POST data: {request.POST}")
+        
+        master_form = Picklistvouchermasterform(request.POST, instance=voucher_instance)
+        formset = picklistcreateformsetupdate(request.POST, instance=voucher_instance) if p_id else picklistcreateformset(request.POST)
 
         if not master_form.is_valid():
-            print("Form Errors:", master_form.errors)
+            logger.error(f"Master Form Errors: {master_form.errors}")
 
-        if not formset.is_valid():
-            for form in formset:
-                if not form.is_valid():
-                    print("Form Errors:", form.errors)
+        for form in formset:
+            if not form.is_valid():
+                logger.error(f"Form Errors: {form.errors}")
 
         if master_form.is_valid() and formset.is_valid():
             try:
@@ -13978,25 +14002,23 @@ def create_update_picklist(request,p_id=None):
                     master_form_instance.c_user = request.user
                     master_form_instance.save()
 
+                    # Handle deleted forms (Restoring bin quantity)
                     for form in formset.deleted_forms:
                         if form.instance.pk:
-                            
                             sku = form.instance.product
                             binName = form.instance.bin_number
                             productQty = form.instance.product_quantity
-                            
-                            bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
-        
-                            bin_objects.product_quantity = bin_objects.product_quantity + productQty
 
-                            bin_objects.save()
+                            bin_object, _ = Product_bin_quantity_through_table.objects.get_or_create(product=sku, bin=binName)
+                            bin_object.product_quantity += productQty  # Restore the quantity
+                            bin_object.save()
 
                             form.instance.delete()
 
+                    # Handle new or updated forms (Deducting bin quantity)
+                    formset.forms = [form for form in formset.forms if form.has_changed()]
                     for form in formset:
-
                         if not form.cleaned_data.get('DELETE'):
-
                             form_instance = form.save(commit=False)
                             form_instance.picklist_master_instance = master_form_instance
 
@@ -14004,16 +14026,27 @@ def create_update_picklist(request,p_id=None):
                             bin_id = form_instance.bin_number
                             qty = form_instance.product_quantity
 
-                            bin_qty_object,created = Product_bin_quantity_through_table.objects.get_or_create(product = sku,bin = bin_id)
-                            bin_qty_object.product_quantity -= qty
-                            bin_qty_object.save()
+                            bin_qty_object, _ = Product_bin_quantity_through_table.objects.get_or_create(product=sku, bin=bin_id)
+                            if bin_qty_object.product_quantity >= qty:
+                                bin_qty_object.product_quantity -= qty
+                                bin_qty_object.save()
+                                form_instance.save()
+                            else:
+                                logger.warning(f"Insufficient stock for SKU={sku}, Bin={bin_id}. Required={qty}, Available={bin_qty_object.product_quantity}")
+                                return JsonResponse({"status": "error", "message": "Insufficient stock"}, status=400)
 
-                            form_instance.save()
                     return redirect('all-picklists-list')
-                
+
             except Exception as e:
-                print(e)
-    return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
+                logger.error(f"Error while processing picklist: {str(e)}", exc_info=True)
+                return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
+
+    return render(request, 'finished_product/createupdatepicklist.html', {'master_form': master_form, 'formset': formset})
+
+
+
+
+
 
 
 
@@ -14021,36 +14054,47 @@ def create_update_picklist(request,p_id=None):
 
 def delete_form_quantity_revert(request):
     """
-    Handles adding/updating bin quantity in the Product_bin_quantity_through_table table.
-    Ensures real-time stock updates and prevents negative bin quantities.
+    Handles reverting bin quantity when a product is deleted from the picklist.
+    Updates session-based bin data to ensure real-time stock updates.
     """
     logger.info('delete_form_quantity_revert function called')
 
     try:
         sku = request.GET.get('skus')
-        binName = request.GET.get('binName')
-        productQty = request.GET.get('productQty')
+        bin_id = request.GET.get('binName')
+        product_qty = request.GET.get('productQty')
 
-        if not sku or not binName:
+        if not sku or not bin_id:
             return JsonResponse({"error": "Missing required parameters"}, status=400)
 
         try:
-            productQty = int(productQty) if productQty and productQty.isdigit() else 0
+            product_qty = int(product_qty) if product_qty and product_qty.isdigit() else 0
         except ValueError:
-            return JsonResponse({"error": "Invalid quantity values"}, status=400)
+            return JsonResponse({"error": "Invalid quantity value"}, status=400)
 
-        bin_objects, created = temp_product_bin_for_picklist.objects.get_or_create(product_sku=sku,product_bin=binName)
-        
-        bin_objects.balance_qty = bin_objects.balance_qty + productQty
+        # Retrieve or initialize session-stored bin data
+        temp_bins = request.session.get('temp_bins', {})
 
-        bin_objects.save()
+        key = f"{sku}_{bin_id}"
 
-        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_qty}")
+        if key in temp_bins:
+            temp_bins[key]['balance_qty'] += product_qty
+        else:
+            temp_bins[key] = {'balance_qty': product_qty}
 
+        # Save updated bin data back to the session
+        request.session['temp_bins'] = temp_bins
+        request.session.modified = True
+
+        logger.info(f"Updated session bin data: SKU={sku}, Bin={bin_id}, Bin Qty={temp_bins[key]['balance_qty']}")
+
+        return JsonResponse({"success": "Bin quantity updated successfully"}, status=200)
 
     except Exception as e:
-        logger.error(f"Error in delete_form_quantity_revert: {str(e)}")
+        logger.error(f"Error in delete_form_quantity_revert: {str(e)}", exc_info=True)
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
 
 
 

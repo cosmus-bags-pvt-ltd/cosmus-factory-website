@@ -1256,14 +1256,6 @@ class Picklist_products_list(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-class temp_product_bin_for_picklist(models.Model):
-    product_sku = models.CharField(max_length=252)
-    product_bin = models.CharField(max_length=252)
-    bin_qty = models.IntegerField(default=0)
-    product_qty = models.IntegerField(default=0)
-    balance_qty = models.IntegerField(default=0)
-    
-
 
 class outward_product_master(models.Model):
     outward_no = models.CharField(max_length = 100)

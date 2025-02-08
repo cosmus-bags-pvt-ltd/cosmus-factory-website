@@ -623,3 +623,5 @@ def sales_voucher_stock_minus(sender, instance, created, **kwargs):
         warehouse_qty_value.save()
     else:
         pass
+
+

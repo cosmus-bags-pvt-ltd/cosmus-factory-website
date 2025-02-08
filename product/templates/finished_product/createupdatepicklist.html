@@ -77,11 +77,11 @@
 
                             <td>
                                 <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity" readonly>
-                                <input type="hidden" class="productQtyValue" name="product_quantity-{{forloop.counter0}}" id="id_product_quantity-{{forloop.counter0}}" value = '' readonly>
+                                
                             </td>
 
                             <td>
-                                <span class="delete-btn border-0 bg-transparent" style="display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
+                                <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
                             </td>
 
                         </tr>
@@ -129,7 +129,7 @@
 
                             <td>
                                 <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity">
-                                <input type="hidden" class="productQtyValue" name="product_quantity-{{forloop.counter0}}" id="id_product_quantity-{{forloop.counter0}}" value = ''>
+                                
                             </td>
 
                             <td>
@@ -693,10 +693,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     qunatityInputElement.value="";
                     qunatityInputElement.removeAttribute('readonly');
 
-                    const qunatityhiddenElement = lastRow.querySelector('input[name^="product_quantity"]');
-                    qunatityhiddenElement.id = `id_product_quantity-${formIndex}`;
-                    qunatityhiddenElement.name = `product_quantity-${formIndex}`;
-                    
 
                 
                     const deleteElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
