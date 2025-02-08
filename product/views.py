@@ -13841,7 +13841,7 @@ def picklist_product_ajax(request):
 
             reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
             
-            product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product__PProduct_SKU=product_sku).order_by('-updated_date')
+            product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product__PProduct_SKU=product_sku).order_by('created_date')
 
             formatted_bins_list = [{i.bin.id: [i.bin.bin_name, i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0]
 
@@ -13850,8 +13850,6 @@ def picklist_product_ajax(request):
             check_if_present = temp_product_bin_for_picklist.objects.filter(product_sku = product_sku,product_bin__in = bin_id_list).exists()
 
             if check_if_present:
-
-                print('check_if_present')
 
                 formatted_bins_list_duplicate  = [{i.bin.id: [i.bin.bin_name, i.product_quantity, i.product.PProduct_SKU]} for i in product_bin_queryset if i.product_quantity > 0]
 
@@ -13862,7 +13860,7 @@ def picklist_product_ajax(request):
                         temp_bin_value = temp_product_bin_for_picklist.objects.filter(product_bin=key,product_sku = val[2]).first()
 
                         if temp_bin_value:
-                            val[1] = int(temp_bin_value.bin_qty)
+                            val[1] = int(temp_bin_value.balance_qty)
 
 
                 formatted_bins_list = [{bin_id: [bin_data[0], bin_data[1]]} for i in formatted_bins_list_duplicate for bin_id, bin_data in i.items() if bin_data[1] > 0]
@@ -13893,7 +13891,6 @@ def picklist_product_ajax(request):
 
 
 def bin_quantity_ajax(request):
-    
     logger.info('Temp bin quantity function called')
 
     try:
@@ -13904,33 +13901,45 @@ def bin_quantity_ajax(request):
         productQty = request.GET.get('productQty')
 
         if not sku or not binName:
-            return JsonResponse({"error": "Missing required parameters"}, status=400)
+            return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
 
         try:
             binQty = int(binQty) if binQty and binQty.isdigit() else 0
             productQty = int(productQty) if productQty and productQty.isdigit() else 0
         except ValueError:
-            return JsonResponse({"error": "Invalid quantity values"}, status=400)
+            return JsonResponse({"status": "error", "message": "Invalid quantity values"}, status=400)
 
+        # Get or create the temp bin record
         temp_bin, created = temp_product_bin_for_picklist.objects.get_or_create(
             product_sku=sku, 
             product_bin=binName,
-            defaults={"bin_qty": binQty, "product_qty": productQty}
+            defaults={"bin_qty": binQty, "product_qty": productQty, "balance_qty": max(0, binQty - productQty)}
         )
-        
 
-        temp_bin.bin_qty = max(0, temp_bin.bin_qty - productQty)
-        temp_bin.product_qty = productQty
+        if not created:
+            previous_qty = temp_bin.product_qty
+            temp_bin.product_qty = productQty
+            temp_bin.bin_qty = binQty
+
+            # Corrected balance calculation
+            temp_bin.balance_qty = max(0, temp_bin.bin_qty - temp_bin.product_qty)
+
+            logger.info(f"Updated existing record: SKU={sku}, Bin={binName}, New Product Qty={productQty}, New Balance Qty={temp_bin.balance_qty}")
+        else:
+            logger.info(f"Created new record: SKU={sku}, Bin={binName}, Bin Qty={binQty}, Product Qty={productQty}, Balance Qty={temp_bin.balance_qty}")
+
         temp_bin.save()
-        
-        logger.info(f"Updated temp bin data: SKU={sku}, Bin={binName}, Bin Qty={temp_bin.bin_qty}")
 
-        return JsonResponse({"status": "success", "bin_qty": temp_bin.bin_qty}, status=200)
+        return JsonResponse({
+            "status": "success",
+            "bin_qty": temp_bin.bin_qty,
+            "product_qty": temp_bin.product_qty,
+            "balance_qty": temp_bin.balance_qty
+        }, status=200)
 
     except Exception as e:
-        logger.error(f"Error in temp_bin_quantity_ajax: {str(e)}")
-        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
-
+        logger.error(f"Error in bin_quantity_ajax: {str(e)}", exc_info=True)
+        return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
 
 
 
@@ -13971,6 +13980,17 @@ def create_update_picklist(request,p_id=None):
 
                     for form in formset.deleted_forms:
                         if form.instance.pk:
+                            
+                            sku = form.instance.product
+                            binName = form.instance.bin_number
+                            productQty = form.instance.product_quantity
+                            
+                            bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
+        
+                            bin_objects.product_quantity = bin_objects.product_quantity + productQty
+
+                            bin_objects.save()
+
                             form.instance.delete()
 
                     for form in formset:
@@ -14019,11 +14039,13 @@ def delete_form_quantity_revert(request):
         except ValueError:
             return JsonResponse({"error": "Invalid quantity values"}, status=400)
 
-        bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
-        bin_objects.product_quantity = bin_objects.product_quantity + productQty
+        bin_objects, created = temp_product_bin_for_picklist.objects.get_or_create(product_sku=sku,product_bin=binName)
+        
+        bin_objects.balance_qty = bin_objects.balance_qty + productQty
+
         bin_objects.save()
 
-        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_quantity}")
+        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_qty}")
 
 
     except Exception as e:
