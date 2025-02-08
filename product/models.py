@@ -1256,12 +1256,6 @@ class Picklist_products_list(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-class temp_product_bin_for_picklist(models.Model):
-    product_sku = models.CharField(max_length=252)
-    product_bin = models.CharField(max_length=252)
-    product_qty = models.IntegerField()
-    bin_qty = models.IntegerField()
-
 
 class outward_product_master(models.Model):
     outward_no = models.CharField(max_length = 100)
@@ -1277,6 +1271,9 @@ class outward_products(models.Model):
     unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     quantity = models.IntegerField(default = 1)
+
+
+
 
 
 class sales_voucher_master_outward_scan(models.Model):

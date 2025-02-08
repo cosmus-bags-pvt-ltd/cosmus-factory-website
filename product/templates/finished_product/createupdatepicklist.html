@@ -34,83 +34,112 @@
                 <tbody class="mainTableList">
                     {{ formset.management_form }}
                     {% for form in formset %}
-                    {{form.id}}
-                    <tr>
-                        <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
-                        <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>
+                        {{form.id}}
                         {% if form.instance.id %}
-                        <td> 
-                            <div class="custom-dropdown-container">
-                              <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product"  value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" >
-
-                              <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product.Product.Model_Name}} {% endif %}" readonly> 
-
-                              <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
-                                
-                             
-                               </div>
-                          </div>
-                        </td>
-                        {% else %}
-                        <td> 
-                            <div class="custom-dropdown-container">
-                              <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product"  value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" >
-
-                              <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product.Product.Model_Name}} {% endif %}" > 
-
-                              <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
-                                
-                             
-                               </div>
-                          </div>
-                        </td>
-
-                        {% endif %}
-                        <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color}}" class="purchase-input" readonly></td>
-
-                        <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly></td>
-                        
-                        {% if form.instance.id %}
-                        <td><img src="{{form.instance.product.PProduct_image.url}}" id="id_productInward_img_{{forloop.counter0}}" alt="product"  style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
-                        {% else %}
-                        <td><img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
-                        {% endif %}
-                        
-
-                        <td><select name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number"  class="purchase-amount" aria-label="Select Bin">
-                                {% if form.instance.id %}
-                                    <option value="{{form.instance.bin_number.id}}">{{form.instance.bin_number.bin_name}}</option>
-                                {% elif not form.instance.id %}
-                               
-                                {% endif %}
-                            </select>
+                        <tr>
+                            <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
                             
-                        </td>
-                        <td>
-                            <input  type="number" value="" class="purchase-input" name="reserver_Qty_{{forloop.counter0}}" maxlength="200" id="id_reserver_Qty_{{forloop.counter0}}" readonly>
-                        </td>
-                        {% if form.instance.id %}
-                        <td>
-                            <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity" readonly>
-                            <input type="hidden" class="productQtyValue" name="product_quantity-{{forloop.counter0}}" id="id_product_quantity-{{forloop.counter0}}" value = '' readonly>
-                        </td>
-                        <td>
-                            <span class="delete-btn border-0 bg-transparent" style="display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
-                        </td>
-                        {% else %}
-                        <td>
-                            <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity">
-                            <input type="hidden" class="productQtyValue" name="product_quantity-{{forloop.counter0}}" id="id_product_quantity-{{forloop.counter0}}" value = ''>
-                        </td>
-                        <td>
-                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
-                        </td>
+                            <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>
+
+                            <td> 
+                                <div class="custom-dropdown-container">
+
+                                <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product"  value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" >
+
+                                <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product.Product.Model_Name}} {% endif %}" readonly> 
+
+                                <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" ></div>
+                                
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color}}" class="purchase-input" readonly>
+                            </td>
+
+                            <td>
+                                <input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly>
+                            </td>
+                            
+                            <td>
+                                <img src="{{form.instance.product.PProduct_image.url}}" id="id_productInward_img_{{forloop.counter0}}" alt="product"  style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
+                            </td>
+
+                            <td>
+                                <select name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number"  class="purchase-amount" aria-label="Select Bin">
+                                    <option value="{{form.instance.bin_number.id}}">{{form.instance.bin_number.bin_name}}</option>
+                                </select>
+                            </td>
+                            
+                            <td>
+                                <input  type="number" value="" class="purchase-input" name="reserver_Qty_{{forloop.counter0}}" maxlength="200" id="id_reserver_Qty_{{forloop.counter0}}" readonly>
+                            </td>
+
+                            <td>
+                                <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity" readonly>
+                                
+                            </td>
+
+                            <td>
+                                <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
+                            </td>
+
+                        </tr>
+
+                        {% elif not form.instance.id %}
+                        <tr>
+
+                            <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
+                            
+                            <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>
+
+                            <td> 
+                                <div class="custom-dropdown-container">
+
+                                    <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product"  value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" >
+
+                                    <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product.Product.Model_Name}} {% endif %}" > 
+
+                                    <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice product-name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name"></div>
+
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color}}" class="purchase-input" readonly>
+                            </td>
+
+                            <td>
+                                <input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly>
+                            </td>
+                            
+                            <td>
+                                <img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
+                            </td>
+
+                            <td>
+                                <select name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number"  class="purchase-amount" aria-label="Select Bin">
+                                    <option value="{{form.instance.bin_number.id}}">{{form.instance.bin_number.bin_name}}</option>
+                                </select>
+                            </td>
+                            
+                            <td>
+                                <input  type="number" value="" class="purchase-input" name="reserver_Qty_{{forloop.counter0}}" maxlength="200" id="id_reserver_Qty_{{forloop.counter0}}" readonly>
+                            </td>
+
+                            <td>
+                                <input  type="number" value="{{form.instance.product_quantity|default_if_none:''}}" class="purchase-input" name="{{form.prefix}}-product_quantity" maxlength="200" id="id_{{form.prefix}}-product_quantity">
+                                
+                            </td>
+
+                            <td>
+                                <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
+                            </td>
+                        </tr>
+
                         {% endif %}
-                        
-                    </tr>
-                   
+
                     {% endfor %}
-                    
                 </tbody>
             </table>
         </div>
@@ -631,10 +660,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     qunatityInputElement.value="";
                     qunatityInputElement.removeAttribute('readonly');
 
-                    const qunatityhiddenElement = lastRow.querySelector('input[name^="product_quantity"]');
-                    qunatityhiddenElement.id = `id_product_quantity-${formIndex}`;
-                    qunatityhiddenElement.name = `product_quantity-${formIndex}`;
-                    
 
                 
                     const deleteElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
