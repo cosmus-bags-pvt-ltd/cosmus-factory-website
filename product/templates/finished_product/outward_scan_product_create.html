@@ -151,12 +151,12 @@ $(document).ready(function () {
         var picklistTable = $('#piclistTable .mainTableList tr');
         var picklistExists = false; // Flag to check if picklist already exists
 
-        console.log('Selected Picklist No:', picklistNo);
+        // console.log('Selected Picklist No:', picklistNo);
 
         // Check if Picklist No already exists in the table
         picklistTable.each(function () {
             var picklistId = parseInt($(this).find('.pickId').text().trim(), 10);
-            console.log('Row Picklist ID:', picklistId);
+            // console.log('Row Picklist ID:', picklistId);
 
             if (picklistId === picklistNo) {
                 picklistExists = true; // Picklist already exists
@@ -210,9 +210,9 @@ $(document).ready(function () {
                         <tr>
                             <td><span class="pickId">${response.picklistNo}</span></td>
                             <td>
-                                <button type="button" class="item-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
                                     <span class="pickQty">${response.picklisQty}</span>
-                                </button>
+                                </span>
                             </td>
                             <td><span class="pickBalance"></span></td>
                             <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
@@ -228,7 +228,7 @@ $(document).ready(function () {
         $('#id_pickList_no').val('');
     });
 
-    $(document).on('click', 'button.item-btn', function () {
+    $(document).on('click', 'span.outwardPick-btn', function () {
         var productTable = $('#picklistProductTable .mainTableList');
         productTable.empty(); // Clear the table before appending new data
 
