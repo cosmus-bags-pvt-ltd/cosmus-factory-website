@@ -11,30 +11,26 @@
             <input type="hidden" id="picklistHiddenData" value="">
          <div class="">
             <label for="id_pickList_no" class="fw-bold">Add Picklist+ :</label>
-            {% if master_form.instance.id %}
-            <input type="text" name="pickList_no" class="purchase-mark ms-1" id="id_pickList_no" readonly>
-            {% elif not master_form.instance.id %}
-            <input type="text" name="pickList_no" class="purchase-mark  ms-1" id="id_pickList_no">
-            {% endif %}
+    
+            <input type="text" name="pickList_no" class="purchase-mark  ms-1 me-1" id="id_pickList_no">
+            
 
-            <label for="id_outward_no" class="fw-bold me-1">Outward No :</label>
+            <label for="id_outward_no" class="fw-bold ms-1 me-1">Outward No :</label>
             {% if master_form.instance.id %}
-            <input type="text" name="outward_no" class="purchase-vNo ms-2" id="id_outward_no">
+            <input type="text" name="outward_no" class="purchase-vNo ms-1 me-1" id="id_outward_no">
             {% elif not master_form.instance.id %} 
-            <input type="text" name="outward_no" class="purchase-vNo ms-2" value="{{ master_form.outward_no.initial }}" id="id_outward_no" required>
+            <input type="text" name="outward_no" class="purchase-vNo ms-1 me-1" value="{{ master_form.outward_no.initial }}" id="id_outward_no" required>
             {% endif %}
 
             <label for="inwordSerialNo" class="fw-bold me-1">Scan :</label>
-            <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
+            <input type="text" name="scanned_serial_number" class="item-selects ms-1 me-1" id="inwordSerialNo">
             <label for="id_manualSerialNo" class="fw-bold ms-1">M-Scan :</label>
-            <input type="text" name="manual_serial_number" class="item-selects ms-3" id="id_manualSerialNo">
+            <input type="text" name="manual_serial_number" class="item-selects ms-1 me-1" id="id_manualSerialNo">
        </div>
-         <div class=""> 
-            <span id="responseMessage" class="ms-3 fw-bold"></span></div>
-        </div>
+        
     </div>
     <div>
-        <div class="row">
+        <div class="row mt-1">
             <div class="col-lg-2">
                 <table class="table table-striped table-hover table-bordered table-warning" id="piclistTable">
                     <thead class="name_absolute">
@@ -49,6 +45,11 @@
                        
                     </tbody>
                 </table>
+            </div>
+            <div class="col-lg-5">
+                <div class="mt-2"> 
+                    <span id="responseMessage" class="ms-1 fw-bold"></span></div>
+                </div>
             </div>
         </div>
         
@@ -146,141 +147,169 @@
 $(document).ready(function () {
     // Event listener for when the picklist number is entered
     $('#id_pickList_no').on('blur', function () { // Trigger when focus is lost
-        var picklistNo = parseInt($(this).val());
-        console.log(picklistNo);
+        var picklistNo = parseInt($(this).val(), 10);
+        var picklistTable = $('#piclistTable .mainTableList tr');
+        var picklistExists = false; // Flag to check if picklist already exists
 
-        // Only proceed if picklistNo is valid
-        if (picklistNo) {
-            $.ajax({
-                url: '/outwardpicklistnoajax/',
-                method: 'GET',
-                data: { "picklistNo": picklistNo },
-                success: function (response) {
-                    var productPickList = response.picklistDict;
-                    console.log(productPickList);
+        // console.log('Selected Picklist No:', picklistNo);
 
-                    if (response.picklistDict && response.picklisQty !== null) {
-                        var picklistKey = Object.keys(response.picklistDict)[0]; // Get the first key dynamically
-                        var picklistData = response.picklistDict[picklistKey]; // Get the data for that key
+        // Check if Picklist No already exists in the table
+        picklistTable.each(function () {
+            var picklistId = parseInt($(this).find('.pickId').text().trim(), 10);
+            // console.log('Row Picklist ID:', picklistId);
 
-                        // Retrieve existing data from the hidden field or initialize empty array
-                        var hiddenData = $('#picklistHiddenData').val();
-                        var currentData = hiddenData ? JSON.parse(hiddenData) : {};
+            if (picklistId === picklistNo) {
+                picklistExists = true; // Picklist already exists
+                return false; // Break out of the loop early
+            }
+        });
 
-                        if (!Array.isArray(currentData[picklistKey])) {
-                            currentData[picklistKey] = []; // Initialize as empty array if it doesn't exist
-                            }
-
-                            // Append all items to the array
-                            picklistData.forEach(item => {
-                                currentData[picklistKey].push({
-                                    sku: item.sku,
-                                    model_name: item.model_name,
-                                    color: item.color,
-                                    qty: item.qty
-                                });
-                            });
-                        // Update the hidden input field with the new data
-                        $('#picklistHiddenData').val(JSON.stringify(currentData));
-                        
-                        
-                        // Optionally, dynamically display the data (e.g., in a table or UI)
-                        var tables = $('#piclistTable .mainTableList');
-                        var row = $(`
-                            <tr>
-                                <td><span class="pickId">${response.picklistNo}</span></td>
-                                <td>
-                                    <button type="button" class="item-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                                        <span class="pickQty">${response.picklisQty}</span>
-                                    </button>
-                                </td>
-                                <td><span class="pickBalance"></span></td>
-                                <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
-                            </tr>
-                        `);
-                        tables.append(row);
-                    }
-                },
-                error: function (error) {
-                    console.log(error);
-                }
-            });
-        }
-    });
-
-    // Event listener for button click to retrieve data from localStorage
-    $(document).on('click', 'button.item-btn', function () {
-    var productTable = $('#picklistProductTable .mainTableList');
-    productTable.empty(); // Clear the table before appending new data
-
-    var productKey = $(this).closest('tr').find('.pickId').text().trim(); // Picklist Number
-    var storedData = $('#picklistHiddenData').val();
-
-    if (!storedData) {
-        console.log("No picklist data found in localStorage.");
-        return;
-    }
-
-    var parsedData = JSON.parse(storedData);
-    console.log('Parsed Data:', parsedData);
-
-    if (!parsedData.hasOwnProperty(productKey) || !Array.isArray(parsedData[productKey])) {
-        console.warn("No data found for this picklistNo:", productKey);
-        return;
-    }
-
-    var totalQty = {}; // Object to accumulate total quantities per SKU
-
-    var productSingSku = $('[name$="-product"]'); // Get all SKUs in the form
-
-    productSingSku.each(function () {
-        var sku = $(this).val().trim(); // SKU from form input
-        var row = $(this).closest('tr');
-        var pickNos = row.find('[name^="picklistNo_"]').val()?.trim(); // Picklist number from form
-        var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0; // Get quantity
-
-        console.log('Form SKU:', sku);
-        console.log('Form Picklist No:', pickNos);
-
-        if (!pickNos) {
-            console.warn('Picklist No is undefined in form.');
+        if (picklistExists) {
+            console.log('✅ Picklist Already Exists:', picklistNo);
+            alert('Picklist already used');
+            $('#id_pickList_no').val('');
             return;
         }
 
-        if (productKey === pickNos) {
+        // If picklist is new, make AJAX request
+        $.ajax({
+            url: '/outwardpicklistnoajax/',
+            method: 'GET',
+            data: { "picklistNo": picklistNo },
+            success: function (response) {
+                var productPickList = response.picklistDict;
+
+                if (response.picklistDict && response.picklisQty !== null) {
+                    var picklistKey = Object.keys(response.picklistDict)[0]; // Get the first key dynamically
+                    var picklistData = response.picklistDict[picklistKey]; // Get the data for that key
+
+                    // Retrieve existing data from the hidden field or initialize empty array
+                    var hiddenData = $('#picklistHiddenData').val();
+                    var currentData = hiddenData ? JSON.parse(hiddenData) : {};
+
+                    if (!Array.isArray(currentData[picklistKey])) {
+                        currentData[picklistKey] = []; // Initialize as empty array if it doesn't exist
+                    }
+
+                    // Append all items to the array
+                    picklistData.forEach(item => {
+                        currentData[picklistKey].push({
+                            sku: item.sku,
+                            model_name: item.model_name,
+                            color: item.color,
+                            qty: item.qty
+                        });
+                    });
+
+                    // Update the hidden input field with the new data
+                    $('#picklistHiddenData').val(JSON.stringify(currentData));
+
+                    // Append new row to the table
+                    var tables = $('#piclistTable .mainTableList');
+                    var row = $(`
+                        <tr>
+                            <td><span class="pickId">${response.picklistNo}</span></td>
+                            <td>
+                                <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
+                                    <span class="pickQty">${response.picklisQty}</span>
+                                </span>
+                            </td>
+                            <td><span class="pickBalance"></span></td>
+                            <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
+                        </tr>
+                    `);
+                    tables.append(row);
+                }
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+        $('#id_pickList_no').val('');
+    });
+
+    $(document).on('click', 'span.outwardPick-btn', function () {
+        var productTable = $('#picklistProductTable .mainTableList');
+        productTable.empty(); // Clear the table before appending new data
+
+        var productKey = $(this).closest('tr').find('.pickId').text().trim(); // Picklist Number
+        var storedData = $('#picklistHiddenData').val();
+
+        if (!storedData) {
+            console.log("No picklist data found.");
+            return;
+        }
+
+        var parsedData = JSON.parse(storedData);
+        // console.log('Parsed Data:', parsedData);
+
+        if (!parsedData.hasOwnProperty(productKey) || !Array.isArray(parsedData[productKey])) {
+            console.warn("No data found for this picklistNo:", productKey);
+            return;
+        }
+
+        var totalQty = {}; // Object to store total outward quantity per SKU
+        var picklistSelected = false; // Flag to check if any checkbox is selected
+
+        // Iterate over all form rows to find matching picklist & SKU
+        $('[name$="-product"]').each(function () {
+            var sku = String($(this).val()).trim(); // Ensure SKU is a string & trimmed
+            var row = $(this).closest('tr');
+            var pickNos = row.find('[name^="picklistNo_"]').val()?.trim(); // Picklist number from form
+            var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0; // Quantity from form
+            var checkboxChecked = row.find('.picklistRadio'); // Check if checkbox is selected
+            //console.log('checkboxChecked',checkboxChecked)
+            if (checkboxChecked) picklistSelected = true; // At least one checkbox is selected
+
+            if (!pickNos || pickNos !== productKey) return; // Skip if picklist doesn't match
+
             if (!totalQty[sku]) {
                 totalQty[sku] = 0;
             }
-            totalQty[sku] += qty; // Accumulate total quantity for each SKU
-        }
-    });
+            totalQty[sku] += qty; // Accumulate quantity per SKU
+        });
 
-    console.log('Total Quantities:', totalQty);
+        // console.log('Final TotalQty:', totalQty);
+        // console.log('TotalQty Keys:', Object.keys(totalQty)); 
+        // console.log('picklistSelected:', picklistSelected);
+        //var totalBalanceQty = 0;
+        // Update balance quantities
+        parsedData[productKey].forEach(item => {
+            let sku = String(item.sku).trim(); // Ensure SKU is a string
+            let qty = item.qty;
 
-    // Now update only the `balanceqty` for the matching SKU
-    parsedData[productKey].forEach(item => {
-        if (totalQty[item.sku]) {
-            item.qty -= totalQty[item.sku]; // Subtract total outward quantity
+            console.log('Processing SKU:', sku,typeof(sku),qty);
+            // console.log("Checking SKU:", sku, "Exists:", totalQty.hasOwnProperty(sku), "Value:", totalQty[sku]);
+           
+            let outwardQty = picklistSelected ? (totalQty[String(sku)] ?? 0) : 0; // Ensure correct lookup
+            let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty; 
 
+            // console.log('Outward Qty for', sku, ':', outwardQty);
+            // console.log('Balance Qty for', sku, ':', balanceQty);
+
+            //totalBalanceQty += balanceQty;
+            // if(balanceQty === 0){
+            //     alert(`Picklist product count for SKU ${sku} is zero and cannot be processed.`);
+            //     return;
+            // }
             var newRow = $(`
-                <tr class="picklistRow" data-sku="${item.sku}" data-picklistno="${productKey}">
+                <tr class="picklistRow" data-sku="${sku}" data-picklistno="${productKey}">
                     <td><span class="modelName">${item.model_name}</span></td>
-                    <td><span class="sku">${item.sku}</span></td>
+                    <td><span class="sku">${sku}</span></td>
                     <td><span class="color">${item.color}</span></td>
-                    <td><span class="qty">${item.qty + totalQty[item.sku]}</span></td>
-                    <td><span class="balanceqty">${item.qty}</span></td> 
+                    <td><span class="qty">${qty}</span></td>
+                    <td><span class="balanceqty">${balanceQty}</span></td> 
                 </tr>
             `);
 
             productTable.append(newRow);
-        }
+        });
+        // console.log("Total Balance Quantity:", totalBalanceQty);
+        //$(".pickBalance").text(totalBalanceQty);
     });
+
+
 });
-
-});
-
-
-
 
 // image priview on click on image 
 document.body.appendChild(document.getElementById('staticBackdrop'));
@@ -326,10 +355,10 @@ $(document).ready(function () {
             if (serialNo) {
                 try {
                     const response = await sendSerialNumber(serialNo);
-                    $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                    $('#responseMessage').html('<span class="alert alert-success" role="alert">' + response.message + '</span>');
                 } catch (error) {
-                    const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
-                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    // const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
+                    // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
                 }
             }
         }, 500);
@@ -353,12 +382,12 @@ $(document).ready(function () {
                         try {
                             const response = await sendSerialNumber(manualSerialNo);
                             
-                            $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                            $('#responseMessage').html('<span class="alert alert-success" role="alert">' + response.message + '</span>');
                             $('#id_manualSerialNo').val('');
                            
                         } catch (error) {
-                            const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                            $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                            // const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                            // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
                             $('#id_manualSerialNo').val('');
                         }
                     } else {
@@ -387,62 +416,88 @@ $(document).ready(function () {
     }
 
     function picklistQtyCheck() {
-    var checkedRadio = $('input[name="picklistRadio"]:checked');
+        var checkedRadio = $('input[name="picklistRadio"]:checked');
 
-    if (checkedRadio.length === 0) {
-        console.warn("No picklist selected.");
-        $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
-        return;
-    }
-
-    var selectedRow = checkedRadio.closest('tr'); // Get the selected row
-    var pickNo = parseInt(selectedRow.find('.pickId').text().trim()); // Selected Picklist No.
-    var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Selected Picklist Quantity
-   
-    var total = 0; // Total outward quantity
-
-    console.log('Selected Picklist No:', pickNo);
-    console.log('Selected Picklist Qty:', pickQty);
-   
-
-    var serialNoQty = $('[name$="-quantity"]'); // All outward qty inputs
-
-    serialNoQty.each(function () {
-        var outwardQty = parseInt($(this).val(), 10) || 0;
-        var row = $(this).closest('tr');
-        var tablePicklistNo = parseInt(row.find('[name^="picklistNo_"]').val()) || 0;
-        var tableSku = parseInt(row.find('[name$="-product"]').val())
-
-        console.log('tableSku:', tableSku);
-        
-
-        if (outwardQty > 0 && pickNo === tablePicklistNo) {
-            total += outwardQty; // Add outward quantity if conditions match
+        if (checkedRadio.length === 0) {
+            console.warn("No picklist selected.");
+            $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
+            return;
         }
-    });
+        var storedData = $('#picklistHiddenData').val();
 
-    console.log('Total Outward Quantity:', total);
+        if (!storedData) {
+            console.log("No picklist data found.");
+            return;
+        }
 
-    if (total === 0) {
-        console.warn("Total outward quantity is zero.");
-        $('#responseMessage').html('<span class="text-warning">Total outward quantity must be greater than zero.</span>');
-        return;
+        var parsedData = JSON.parse(storedData);
+    // console.log('Parsed Data:', parsedData);
+
+        var selectedRow = checkedRadio.closest('tr'); // Get the selected row
+        var pickNo = parseInt(selectedRow.find('.pickId').text().trim(), 10); // Selected Picklist No.
+        var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Selected Picklist Quantity
+
+        var total = 0; // Total outward quantity
+
+        // console.log('Selected Picklist No:', pickNo);
+        // console.log('Selected Picklist Qty:', pickQty);
+
+        var serialNoQty = $('[name$="-quantity"]'); // All outward qty inputs
+
+        serialNoQty.each(function () {
+            var outwardQty = parseInt($(this).val(), 10) || 0;
+            var row = $(this).closest('tr');
+            var tablePicklistNo = parseInt(row.find('[name^="picklistNo_"]').val()) || 0;
+            var tableSku = String(row.find('[name$="-product"]').val()).trim(); // Ensure SKU is string
+
+            // console.log('Processing row - PicklistNo:', tablePicklistNo, 'SKU:', tableSku, 'Outward Qty:', outwardQty);
+
+            // Check if picklistNo matches
+            if (pickNo === tablePicklistNo) {
+                //console.log(`Picklist ${pickNo} matched`);
+
+                // Check if parsedData contains this picklist
+                if (parsedData.hasOwnProperty(pickNo)) {
+                    let picklistItems = parsedData[pickNo];
+
+                    // Find matching SKU in parsedData
+                    let matchingItem = picklistItems.find(item => String(item.sku).trim() === tableSku);
+
+                    if (matchingItem) {
+                        //console.log(`Matching SKU found: ${tableSku}`);
+                        total += outwardQty; // Add outward quantity
+                      
+                    } else {
+                        console.warn(`SKU ${tableSku} not found in parsedData for Picklist ${pickNo}`);
+                    }
+                } else {
+                    console.warn(`Picklist No ${pickNo} not found in parsedData`);
+                }
+            }
+        });
+
+        //console.log('Total Outward Quantity:', total);
+        var pickBal = pickQty - total;
+    
+            if (total === 0) {
+                console.warn("Total outward quantity is zero.");
+                $('#responseMessage').html('<span class="text-warning">Total outward quantity must be greater than zero.</span>');
+                return;
+            }
+
+        if (total > pickQty) {
+            console.warn("Total outward quantity exceeds picklist quantity.");
+            $('#responseMessage').html('<span class="text-danger">Outward quantity cannot be greater than picklist quantity.</span>');
+            return;
+        }
+
+        // Update the balance for the selected row
+        selectedRow.find('.pickBalance').text(pickBal);
     }
 
-    if (total > pickQty) {
-        console.warn("Total outward quantity exceeds picklist quantity.");
-        $('#responseMessage').html('<span class="text-danger">Outward quantity cannot be greater than picklist quantity.</span>');
-        return;
-    }
 
-    // Update the balance for the selected row
-    selectedRow.find('.pickBalance').text(pickQty - total);
-}
-
-
-async function sendSerialNumber(serialNo) {
- 
-    var checkedRadio = $('input[name="picklistRadio"]:checked');
+    async function sendSerialNumber(serialNo) {
+        var checkedRadio = $('input[name="picklistRadio"]:checked');
 
         if (checkedRadio.length === 0) {
             console.warn("No picklist selected.");
@@ -453,101 +508,140 @@ async function sendSerialNumber(serialNo) {
         // Get the Picklist ID from the selected row
         var selectedRow = checkedRadio.closest('tr');
         var pickNo = parseInt(selectedRow.find('.pickId').text().trim(), 10);
-
+        var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10)
+        var pickBalance = parseInt(selectedRow.find('.pickBalance').text().trim(), 10)
         console.log('Selected Picklist No:', pickNo);
+        console.log('Selected Picklist qty:', pickQty);
+        console.log('Selected Picklist pickBalance:', pickBalance);
+        try {
+    const response = await $.ajax({
+        url: '/outwardscanserialnoprocess/',
+        type: 'GET',
+        data: {
+            serialNo: serialNo,
+            pickNo: pickNo,
+        },
+    });
 
-    try {
-        const response = await $.ajax({
-            url: '/outwardscanserialnoprocess/',
-            type: 'GET',
-            data: {
-                serialNo: serialNo,
-                pickNo: pickNo,
-            },
-        });
-       
-        if (response.products && response.products.length > 0) {
-            const productResponse = response.products[0];
-           console.log('productResponse = ',productResponse)
-            const tableBody = $('#outwardSales .mainTableList');
-            const tableRow = $('#piclistTable .mainTableList')
-            let rowToPopulate = null;
-            let isDuplicate = false; 
-            let total = 0;
-           
-            const serialNo = productResponse[4]; 
+    if (response.products && response.products.length > 0) {
+        const productResponse = response.products[0];
+        console.log('productResponse', productResponse);
 
-            tableBody.find('tr').each(function () {
-                const row = $(this);
-                const inputField = row.find('[name$="-product_name_value"]');
-                const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim(); 
-              
-                if (serialValue && serialNo === serialValue) {
+        let totalQty = 0; // Store total outward quantity
+        const tableBody = $('#outwardSales .mainTableList');
+        let rowToPopulate = null;
+        let isDuplicate = false;
 
-                    $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
-                    isDuplicate = true;
-                    return false; 
-                }
+        const sku = productResponse[1];  // SKU from response
+        const serialNo = productResponse[4]; // Serial No from response
+        const responsePicklistNo = parseInt(productResponse[9], 10); // Picklist No from response
+        const itemQty = parseInt(productResponse[6], 10) || 0; // Initial item quantity
 
-                // If no duplicate is found and this row is empty, assign it
-                if (!isDuplicate && inputField.val().trim() === "") {
-                    rowToPopulate = row;
-                    return false; 
-                }
-            });
+        var storedData = $('#picklistHiddenData').val();
 
-        
-            if (isDuplicate) {
-                return;
+        if (!storedData) {
+            console.log("No picklist data found.");
+            return;
+        }
+
+        var parsedData = JSON.parse(storedData);
+        console.log('Parsed Data:', parsedData);
+
+        // **Step 1: Validate Picklist No**
+        if (pickNo !== responsePicklistNo) {
+            console.error("Picklist No mismatch!");
+            $('#responseMessage').html('<span class="text-danger">Product not available in picklist.</span>');
+            return;
+        }
+
+        // **Step 2: Validate SKU**
+        if (!parsedData.hasOwnProperty(pickNo)) {
+            console.error("Picklist No not found in stored data.");
+            $('#responseMessage').html('<span class="text-danger">Invalid Picklist No.</span>');
+            return;
+        }
+
+        let picklistItems = parsedData[pickNo]; // Get items under this picklist
+        let matchingItem = picklistItems.find(item => String(item.sku).trim() === String(sku).trim());
+
+        if (!matchingItem) {
+            console.error("SKU does not match the selected Picklist.");
+            $('#responseMessage').html('<span class="text-danger">SKU mismatch! This item is not in the picklist.</span>');
+            return;
+        }
+
+        // // **Step 3: Calculate Total Outward Quantity**
+        // tableBody.find('tr').each(function () {
+        //     const row = $(this);
+        //     const rowSku = String(row.find('[name$="-product"]').val()).trim();
+        //     const rowPicklistNo = parseInt(row.find('[name^="picklistNo_"]').val(), 10);
+        //     const outwardQty = parseInt(row.find('[name$="-quantity"]').val(), 10) || 0;
+
+        //     console.log(`Checking row: Picklist No = ${rowPicklistNo}, SKU = ${rowSku}, Qty = ${outwardQty}`);
+
+        //     // ✅ Only add to `totalQty` if Picklist No and SKU match
+        //     if (rowPicklistNo === pickNo && rowSku === sku) {
+        //         totalQty += outwardQty;
+        //     }
+        // });
+
+        // console.log(`Total Outward Qty for SKU ${sku}:`, totalQty);
+
+        // // **Step 4: Calculate Balance Qty**
+        // let balanceQty = Math.max(0, matchingItem.qty - totalQty); // Prevent negative values
+        // console.log(`Balance Qty for SKU ${sku}:`, balanceQty);
+
+        // **Step 5: Prevent Insertion if Balance is Zero**
+        if (pickBalance < 1) {
+            console.error("No stock available. Balance is zero.");
+            $('#responseMessage').html('<span class="text-danger">Balance is zero. Cannot scan this product.</span>');
+            return;
+        }
+
+        // **Step 6: Check for Duplicate Serial No**
+        tableBody.find('tr').each(function () {
+            const row = $(this);
+            const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+
+            if (serialValue && serialNo === serialValue) {
+                $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                isDuplicate = true;
+                return false; // Stop looping
             }
-        //     var serialNoQty = $('[name$="-quantity"]');
 
-                  
-        //     serialNoQty.each(function () {
-        //         var outwardQty = parseInt($(this).val()) || 0;
-        //         console.log('outwardQty',outwardQty)
-        //         total += outwardQty;
-                
-        //     });
+            // If no duplicate is found and this row is empty, assign it
+            if (!isDuplicate && row.find('[name$="-product_name_value"]').val().trim() === "") {
+                rowToPopulate = row;
+                return false; // Stop looping
+            }
+        });
 
-        //    let totalBalanceZero = true;
-        //    tableRow.find('tr').each(function () {
-        //         const row = $(this);
-        //         const balance = parseInt(row.find('.pickQty').text().trim()) || 0;
-        //         // console.log('balance',balance)
-        //         // console.log('total',total)
-        //         if (balance !== total ) {
-        //             totalBalanceZero = false;
-        //             return false; // Stop if there's any balance left
-        //         }
-        //     });
+        if (isDuplicate) {
+            return;
+        }
 
-            // if (totalBalanceZero) {
-            //   alert('Picklist qty will be zero add new picklist.')
-            //     console.log('No more serial numbers can be added as balance is zero.');
-            //     return; // Stop further processing
-            // }
-            
+        // **Step 7: Insert Data**
         if (rowToPopulate) {
             populateRow(rowToPopulate, productResponse);
-           
         } else {
             addNewRow();
             const newRow = tableBody.find('tr').last();
             populateRow(newRow, productResponse);
-         
         }
-        } else {
-            console.error("No products data found in response.");
-        }
-        
-
-        return response;
-    } catch (error) {
-        console.error("Error sending serial number:", error);
-        throw error;
+    } else {
+        console.error("No products data found in response.");
+        $('#responseMessage').html('<span class="text-danger">No product found for this serial number.</span>');
     }
+
+    return response;
+} catch (error) {
+    console.error("Error sending serial number:", error);
+    $('#responseMessage').html('<span class="text-danger">Error processing request.</span>');
+    throw error;
 }
+
+    }
+
 
 function isTableEmpty() {
     //   console.log($('#outwardSales .mainTableList tr').toArray().every(row => isRowEmpty($(row))))

@@ -2282,7 +2282,15 @@ table>:not(caption)>*>*{
     background-color: #ffe6e6;
 }
 
-
+.outwardPick-btn{
+    background: linear-gradient(45deg, #d82e75, #e059b5);
+    color: white;
+    padding: 5px;
+    font-size: 17px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
 /*===product cart rating===*/
  @media screen and (max-width: 600px) {
         .side-bar {

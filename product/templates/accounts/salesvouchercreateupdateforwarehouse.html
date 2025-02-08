@@ -29,7 +29,7 @@
         <span id="SupplierError" class="error-messages"></span>
 
         <div class="d-flex ms-3">
-          <label for="id_sales_no" class="me-2">Sales No :</label>
+          <label for="id_sale_no" class="me-2">Sales No :</label>
           {% if master_form.instance %}
           <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
             value="{{master_form.instance.sale_no}}" maxlength="255" required>
@@ -389,9 +389,9 @@ function getGstNo() {
 $(document).ready(function(){
 var formsSale = $('#id_sales_voucher_outward_scan_set-0-id').val();
  if(formsSale === ''){
-   $('#id_sales_no').on('focusout',function(){
+   $('#id_sale_no').on('focusout',function(){
          var sales_no = $(this).val();
-         var purchase = $("#id_sales_no");
+         var purchase = $("#id_sale_no");
          var errorElement = $('#purchaseError'); // The error message element
          var submitForm = $('#parentFormClick');
          $.ajax({
@@ -772,7 +772,7 @@ function calculateTotalAmount() {
    });
    
    window.onload = function() {
-            document.getElementById("id_sales_no").focus();
+            document.getElementById("id_sale_no").focus();
         };
    inputCheck()
  })
@@ -782,7 +782,7 @@ function inputCheck(){
 
   const qtyValues = document.querySelectorAll('[name$="-quantity"]')
   var tableRows = document.querySelectorAll('#salesTable .mainTableList tr');
-  const saleNo = document.getElementById('id_sales_no');
+  const saleNo = document.getElementById('id_sale_no');
   const warhouseNo = document.getElementById('id_selected_warehouse');
   const partyName = document.getElementById('id_party_name');
   const cashdic = document.getElementById('id_cash_disct');
