@@ -580,7 +580,7 @@ $(document).ready(function () {
 
         if (response.products && response.products.length > 0) {
             const productResponse = response.products[0];
-            console.log('productResponse', productResponse);
+            // console.log('productResponse', productResponse);
 
             let totalQty = 0; // Store total outward quantity
             const tableBody = $('#outwardSales .mainTableList');
@@ -829,7 +829,7 @@ $(document).ready(function () {
         if (!storedData) return;
 
         let parsedData = JSON.parse(storedData);
-        console.log()
+        console.log('parsedData',parsedData)
         let totalQty = {};
 
         // ✅ Only include visible rows in calculation
