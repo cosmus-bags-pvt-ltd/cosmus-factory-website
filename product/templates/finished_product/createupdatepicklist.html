@@ -281,7 +281,7 @@
                 var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
                 var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
                 var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue)
-                document.getElementById('id_picklist_products_list-'+ purchaseValue +'-bin_number').focus();
+                document.getElementById('id_picklist_products_list-'+ purchaseValue +'-product_quantity').focus();
                 $(this).addClass('selected').siblings().removeClass('selected');
 
                 var selectedValue = searchedProductNameDic[item_value];
@@ -527,7 +527,7 @@
                 var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
                 var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
                 var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue);
-                document.getElementById('id_picklist_products_list-'+ purchaseValue +'-bin_number').focus();
+                document.getElementById('id_picklist_products_list-'+ purchaseValue +'-product_quantity').focus();
                 productcolorinput.value = productColor;
                 skuIput.value = item_value;
                 productRefNo.value = productRefId;
