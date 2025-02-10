@@ -14453,6 +14453,11 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.save()
 
 
+                    if not picklist_formset.is_valid():
+                        for form in picklist_formset:
+                            if not form.is_valid():
+                                print("Picklist Form Errors:", form.errors)
+
                     if picklist_formset.is_valid():
                         for form in picklist_formset:
                             picklist_value = form.cleaned_data['picklist']

@@ -293,19 +293,19 @@ $('#id_pickList_no').on('blur', function () {
                     }
                 });
 
-                var totalForms = $('#id_outward_product_picklist-TOTAL_FORMS'); // Django hidden form count
+                var totalForms = $('#picklist_process_in_outward_set-TOTAL_FORMS'); // Django hidden form count
                     var formCount = parseInt(totalForms.val()); // Get current form count
                     var newFormSet = formCount - 1;
 
                     var newRow = $(`
                         <tr>
-                            <td><input type="hidden" class="" name="outward_product_picklist-${newFormSet}-picklist" id="outward_product_picklist-${newFormSet}-picklist" value="${response.id}"><input type="number" class="rowNo pickId" name="outward_product_picklist-${newFormSet}-picklistNo" id="id_outward_product_picklist-${newFormSet}-picklistNo" value="${response.picklistNo}"></td>
+                            <td><input type="hidden" class="" name="picklist_process_in_outward_set-${newFormSet}-picklist" id="id_picklist_process_in_outward_set-${newFormSet}-picklist" value="${response.id}"><input type="number" class="rowNo pickId" name="picklist_process_in_outward_set-${newFormSet}-picklistNo" id="id_picklist_process_in_outward_set-${newFormSet}-picklistNo" value="${response.picklistNo}"></td>
                             <td>
                                 <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
                                     <span class="pickQty">${response.picklisQty}</span>
                                 </span>
                             </td>
-                            <td><input type="number" class="rowNo pickBalance" name="outward_product_picklist-${newFormSet}-balance_qty" id="id_outward_product_picklist-${newFormSet}-balance_qty" value="${response.picklisQty}"></td>
+                            <td><input type="number" class="rowNo pickBalance" name="picklist_process_in_outward_set-${newFormSet}-balance_qty" id="id_picklist_process_in_outward_set-${newFormSet}-balance_qty" value="${response.picklisQty}"></td>
                             <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
                         </tr>
                     `);
