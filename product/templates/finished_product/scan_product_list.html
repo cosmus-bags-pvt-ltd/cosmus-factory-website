@@ -23,7 +23,7 @@
                 <th>SKU</th>
                 <th>Qty</th>
                 <th>Invt age</th>
-                <th>W-Position</th>
+                <th><span class="me-3">Zone</span> <span class="ms-5 me-2">Rack</span><span class="ms-5">Bin</span></th>
             </tr>
         </thead>
         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -34,7 +34,7 @@
                 <td>{{entry.created_date}}</td>
                 <td>
                     {% if entry.product.PProduct_image %}
-                        <img id="productImgPreview" name="product_img" src="{{ entry.product.PProduct_image.url }}" alt="Product Image" style="width: 60px; height: 40px; object-fit: contain;">
+                        <img id="productImgPreview" name="product_img" src="{{ entry.product.PProduct_image.url }}" alt="img" style="width:25px; object-fit: contain;" onclick="showLargeImage(this.src)">
                     {% else %}
                         <span>No Image Available</span>
                     {% endif %}
@@ -46,7 +46,7 @@
                 <td>{{entry.product.PProduct_SKU}}</td>
                 <td class="text-center">1</td>
                 <td>{{entry.age_in_days}} days</td>
-                <td>{{entry.bin_number.rack_finished_name.zone_finished_name.zone_name}} -- {{entry.bin_number.rack_finished_name.rack_name}} -- {{entry.bin_number.bin_name}}</td>
+                <td><span class="fw-bold me-2">{{entry.bin_number.rack_finished_name.zone_finished_name.zone_name}}</span><span class="ms-3 text-success fw-bold">{{entry.bin_number.rack_finished_name.rack_name}}</span><span class="ms-4 text-danger fw-bold">{{entry.bin_number.bin_name}}</span></td>
              </tr>
             {% endfor %}
       
@@ -54,4 +54,22 @@
     </table>
 </div>
 
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+    <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+<script>
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
+
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
 {% endblock body %}

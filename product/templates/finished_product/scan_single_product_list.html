@@ -14,14 +14,16 @@
             <tr>
                 <th>No</th>
                 <th>voucher</th>
+                <th>Inward date</th>
                 <th>Image</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
-                <th>Product SKU</th>
-                <th>Product Serial No</th>
-                <th>Inward date</th>
-                <th>Quantity</th>
+                <th>SKU</th>
+                <th>Serial No</th>
+                <th>QTY</th>
+                <th>Invt age</th>
+                <th><span class="me-3">Zone</span> <span class="ms-5 me-2">Rack</span><span class="ms-5">Bin</span></th>
             </tr>
         </thead>
         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -42,7 +44,8 @@
                 <td>{{entry.unique_serial_no}}</td>
                 <td>{{entry.created_date}}</td>
                 <td class="text-center">1</td>
-                
+                <td></td>
+                <td></td>
              </tr>
             {% endfor %}
       

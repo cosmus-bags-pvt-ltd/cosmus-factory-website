@@ -5,7 +5,7 @@
     <form action="" method="POST">
         {% csrf_token %}
         <div class="d-flex mb-2">
-            <label for="id_picklist_no" class="me-3">PickList No :</label>
+            <label for="id_picklist_no" class="me-2">PickList No :</label>
             {% if master_form.instance.id %}
             <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{ master_form.instance.picklist_no}}" maxlength="255" readonly>
             {% elif not master_form.instance.id %}
@@ -13,23 +13,23 @@
             {% endif %}
 
             
-            <label for="pickListDate" class="ms-3 me-3">Date :</label>
+            <label for="pickListDate" class="ms-3 me-2">Date :</label>
             <input type="date" class="purchase-itemName" name="pickListDate" id="id_pickListDate" >
             
-            <label for="pickListDate" class="ms-3 me-3">Channel :</label>
-            <select name="ledgerTypes" required="" id="id_ledgerTypes">
+            <label for="id_ledgerTypes" class="ms-3 me-2">Channel :</label>
+            <select class="product2Select" name="ledgerTypes" required="" id="id_ledgerTypes">
                 {% if master_form.instance.id %}
                 <option value="{{ master_form.instance.ledgerTypes.id }}">{{ master_form.instance.ledgerTypes.type_name }}</option>
                 {% elif not master_form.instance.id %}
-                    <option value="" selected disabled>Selesct Channel</option>
+                    <option value="" selected disabled>Select Channel</option>
                     {% for type in types %}
                     <option value="{{ type.id }}">{{type.type_name}}</option>
                     {% endfor %}
                 {% endif %}
             </select>
             
-            <label for="pickListDate" class="ms-3 me-3">Narration :</label>
-            <input type="text" name="narration" maxlength="255" required="" id="id_narration" value="{{ master_form.instance.narration }}">
+            <label for="id_narration" class="ms-3 me-2">Narration :</label>
+            <input type="text" class="item-select" name="narration" maxlength="255" required="" id="id_narration" value="{{ master_form.instance.narration |default_if_none:''}}">
         
         </div>
         <div>
@@ -797,6 +797,8 @@ function inputCheck(){
 const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
 const date = document.getElementById('id_pickListDate')
 var tableRows = document.querySelectorAll('#createpickListTable tr');
+const channel = document.getElementById('id_ledgerTypes');
+const narration = document.getElementById('id_narration')
 
 itemNameInputsid.forEach((input, index) => {
   input.addEventListener("keydown", function (event) {
@@ -837,13 +839,38 @@ itemNameInputsid.forEach((input, index) => {
   });
 });
 
-
 date.addEventListener('keydown', function(event) {
     if (event.key === "Tab") {
         event.preventDefault();
-
         if (date.value === '') {
             date.focus();
+            return; 
+        }else{
+            channel.focus();
+        }
+    }
+})
+
+
+channel.addEventListener('keydown', function(event) {
+    if (event.key === "Tab") {
+        event.preventDefault();
+
+        if (channel.value === '') {
+            channel.focus();
+            return; 
+        }else{
+
+            narration.focus()
+        }
+    }
+})
+narration.addEventListener('keydown', function(event) {
+    if (event.key === "Tab") {
+        event.preventDefault();
+
+        if (narration.value === '') {
+            narration.focus();
             return; 
         }else{
           var tableRow = document.querySelectorAll('#createpickListTable tr');

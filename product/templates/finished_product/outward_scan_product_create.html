@@ -531,7 +531,6 @@ $(document).ready(function () {
             }
         });
 
-        //console.log('Total Outward Quantity:', total);
         var pickBal = pickQty - total;
     
             if (total === 0) {
@@ -565,9 +564,7 @@ $(document).ready(function () {
         var pickNo = parseInt(selectedRow.find('.pickId').text().trim(), 10);
         var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10)
         var pickBalance = parseInt(selectedRow.find('.pickBalance').text().trim(), 10)
-        // console.log('Selected Picklist No:', pickNo);
-        // console.log('Selected Picklist qty:', pickQty);
-        // console.log('Selected Picklist pickBalance:', pickBalance);
+      
         try {
             const response = await $.ajax({
                 url: '/outwardscanserialnoprocess/',
@@ -807,7 +804,7 @@ $(document).ready(function () {
                             var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Selected Picklist Quantity
 
 
-                            recalculatePicklistBalances(pickNo);
+                            recalculatePicklistBalances(pickNo ,pickQty);
         
                             inputCheck();
                             //picklistQtyCheck()
@@ -824,33 +821,38 @@ $(document).ready(function () {
         }); 
     }
 
-    function recalculatePicklistBalances(pickNo) {
+    function recalculatePicklistBalances(pickNo,pickQty) {
+        var productTable = $('#picklistProductTable .mainTableList');
+        productTable.empty();
         let storedData = $('#picklistHiddenData').val();
         if (!storedData) return;
 
         let parsedData = JSON.parse(storedData);
         console.log('parsedData',parsedData)
         let totalQty = {};
+        var picklistSelected = false; 
 
         // ✅ Only include visible rows in calculation
         $('[name$="-product"]').each(function () {
             let row = $(this).closest('tr');
             if (row.css('display') === 'none') return; // Skip hidden rows
-
+            var checkboxChecked = row.find('.picklistRadio'); 
             let sku = String($(this).val()).trim();
             let pickNos = row.find('[name^="picklistNo_"]').val()?.trim();
             let qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
 
+            if (checkboxChecked) picklistSelected = true; // At least one checkbox is selected
+
+            // if (!pickNos || pickNos !== pickNo) return; // Skip if picklist doesn't match
             console.log('sku',sku)
             console.log('pickNos',pickNos)
             console.log('qty',qty)
-        
-            if (!pickNos) return;
+    
 
             if (!totalQty[sku]) {
                 totalQty[sku] = 0;
             }
-            totalQty[sku] += qty;
+            totalQty[sku] += qty; // Accumulate quantity per SKU
         
         });
         console.log('totalQty',totalQty)
@@ -858,24 +860,17 @@ $(document).ready(function () {
         console.log("Executing balance update function...");
 
         
+        parsedData[pickNo].forEach(item => {
+            let sku = String(item.sku).trim(); // Ensure SKU is a string
+            let qty = item.qty;
+            console.log(`✅ SKU: ${sku},  Qty: ${qty}`);
+            let outwardQty = picklistSelected ? (totalQty[String(sku)] ?? 0) : 0; // Ensure correct lookup
+            let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty; 
+            console.log(`✅ SKU: ${sku}, Outward Qty: ${outwardQty}, Balance Qty: ${balanceQty}`);
 
-        if (parsedData.hasOwnProperty(pickNo)) {
-          
-            let item = parsedData[pickNo].find(i => i.sku === sku);
-            if (item) {
-                let outwardQty = totalQty.hasOwnProperty(sku) ? totalQty[sku] : 0;
-                let balanceQty = Math.max(0, item.qty - outwardQty);
-
-                console.log(`✅ SKU: ${sku}, Outward Qty: ${outwardQty}, Balance Qty: ${balanceQty}`);
-
-                row.find('.balanceqty').text(balanceQty);
-            } else {
-                console.warn(`⚠️ No item found in parsedData for SKU: ${sku}`);
-            }
-        } else {
-            console.warn(`⚠️ No picklist data found for Picklist No: ${picklistNo}`);
-        }
-    
+           
+        })
+      
 
 
 

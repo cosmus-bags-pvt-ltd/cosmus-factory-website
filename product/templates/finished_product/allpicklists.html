@@ -39,7 +39,12 @@
                 <td>{{ picklist.created_date}}</td>
                 <td><a href="{% url 'picklist-view' picklist.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #bd50e9; text-decoration: none;">{{ picklist.picklist_no }}</a></td>
                 <td>{{ picklist.total_quantity }}</td>
-                <td>{{ picklist.status }}</td>
+                <td {% if picklist.status == "Pending" %} style="color: red; font-weight: bold;" 
+                    {% elif picklist.status == "Receiving" %} style="color: green; font-weight: bold;" 
+                    {% elif picklist.status == "Close" %} style="color: gray; font-weight: bold;" 
+                    {% endif %}>
+                    {{ picklist.status }}
+                </td>
                 <td>{{ picklist.ledgerTypes.type_name }}</td>
                 <td>{{ picklist.narration }}</td>
                 <td><a href="{% url 'create-update-picklist' picklist.id %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></td>

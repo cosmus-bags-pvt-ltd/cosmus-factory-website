@@ -19,7 +19,14 @@
                     <th>No</th>
                     <th>Date</th>
                     <th>Outward No</th>
-                    <th>Total Qty</th>
+                    <th>Picklist No</th>
+                    <th>Qty</th>
+                    <th>Outward Qty</th>
+                    <th>Balance</th>
+                    <th>Sale No</th>
+                    <th>Party Name</th>
+                    <th>Qty</th>
+                    <th>Amount</th>
                     <th >Edit</th>
                 </tr>
             </thead>
@@ -30,7 +37,14 @@
                     <td>{{forloop.counter}}</td>
                     <td>{{outward.created_date}}</td>
                     <td>{{outward.outward_no}}</td>
+                    <td></td>
+                    <td></td>
                     <td>{{outward.total_qty}}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     <td><a href="{% url 'outward-scan-product-update' outward.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
                 </tr>
                 {% endfor %}
