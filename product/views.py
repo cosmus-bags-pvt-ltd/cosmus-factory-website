@@ -14244,7 +14244,7 @@ def outward_picklist_no_ajax(request):
 
         for i in picklist_data:
             sku = i.product.PProduct_SKU
-
+            id = i.id
             
             if picklistNo not in dict_to_send:
                 dict_to_send[picklistNo] = []
@@ -14260,13 +14260,14 @@ def outward_picklist_no_ajax(request):
                     'sku': sku,
                     'model_name': i.product.Product.Model_Name,
                     'color': i.product.PProduct_color.color_name,
-                    'qty': i.product_quantity
+                    'qty': i.product_quantity,
+                    'id':i.id
                 })
 
         print('dict_to_send = ', dict_to_send)
 
         
-        return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklistNo":picklistNo, "picklisQty": picklist_qty['total_qty']}, status=200)
+        return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklistNo":picklistNo, "picklisQty": picklist_qty['total_qty'],'id':id}, status=200)
 
     except Exception as e:
         return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
@@ -14387,11 +14388,11 @@ def outward_scan_product_create(request,o_id=None):
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
-        # picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None,instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None,instance=outward_instance)
     else:
         outward_instance = None
         master_form = Outwardproductmasterform()
-        # picklist_formset = PicklistProcessInOutwardFormSet()
+        picklist_formset = PicklistProcessInOutwardFormSet()
         formset = OutwardProductcreateFormSet()
     
 
@@ -14399,6 +14400,8 @@ def outward_scan_product_create(request,o_id=None):
         print(request.POST)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None, instance=outward_instance)
+
 
         if not master_form.is_valid():
             print("Form Errors:", master_form.errors)
@@ -14450,6 +14453,20 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.save()
 
 
+                    if not picklist_formset.is_valid():
+                        for form in picklist_formset:
+                            if not form.is_valid():
+                                print("Picklist Form Errors:", form.errors)
+
+                    for form in picklist_formset:
+                        if form.is_valid():
+                            picklist_value = form.cleaned_data['picklist']
+                            picklist_form_instance = form.save(commit=False)
+                            picklist_form_instance.picklist = Picklist_voucher_master.objects.get(id=picklist_value)
+                            picklist_form_instance.outward_no = master_form_instance
+                            picklist_form_instance.save()
+
+
                     products = {}
 
                     post_data = request.POST.dict()
@@ -14493,8 +14510,7 @@ def outward_scan_product_create(request,o_id=None):
             except Exception as e:
                 print(e)
     
-    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset})
-# , 'picklist_formset':picklist_formset
+    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset})
 
 
 
