@@ -9733,8 +9733,6 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 @login_required(login_url='login')
 def product_transfer_to_warehouse_list(request):
     warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('voucher_no')
-
-
     return render(request,'finished_product/product_transfer_to_warehouse_list.html',{'warehouse_product_transfer_list':warehouse_product_transfer_list})
 
 
@@ -10083,13 +10081,13 @@ def warehouse_stock(request):
 
     purchase_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
     
-    product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty')))
+    product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty')))
 
 
     transfer_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
 
 
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
 
     
     merged_list = []
@@ -10110,7 +10108,8 @@ def warehouse_stock(request):
                     'total_sale':x['total_sale'] or 0,
                     'total_inward':(x['total_inward'] or 0) + (y['total_inward'] or 0),
                     'total_balance':(x['total_balance'] or 0) + (y['total_balance'] or 0),
-                    'inward_minus_sales': ((x['total_inward'] or 0) + (y['total_inward'] or 0)) - (x['total_sale'] or 0)
+                    'inward_minus_sales': ((x['total_inward'] or 0) + (y['total_inward'] or 0)) - (x['total_sale'] or 0),
+                    'img': x['product_name__PProduct_image']
                 }
                 merged_list.append(dict_to_append)
                 break
@@ -10127,7 +10126,8 @@ def warehouse_stock(request):
                     'total_sale':x['total_sale'] or 0,
                     'total_inward':x['total_inward'] or 0,
                     'total_balance':x['total_balance'] or 0,
-                    'inward_minus_sales': (x['total_inward'] if x['total_inward'] else 0) -  (x['total_sale'] if x['total_sale'] else 0)
+                    'inward_minus_sales': (x['total_inward'] if x['total_inward'] else 0) -  (x['total_sale'] if x['total_sale'] else 0),
+                    'img': x['product_name__PProduct_image']
                 }
             merged_list.append(dict_to_append)
 
@@ -10143,17 +10143,22 @@ def warehouse_stock(request):
                     'total_sale': y['total_sale'] if y['total_sale'] else 0,
                     'total_inward':y['total_inward'] if y['total_inward'] else 0,
                     'total_balance':y['total_balance'],
-                    'inward_minus_sales': (y['total_inward'] if y['total_inward'] else 0) -  (y['total_sale'] if y['total_sale'] else 0)
+                    'inward_minus_sales': (y['total_inward'] if y['total_inward'] else 0) -  (y['total_sale'] if y['total_sale'] else 0),
+                    'img': y['product_name__PProduct_image']
                 }
             merged_list.append(dict_to_append)
 
-
-    return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list})
+    return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list,'MEDIA_URL': settings.MEDIA_URL})
 
 
 
 def scan_single_product_list(request,sku):
     instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku)
+    current_date = timezone.now()
+    for entry in instance_entries:
+        created_date = entry.created_date
+        age_in_days = (current_date - created_date).days
+        entry.age_in_days = age_in_days
     return render(request,'finished_product/scan_single_product_list.html',{'instance_entries':instance_entries})
 
 
@@ -14382,16 +14387,16 @@ def outward_scan_product_create(request,o_id=None):
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
-        picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None,instance=outward_instance)
+        # picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None,instance=outward_instance)
     else:
         outward_instance = None
         master_form = Outwardproductmasterform()
-        picklist_formset = PicklistProcessInOutwardFormSet()
+        # picklist_formset = PicklistProcessInOutwardFormSet()
         formset = OutwardProductcreateFormSet()
     
 
     if request.method == 'POST':
-        # print(request.POST)
+        print(request.POST)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
 
@@ -14425,10 +14430,22 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.outward_no = master_form_instance
 
                             serial_no = form_instance.unique_serial_no
+                            
+                            try:
+                                inward_instance = finishedgoodsbinallocation.objects.get(unique_serial_no=serial_no)
+                                print(f"Found inward_instance: {inward_instance}")
 
-                            inward_instance = finishedgoodsbinallocation.objects.get(unique_serial_no = serial_no)
-                            inward_instance.outward_done = True
-                            inward_instance.save()
+                                # Update outward_done safely
+                                inward_instance.outward_done = True
+                                inward_instance.save(update_fields=['outward_done'])  # Skips bin validation
+
+                                print(f" Updated outward_done for: {serial_no}")
+
+                            except finishedgoodsbinallocation.DoesNotExist:
+                                print(f"Error: No record found with unique_serial_no = {serial_no}")
+
+                            except Exception as e:
+                                print(f"Unexpected error: {e}")
 
                             form_instance.save()
 
@@ -14476,8 +14493,8 @@ def outward_scan_product_create(request,o_id=None):
             except Exception as e:
                 print(e)
     
-    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset})
-
+    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset})
+# , 'picklist_formset':picklist_formset
 
 
 
