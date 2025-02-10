@@ -47,17 +47,18 @@
                         {{ picklist_formset.management_form }}
                         {% for form in picklist_formset %}
                         <tr>
-                            <td><input type="number" class="rowNo pickId" name="form-${newFormSet}-picklist" id="id_form-${newFormSet}-picklist" value="${response.picklistNo}"></td>
+                            <td><input type="number" class="rowNo pickId" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly></td>
                             <td>
                                 <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
-                                    <span class="pickQty">${response.picklisQty}</span>
+                                    <span class="pickQty"></span>
                                 </span>
                             </td>
-                            <td><input type="number" class="rowNo pickBalance" name="form-${newFormSet}-balance_qty" id="id_form-${newFormSet}-balance_qty" value="${response.picklisQty}"></td>
+                            <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="" readonly></td>
                             <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
                         </tr>
 
                         {% endfor %}
+
                     </tbody>
                 </table>
             </div>
@@ -261,11 +262,10 @@ $('#id_pickList_no').on('blur', function () {
         data: { "picklistNo": picklistNo },
         success: function (response) {
             var productPickList = response.picklistDict;
-            console.log('productPickList',response)
             if (response.picklistDict && response.picklisQty !== null) {
                 var picklistKey = Object.keys(response.picklistDict)[0]; // Get the first key dynamically
                     var picklistData = response.picklistDict[picklistKey]; // Get the data for that key
-                  
+
                     // Retrieve existing data from the hidden field or initialize empty array
                     var hiddenData = $('#picklistHiddenData').val();
                     var currentData = hiddenData ? JSON.parse(hiddenData) : {};
@@ -277,7 +277,6 @@ $('#id_pickList_no').on('blur', function () {
                     // Append all items to the array
                     picklistData.forEach(item => {
                         currentData[picklistKey].push({
-                            id: item.id, // ✅ Include ID field
                             sku: item.sku,
                             model_name: item.model_name,
                             color: item.color,
@@ -302,34 +301,40 @@ $('#id_pickList_no').on('blur', function () {
                     }
                 });
 
-                var totalForms = $('#id_outward_product_picklist-TOTAL_FORMS'); // Django hidden form count
+                if(rowToPopulate){
+
+                }else{
+
+                }
+                
+                if (rowToPopulate) {
+                    // ✅ Step 3: Populate the empty row with response values
+                    rowToPopulate.find('.pickId').val(response.picklistNo);
+                    rowToPopulate.find('.pickBalance').val(response.picklisQty);
+                } else {
+                    // ✅ Step 4: If no empty row exists, create a new one
+                    var totalForms = $('#id_form-TOTAL_FORMS'); // Django hidden form count
                     var formCount = parseInt(totalForms.val()); // Get current form count
-                    var newFormSet = formCount - 1;
+                    
 
                     var newRow = $(`
                         <tr>
-                            <td><input type="hidden" class="" name="outward_product_picklist-${newFormSet}-picklist" id="outward_product_picklist-${newFormSet}-picklist" value="${response.id}"><input type="number" class="rowNo pickId" name="outward_product_picklist-${newFormSet}-picklistNo" id="id_outward_product_picklist-${newFormSet}-picklistNo" value="${response.picklistNo}"></td>
+                            <td><input type="number" class="rowNo pickId" name="form-${formCount}-picklist" id="id_form-${formCount}-picklist" value="${response.picklistNo}"></td>
                             <td>
                                 <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
                                     <span class="pickQty">${response.picklisQty}</span>
                                 </span>
                             </td>
-                            <td><input type="number" class="rowNo pickBalance" name="outward_product_picklist-${newFormSet}-balance_qty" id="id_outward_product_picklist-${newFormSet}-balance_qty" value="${response.picklisQty}"></td>
+                            <td><input type="number" class="rowNo pickBalance" name="form-${formCount}-balance_qty" id="id_form-${formCount}-balance_qty" value="${response.picklisQty}"></td>
                             <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
                         </tr>
                     `);
 
                     tables.append(newRow);
-                    totalForms.val(formCount); // ✅ Update form count
+                    totalForms.val(formCount + 1); // ✅ Update form count
 
-                // if (rowToPopulate) {
-                //     // ✅ Step 3: Populate the empty row with response values
-                //     rowToPopulate.find('.pickId').val(response.picklistNo);
-                //     rowToPopulate.find('.pickBalance').val(response.picklisQty);
-                // } else {
-                //     // ✅ Step 4: If no empty row exists, create a new one
                    
-                // }
+                }
             }
         },
         error: function (error) {
