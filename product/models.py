@@ -1,5 +1,6 @@
 
 from hashlib import blake2b
+from turtle import mode
 from urllib import request
 from django.db import models
 from django.conf import settings
@@ -1038,7 +1039,7 @@ class finished_product_warehouse_bin(models.Model):
     sub_catergory_id = models.ForeignKey(MainCategory, on_delete=models.PROTECT, related_name='sub_categories', null=True, blank=True)
     product_size_in_bin = models.IntegerField(default=0)
     products_in_bin = models.IntegerField(default=0)
-    
+
     def save(self, *args, **kwargs):
         
         if self.pk:
@@ -1240,10 +1241,19 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
 
 
 class Picklist_voucher_master(models.Model):
+    STATUS =  [
+        ("Pending","Pending"),
+        ("Recieving","Recieving"),
+        ("close","close"),
+        ]
+    
     picklist_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
+    ledgerTypes = models.ForeignKey(ledgerTypes, on_delete=models.PROTECT)
+    status = models.CharField(max_length = 50, choices= STATUS, default='Pending')
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    narration = models.CharField(max_length=255,null=True,blank=True)
 
 
 class Picklist_products_list(models.Model):
@@ -1251,7 +1261,6 @@ class Picklist_products_list(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
-    # use_all_qty = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 

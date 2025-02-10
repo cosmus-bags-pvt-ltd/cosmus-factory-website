@@ -1251,7 +1251,7 @@ salesvoucherupdateformset = inlineformset_factory(sales_voucher_master_finish_Go
 class Picklistvouchermasterform(forms.ModelForm):
     class Meta:
         model = Picklist_voucher_master
-        fields = ['picklist_no']
+        fields = ['picklist_no','ledgerTypes','narration']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

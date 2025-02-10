@@ -13973,10 +13973,12 @@ def create_update_picklist(request, p_id=None):
         voucher_instance = get_object_or_404(Picklist_voucher_master, id=p_id)
         master_form = Picklistvouchermasterform(request.POST or None, instance=voucher_instance)
         formset = picklistcreateformsetupdate(request.POST or None, instance=voucher_instance)
+        types = None
     else:
         voucher_instance = None
         master_form = Picklistvouchermasterform()
         formset = picklistcreateformset()
+        types = ledgerTypes.objects.all()
 
     if request.method == "POST":
         logger.info(f"Received POST data: {request.POST}")
@@ -14037,7 +14039,7 @@ def create_update_picklist(request, p_id=None):
                 logger.error(f"Error while processing picklist: {str(e)}", exc_info=True)
                 return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
 
-    return render(request, 'finished_product/createupdatepicklist.html', {'master_form': master_form, 'formset': formset})
+    return render(request, 'finished_product/createupdatepicklist.html', {'master_form': master_form, 'formset': formset,'types':types})
 
 
 

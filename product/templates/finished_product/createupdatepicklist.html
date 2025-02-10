@@ -12,8 +12,25 @@
             <input type="text" class="purchase-input" name="picklist_no" id="id_picklist_no" value="{{ master_form.picklist_no.initial }}" maxlength="255" required>
             {% endif %}
 
+            
             <label for="pickListDate" class="ms-3 me-3">Date :</label>
             <input type="date" class="purchase-itemName" name="pickListDate" id="id_pickListDate" >
+            
+            <label for="pickListDate" class="ms-3 me-3">Channel :</label>
+            <select name="ledgerTypes" required="" id="id_ledgerTypes">
+                {% if master_form.instance.id %}
+                <option value="{{ master_form.instance.ledgerTypes.id }}">{{ master_form.instance.ledgerTypes.type_name }}</option>
+                {% elif not master_form.instance.id %}
+                    <option value="" selected disabled>Selesct Channel</option>
+                    {% for type in types %}
+                    <option value="{{ type.id }}">{{type.type_name}}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+            
+            <label for="pickListDate" class="ms-3 me-3">Narration :</label>
+            <input type="text" name="narration" maxlength="255" required="" id="id_narration" value="{{ master_form.instance.narration }}">
+        
         </div>
         <div>
             <table class="table table-striped table-hover table-bordered" id="createpickListTable">
@@ -23,8 +40,8 @@
                         <th>Ref No</th>
                         <th>Model Name</th>
                         <th>Color</th>
-                        <th>Sku</th>
-                        <th>Images</th>
+                        <th>SKU</th>
+                        <th>IMG</th>
                         <th>Bin</th>
                         <th>Reserve Qty</th>
                         <th>Quantity</th>
@@ -62,7 +79,7 @@
                             </td>
                             
                             <td>
-                                <img src="{{form.instance.product.PProduct_image.url}}" id="id_productInward_img_{{forloop.counter0}}" alt="product"  style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
+                                <img src="{{form.instance.product.PProduct_image.url}}" id="id_productInward_img_{{forloop.counter0}}" alt="product"  style="width: 25px; cursor: pointer; object-fit: contain;" onclick="showLargeImage(this.src)">
                             </td>
 
                             <td>
@@ -114,7 +131,7 @@
                             </td>
                             
                             <td>
-                                <img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
+                                <img src="" id="id_productInward_img_{{forloop.counter0}}" alt="product" style="width: 25px; cursor: pointer; object-fit: contain;" onclick="showLargeImage(this.src)">
                             </td>
 
                             <td>

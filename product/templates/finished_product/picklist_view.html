@@ -13,7 +13,7 @@
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
-                <th>Image</th>
+                <th>IMG</th>
                 <th>QTY</th>
             </tr>
         </thead>
@@ -29,7 +29,7 @@
                 <td>{{data.product.Product.Product_Refrence_ID}}</td>
                 <td>{{data.product.Product.Model_Name}}</td>
                 <td>{{data.product.PProduct_color.color_name}}</td>
-                <td><img src="{{ data.product.PProduct_image.url }}" alt="Product Image" style="width: 60px; height: 40px;"></td>
+                <td><img src="{{ data.product.PProduct_image.url }}" alt="Product Image" style="width: 25px; object-fit:contain;"></td>
                 <td>{{data.product_quantity}}</td>
                 
              </tr>
