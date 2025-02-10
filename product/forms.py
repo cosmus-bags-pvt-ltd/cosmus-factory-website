@@ -1315,7 +1315,7 @@ class PicklistProcessInOutwardForm(forms.ModelForm):
         fields = ['picklist', 'balance_qty']
 
 
-PicklistProcessInOutwardFormSet = inlineformset_factory(outward_product_master, Picklist_process_in_outward,form=PicklistProcessInOutwardForm, extra=1, can_delete=True)
+PicklistProcessInOutwardFormset = inlineformset_factory(outward_product_master, Picklist_process_in_outward,form=PicklistProcessInOutwardForm, extra=1, can_delete=True)
 
 
 

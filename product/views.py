@@ -62,7 +62,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
-                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormSet, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
+                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormset, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
                     ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
@@ -14388,11 +14388,11 @@ def outward_scan_product_create(request,o_id=None):
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
-        picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None,instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormset(request.POST or None,instance=outward_instance)
     else:
         outward_instance = None
         master_form = Outwardproductmasterform()
-        picklist_formset = PicklistProcessInOutwardFormSet()
+        picklist_formset = PicklistProcessInOutwardFormset()
         formset = OutwardProductcreateFormSet()
     
 
@@ -14400,7 +14400,7 @@ def outward_scan_product_create(request,o_id=None):
         print(request.POST)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
-        picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None, instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormset(request.POST or None, instance=outward_instance)
 
 
         if not master_form.is_valid():
@@ -14453,16 +14453,19 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.save()
 
 
-                    if not picklist_formset.is_valid():
+                    if picklist_formset.is_valid():
                         for form in picklist_formset:
-                            if not form.is_valid():
-                                print("Picklist Form Errors:", form.errors)
-
-                    for form in picklist_formset:
-                        if form.is_valid():
                             picklist_value = form.cleaned_data['picklist']
                             picklist_form_instance = form.save(commit=False)
-                            picklist_form_instance.picklist = Picklist_voucher_master.objects.get(id=picklist_value)
+
+                            # Ensure the picklist value is valid
+                            try:
+                                picklist_instance = Picklist_voucher_master.objects.get(id=picklist_value)
+                                picklist_form_instance.picklist = picklist_instance
+                            except Picklist_voucher_master.DoesNotExist:
+                                print(f"Picklist not found for id {picklist_value}")
+                                continue
+
                             picklist_form_instance.outward_no = master_form_instance
                             picklist_form_instance.save()
 
