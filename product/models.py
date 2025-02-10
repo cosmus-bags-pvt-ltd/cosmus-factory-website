@@ -1038,7 +1038,7 @@ class finished_product_warehouse_bin(models.Model):
     sub_catergory_id = models.ForeignKey(MainCategory, on_delete=models.PROTECT, related_name='sub_categories', null=True, blank=True)
     product_size_in_bin = models.IntegerField(default=0)
     products_in_bin = models.IntegerField(default=0)
-
+    
     def save(self, *args, **kwargs):
         
         if self.pk:

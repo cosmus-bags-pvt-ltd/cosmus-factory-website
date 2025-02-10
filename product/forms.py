@@ -1321,7 +1321,7 @@ class Salesvouchermasteroutwardscanform(forms.ModelForm):
         last_item = sales_voucher_master_outward_scan.objects.order_by('id').last()
 
         if last_item:
-
+            
             self.fields['sale_no'].initial = last_item.id + 1
         else:
             self.fields['sale_no'].initial = 1
