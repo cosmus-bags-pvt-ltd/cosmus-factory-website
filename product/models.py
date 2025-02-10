@@ -1171,21 +1171,24 @@ class finishedgoodsbinallocation(models.Model):
 
 
     def save(self, *args, **kwargs):
-        
-        parent_bin_size = self.bin_number.product_size_in_bin
+        print("in model save")
 
+        if 'update_fields' in kwargs and kwargs['update_fields'] == ['outward_done']:
+            print("✅ Skipping bin validation for outward_done update.")
+            super().save(*args, **kwargs)
+            return
         
-        current_bin_count = finishedgoodsbinallocation.objects.filter(bin_number=self.bin_number).count()
-
         
-        if current_bin_count >= parent_bin_size:
-            raise ValueError(f"The bin {self.bin_number.bin_name} is full. Cannot allocate more items.")
+        if not self.pk:
+            parent_bin_size = self.bin_number.product_size_in_bin
 
-        
-        super().save(*args, ** kwargs)
+            current_bin_count = finishedgoodsbinallocation.objects.filter(bin_number=self.bin_number).count()
 
-    def __str__(self):
-        return self.related_purchase_item.product_purchase_master.purchase_number
+            if current_bin_count >= parent_bin_size:
+                raise ValueError(f"The bin {self.bin_number.bin_name} is full. Cannot allocate more items.")
+            
+            super().save(*args, ** kwargs)
+
 
 
 
@@ -1286,6 +1289,8 @@ class outward_products(models.Model):
     unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     quantity = models.IntegerField(default = 1)
+
+
 
 
 class Picklist_process_in_outward(models.Model):

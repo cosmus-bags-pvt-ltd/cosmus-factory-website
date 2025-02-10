@@ -25,7 +25,11 @@
             {% for data in merged_list %}
             <tr>
                 <td>{{forloop.counter}}</td>
-                <td><img id="productImgPreview" name="product_img" src="{{data.product_name.PProduct_image.url}}" alt="Product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
+                {% if data.img %}
+                <td><img id="productImgPreview" name="product_img" src ="{{ MEDIA_URL }}{{ data.img }}" alt="Product" style="width: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
+                {% else %}
+                None
+                {% endif %}
                 <td>{{data.ref_id}}</td>
                 <td>{{data.model_name}}</td>
                 <td>{{data.color}}</td>
