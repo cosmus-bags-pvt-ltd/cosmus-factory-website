@@ -1,5 +1,6 @@
 {% extends 'product/base.html' %}
 {% load static %}
+{% load tz %}
 {% block body %}
 
 
@@ -13,14 +14,16 @@
         <thead class="name_absolute sticky-top">
             <tr>
                 <th>No</th>
+                <th>Inward date</th>
                 <th>Image</th>
+                <th>Serial No</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
-                <th>Product SKU</th>
-                <th>Product Serial No</th>
-                <th>Inward date</th>
-                <th>Quantity</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Invt age</th>
+                <th>W-Position</th>
             </tr>
         </thead>
         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -28,21 +31,22 @@
             {% for entry in instance_entries %}
             <tr>
                 <td>{{forloop.counter}}</td>
+                <td>{{entry.created_date}}</td>
                 <td>
-                    {% if entry.product__PProduct_image %}
-                        <img id="productImgPreview" name="product_img" src="{{entry.product__PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;">
+                    {% if entry.product.PProduct_image %}
+                        <img id="productImgPreview" name="product_img" src="{{ entry.product.PProduct_image.url }}" alt="Product Image" style="width: 60px; height: 40px; object-fit: contain;">
                     {% else %}
                         <span>No Image Available</span>
                     {% endif %}
                 </td>
-                <td class="refNo">{{entry.product__Product__Product_Refrence_ID}}</td>
-                <td>{{entry.product__Product__Model_Name}}</td>
-                <td>{{entry.product__PProduct_color__color_name}}</td>
-                <td>{{entry.product__PProduct_SKU}}</td>
                 <td>{{entry.unique_serial_no}}</td>
-                <td>{{entry.created_date}}</td>
+                <td class="refNo">{{entry.product.Product.Product_Refrence_ID}}</td>
+                <td>{{entry.product.Product.Model_Name}}</td>
+                <td>{{entry.product.PProduct_color.color_name}}</td>
+                <td>{{entry.product.PProduct_SKU}}</td>
                 <td class="text-center">1</td>
-                
+                <td>{{entry.age_in_days}} days</td>
+                <td>{{entry.bin_number.rack_finished_name.zone_finished_name.zone_name}} -- {{entry.bin_number.rack_finished_name.rack_name}} -- {{entry.bin_number.bin_name}}</td>
              </tr>
             {% endfor %}
       

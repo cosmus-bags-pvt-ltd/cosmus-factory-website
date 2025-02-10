@@ -1251,7 +1251,7 @@ salesvoucherupdateformset = inlineformset_factory(sales_voucher_master_finish_Go
 class Picklistvouchermasterform(forms.ModelForm):
     class Meta:
         model = Picklist_voucher_master
-        fields = ['picklist_no']
+        fields = ['picklist_no','ledgerTypes','narration']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1321,7 +1321,7 @@ class Salesvouchermasteroutwardscanform(forms.ModelForm):
         last_item = sales_voucher_master_outward_scan.objects.order_by('id').last()
 
         if last_item:
-
+            
             self.fields['sale_no'].initial = last_item.id + 1
         else:
             self.fields['sale_no'].initial = 1

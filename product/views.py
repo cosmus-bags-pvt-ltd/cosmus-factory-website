@@ -9819,7 +9819,10 @@ def product_transfer_to_warehouse_ajax(request):
 
 
 def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
-        
+    last_selected_bin_id = request.session.get('last_selected_bin_id')
+    if last_selected_bin_id:
+        del request.session['last_selected_bin_id']
+    
     try:
         if voucher_type == 'transfer':
             # print("in transfer")
@@ -9892,6 +9895,8 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
 
+                                        request.session['last_selected_bin_id'] = bin_instance.id
+
                                         bin_instance.products_in_bin += 1
                                         bin_instance.save()
                                         
@@ -9935,6 +9940,8 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         product_instance = get_object_or_404(PProduct_Creation,pk=scanned_sku)
 
                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
+
+                                        request.session['last_selected_bin_id'] = bin_instance.id
 
                                         bin_instance.products_in_bin += 1
                                         bin_instance.save()
@@ -10001,6 +10008,9 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
 
 
+
+
+
 def delete_sigle_entries(request, e_id, voucher_type):
     try:
         delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
@@ -10044,33 +10054,24 @@ def scan_product_qty_list(request):
     return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list})
 
 
-
+from django.utils import timezone
 
 def scan_product_list(request,pk,v_type):
 
     if v_type == "purchase":
 
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number').values(
-            'product__Product__Product_Refrence_ID',
-            'product__PProduct_image',
-            'product__Product__Model_Name',
-            'product__PProduct_color__color_name',
-            'product__PProduct_SKU',
-            'unique_serial_no',
-            'created_date'
-            )
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number')
 
     elif v_type == "transfer":
 
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number').values(
-            'product__Product__Product_Refrence_ID',
-            'product__PProduct_image',
-            'product__Product__Model_Name',
-            'product__PProduct_color__color_name',
-            'product__PProduct_SKU',
-            'unique_serial_no',
-            'created_date'
-            )
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number')
+
+    current_date = timezone.now()
+    for entry in instance_entries:
+        created_date = entry.created_date
+        age_in_days = (current_date - created_date).days
+        entry.age_in_days = age_in_days
+    
 
     return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries})
 
@@ -10307,95 +10308,90 @@ def model_name_wise_purchase_transfer_report(request,sku):
 
 def process_serial_no(request):
     print("in scan def")
+    
     if request.method == 'POST':
         serial_no = request.POST.get('serialNo')
         print(serial_no)
-        if serial_no:  
+
+        if serial_no:
             try:
+                # Check if serial number is already processed
                 if finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).exists():
                     return JsonResponse({'message': 'This Serial Number has already been processed.'}, status=400)
-            
+
             except IntegrityError:
                 return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
 
-
             try:
+                # Call external API
                 url = f'https://www.cosmusbags.com/cosmus/qrcode.php?wc={serial_no}'
-                
                 response_post = requests.get(url)
-                response_data =  response_post.json()
+                response_data = response_post.json()
                 print(response_data)
+
                 if response_data.get('response_code') == 200 and response_data.get('response_desc') == 'success':
                     product_scanned_sku = response_data['sku']
 
+                    # Fetch product details
                     product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_scanned_sku)
                     model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
                     product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
                     product_sku = product_instance.PProduct_SKU
-                    product_color = product_instance.PProduct_color.color_name if  product_instance.PProduct_color else None
+                    product_color = product_instance.PProduct_color.color_name if product_instance.PProduct_color else None
                     product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
-                    
+
+                    # Get product main categories
                     product_main_cats = product_instance.Product.product_cats.all()
                     main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
 
-                    # print(main_cats_all)
-                    # product_sub_cats = product_instance.Product.product_cats.all()
-                    # sub_cats_all = [x.SubCategory_id for x in product_sub_cats]
-
-                    
+                    # Retrieve last selected bin from session
+                    last_selected_bin_id = request.session.get('last_selected_bin_id')
 
                     bins_related_to_product = []
-                    for records in main_cats_all:
-                        product_suggested_bins = finished_product_warehouse_bin.objects.filter(sub_catergory_id = records)
-                        bins_related_to_product.append(product_suggested_bins)
+
+                    # Fetch all bins related to the product
+                    for bin_obj in finished_product_warehouse_bin.objects.filter(sub_catergory_id__in=main_cats_all):
+                        product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False).count()
+
+                        bins_related_to_product.append({
+                            'bin_id': bin_obj.id,
+                            'bin_name': bin_obj.bin_name,
+                            'bin_size': bin_obj.product_size_in_bin,
+                            'products_in_bin': product_count
+                        })
                     
+                    print('last_selected_bin_id == ',last_selected_bin_id)
+                    # Sort bins: Show last selected bin first
+                    if last_selected_bin_id:
+                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id)
 
-
-                    flatterned_bins_related_to_product_list = list(chain.from_iterable(bins_related_to_product))
-                    # print('flatterned_bins_related_to_product_list -- ', flatterned_bins_related_to_product_list)
-
-                    bin_to_dict = []
-                    
-                    for qs in flatterned_bins_related_to_product_list:
-                        products_in_bin = finishedgoodsbinallocation.objects.filter(bin_number=qs,outward_done=False).count()
-
-                        dict_to_append = {
-                            'bin_id' : qs.id,
-                            'bin_name' : qs.bin_name,
-                            'bin_size' :qs.product_size_in_bin,
-                            'products_in_bin':products_in_bin}
-                        
-                        if any(d['bin_name'] == qs.bin_name for d in bin_to_dict):
-                            continue
-                        else:
-                            bin_to_dict.append(dict_to_append)
-
-                    print('bin_to_dict ---- ' , bin_to_dict)
-
-                    
-                    
-                    return JsonResponse({ 'model_name':model_name,'product_name':product_name, 'product_sku': product_sku,
-                                    'bin_to_dict':bin_to_dict,
-                                    'product_color' : product_color,'product_image':product_image,'message': f'Serial No {serial_no} processed successfully.'})
+                    return JsonResponse({
+                        'model_name': model_name,
+                        'product_name': product_name,
+                        'product_sku': product_sku,
+                        'bin_to_dict': bins_related_to_product,
+                        'product_color': product_color,
+                        'product_image': product_image,
+                        'message': f'Serial No {serial_no} processed successfully.'
+                    })
 
                 else:
                     return JsonResponse({'message': 'Invalid response from external API.'}, status=400)
 
-            except ObjectDoesNotExist :
-                return JsonResponse({'message': 'Product SKU does not Exist.'}, status=404)
+            except ObjectDoesNotExist:
+                return JsonResponse({'message': 'Product SKU does not exist.'}, status=404)
 
             except requests.RequestException:
                 return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
-            
+
             except Exception:
                 return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
-             
+
         else:
             return JsonResponse({'message': 'Invalid Serial No.'}, status=400)
 
     return JsonResponse({'message': 'Invalid Request Method.'}, status=405)
         
-
 
 
 
@@ -13977,10 +13973,12 @@ def create_update_picklist(request, p_id=None):
         voucher_instance = get_object_or_404(Picklist_voucher_master, id=p_id)
         master_form = Picklistvouchermasterform(request.POST or None, instance=voucher_instance)
         formset = picklistcreateformsetupdate(request.POST or None, instance=voucher_instance)
+        types = None
     else:
         voucher_instance = None
         master_form = Picklistvouchermasterform()
         formset = picklistcreateformset()
+        types = ledgerTypes.objects.all()
 
     if request.method == "POST":
         logger.info(f"Received POST data: {request.POST}")
@@ -14041,7 +14039,7 @@ def create_update_picklist(request, p_id=None):
                 logger.error(f"Error while processing picklist: {str(e)}", exc_info=True)
                 return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
 
-    return render(request, 'finished_product/createupdatepicklist.html', {'master_form': master_form, 'formset': formset})
+    return render(request, 'finished_product/createupdatepicklist.html', {'master_form': master_form, 'formset': formset,'types':types})
 
 
 
@@ -14411,7 +14409,7 @@ def outward_scan_product_create(request,o_id=None):
                             form.instance.delete()
                     
                     
-                    formset.forms = [form for form in formset.forms if form.has_changed()]
+                    
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
@@ -14427,45 +14425,45 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.save()
 
 
-                        products = {}
+                    products = {}
 
-                        post_data = request.POST.dict()
-                        
+                    post_data = request.POST.dict()
+                    
 
-                        total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
+                    total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
 
-                        products[master_form_instance.outward_no] = []
+                    products[master_form_instance.outward_no] = []
 
-                        for i in range(total_forms):
-                            product = post_data.get(f'outward_product-{i}-product')
-                            quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
+                    for i in range(total_forms):
+                        product = post_data.get(f'outward_product-{i}-product')
+                        quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
 
-                            print(product)
+                        print(product)
 
-                            found = False
-                            for p in products[master_form_instance.outward_no]:
-                                if p['product'] == product:
-                                    p['quantity'] += quantity
-                                    found = True
-                                    break
-                                
+                        found = False
+                        for p in products[master_form_instance.outward_no]:
+                            if p['product'] == product:
+                                p['quantity'] += quantity
+                                found = True
+                                break
+                            
 
-                            if not found:
-                                product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
-                                products[master_form_instance.outward_no].append({
-                                    'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
-                                    'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
-                                    'product': product,
-                                    'color': post_data.get(f'product_color_{i}'),
-                                    'quantity': quantity,
-                                    'mrp': decimal_to_float(product_info.Product.Product_MRP),
-                                    'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
-                                    'gst': product_info.Product.Product_GST.gst_percentage
-                                })
-                        
-                        request.session['products_data'] = products
+                        if not found:
+                            product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
+                            products[master_form_instance.outward_no].append({
+                                'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
+                                'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
+                                'product': product,
+                                'color': post_data.get(f'product_color_{i}'),
+                                'quantity': quantity,
+                                'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                'gst': product_info.Product.Product_GST.gst_percentage
+                            })
+                    
+                    request.session['products_data'] = products
 
-                    return redirect('/salesvouchercreateupdateforwarehouse/')
+                return redirect('/salesvouchercreateupdateforwarehouse/')
                 
             except Exception as e:
                 print(e)
@@ -14488,14 +14486,15 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     print("in sale")
     party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
     warehouse_names = Finished_goods_warehouse.objects.all()
-    
+    outward_number = None
+
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
         master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
         formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
         warehouse_id = voucher_instance.selected_warehouse.id
-        outward_number = None
+        
         print('warehouse_id', warehouse_id)
 
     else:
@@ -14508,6 +14507,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         if products:
             for key, val in products.items():
                 outward_number = key
+                print('outward_number = ', outward_number)
                 product_list2 = val
                 break
 
@@ -14519,8 +14519,8 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
     if request.method == "POST":
         
-        master_form = Salesvouchermasteroutwardscanform(request.POST, instance=voucher_instance)
-        formset = salesvoucherfromscancreateformset(request.POST, instance=voucher_instance)
+        master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
+        formset = salesvoucherfromscancreateformset(request.POST or None, instance=voucher_instance)
 
 
         if not master_form.is_valid():
