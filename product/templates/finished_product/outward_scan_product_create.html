@@ -46,7 +46,16 @@
                     <tbody class="mainTableList">
                         {{ picklist_formset.management_form }}
                         {% for form in picklist_formset %}
-
+                        <tr>
+                            <td><input type="number" class="rowNo pickId" name="form-${newFormSet}-picklist" id="id_form-${newFormSet}-picklist" value="${response.picklistNo}"></td>
+                            <td>
+                                <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
+                                    <span class="pickQty">${response.picklisQty}</span>
+                                </span>
+                            </td>
+                            <td><input type="number" class="rowNo pickBalance" name="form-${newFormSet}-balance_qty" id="id_form-${newFormSet}-balance_qty" value="${response.picklisQty}"></td>
+                            <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
+                        </tr>
 
                         {% endfor %}
 
@@ -336,7 +345,7 @@ $('#id_pickList_no').on('blur', function () {
         var productTable = $('#picklistProductTable .mainTableList');
         productTable.empty();
 
-        var productKey = $(this).closest('tr').find('.pickId').text().trim();
+        var productKey = $(this).closest('tr').find('.pickId').val().trim();
         var storedData = $('#picklistHiddenData').val();
 
         if (!storedData) {
@@ -356,8 +365,9 @@ $('#id_pickList_no').on('blur', function () {
         var picklistSelected = false; 
 
         $('[name$="-product"]').each(function () {
-            var sku = String($(this).val()).trim(); 
-            var row = $(this).closest('tr');
+            let row = $(this).closest('tr');
+            if (row.css('display') === 'none') return; // Skip hidden rows
+            var sku = String($(this).val()).trim();
             var pickNos = row.find('[name^="picklistNo_"]').val()?.trim(); 
             var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0; 
             var checkboxChecked = row.find('.picklistRadio'); 
@@ -385,8 +395,8 @@ $('#id_pickList_no').on('blur', function () {
                     <td><span class="modelName">${item.model_name}</span></td>
                     <td><span class="sku">${sku}</span></td>
                     <td><span class="color">${item.color}</span></td>
-                    <td><span class="qty">${qty}</span></td>
-                    <td><span class="balanceqty">${balanceQty}</span></td> 
+                    <td><span class="qty text-center">${qty}</span></td>
+                    <td><span class="balanceqty text-center">${balanceQty}</span></td> 
                 </tr>
             `);
 
@@ -442,7 +452,7 @@ $(document).ready(function () {
             if (serialNo) {
                 try {
                     const response = await sendSerialNumber(serialNo);
-                    $('#responseMessage').html('<span class="alert alert-success" role="alert">' + response.message + '</span>');
+                    $('#responseMessage').html('<span class="text-success" role="alert">' + response.message + '</span>');
                 } catch (error) {
                     // const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
                     // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
@@ -469,7 +479,7 @@ $(document).ready(function () {
                         try {
                             const response = await sendSerialNumber(manualSerialNo);
                             
-                            $('#responseMessage').html('<span class="alert alert-success" role="alert">' + response.message + '</span>');
+                            $('#responseMessage').html('<span class="text-success" role="alert">' + response.message + '</span>');
                             $('#id_manualSerialNo').val('');
                            
                         } catch (error) {
@@ -531,6 +541,7 @@ $(document).ready(function () {
         serialNoQty.each(function () {
             var outwardQty = parseInt($(this).val(), 10) || 0;
             var row = $(this).closest('tr');
+            if (row.css('display') === 'none') return; // Skip hidden rows
             var tablePicklistNo = parseInt(row.find('[name^="picklistNo_"]').val()) || 0;
             var tableSku = String(row.find('[name$="-product"]').val()).trim(); // Ensure SKU is string
 
@@ -652,6 +663,7 @@ $(document).ready(function () {
             // **Step 6: Check for Duplicate Serial No**
             tableBody.find('tr').each(function () {
                 const row = $(this);
+                if (row.css('display') === 'none') return; // Skip hidden rows
                 const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
 
                 if (serialValue && serialNo === serialValue) {
@@ -890,10 +902,6 @@ $(document).ready(function () {
 
             selectedRow.find('.pickBalance').val(balanceQty)
         })
-      
-
-
-
 }
 
       //deleteRowData()
