@@ -47,10 +47,10 @@
                         {{ picklist_formset.management_form }}
                         {% for form in picklist_formset %}
                         <tr>
-                            <td><input type="number" class="rowNo pickId" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly></td>
+                            <td><input type="hidden" class="rowNo" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly><input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="" readonly></td>
                             <td>
-                                <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
-                                    <span class="pickQty"></span>
+                                <span class="outwardPick-btn pickQty text-white" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
+                                    <input type="number" class="rowNo pickQty" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="" readonly>
                                 </span>
                             </td>
                             <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="" readonly></td>
@@ -309,17 +309,20 @@ $('#id_pickList_no').on('blur', function () {
                 
                 if (rowToPopulate) {
                     // ✅ Step 3: Populate the empty row with response values
+                    rowToPopulate.find('[name$="-picklist]').val(response.id)
                     rowToPopulate.find('.pickId').val(response.picklistNo);
-                    rowToPopulate.find('.pickBalance').val(response.picklisQty);
+                    rowToPopulate.find('.pickQty').val(response.picklisQty)
+                    // rowToPopulate.find('.pickBalance').val(response.);
                 } else {
                     // ✅ Step 4: If no empty row exists, create a new one
-                    var totalForms = $('#id_form-TOTAL_FORMS'); // Django hidden form count
+                    var totalForms = $('#id_outward_product_picklist-TOTAL_FORMS'); // Django hidden form count
                     var formCount = parseInt(totalForms.val()); // Get current form count
                     
 
                     var newRow = $(`
                         <tr>
-                            <td><input type="number" class="rowNo pickId" name="form-${formCount}-picklist" id="id_form-${formCount}-picklist" value="${response.picklistNo}"></td>
+                            <td><input type="hidden" class="rowNo" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="${response.id}" readonly>
+                                <input type="number" class="rowNo pickId" name="form-${formCount}-picklistNo" id="id_form-${formCount}-picklistNo" value="${response.picklistNo}"></td>
                             <td>
                                 <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
                                     <span class="pickQty">${response.picklisQty}</span>
