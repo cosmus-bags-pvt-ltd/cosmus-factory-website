@@ -62,7 +62,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
-                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
+                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormSet, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
                     ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
@@ -14000,6 +14000,7 @@ def create_update_picklist(request, p_id=None):
                     master_form_instance.c_user = request.user
                     master_form_instance.save()
 
+                    
                     # Handle deleted forms (Restoring bin quantity)
                     for form in formset.deleted_forms:
                         if form.instance.pk:
@@ -14032,6 +14033,10 @@ def create_update_picklist(request, p_id=None):
                             else:
                                 logger.warning(f"Insufficient stock for SKU={sku}, Bin={bin_id}. Required={qty}, Available={bin_qty_object.product_quantity}")
                                 return JsonResponse({"status": "error", "message": "Insufficient stock"}, status=400)
+
+                    total_qty = master_form_instance.picklist_products_list.aggregate(total=Sum('product_quantity'))['total'] or 0
+                    master_form_instance.total_qty = total_qty
+                    master_form_instance.save()
 
                     return redirect('all-picklists-list')
 
@@ -14104,7 +14109,7 @@ def deletepicklist(request,pl_id):
 
 
 def all_picklists_list(request):
-    all_picklists = Picklist_voucher_master.objects.prefetch_related('picklist_products_list__product').annotate(total_quantity=Sum('picklist_products_list__product_quantity'))
+    all_picklists = Picklist_voucher_master.objects.all()
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
 
 
@@ -14370,15 +14375,18 @@ def decimal_to_float(obj):
 
 
 from urllib.parse import urlencode
+
 def outward_scan_product_create(request,o_id=None):
 
     if o_id:
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormSet(request.POST or None,instance=outward_instance)
     else:
         outward_instance = None
         master_form = Outwardproductmasterform()
+        picklist_formset = PicklistProcessInOutwardFormSet()
         formset = OutwardProductcreateFormSet()
     
 
@@ -14468,7 +14476,7 @@ def outward_scan_product_create(request,o_id=None):
             except Exception as e:
                 print(e)
     
-    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset})
+    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset})
 
 
 

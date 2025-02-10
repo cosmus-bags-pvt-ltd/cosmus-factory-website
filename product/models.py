@@ -1,5 +1,6 @@
 
 from hashlib import blake2b
+from pyexpat import model
 from turtle import mode
 from urllib import request
 from django.db import models
@@ -1251,9 +1252,14 @@ class Picklist_voucher_master(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
     ledgerTypes = models.ForeignKey(ledgerTypes, on_delete=models.PROTECT)
     status = models.CharField(max_length = 50, choices= STATUS, default='Pending')
+    total_qty = models.BigIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     narration = models.CharField(max_length=255,null=True,blank=True)
+
+    
+
+
 
 
 class Picklist_products_list(models.Model):
@@ -1282,7 +1288,10 @@ class outward_products(models.Model):
     quantity = models.IntegerField(default = 1)
 
 
-
+class Picklist_process_in_outward(models.Model):
+    outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT,related_name='outward_product_picklist')
+    picklist = models.ForeignKey(Picklist_voucher_master, on_delete=models.PROTECT)
+    balance_qty = models.IntegerField(default=0)
 
 
 class sales_voucher_master_outward_scan(models.Model):
