@@ -13,7 +13,7 @@
             {% endif %}
 
             <label for="pickListDate" class="ms-3 me-3">Date :</label>
-            <input type="date" class="item-selects" name="" id="pickListDate" >
+            <input type="date" class="purchase-itemName" name="pickListDate" id="id_pickListDate" >
         </div>
         <div>
             <table class="table table-striped table-hover table-bordered" id="createpickListTable">
@@ -281,7 +281,7 @@
                 var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
                 var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
                 var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue)
-       
+                document.getElementById('id_picklist_products_list-'+ purchaseValue +'-bin_number').focus();
                 $(this).addClass('selected').siblings().removeClass('selected');
 
                 var selectedValue = searchedProductNameDic[item_value];
@@ -292,10 +292,10 @@
                 const productReserve = selectedValue[4];
                 const url = selectedValue[6]
                 var newnameValue = namevalueCheck + '                                      ' + productQty;
-
+                console.log('url',url)
                 $(`input[name$="picklist_products_list-${purchaseValue}-product"]`).val(item_value);
                 $(`input[name$="picklist_products_list-${purchaseValue}-product_name_value"]`).val(newnameValue)
-              
+               
 
                 productcolorinput.value = productColor;
                 skuIput.value = item_value;
@@ -330,80 +330,47 @@
 
 
         let timeout = null; // Declare timeout variable globally
+        $(document).on('input', 'input[name$="-product_quantity"]', function (e) {  
+
+            clearTimeout(timeout); // Clear previous timeout to prevent multiple requests
+            let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
+            let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val()) || 0;
+            let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
+            let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
+            let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity')) || 0;
+            let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val()) || 0;
+
+            if (productQty > binQty) {
+
+                $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty);
+
+            }
 
 
+            timeout = setTimeout(() => { // Wait before sending request
+                // Sending data via AJAX after debounce
 
-    $(document).on('input', 'input[name$="-product_quantity"]', function (e) {  
+                $.ajax({
+                    url: '/binquantityajax/',
+                    method: 'GET',
+                    data: { 
+                        "sku": sku,
+                        "binName": binName,
+                        "binQty": binQty,
+                        "productQty": productQty,
+                        "reserveQty": reserveQty
+                    },
+                    success: function (response) {
+                    console.log(response);
 
-    clearTimeout(timeout); // Clear previous timeout to prevent multiple requests
-
-    let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
-
-    let productQty = parseInt($(`#id_picklist_products_list-${rowIndex}-product_quantity`).val()) || 0;
-
-    let sku = $(`#id_picklist_products_list-${rowIndex}-product`).val();
-
-    let binName = $(`#id_picklist_products_list-${rowIndex}-bin_number`).val();
-
-    let binQty = parseInt($(`#id_picklist_products_list-${rowIndex}-bin_number option:selected`).attr('data-quantity')) || 0;
-
-    let reserveQty = parseInt($(`#id_reserver_Qty_${rowIndex}`).val()) || 0;
-
-
-
-    if (productQty > binQty) {
-
-    $(`#id_picklist_products_list-${rowIndex}-product_quantity`).val(binQty);
-
-    }
-
-
-    timeout = setTimeout(() => { // Wait before sending request
-
-       
-
-
-        // Sending data via AJAX after debounce
-
-        $.ajax({
-
-        url: '/binquantityajax/',
-
-        method: 'GET',
-
-        data: { 
-
-            "sku": sku,
-
-            "binName": binName,
-
-            "binQty": binQty,
-
-            "productQty": productQty,
-
-            "reserveQty": reserveQty
-
-        },
-
-        success: function (response) {
-
-            console.log(response);
-
-        },
-
-        error: function (error) {
-
-            console.log(error);
-
-        }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }, 500); // Adjust delay (in milliseconds) as needed, 500ms is a good default
 
         });
-
-
-
-    }, 500); // Adjust delay (in milliseconds) as needed, 500ms is a good default
-
-    });
 
         function initalBinData(selectBin,purchaseValue,productReserve){
       
@@ -560,7 +527,7 @@
                 var productRefNo = document.getElementById('id_picklist_products_list-' + purchaseValue + '-product_refNo');                   
                 var imgUrl = document.getElementById('id_productInward_img_'+purchaseValue );
                 var reserveValue = document.getElementById('id_reserver_Qty_'+ purchaseValue);
-
+                document.getElementById('id_picklist_products_list-'+ purchaseValue +'-bin_number').focus();
                 productcolorinput.value = productColor;
                 skuIput.value = item_value;
                 productRefNo.value = productRefId;
@@ -581,6 +548,7 @@
                     }
           
                 })
+                
                 var selectBin = selectedValue[3]; 
                 initalBinData(selectBin,purchaseValue,productReserve) 
                 
@@ -794,13 +762,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('id_picklist_no').focus();
+    const dateInput = document.getElementById('id_pickListDate');// this script is for date picker 
+        const today = new Date().toISOString().split('T')[0];
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        dateInput.value = formattedDate;
+        const date = dateInput.value;
+        dateInput.min = today;
     //updateForm()
 })
 
 function inputCheck(){
 
 const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
-const date = document.getElementById('pickListDate')
+const date = document.getElementById('id_pickListDate')
 var tableRows = document.querySelectorAll('#createpickListTable tr');
 
 itemNameInputsid.forEach((input, index) => {
@@ -826,14 +804,13 @@ itemNameInputsid.forEach((input, index) => {
                     const currentTd = input.closest('tr');
                       
                     if (currentTd) {
-                        const nextTd = currentTd.nextElementSibling;
+                        const nextTd = currentTd.querySelector('[name$="-bin_number"]');
 
                         // Check if next <td> exists and contains an input
                         if (nextTd) {
-                            const nextInput = nextTd.querySelector('[name$="-bin_number"]');
-                            if (nextInput) {
-                                nextInput.focus(); // Move focus to the next input
-                            }
+                    
+                            nextTd.focus(); // Move focus to the next input
+                            
                         }
                     }
                 }

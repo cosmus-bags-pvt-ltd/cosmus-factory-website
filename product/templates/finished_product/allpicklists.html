@@ -40,8 +40,8 @@
                 <td></td>
                 <td><a href="{% url 'create-update-picklist' picklist.id %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
                 <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ picklist.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
-                <td><a href="{% url 'download-picklist-pdf' picklist.id %}">PDF</a>
-                  <a href="{% url 'download-picklist-excel' picklist.id %}" >Excel</a></td>
+                <td><a href="{% url 'download-picklist-pdf' picklist.id %}"><img src="../../../static/images/icons8-pdf-40.png" width="25px" class="me-2"></a>
+                  <a href="{% url 'download-picklist-excel' picklist.id %}" ><img src="../../../static/images/icons8-excel-file-48.png" width="25px"></a></td>
              </tr>
       
             {% endfor %}
