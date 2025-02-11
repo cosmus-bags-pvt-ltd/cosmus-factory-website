@@ -50,9 +50,7 @@
                             <td><input type="hidden" class="rowNo" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly>
                                 <input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="" readonly></td>
                             <td>
-                                <!-- <span class=" pickQty text-white" > -->
-                                    <input type="number" class="rowNo pickQty outwardPick-btn" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="" readonly data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
-                                <!-- </span> -->
+                                <input type="number" class="rowNo pickQty outwardPick-btn" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="" readonly data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
                             </td>
                             <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="" readonly></td>
                             <td><input type="radio" class="picklistRadio" name="picklist_group"></td>
@@ -463,12 +461,10 @@ $('#id_pickList_no').on('blur', function () {
         inputElement.value = "";
     }
 
-    // const checkboxElement = lastRow.querySelector('input[name$="-picklistRadio"]');
-    // if (checkboxElement) {
-    //     checkboxElement.id = `id_picklist_process_in_outward_set-${formIndex}-picklistRadio`;
-    //     checkboxElement.name = `picklist_process_in_outward_set-${formIndex}-picklistRadio`;
-    //     checkboxElement.value = "";
-    // }
+    const checkboxElement = lastRow.querySelector('input[name^="picklist_group"]');
+    if (checkboxElement) {
+        checkboxElement.checked = false;
+    }
 
     // Update form count
     formCountInput.value = formCount + 1;
