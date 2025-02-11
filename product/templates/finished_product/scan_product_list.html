@@ -15,7 +15,7 @@
             <tr>
                 <th>No</th>
                 <th>Inward date</th>
-                <th>Image</th>
+                <th>Img</th>
                 <th>Serial No</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
@@ -31,22 +31,22 @@
             {% for entry in instance_entries %}
             <tr>
                 <td>{{forloop.counter}}</td>
-                <td>{{entry.created_date}}</td>
+                <td>{{ entry.created_date }}</td>
                 <td>
-                    {% if entry.product.PProduct_image %}
-                        <img id="productImgPreview" name="product_img" src="{{ entry.product.PProduct_image.url }}" alt="img" style="width:25px; object-fit: contain;" onclick="showLargeImage(this.src)">
+                    {% if entry.product__PProduct_image %}
+                        <img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ entry.product__PProduct_image }}" alt="img" style="width:25px; object-fit: contain;" onclick="showLargeImage(this.src)">
                     {% else %}
                         <span>No Image Available</span>
                     {% endif %}
                 </td>
-                <td>{{entry.unique_serial_no}}</td>
-                <td class="refNo">{{entry.product.Product.Product_Refrence_ID}}</td>
-                <td>{{entry.product.Product.Model_Name}}</td>
-                <td>{{entry.product.PProduct_color.color_name}}</td>
-                <td>{{entry.product.PProduct_SKU}}</td>
+                <td>{{ entry.unique_serial_no }}</td>
+                <td class="refNo">{{ entry.product__Product__Product_Refrence_ID }}</td>
+                <td>{{ entry.product__Product__Model_Name }}</td>
+                <td>{{ entry.product__PProduct_color__color_name }}</td>
+                <td>{{ entry.product__PProduct_SKU }}</td>
                 <td class="text-center">1</td>
                 <td>{{entry.age_in_days}} days</td>
-                <td><span class="fw-bold me-2">{{entry.bin_number.rack_finished_name.zone_finished_name.zone_name}}</span><span class="ms-3 text-success fw-bold">{{entry.bin_number.rack_finished_name.rack_name}}</span><span class="ms-4 text-danger fw-bold">{{entry.bin_number.bin_name}}</span></td>
+                <td><span class="fw-bold me-2">{{ entry.bin_number__rack_finished_name__zone_finished_name__zone_name }}</span><span class="ms-3 text-success fw-bold">{{ entry.bin_number__rack_finished_name__rack_name }}</span><span class="ms-4 text-danger fw-bold">{{ entry.bin_number__bin_name }}</span></td>
              </tr>
             {% endfor %}
       
