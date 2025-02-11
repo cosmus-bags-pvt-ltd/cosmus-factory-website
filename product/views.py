@@ -7,7 +7,7 @@ from itertools import chain
 from operator import attrgetter, itemgetter
 import os
 import uuid
-from django.conf import settings
+from django.conf import Settings, settings
 from django.core.exceptions import ValidationError , ObjectDoesNotExist
 import json
 from django.contrib.auth.decorators import login_required
@@ -10041,15 +10041,18 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 def scan_product_qty_list(request):
 
-    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name')
+    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name').values('id','product_purchase_master__ledger_type','product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image','quantity_total','qc_recieved_qty','diffrence_qty')
 
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0).select_related( 'Finished_goods_Stock_TransferMasterinstance', 'product')
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0).select_related( 'Finished_goods_Stock_TransferMasterinstance', 'product').values('id','Finished_goods_Stock_TransferMasterinstance','product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image','product_quantity_transfer','qc_recieved_qty','diffrence_qty')
 
     merged_queryset = chain(product_purchase_voucher, stock_transfer_voucher)
 
     merged_list = list(merged_queryset)
 
-    return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list})
+    return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list,'MEDIA_URL': settings.MEDIA_URL})
+
+
+
 
 
 from django.utils import timezone
@@ -10058,20 +10061,45 @@ def scan_product_list(request,pk,v_type):
 
     if v_type == "purchase":
 
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number')
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number').values(
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date',
+            'bin_number__rack_finished_name__zone_finished_name__zone_name',
+            'bin_number__rack_finished_name__rack_name',
+            'bin_number__bin_name'
+            )
 
     elif v_type == "transfer":
 
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number')
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number').values(
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date',
+            'bin_number__rack_finished_name__zone_finished_name__zone_name',
+            'bin_number__rack_finished_name__rack_name',
+            'bin_number__bin_name'
+            )
+
 
     current_date = timezone.now()
     for entry in instance_entries:
-        created_date = entry.created_date
+        created_date = entry['created_date']
         age_in_days = (current_date - created_date).days
-        entry.age_in_days = age_in_days
-    
+        entry['age_in_days'] = age_in_days
 
-    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries})
+
+    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries,'MEDIA_URL':settings.MEDIA_URL})
+
+
 
 
 
@@ -10153,13 +10181,25 @@ def warehouse_stock(request):
 
 
 def scan_single_product_list(request,sku):
-    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku)
+    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values('product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date',
+            'bin_number__rack_finished_name__zone_finished_name__zone_name',
+            'bin_number__rack_finished_name__rack_name',
+            'bin_number__bin_name'
+            )
+    
     current_date = timezone.now()
     for entry in instance_entries:
-        created_date = entry.created_date
+        created_date = entry['created_date']
         age_in_days = (current_date - created_date).days
-        entry.age_in_days = age_in_days
-    return render(request,'finished_product/scan_single_product_list.html',{'instance_entries':instance_entries})
+        entry['age_in_days'] = age_in_days
+
+    return render(request,'finished_product/scan_single_product_list.html',{'instance_entries':instance_entries,'MEDIA_URL':settings.MEDIA_URL})
 
 
 
@@ -13735,6 +13775,8 @@ def lwo_and_lwi_report_vendor_wise(request):
     return render(request,'reports/lwo_and_lwi_report_vendor_wise.html',{'queryset':queryset,'vendor_name':vendor_name})
 
 
+
+
 def finished_goods_sorting_list(request):
     
     finished_goods_purchase_voucher_instances = product_purchase_voucher_master.objects.all().annotate(
@@ -13742,14 +13784,14 @@ def finished_goods_sorting_list(request):
         total_qc_qty=Sum('product_purchase_voucher_items__qc_recieved_qty'),
         total_diff_qty = Sum('product_purchase_voucher_items__diffrence_qty'),
         total_boxex_qty = Sum('product_purchase_voucher_items__product_name__Product__Product_QtyPerBox')
-        )
+        ).select_related('finished_godowns', 'party_name')
 
     finished_goods_transfer_m_instances = Finished_goods_Stock_TransferMaster.objects.filter(transnfer_cancelled=False).annotate(
     total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer'), 
     total_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),
     total_diff_qty=Sum('finished_goods_transfer_records__diffrence_qty'),
     total_boxex_qty=Sum('finished_goods_transfer_records__product__Product__Product_QtyPerBox')
-    )
+    ).select_related('source_warehouse', 'destination_warehouse')
    
     
 
@@ -13758,6 +13800,8 @@ def finished_goods_sorting_list(request):
     sorted_data = sorted(finished_goods_all_records, key=attrgetter('created_date'), reverse = False)
 
     return render(request,'finished_product/finishedgoodssortinglist.html',{'sorted_data':sorted_data})
+
+
 
 
 

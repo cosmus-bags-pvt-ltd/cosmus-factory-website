@@ -47,13 +47,13 @@
                         {{ picklist_formset.management_form }}
                         {% for form in picklist_formset %}
                         <tr>
-                            <td><input type="hidden" class="rowNo picklistId" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly><input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="" readonly></td>
+                            <td><input type="hidden" class="rowNo picklistId" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly><input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="{% if form.instance.id %}{{ form.instance.picklist.picklist_no }}{% endif %}" readonly></td>
                             <td>
                                 <span class="outwardPick-btn pickQty text-white" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
-                                    <input type="number" class="rowNo pickQty" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="" readonly>
+                                    <input type="number" class="rowNo pickQty" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="{% if form.instance.id %}{{ form.instance.picklist.total_qty }}{% endif %}" readonly>
                                 </span>
                             </td>
-                            <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="" readonly></td>
+                            <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="{% if form.instance.id %}{{ form.instance.balance_qty }}{% endif %}" readonly></td>
                             <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
                         </tr>
 

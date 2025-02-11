@@ -8,14 +8,14 @@
         <thead class="name_absolute sticky-top">
             <tr>
                 <th>No</th>
-                <th>Image</th>
+                <th>Img</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
-                <th>Product SKU</th>
-                <th>Quantity</th>
-                <th>QC Recieved QTY</th>
-                <th>Difference Qty</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>QC Reci QTY</th>
+                <th>Diffe Qty</th>
                 <!-- <th>Inventory Age</th> -->
             </tr>
         </thead>
@@ -25,28 +25,28 @@
             <tr>
                 
                 <td>{{forloop.counter}}</td>
-                {% if data.product_purchase_master.ledger_type == 'purchase(product)' %}
-                    <input type="hidden" class="pro_id" value="{{data.id}}">
+                {% if data.product_purchase_master__ledger_type == 'purchase(product)' %}
+                    <input type="hidden" class="pro_id" value="{{ data.id }}">
                     <input type="hidden" class="ledger_type" value="purchase">
-                    <td><img id="productImgPreview" name="product_img" src="{{data.product_name.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
-                    <td>{{data.product_name.Product.Product_Refrence_ID }}</td>
-                    <td>{{data.product_name.Product.Model_Name}}</td>
-                    <td>{{data.product_name.PProduct_color.color_name}}</td>
-                    <td >{{data.product_name.PProduct_SKU}}</td>
-                    <td class="text-center">{{data.quantity_total}}</td>
-                    <td class="text-center">{{data.qc_recieved_qty}}</td>
-                    <td class="text-center">{{data.diffrence_qty}}</td>
+                    <td><img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ data.product_name__PProduct_image }}" alt="Product Image" style="width: 30px;"></td>
+                    <td>{{ data.product_name__Product__Product_Refrence_ID }}</td>
+                    <td>{{ data.product_name__Product__Model_Name }}</td>
+                    <td>{{ data.product_name__PProduct_color__color_name }}</td>
+                    <td >{{ data.product_name__PProduct_SKU }}</td>
+                    <td class="text-center">{{ data.quantity_total }}</td>
+                    <td class="text-center">{{ data.qc_recieved_qty }}</td>
+                    <td class="text-center">{{ data.diffrence_qty }}</td>
                 {% else %}
-                    <input type="hidden" class="pro_id" value="{{data.id}}">
+                    <input type="hidden" class="pro_id" value="{{ data.id }}">
                     <input type="hidden" class="ledger_type" value="transfer">
-                    <td><img id="productImgPreview" name="product_img" src="{{data.product.PProduct_image.url}}" alt="Product Image" style="width: 60px; height: 40px;"></td>
-                    <td>{{data.product.Product.Product_Refrence_ID }}</td>
-                    <td>{{data.product.Product.Model_Name}}</td>
-                    <td>{{data.product.PProduct_color.color_name}}</td>
-                    <td>{{data.product.PProduct_SKU}}</td>
-                    <td class="text-center">{{data.product_quantity_transfer}}</td>
-                    <td class="text-center">{{data.qc_recieved_qty}}</td>
-                    <td class="text-center">{{data.diffrence_qty}}</td>
+                    <td><img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ data.product__PProduct_image }}" alt="Product Image" style="width: 30px;"></td>
+                    <td>{{ data.product__Product__Product_Refrence_ID }}</td>
+                    <td>{{ data.product__Product__Model_Name }}</td>
+                    <td>{{ data.product__PProduct_color__color_name }}</td>
+                    <td >{{ data.product__PProduct_SKU }}</td>
+                    <td class="text-center">{{ data.quantity_total }}</td>
+                    <td class="text-center">{{ data.qc_recieved_qty }}</td>
+                    <td class="text-center">{{ data.diffrence_qty }}</td>
                 {% endif %}
                 
             
