@@ -2283,8 +2283,8 @@ table>:not(caption)>*>*{
 }
 
 .outwardPick-btn{
-    /* background: linear-gradient(45deg, #d82e75, #e059b5); */
-    /* color: white; */
+    background:  #e059b5;
+    color: white;
     padding: 5px;
     font-size: 15px;
     border: none;
