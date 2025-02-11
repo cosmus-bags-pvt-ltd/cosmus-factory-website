@@ -41,7 +41,7 @@ from xhtml2pdf import pisa
 
 from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
-                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_products_list, Picklist_voucher_master, Product,
+                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
                     Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, StockItem,
                     SubCategory, Unit_Name_Create, account_credit_debit_master_table, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
@@ -14440,6 +14440,43 @@ def outward_scan_product_create(request,o_id=None):
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
         picklist_formset = PicklistProcessInOutwardFormset(request.POST or None,instance=outward_instance)
+
+        picklist_data_queryset = Picklist_process_in_outward.objects.filter(outward_no=o_id).prefetch_related(
+            'picklist__picklist_products_list__product'
+        )
+
+        dict_to_send = {}
+
+        for data in picklist_data_queryset:
+            picklist_id = data.picklist.id
+
+            if picklist_id not in dict_to_send:
+                dict_to_send[picklist_id] = []
+
+            for product_list in data.picklist.picklist_products_list.all():
+                product_sku = product_list.product.PProduct_SKU
+                qty = product_list.product_quantity
+                model_name = product_list.product.Product.Model_Name
+                color = product_list.product.PProduct_color.color_name
+
+                found = False
+                for item in dict_to_send[picklist_id]:
+                    if item['sku'] == product_sku:
+                        item['qty'] += qty
+                        found = True
+                        break
+                
+
+                if not found:
+                    dict_to_send[picklist_id].append({
+                        'sku': product_sku,
+                        'model_name': model_name,
+                        'color': color,
+                        'qty': qty
+                    })
+
+        print('dict_to_send = ', dict_to_send)
+
     else:
         outward_instance = None
         master_form = Outwardproductmasterform()
