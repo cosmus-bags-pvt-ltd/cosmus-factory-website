@@ -25,8 +25,8 @@
                     <th>Balance</th>
                     <th>Sale No</th>
                     <th>Party Name</th>
-                    <th>Qty</th>
                     <th>Amount</th>
+                    <th>Qty</th>
                     <th >Edit</th>
                 </tr>
             </thead>
@@ -37,14 +37,22 @@
                     <td>{{forloop.counter}}</td>
                     <td>{{outward.created_date}}</td>
                     <td>{{outward.outward_no}}</td>
-                    <td></td>
-                    <td></td>
+                    <td>
+                        {% for picklist_process in outward.picklist_process_in_outward_set.all %}
+                            {{ picklist_process.picklist.picklist_no }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>{{outward.picklist_total_qty}}</td>
                     <td>{{outward.total_qty}}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{outward.remaining_qty}}</td>
+                    {% for sale_process in outward.sales_voucher_master_outward_scan_set.all %}
+                        <td>{{ sale_process.sale_no }}</td>
+                        <td>{{ sale_process.party_name.name }}</td>
+                        <td>{{ sale_process.grand_total }}</td>
+                    {% endfor %}
+                    
+                    <td>{{ outward.sale_total_qty }}</td>
+                    
                     <td><a href="{% url 'outward-scan-product-update' outward.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
                 </tr>
                 {% endfor %}
