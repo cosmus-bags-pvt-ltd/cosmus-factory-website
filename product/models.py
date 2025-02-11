@@ -1296,7 +1296,9 @@ class outward_products(models.Model):
 class Picklist_process_in_outward(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
     picklist = models.ForeignKey(Picklist_voucher_master, on_delete=models.PROTECT)
-    balance_qty = models.IntegerField(default=0)
+    balance_qty = models.IntegerField(default=0, null=True, blank=True)
+
+
 
 
 class sales_voucher_master_outward_scan(models.Model):

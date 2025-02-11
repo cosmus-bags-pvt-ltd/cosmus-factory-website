@@ -46,9 +46,19 @@
                     <tbody class="mainTableList">
                         {{ picklist_formset.management_form }}
                         {% for form in picklist_formset %}
-
+                        <tr>
+                            <td><input type="hidden" class="rowNo picklistId" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly><input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="" readonly></td>
+                            <td>
+                                <span class="outwardPick-btn pickQty text-white" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
+                                    <input type="number" class="rowNo pickQty" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="" readonly>
+                                </span>
+                            </td>
+                            <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="" readonly></td>
+                            <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
+                        </tr>
 
                         {% endfor %}
+
                     </tbody>
                 </table>
             </div>
@@ -252,11 +262,12 @@ $('#id_pickList_no').on('blur', function () {
         data: { "picklistNo": picklistNo },
         success: function (response) {
             var productPickList = response.picklistDict;
-            console.log('productPickList',response)
             if (response.picklistDict && response.picklisQty !== null) {
                 var picklistKey = Object.keys(response.picklistDict)[0]; // Get the first key dynamically
                     var picklistData = response.picklistDict[picklistKey]; // Get the data for that key
-                  
+
+                    console.log('picklistData = ',response.id)
+
                     // Retrieve existing data from the hidden field or initialize empty array
                     var hiddenData = $('#picklistHiddenData').val();
                     var currentData = hiddenData ? JSON.parse(hiddenData) : {};
@@ -268,7 +279,6 @@ $('#id_pickList_no').on('blur', function () {
                     // Append all items to the array
                     picklistData.forEach(item => {
                         currentData[picklistKey].push({
-                            id: item.id, // ✅ Include ID field
                             sku: item.sku,
                             model_name: item.model_name,
                             color: item.color,
@@ -279,9 +289,7 @@ $('#id_pickList_no').on('blur', function () {
                     // Update the hidden input field with the new data
                 $('#picklistHiddenData').val(JSON.stringify(currentData));
 
-               
-
-
+        
                 var tables = $('#piclistTable .mainTableList');
 
                 // ✅ Step 2: Check if there is an empty row
@@ -293,34 +301,38 @@ $('#id_pickList_no').on('blur', function () {
                     }
                 });
 
-                var totalForms = $('#picklist_process_in_outward_set-TOTAL_FORMS'); // Django hidden form count
+               
+                if (rowToPopulate) {
+                    console.log('test',typeof(response.id))
+                    rowToPopulate.find('.picklistId').val(response.id)
+                    rowToPopulate.find('.pickId').val(response.picklistNo);
+                    rowToPopulate.find('.pickQty').val(response.picklisQty)
+                    rowToPopulate.find('.pickBalance').val('');
+                } else {
+                         // ✅ Step 4: If no empty row exists, create a new one
+                    var totalForms = $('#id_picklist_process_in_outward_set-TOTAL_FORMS'); // Django hidden form count
                     var formCount = parseInt(totalForms.val()); // Get current form count
-                    var newFormSet = formCount - 1;
+                    
 
                     var newRow = $(`
                         <tr>
-                            <td><input type="hidden" class="" name="picklist_process_in_outward_set-${newFormSet}-picklist" id="id_picklist_process_in_outward_set-${newFormSet}-picklist" value="${response.id}"><input type="number" class="rowNo pickId" name="picklist_process_in_outward_set-${newFormSet}-picklistNo" id="id_picklist_process_in_outward_set-${newFormSet}-picklistNo" value="${response.picklistNo}"></td>
+                            <td><input type="hidden" class="rowNo" name="picklist_process_in_outward_set-{formCount}-picklist" id="id_picklist_process_in_outward_set-{formCount}-picklist" value="${response.id}" readonly>
+                                <input type="number" class="rowNo pickId" name="picklist_process_in_outward_set-${formCount}-picklistNo" id="id_picklist_process_in_outward_set-${formCount}-picklistNo" value="${response.picklistNo}"></td>
                             <td>
                                 <span class="outwardPick-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
                                     <span class="pickQty">${response.picklisQty}</span>
                                 </span>
                             </td>
-                            <td><input type="number" class="rowNo pickBalance" name="picklist_process_in_outward_set-${newFormSet}-balance_qty" id="id_picklist_process_in_outward_set-${newFormSet}-balance_qty" value="${response.picklisQty}"></td>
+                            <td><input type="number" class="rowNo pickBalance" name="picklist_process_in_outward_set-${formCount}-balance_qty" id="id_picklist_process_in_outward_set-${formCount}-balance_qty" value=""></td>
                             <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
                         </tr>
                     `);
 
                     tables.append(newRow);
-                    totalForms.val(formCount); // ✅ Update form count
+                    totalForms.val(formCount + 1); // ✅ Update form count 
 
-                // if (rowToPopulate) {
-                //     // ✅ Step 3: Populate the empty row with response values
-                //     rowToPopulate.find('.pickId').val(response.picklistNo);
-                //     rowToPopulate.find('.pickBalance').val(response.picklisQty);
-                // } else {
-                //     // ✅ Step 4: If no empty row exists, create a new one
                    
-                // }
+                }
             }
         },
         error: function (error) {
@@ -333,11 +345,11 @@ $('#id_pickList_no').on('blur', function () {
 
 
 
-    $(document).on('click', 'span.outwardPick-btn', function () {
+    $(document).on('click', 'span.s', function () {
         var productTable = $('#picklistProductTable .mainTableList');
         productTable.empty();
 
-        var productKey = $(this).closest('tr').find('.pickId').text().trim();
+        var productKey = $(this).closest('tr').find('.pickId').val().trim();
         var storedData = $('#picklistHiddenData').val();
 
         if (!storedData) {
@@ -357,8 +369,9 @@ $('#id_pickList_no').on('blur', function () {
         var picklistSelected = false; 
 
         $('[name$="-product"]').each(function () {
-            var sku = String($(this).val()).trim(); 
-            var row = $(this).closest('tr');
+            let row = $(this).closest('tr');
+            if (row.css('display') === 'none') return; // Skip hidden rows
+            var sku = String($(this).val()).trim();
             var pickNos = row.find('[name^="picklistNo_"]').val()?.trim(); 
             var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0; 
             var checkboxChecked = row.find('.picklistRadio'); 
@@ -386,8 +399,8 @@ $('#id_pickList_no').on('blur', function () {
                     <td><span class="modelName">${item.model_name}</span></td>
                     <td><span class="sku">${sku}</span></td>
                     <td><span class="color">${item.color}</span></td>
-                    <td><span class="qty">${qty}</span></td>
-                    <td><span class="balanceqty">${balanceQty}</span></td> 
+                    <td><span class="qty text-center">${qty}</span></td>
+                    <td><span class="balanceqty text-center">${balanceQty}</span></td> 
                 </tr>
             `);
 
@@ -443,7 +456,7 @@ $(document).ready(function () {
             if (serialNo) {
                 try {
                     const response = await sendSerialNumber(serialNo);
-                    $('#responseMessage').html('<span class="alert alert-success" role="alert">' + response.message + '</span>');
+                    $('#responseMessage').html('<span class="text-success" role="alert">' + response.message + '</span>');
                 } catch (error) {
                     // const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
                     // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
@@ -470,7 +483,7 @@ $(document).ready(function () {
                         try {
                             const response = await sendSerialNumber(manualSerialNo);
                             
-                            $('#responseMessage').html('<span class="alert alert-success" role="alert">' + response.message + '</span>');
+                            $('#responseMessage').html('<span class="text-success" role="alert">' + response.message + '</span>');
                             $('#id_manualSerialNo').val('');
                            
                         } catch (error) {
@@ -532,6 +545,7 @@ $(document).ready(function () {
         serialNoQty.each(function () {
             var outwardQty = parseInt($(this).val(), 10) || 0;
             var row = $(this).closest('tr');
+            if (row.css('display') === 'none') return; // Skip hidden rows
             var tablePicklistNo = parseInt(row.find('[name^="picklistNo_"]').val()) || 0;
             var tableSku = String(row.find('[name$="-product"]').val()).trim(); // Ensure SKU is string
 
@@ -653,6 +667,7 @@ $(document).ready(function () {
             // **Step 6: Check for Duplicate Serial No**
             tableBody.find('tr').each(function () {
                 const row = $(this);
+                if (row.css('display') === 'none') return; // Skip hidden rows
                 const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
 
                 if (serialValue && serialNo === serialValue) {
@@ -891,10 +906,6 @@ $(document).ready(function () {
 
             selectedRow.find('.pickBalance').val(balanceQty)
         })
-      
-
-
-
 }
 
       //deleteRowData()
