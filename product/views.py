@@ -62,7 +62,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
-                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormset, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
+                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
                     ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
@@ -84,7 +84,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset)
     
 
 
