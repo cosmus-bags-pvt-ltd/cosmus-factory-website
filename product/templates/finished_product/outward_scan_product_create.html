@@ -383,70 +383,70 @@ $('#id_pickList_no').on('blur', function () {
         }
 
         var totalQty = {};
-        var picklistSelected = false;
+var picklistSelected = false;
 
-        $('[name$="-product"]').each(function () {
-            let row = $(this).closest('tr');
-            if (row.css('display') === 'none') return; // Skip hidden rows
+$('[name$="-product"]').each(function () {
+    let row = $(this).closest('tr');
+    if (row.css('display') === 'none') return; // Skip hidden rows
 
-            var skuElement = $(this).val();
-            if (!skuElement) {
-                console.warn("SKU is missing for row:", row);
-                return; // ✅ Skip rows where SKU is missing
-            }
+    var skuElement = $(this).val();
+    if (!skuElement) {
+        console.warn("SKU is missing for row:", row);
+        return; // ✅ Skip rows where SKU is missing
+    }
 
-            let sku = String(skuElement).trim();
-            console.log('SKU:', sku);
+    let sku = String(skuElement).trim();
+    console.log('SKU:', sku);
 
-            var pickNos = row.find('[name^="picklistNo_"]').val()?.trim();
-            var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
-            var checkboxChecked = row.find('.picklistRadio').is(':checked');
+    var pickNos = row.find('[name^="picklistNo_"]').val()?.trim();
+    var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
+    var checkboxChecked = row.find('.picklistRadio').is(':checked');
 
-            if (checkboxChecked) picklistSelected = true;
+    if (checkboxChecked) picklistSelected = true;
 
-            if (!pickNos || pickNos !== productKey) return;
+    if (!pickNos || pickNos !== productKey) return;
 
-            if (!(sku in totalQty)) {
-                totalQty[sku] = 0;
-            }
-                totalQty[sku] += qty;
-        });
-
-        console.log('totalQty:', totalQty);
-
-        // ✅ Ensure `mergedData[productKey]` is valid before looping
-        if (!Array.isArray(mergedData[productKey])) {
-            console.warn("Invalid or missing picklist data for productKey:", productKey);
-            return;
+    if (!Object.prototype.hasOwnProperty.call(totalQty, sku)) {
+            totalQty[sku] = 0;
         }
+        totalQty[sku] += qty;
+});
 
-        mergedData[productKey].forEach(item => {
-            if (!item.sku || !item.qty) {
-                console.warn("Skipping invalid item:", item);
-                return;
-            }
+console.log('totalQty:', totalQty);
 
-            let sku = String(item.sku).trim();
-            let qty = item.qty;
-            let outwardQty = picklistSelected ? (totalQty.hasOwnProperty(sku) ? totalQty[sku] : 0) : 0;
-            let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
+// ✅ Ensure `mergedData[productKey]` is valid before looping
+if (!Array.isArray(mergedData[productKey])) {
+    console.warn("Invalid or missing picklist data for productKey:", productKey);
+    return;
+}
 
-            console.log('Processing SKU:', sku);
-            console.log('Outward Qty:', outwardQty);
-            console.log('Balance Qty:', balanceQty);
+mergedData[productKey].forEach(item => {
+    if (!item.sku || !item.qty) {
+        console.warn("Skipping invalid item:", item);
+        return;
+    }
 
-            var newRow = $(`
-                <tr class="picklistRow" data-sku="${sku}" data-picklistno="${productKey}">
-                    <td><span class="modelName">${item.model_name || "N/A"}</span></td>
-                    <td><span class="sku">${sku}</span></td>
-                    <td><span class="color">${item.color || "N/A"}</span></td>
-                    <td><span class="qty text-center">${qty}</span></td>
-                    <td><span class="balanceqty text-center">${balanceQty}</span></td> 
-                </tr>
-            `);
+    let sku = String(item.sku).trim();
+    let qty = item.qty;
+    let outwardQty = picklistSelected ? (totalQty.hasOwnProperty(sku) ? totalQty[sku] : 0) : 0;
+    let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
 
-            productTable.append(newRow);
-        });
+    console.log('Processing SKU:', sku);
+    console.log('Outward Qty:', outwardQty);
+    console.log('Balance Qty:', balanceQty);
+
+    var newRow = $(`
+        <tr class="picklistRow" data-sku="${sku}" data-picklistno="${productKey}">
+            <td><span class="modelName">${item.model_name || "N/A"}</span></td>
+            <td><span class="sku">${sku}</span></td>
+            <td><span class="color">${item.color || "N/A"}</span></td>
+            <td><span class="qty text-center">${qty}</span></td>
+            <td><span class="balanceqty text-center">${balanceQty}</span></td> 
+        </tr>
+    `);
+
+    productTable.append(newRow);
+});
 
     });
 
