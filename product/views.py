@@ -14603,8 +14603,18 @@ def outward_scan_product_create(request,o_id=None):
 
 
 def outward_scan_product_list(request):
-    outward_list = outward_product_master.objects.all().annotate(total_qty = Sum('outward_product__quantity'))
-    # .annotate(total_qty=Sum('outward_product__quantity'))
+
+    sale_qty_subqeury = sales_voucher_master_outward_scan.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_sale_qty=Sum('sales_voucher_outward_scan__quantity')).values('total_sale_qty')
+    
+    picklist_qty_subqeury = Picklist_process_in_outward.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_qty = Sum('picklist__picklist_products_list__product_quantity')).values('total_qty')
+
+    outward_list = outward_product_master.objects.all().annotate(
+        total_qty=Sum('outward_product__quantity'),
+        picklist_total_qty=Subquery(picklist_qty_subqeury),
+        remaining_qty=F('picklist_total_qty') - F('total_qty'),
+        sale_total_qty=Subquery(sale_qty_subqeury))
+    
+
     return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
 
 
