@@ -14244,7 +14244,7 @@ def outward_picklist_no_ajax(request):
 
         for i in picklist_data:
             sku = i.product.PProduct_SKU
-            id = i.id
+            id = i.picklist_master_instance.id
             
             if picklistNo not in dict_to_send:
                 dict_to_send[picklistNo] = []
@@ -14372,11 +14372,18 @@ def outward_scan_serial_no_process(request):
 
 
 
+
+
+
 from decimal import Decimal
 def decimal_to_float(obj):
     if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError("Type not serializable")
+
+
+
+
 
 
 
@@ -14453,19 +14460,15 @@ def outward_scan_product_create(request,o_id=None):
                             form_instance.save()
 
 
+                    if not picklist_formset.is_valid():
+                        for form in picklist_formset:
+                            if not form.is_valid():
+                                print("Picklist Form Errors:", form.errors)
+
+
                     if picklist_formset.is_valid():
                         for form in picklist_formset:
-                            picklist_value = form.cleaned_data['picklist']
                             picklist_form_instance = form.save(commit=False)
-
-                            # Ensure the picklist value is valid
-                            try:
-                                picklist_instance = Picklist_voucher_master.objects.get(id=picklist_value)
-                                picklist_form_instance.picklist = picklist_instance
-                            except Picklist_voucher_master.DoesNotExist:
-                                print(f"Picklist not found for id {picklist_value}")
-                                continue
-
                             picklist_form_instance.outward_no = master_form_instance
                             picklist_form_instance.save()
 
@@ -14618,14 +14621,13 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
 
 
+
+
+
 @login_required(login_url='login')
 def salesvoucherlistwarehouse(request):
     sales_list = sales_voucher_master_outward_scan.objects.all()
     return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list})
-
-
-
-
 
 
 

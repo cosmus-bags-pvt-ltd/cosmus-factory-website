@@ -34,7 +34,7 @@
     <div>
         <div class="row mt-1">
             <div class="col-lg-2">
-                <table class="table table-striped table-hover table-bordered table-warning" id="piclistTable">
+                <table class="table table-striped table-hover table-bordered table-warning" id="picklistTable">
                     <thead class="name_absolute">
                         <tr>
                             <th>Pick No</th>
@@ -47,14 +47,15 @@
                         {{ picklist_formset.management_form }}
                         {% for form in picklist_formset %}
                         <tr>
-                            <td><input type="hidden" class="rowNo" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly><input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="" readonly></td>
+                            <td><input type="hidden" class="rowNo" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="" readonly>
+                                <input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="" readonly></td>
                             <td>
-                                <span class="outwardPick-btn pickQty text-white" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
-                                    <input type="number" class="rowNo pickQty" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="" readonly>
-                                </span>
+                                <!-- <span class=" pickQty text-white" > -->
+                                    <input type="number" class="rowNo pickQty outwardPick-btn" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="" readonly data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
+                                <!-- </span> -->
                             </td>
                             <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="" readonly></td>
-                            <td><input type="radio" class="picklistRadio" name="picklistRadio"></td>
+                            <td><input type="radio" class="picklistRadio" name="picklist_group"></td>
                         </tr>
 
                         {% endfor %}
@@ -237,7 +238,7 @@ $(document).ready(function () {
     // Event listener for when the picklist number is entered
 $('#id_pickList_no').on('blur', function () { 
     var picklistNo = parseInt($(this).val(), 10);
-    var picklistTable = $('#piclistTable .mainTableList tr');
+    var picklistTable = $('#picklistTable .mainTableList tr');
     var picklistExists = false; 
     let rowToPopulate = null;
     
@@ -262,8 +263,11 @@ $('#id_pickList_no').on('blur', function () {
         data: { "picklistNo": picklistNo },
         success: function (response) {
             var productPickList = response.picklistDict;
+
             if (response.picklistDict && response.picklisQty !== null) {
+
                 var picklistKey = Object.keys(response.picklistDict)[0]; // Get the first key dynamically
+
                     var picklistData = response.picklistDict[picklistKey]; // Get the data for that key
 
                     // Retrieve existing data from the hidden field or initialize empty array
@@ -290,13 +294,13 @@ $('#id_pickList_no').on('blur', function () {
                
 
 
-                var tables = $('#piclistTable .mainTableList');
+                var tables = $('#picklistTable .mainTableList');
 
                 // ✅ Step 2: Check if there is an empty row
                 tables.find('tr').each(function () {
                     const row = $(this);
-                    console.log('row',row.find('[name$="-picklist"]').val()?.trim())
-                    if (row.find('[name$="-picklist"]').val()?.trim() === "") {
+                    console.log('row',row.find('.pickId').val()?.trim())
+                    if (row.find('.pickId').val()?.trim() === "") {
                         rowToPopulate = row;
                         return false; // Stop looping once an empty row is found
                     }
@@ -312,8 +316,6 @@ $('#id_pickList_no').on('blur', function () {
                     addpickListRow();
                     const newRow = tables.find('tr').last();
                     populatePicklistRow(newRow, response)
-                    
-
                    
                 }
             }
@@ -333,7 +335,7 @@ $('#id_pickList_no').on('blur', function () {
     row.find('.pickBalance').val('');
  }
 
-    $(document).on('click', 'span.outwardPick-btn', function () {
+    $(document).on('click', 'input.outwardPick-btn', function () {
         var productTable = $('#picklistProductTable .mainTableList');
         productTable.empty();
 
@@ -397,57 +399,84 @@ $('#id_pickList_no').on('blur', function () {
     
     });
 
-    function isTableEmpty() {
+    // function isTableEmpty() {
    
-        return $('#piclistTable .mainTableList tr').toArray().every(row => isRowEmpty($(row)));
+    //     return $('#picklistTable .mainTableList tr').toArray().every(row => isRowEmpty($(row)));
+    // }
+
+    // function isRowEmpty(row) {
+    //      return row.find('td :input').filter(function () {
+    //          return $(this).val().trim() !== "";
+    //      }).length === 0;
+    // }
+
+
+    function addpickListRow() {
+    const tableBody = document.querySelector('#picklistTable .mainTableList');
+    let lastVisibleRow = null;
+        console.log('test')
+    // Find the last visible row
+    tableBody.querySelectorAll('tr').forEach(row => {
+        if (window.getComputedStyle(row).display !== 'none') {
+            lastVisibleRow = row;
+        }
+    });
+
+    if (!lastVisibleRow) {
+        console.error("No visible row found to clone.");
+        return;
     }
 
-    function isRowEmpty(row) {
-         return row.find('td :input').filter(function () {
-             return $(this).val().trim() !== "";
-         }).length === 0;
+    const formCountInput = document.getElementById("id_picklist_process_in_outward_set-TOTAL_FORMS");
+    console.log('formCountInput', formCountInput);
+    const formCount = parseInt(formCountInput.value, 10);
+    console.log('formCount', formCount);
+    const formIndex = formCount;
+    
+    // Clone last row
+    const lastRow = lastVisibleRow.cloneNode(true);
+
+    // Reset all input/select values inside the cloned row
+    lastRow.querySelectorAll("input, select").forEach(function (e) {
+        e.value = "";
+    });
+
+    // Ensure elements exist before modifying them
+    const picklistElement = lastRow.querySelector('[name$="-picklist"]');
+    if (picklistElement) {
+        picklistElement.id = `id_picklist_process_in_outward_set-${formIndex}-picklist`;
+        picklistElement.name = `picklist_process_in_outward_set-${formIndex}-picklist`;
+        picklistElement.value = "";
     }
 
+    const inputSelectElement = lastRow.querySelector('input[name$="-picklistQty"]');
+    if (inputSelectElement) {
+        inputSelectElement.id = `id_picklist_process_in_outward_set-${formIndex}-picklistQty`;
+        inputSelectElement.name = `picklist_process_in_outward_set-${formIndex}-picklistQty`;
+        inputSelectElement.value = "";
+    }
 
-   function addNewRow() {
-       const tableBody = document.querySelector('#piclistTable .mainTableList');
+    const inputElement = lastRow.querySelector('input[name$="-balance_qty"]');
+    if (inputElement) {
+        inputElement.id = `id_picklist_process_in_outward_set-${formIndex}-balance_qty`;
+        inputElement.name = `picklist_process_in_outward_set-${formIndex}-balance_qty`;
+        inputElement.value = "";
+    }
 
-       tableBody.querySelectorAll('tr').forEach(row => {
-           if (window.getComputedStyle(row).display !== 'none') {
-               lastVisibleRow = row;
-           }
-       });
+    // const checkboxElement = lastRow.querySelector('input[name$="-picklistRadio"]');
+    // if (checkboxElement) {
+    //     checkboxElement.id = `id_picklist_process_in_outward_set-${formIndex}-picklistRadio`;
+    //     checkboxElement.name = `picklist_process_in_outward_set-${formIndex}-picklistRadio`;
+    //     checkboxElement.value = "";
+    // }
 
-       const formCountInput = document.getElementById("id_outward_product_picklist-TOTAL_FORMS");
-       const formCount = parseInt(formCountInput.value);
-       const formIndex = formCount;
-       const lastRow = lastVisibleRow.cloneNode(true);
-       lastRow.querySelectorAll("input select").forEach(function (e) {
-           e.value = "";
-       });
+    // Update form count
+    formCountInput.value = formCount + 1;
 
-      
+    // Append new row to table
+    tableBody.appendChild(lastRow);
+}
 
-       const picklistElement = lastRow.querySelector('[name$="-picklist]')
-       picklistElement.id = `id_outward_product_picklist-${formIndex}-picklist`;
-       picklistElement.name = `outward_product_picklist-${formIndex}-picklist`;
-       picklistElement.value = "";
-
-       const inputSelectElement = lastRow.querySelector('input[name$="-picklistQty"]');
-       inputSelectElement.id = `id_outward_product_picklist-${formIndex}-picklistQty`;
-       inputSelectElement.name = `outward_product_picklist-${formIndex}-picklistQty`;
-       inputSelectElement.value = "";
-
-       const inputElement = lastRow.querySelector('input[name$="-balance_qty"]');
-       inputElement.id = `id_outward_product_picklist-${formIndex}-balance_qty`;
-       inputElement.name = `outward_product_picklist-${formIndex}-balance_qty`;
-       inputElement.value = "";
-
-     
-       formCountInput.value = formCount + 1;
-       tableBody.appendChild(lastRow);
-       
-   }
     
 });
 
@@ -557,7 +586,7 @@ $(document).ready(function () {
     }
 
     function picklistQtyCheck() {
-        var checkedRadio = $('input[name="picklistRadio"]:checked');
+        var checkedRadio = $('.picklistRadio:checked');
 
         if (checkedRadio.length === 0) {
             console.warn("No picklist selected.");
@@ -575,7 +604,7 @@ $(document).ready(function () {
 
         var selectedRow = checkedRadio.closest('tr'); 
         var pickNo = parseInt(selectedRow.find('.pickId').val().trim(), 10); 
-        var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; 
+        var pickQty = parseInt(selectedRow.find('.pickQty').val().trim(), 10) || 0; 
 
         var total = 0;
 
@@ -607,7 +636,8 @@ $(document).ready(function () {
                 }
             }
         });
-
+        console.log('total',total);
+        console.log('pickQty',pickQty)
         var pickBal = pickQty - total;
     
             if (total === 0) {
@@ -627,8 +657,8 @@ $(document).ready(function () {
 
 
     async function sendSerialNumber(serialNo) {
-        var checkedRadio = $('input[name="picklistRadio"]:checked');
-
+        var checkedRadio = $('.picklistRadio:checked');
+        console.log('checkedRadio',checkedRadio)
         if (checkedRadio.length === 0) {
             console.warn("No picklist selected.");
             $('#responseMessage').html('<span class="text-danger">Please select a picklist before scanning.</span>');
@@ -638,7 +668,7 @@ $(document).ready(function () {
         // Get the Picklist ID from the selected row
         var selectedRow = checkedRadio.closest('tr');
         var pickNo = parseInt(selectedRow.find('.pickId').val().trim(), 10);
-        var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10)
+        var pickQty = parseInt(selectedRow.find('.pickQty').val().trim(), 10)
         var pickBalance = parseInt(selectedRow.find('.pickBalance').val().trim(), 10)
       
         try {
@@ -865,7 +895,7 @@ $(document).ready(function () {
                             checkRow.value = 'true'; 
                             row.style.display = 'none';
                             
-                            var checkedRadio = $('input[name="picklistRadio"]:checked');
+                            var checkedRadio = $('.picklistRadio:checked');
 
                             if (checkedRadio.length === 0) {
                                 console.warn("No picklist selected.");
@@ -876,7 +906,7 @@ $(document).ready(function () {
 
                             var selectedRow = checkedRadio.closest('tr'); // Get the selected row
                             var pickNo = parseInt(selectedRow.find('.pickId').val().trim(), 10); // Selected Picklist No.
-                            var pickQty = parseInt(selectedRow.find('.pickQty').text().trim(), 10) || 0; // Selected Picklist Quantity
+                            var pickQty = parseInt(selectedRow.find('.pickQty').val().trim(), 10) || 0; // Selected Picklist Quantity
 
 
                             recalculatePicklistBalances(selectedRow,pickNo ,pickQty);
