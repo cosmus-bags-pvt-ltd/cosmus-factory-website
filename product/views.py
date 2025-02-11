@@ -14482,6 +14482,7 @@ def outward_scan_product_create(request,o_id=None):
         master_form = Outwardproductmasterform()
         picklist_formset = PicklistProcessInOutwardFormset()
         formset = OutwardProductcreateFormSet()
+        dict_to_send = ''
     
 
     if request.method == 'POST':
@@ -14597,7 +14598,7 @@ def outward_scan_product_create(request,o_id=None):
             except Exception as e:
                 print(e)
     
-    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset})
+    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset ,'dict_to_send':dict_to_send})
 
 
 
