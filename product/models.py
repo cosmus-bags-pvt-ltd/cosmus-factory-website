@@ -1,11 +1,7 @@
 
-from hashlib import blake2b
-from pyexpat import model
-from turtle import mode
-from urllib import request
 from django.db import models
 from django.conf import settings
-from django.forms import CharField, ValidationError
+from django.forms import ValidationError
 from multiselectfield import MultiSelectField
 from django.core.validators import MinValueValidator, MaxValueValidator, MinLengthValidator, MaxLengthValidator
 
@@ -1264,11 +1260,11 @@ class Picklist_voucher_master(models.Model):
         
         total_products = self.picklist_products_list.aggregate(total=models.Sum('product_quantity'))['total'] or 0
         processed_products = Picklist_process_in_outward.objects.filter(picklist=self).aggregate(total=models.Sum('balance_qty'))['total'] or 0
-        
-        if processed_products >= total_products and total_products > 0:
-            self.status = "close"
+
+        if processed_products == 0:
+            self.status = "Closed"
         else:
-            self.status = "Recieving"
+            self.status = "Receiving"
 
         self.save()
 
@@ -1280,6 +1276,7 @@ class Picklist_products_list(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
+    # recieve_qty = models.IntegerField(default=0 , null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
@@ -1310,7 +1307,7 @@ class outward_products(models.Model):
 class Picklist_process_in_outward(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
     picklist = models.ForeignKey(Picklist_voucher_master, on_delete=models.PROTECT)
-    balance_qty = models.IntegerField(null=True, blank=True)
+    balance_qty = models.IntegerField(default=0, null=True, blank=True)
 
 
 

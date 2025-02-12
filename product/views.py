@@ -62,7 +62,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
-                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormset, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
+                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormsetupdate, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
                     ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
@@ -84,7 +84,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset)
     
 
 
@@ -6310,7 +6310,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                 if labour_work_out_id:
                     labour_workout_child_instance = labour_workout_childs.objects.get(id = labour_work_out_id)
 
-                    labour_workin_all_qd = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty')).values('voucher_number','total_return_pcs','total_approved_quantity') 
+                    labour_workin_all_qd = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty')).values('voucher_number','total_return_pcs','total_approved_quantity','created_date')
                     labour_workin_all = list(labour_workin_all_qd) 
 
                     labour_workout_child_instance_id = labour_workout_child_instance.id
@@ -6505,6 +6505,11 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
     
     return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,
                     'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all})
+
+
+
+
+
 
 from django.db.models import F, Case, When, IntegerField
 @login_required(login_url='login')
@@ -10172,7 +10177,7 @@ def warehouse_stock(request):
                     'total_inward':y['total_inward'] if y['total_inward'] else 0,
                     'total_balance':y['total_balance'],
                     'inward_minus_sales': (y['total_inward'] if y['total_inward'] else 0) -  (y['total_sale'] if y['total_sale'] else 0),
-                    'img': y['product_name__PProduct_image']
+                    'img': y['product__PProduct_image']
                 }
             merged_list.append(dict_to_append)
 
@@ -14012,7 +14017,6 @@ def bin_quantity_ajax(request):
 
 
 def create_update_picklist(request, p_id=None):
-    # Delete only relevant temp records
     
     if 'temp_bins' in request.session:
         del request.session['temp_bins']
@@ -14439,7 +14443,7 @@ def outward_scan_product_create(request,o_id=None):
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
-        picklist_formset = PicklistProcessInOutwardFormset(request.POST or None,instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormsetupdate(request.POST or None,instance=outward_instance)
 
         picklist_data_queryset = Picklist_process_in_outward.objects.filter(outward_no=o_id).prefetch_related(
             'picklist__picklist_products_list__product'
@@ -14489,7 +14493,7 @@ def outward_scan_product_create(request,o_id=None):
         print(request.POST)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
-        picklist_formset = PicklistProcessInOutwardFormset(request.POST or None, instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormsetupdate(request.POST or None, instance=outward_instance)
 
 
         if not master_form.is_valid():
@@ -14549,6 +14553,7 @@ def outward_scan_product_create(request,o_id=None):
 
 
                     if picklist_formset.is_valid():
+                        formset.forms = [form for form in formset if form.has_changed()]
                         for form in picklist_formset:
                             picklist_form_instance = form.save(commit=False)
                             picklist_form_instance.outward_no = master_form_instance
