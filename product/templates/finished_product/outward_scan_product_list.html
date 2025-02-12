@@ -46,12 +46,15 @@
                     <td>{{outward.total_qty}}</td>
                     <td>{{outward.remaining_qty}}</td>
                     {% for sale_process in outward.sales_voucher_master_outward_scan_set.all %}
-                        <td>{{ sale_process.sale_no }}</td>
+                        <td>{{ sale_process.sale_no |default_if_none:''}}</td>
                         <td>{{ sale_process.party_name.name }}</td>
                         <td>{{ sale_process.grand_total }}</td>
                     {% endfor %}
                     
                     <td>{{ outward.sale_total_qty }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     
                     <td><a href="{% url 'outward-scan-product-update' outward.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
                 </tr>

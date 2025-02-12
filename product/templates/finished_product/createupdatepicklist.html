@@ -588,121 +588,127 @@
 })
 
 document.addEventListener('DOMContentLoaded', function () {
-    const addButton= document.getElementById('addRowButton');
-    const tableBody = document.querySelector('#createpickListTable tbody'); // Clone the first row of the table
-    
-    if(addButton && tableBody){
-        addButton.addEventListener('click', function() {
-            // let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
 
-            //     if (isNaN(addInputRow) || addInputRow <= 0) {
-            //         addInputRow = 1;
-            //         return;
-            //     }
-          
-                let lastVisibleRow = null;
-                tableBody.querySelectorAll('tr').forEach(row => {
-                    if (window.getComputedStyle(row).display !== 'none') {
-                        lastVisibleRow = row;
-                    }
-            });
-
-            if (lastVisibleRow) {
-                const formCountInput = document.getElementById("id_picklist_products_list-TOTAL_FORMS");
-               
-                // for(let i = 0; i<addInputRow; i++){
-                    const formCount = parseInt(formCountInput.value); 
-                    const formIndex = formCount;
-                    const lastRow = lastVisibleRow.cloneNode(true);
-                    lastRow.querySelectorAll("input select").forEach(function (e) {
-                        e.value = "";
-                    });
-
-                    // update the input name,id and value of the last row   
-                    const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
-                    rowElement.id = `rowNo_${formIndex}`;
-                    rowElement.name = `rowNo_${formIndex}`;
-                    rowElement.value = formIndex + 1 ;
-                    rowElement.style.border="none";
-
-                    const inputRefNo = lastRow.querySelector('input[name$="-product_refNo"]');
-                    inputRefNo.id = `id_picklist_products_list-${formIndex}-product_refNo`;
-                    inputRefNo.name = `picklist_products_list-${formIndex}-product_refNo`;
-                    inputRefNo.value="";
-
-                    const inputSelectElement = lastRow.querySelector('input[name$="-product"]');
-                    inputSelectElement.id = `id_picklist_products_list-${formIndex}-product`;
-                    inputSelectElement.name = `picklist_products_list-${formIndex}-product`;
-                    inputSelectElement.value="";
-
-                    const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
-                    inputElement.id = `id_picklist_products_list-${formIndex}-product_name_value`;
-                    inputElement.name = `picklist_products_list-${formIndex}-product_name_value`;
-                    inputElement.value="";
-                    inputElement.removeAttribute('readonly');
-                    
-                    const selectElement = lastRow.querySelector('.product-name[name^="select_product_name_"]');
-                    selectElement.id = `select_product_name_${formIndex}`;
-                    selectElement.name = `select_product_name_${formIndex}`;
-                    selectElement.innerHTML = '';
-            
-                    const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color_"]');
-                    colorInputElement.id = `product_color_${formIndex}`;
-                    colorInputElement.name = `product_color_${formIndex}`;
-                    colorInputElement.value="";
-
-                    const skuInputElement = lastRow.querySelector('.purchase-amount[name^="product_Sku_"]');
-                    skuInputElement.id = `product_Sku_${formIndex}`;
-                    skuInputElement.name = `product_Sku_${formIndex}`;
-                    skuInputElement.value="";
-
-                    const imageInputElement = lastRow.querySelector('img[id^="id_productInward_img_"]');
-                    imageInputElement.id = `id_productInward_img_${formIndex}`
-                    imageInputElement.value="";
-
-
-                    const binElement = lastRow.querySelector('select[name^="picklist_products_list-"][name$="-bin_number"]');
-                    binElement.id = `id_picklist_products_list-${formIndex}-bin_number`;
-                    binElement.name = `picklist_products_list-${formIndex}-bin_number`;
-                    binElement.innerHTML = '';
-                    binElement.removeAttribute('readonly');
-
-                    const reservedElement = lastRow.querySelector('input[name^="reserver_Qty_"]');
-                    reservedElement.id = `id_reserver_Qty_${formIndex}`;
-                    reservedElement.name = `reserver_Qty_${formIndex}`;
-                    reservedElement.value="";
-
-                    const qunatityInputElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-product_quantity"]');
-                    qunatityInputElement.id = `id_picklist_products_list-${formIndex}-product_quantity`;
-                    qunatityInputElement.name = `picklist_products_list-${formIndex}-product_quantity`;
-                    qunatityInputElement.value="";
-                    qunatityInputElement.removeAttribute('readonly');
-
-
-                
-                    const deleteElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
-                    deleteElement.id = `id_picklist_products_list-${formIndex}-DELETE`;
-                    deleteElement.name = `picklist_products_list-${formIndex}-DELETE`;
-                    deleteElement.value= "";
-
-                    formCountInput.value = formCount + 1; 
-                    tableBody.appendChild(lastRow);
-
-                // }
-                // document.getElementById('id_productRow').value = '1';
-                deleteRowData()
-                inputCheck()
-              
-            }   
-             
-        });
+    // function addNewRow(){
+        const addButton= document.getElementById('addRowButton');
+        const tableBody = document.querySelector('#createpickListTable tbody'); // Clone the first row of the table
         
-    }else{
-        console.error("Could not find addFormButton or table body element.");
+        if(addButton && tableBody){
+            addButton.addEventListener('click', function() {
+                // let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
 
-    }
+                //     if (isNaN(addInputRow) || addInputRow <= 0) {
+                //         addInputRow = 1;
+                //         return;
+                //     }
+            
+                    let lastVisibleRow = null;
+                    tableBody.querySelectorAll('tr').forEach(row => {
+                        if (window.getComputedStyle(row).display !== 'none') {
+                            lastVisibleRow = row;
+                        }
+                });
+
+                if (lastVisibleRow) {
+                    const formCountInput = document.getElementById("id_picklist_products_list-TOTAL_FORMS");
+                
+                    // for(let i = 0; i<addInputRow; i++){
+                        const formCount = parseInt(formCountInput.value); 
+                        const formIndex = formCount;
+                        const lastRow = lastVisibleRow.cloneNode(true);
+                        console.log('lastRow',lastRow)
+                        lastRow.querySelectorAll("input select").forEach(function (e) {
+                            e.value = "";
+                        });
+
+                        // update the input name,id and value of the last row   
+                        const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
+                        rowElement.id = `rowNo_${formIndex}`;
+                        rowElement.name = `rowNo_${formIndex}`;
+                        rowElement.value = formIndex + 1 ;
+                        rowElement.style.border="none";
+
+                        const inputRefNo = lastRow.querySelector('input[name$="-product_refNo"]');
+                        inputRefNo.id = `id_picklist_products_list-${formIndex}-product_refNo`;
+                        inputRefNo.name = `picklist_products_list-${formIndex}-product_refNo`;
+                        inputRefNo.value="";
+
+                        const inputSelectElement = lastRow.querySelector('input[name$="-product"]');
+                        inputSelectElement.id = `id_picklist_products_list-${formIndex}-product`;
+                        inputSelectElement.name = `picklist_products_list-${formIndex}-product`;
+                        inputSelectElement.value="";
+
+                        const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
+                        inputElement.id = `id_picklist_products_list-${formIndex}-product_name_value`;
+                        inputElement.name = `picklist_products_list-${formIndex}-product_name_value`;
+                        inputElement.value="";
+                        inputElement.removeAttribute('readonly');
+                        
+                        const selectElement = lastRow.querySelector('.product-name[name^="select_product_name_"]');
+                        selectElement.id = `select_product_name_${formIndex}`;
+                        selectElement.name = `select_product_name_${formIndex}`;
+                        selectElement.innerHTML = '';
+                
+                        const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color_"]');
+                        colorInputElement.id = `product_color_${formIndex}`;
+                        colorInputElement.name = `product_color_${formIndex}`;
+                        colorInputElement.value="";
+
+                        const skuInputElement = lastRow.querySelector('.purchase-amount[name^="product_Sku_"]');
+                        skuInputElement.id = `product_Sku_${formIndex}`;
+                        skuInputElement.name = `product_Sku_${formIndex}`;
+                        skuInputElement.value="";
+
+                        const imageInputElement = lastRow.querySelector('img[id^="id_productInward_img_"]');
+                        imageInputElement.id = `id_productInward_img_${formIndex}`
+                        imageInputElement.value="";
+
+
+                        const binElement = lastRow.querySelector('select[name^="picklist_products_list-"][name$="-bin_number"]');
+                        binElement.id = `id_picklist_products_list-${formIndex}-bin_number`;
+                        binElement.name = `picklist_products_list-${formIndex}-bin_number`;
+                        binElement.innerHTML = '';
+                        binElement.removeAttribute('readonly');
+
+                        const reservedElement = lastRow.querySelector('input[name^="reserver_Qty_"]');
+                        reservedElement.id = `id_reserver_Qty_${formIndex}`;
+                        reservedElement.name = `reserver_Qty_${formIndex}`;
+                        reservedElement.value="";
+
+                        const qunatityInputElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-product_quantity"]');
+                        qunatityInputElement.id = `id_picklist_products_list-${formIndex}-product_quantity`;
+                        qunatityInputElement.name = `picklist_products_list-${formIndex}-product_quantity`;
+                        qunatityInputElement.value="";
+                        qunatityInputElement.removeAttribute('readonly');
+
+
+                    
+                        const deleteElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
+                        deleteElement.id = `id_picklist_products_list-${formIndex}-DELETE`;
+                        deleteElement.name = `picklist_products_list-${formIndex}-DELETE`;
+                        deleteElement.value= "";
+
+                        formCountInput.value = formCount + 1; 
+                        tableBody.appendChild(lastRow);
+
+                    // }
+                    // document.getElementById('id_productRow').value = '1';
+                    deleteRowData()
+                    inputCheck()
+                
+                }   
+                
+            });
+            
+        }else{
+            console.error("Could not find addFormButton or table body element.");
+
+        }
     
-    });
+    // }
+    
+    
+});
 
 
     function getVisibleRows() {
@@ -761,21 +767,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }); 
 };
 
-// function updateForm(){
-//     var formId = document.getElementById('id_picklist_products_list-0-id').value;
-
-//     if(formId !== ''){
-        
-//         //var addButton = document.getElementById('addRowButton');
-//         var productRow = document.getElementById('id_productRow');
-//         var submitButton = document.getElementById('picklistSubmit')
-    
-//         addButton.style.display = 'none';
-//         productRow.style.display = 'none';
-//         submitButton.style.display = 'none';
-    
-//     }
-// }
 
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('id_picklist_no').focus();
@@ -789,17 +780,22 @@ document.addEventListener('DOMContentLoaded', function () {
         dateInput.value = formattedDate;
         const date = dateInput.value;
         dateInput.min = today;
-    //updateForm()
+  
 })
 
 function inputCheck(){
-
+var picklistNo = document.getElementById('id_picklist_no')
 const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
 const date = document.getElementById('id_pickListDate')
 var tableRows = document.querySelectorAll('#createpickListTable tr');
 const channel = document.getElementById('id_ledgerTypes');
 const narration = document.getElementById('id_narration')
 
+
+picklistNo.addEventListener('focusout',function(event){
+    
+
+})
 itemNameInputsid.forEach((input, index) => {
   input.addEventListener("keydown", function (event) {
 
@@ -895,6 +891,7 @@ narration.addEventListener('keydown', function(event) {
 });
 
 tableRows.forEach(function (row,index) {
+    var itemInput = row.querySelector('[name$="product_name_value"]');
     const qty = row.querySelector('[name$="-product_quantity"]');
     const bin_no = row.querySelector('[name$="-bin_number"]');
     const addBtn = document.getElementById('addRowButton')
@@ -916,11 +913,16 @@ tableRows.forEach(function (row,index) {
             }
         });
     }
+   
 });
 
 
 
 }
+
+
+buttonCheck()  
+
 function buttonCheck(){
     const addButtons= document.getElementById('addRowButton');
 
@@ -932,30 +934,35 @@ function buttonCheck(){
     var tableRow = document.querySelectorAll('#createpickListTable tr');
 
     tableRow.forEach(function(row){
-        var productName = row.querySelector('[name$="-product_name_value"]');
-        var binNames = row.querySelector('[name$="-bin_number"]')
-        var prdocutQty = row.querySelector('[name$="-product_quantity"]')
-        if(productName){
-        
-            productName.setAttribute('readonly', true);
-        
-        }
-        if(binNames){
-         
-            binNames.setAttribute('readonly', true);
-        
-        }
-        if(prdocutQty){
-          
-            prdocutQty.setAttribute('readonly', true);
-        
-        }
+        for (let row of tableRow) {
+                var itemInput = row.querySelector('[name$="product_name_value"]');
+                var binNames = row.querySelector('[name$="-bin_number"]')
+                var qtyInput = row.querySelector('[name$="-bin_number"]');
+                var addbtn =  document.getElementById('addRowButton')
+
+                    if (itemInput && itemInput.value === '') {
+                        addbtn.disabled = true;
+                        return; 
+                    } 
+                    // Check if quantity is empty, then focus on it
+                    else if (qtyInput && qtyInput.value === '') {
+                        addbtn.disabled = true;
+                        return; 
+                    }else{
+                        addbtn.disabled = false; 
+                        itemInput.setAttribute('readonly', true);
+                        binNames.setAttribute('readonly', true);
+                        qtyInput.setAttribute('readonly', true);
+                    } 
+            }
+      
        
     })
+           
 })
 
 }
-buttonCheck()
+
 inputCheck()
 deleteRowData()
 </script>
