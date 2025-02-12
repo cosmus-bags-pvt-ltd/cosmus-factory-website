@@ -1,9 +1,11 @@
 
+from email import message
 from django.db import models
 from django.conf import settings
 from django.forms import ValidationError
 from multiselectfield import MultiSelectField
 from django.core.validators import MinValueValidator, MaxValueValidator, MinLengthValidator, MaxLengthValidator
+from numpy import delete
 
 from core.models import Company
 
@@ -1269,6 +1271,17 @@ class Picklist_voucher_master(models.Model):
         self.save()
 
 
+    def delete(self,*args, **kwargs):
+        if self.status == "Pending":
+            Picklist_products_list.objects.filter(picklist_master_instance=self).delete()
+            super().delete(*args, **kwargs)
+        else:
+            message.error('Only closed picklists can be deleted.')
+            raise ValueError("Only closed picklists can be deleted.")
+
+
+
+
 
 
 class Picklist_products_list(models.Model):
@@ -1296,6 +1309,7 @@ class outward_product_master(models.Model):
 
 class outward_products(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT,related_name='outward_product')
+    outward_picklist_no = models.CharField(max_length=25)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
@@ -1335,3 +1349,22 @@ class sales_voucher_outward_scan(models.Model):
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
+# class sales_return_inward(models.Model):
+#     sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.CASCADE)
+#     sales_return_no = models.CharField(max_length = 100)
+#     ledger_type = models.CharField(max_length = 20, default = 'sales return')
+#     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
+#     selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+#     created_date = models.DateTimeField(auto_now_add = True)
+#     modified_date_time = models.DateTimeField(auto_now = True)
+
+
+
+
+
+
+
+
+
