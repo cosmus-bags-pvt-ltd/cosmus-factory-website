@@ -14801,10 +14801,25 @@ def party_name_search_ajax(request):
 
 def otward_data_for_sale_return_ajax(request):
     try:
-        sale_no = 1
-        queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_products__outward_picklist_no')
+        sale_no = request.GET.get('saleNo')
 
-        print('queryset',queryset)
+        print('sale_no = ', sale_no)
+
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity')
+
+        list_to_sent = [] 
+
+        for data in outward_queryset:
+            list_to_sent.append({
+                'PProduct_SKU': data['outward_no__outward_product__product__PProduct_SKU'],
+                'PProduct_image': data['outward_no__outward_product__product__PProduct_image'],
+                'Product_Refrence_ID': data['outward_no__outward_product__product__Product__Product_Refrence_ID'],
+                'PProduct_color': data['outward_no__outward_product__product__PProduct_color__color_name'],
+                'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
+                'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
+                'Quantity': data['outward_no__outward_product__quantity'],
+            })
+
 
     except Exception as e:
         logger.error(f"Error in otward_data_for_sale_return_ajax: {str(e)}")
@@ -14819,12 +14834,6 @@ def sales_return_inward_to_bin(request):
 
 def sale_return_list(request):
     queryset = sales_return_inward.objects.all()
-
-    sale_no = 1
-
-    queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product')
-
-    print('queryset',queryset)
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
 
 
