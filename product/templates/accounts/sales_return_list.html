@@ -1,0 +1,9 @@
+{% extends 'product/base.html' %} 
+{% load static %} 
+
+{% block body %}
+<a href="{% url 'sales-return-inward-to-bin' %}">create</a>
+{% for data in queryset %}
+  {{ data.sales_return_no }}
+{% endfor %}
+{% endblock body %}

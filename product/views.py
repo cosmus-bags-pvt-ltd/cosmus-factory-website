@@ -56,7 +56,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
-                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
+                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_return_inward, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
                     shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
 
@@ -14797,9 +14797,44 @@ def party_name_search_ajax(request):
     except Exception as e:
         logger.error(f"Error in party_name_search_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
-    
+
+
+def otward_data_for_sale_return_ajax(request):
+    try:
+        sale_no = request.GET.get('saleNo')
+
+        print('sale_no = ', sale_no)
+
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity')
+
+        list_to_sent = [] 
+
+        for data in outward_queryset:
+            list_to_sent.append({
+                'PProduct_SKU': data['outward_no__outward_product__product__PProduct_SKU'],
+                'PProduct_image': data['outward_no__outward_product__product__PProduct_image'],
+                'Product_Refrence_ID': data['outward_no__outward_product__product__Product__Product_Refrence_ID'],
+                'PProduct_color': data['outward_no__outward_product__product__PProduct_color__color_name'],
+                'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
+                'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
+                'Quantity': data['outward_no__outward_product__quantity'],
+            })
+
+
+    except Exception as e:
+        logger.error(f"Error in otward_data_for_sale_return_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
 
 
 def sales_return_inward_to_bin(request):
     master_form = salesreturninwardmasterform()
     return render(request,'accounts/sales_return_inward.html',{'master_form':master_form})
+
+
+def sale_return_list(request):
+    queryset = sales_return_inward.objects.all()
+    return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
+
+
+

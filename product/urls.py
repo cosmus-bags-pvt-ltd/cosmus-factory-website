@@ -381,7 +381,9 @@ urlpatterns = [
     path('outwardscanserialnoprocess/', views.outward_scan_serial_no_process, name='outward-scan-serial-no-process'),
     path('outwardpicklistnoajax/', views.outward_picklist_no_ajax, name='outward-picklist-no-ajax'),
       
+    path('salereturnlist/', views.sale_return_list, name='sale-return-list'),
     path('salesreturninwardtobin/', views.sales_return_inward_to_bin, name='sales-return-inward-to-bin'),
+    path('otwarddataforsalereturnajax/', views.otward_data_for_sale_return_ajax, name='otward-data-for-sale-return-ajax'),
 
 ]   
 
