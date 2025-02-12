@@ -49,7 +49,7 @@
                         {% for form in picklist_formset %}
                         {{ form.id }}
                         <tr>
-                            <input type="hidden" name="{{form.prefix}}-pickId" id="id_{{form.prefix}}-pickId" value="{{ form.instance.id }}">
+                            <input type="hidden" name="{{form.prefix}}-pickId" id="id_{{form.prefix}}-pickId" value="{{ form.instance.id |default_if_none:''}}">
                             <td><input type="hidden" class="rowNo picklistId" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="{% if form.instance.id %}{{ form.instance.picklist.id }}{% endif %}" readonly>
                                 <input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="{% if form.instance.id %}{{ form.instance.picklist.picklist_no }}{% endif %}" readonly></td>
                             <td>
@@ -94,7 +94,7 @@
             {{form.id}}
                 {% if form.instance.id %}
                 <tr>
-                    <input type="hidden" name="picklistNo_{{forloop.counter0}}" id="id_picklistNo_{{forloop.counter0}}" value="">
+                    <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="{{form.instance.outward_picklist_no }}">
 
                     <td>
                         <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
@@ -140,8 +140,8 @@
 
                 {% elif not form.instance.id %}
                 <tr>
-                    <input type="hidden" name="picklistNo_{{forloop.counter0}}" id="id_picklistNo_{{forloop.counter0}}" value="">
-
+                 
+                    <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
                     <td>
                         <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
                     </td>
@@ -264,7 +264,7 @@ $(document).ready(function () {
             data: { "picklistNo": picklistNo },
             success: function (response) {
                 var productPickList = response.picklistDict;
-                console.log(response)
+        
                 if (response.picklistDict && response.picklisQty !== null) {
 
                     var picklistKey = Object.keys(response.picklistDict)[0]; // Get the first key dynamically
@@ -335,39 +335,34 @@ $(document).ready(function () {
     $(document).on('click', 'input.outwardPick-btn', function () {
         var productTable = $('#picklistProductTable .mainTableList');
         productTable.empty();
-
         var productKey = $(this).closest('tr').find('.pickId').val()?.trim();
         var storedData = $('#picklistHiddenData').val();
         var updateValue = $('#picklistupdateData').val();
-
+        // console.log('productKey',productKey)
         if (updateValue) {
-            // ✅ Replace single quotes with double quotes
-            var latestUpdate = updateValue.replace(/'/g, '"');
           
-            latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  // ✅ Convert numeric keys (like 124) into string keys ("124")
+            var latestUpdate = updateValue.replace(/'/g, '"');
+            latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
         }
 
         function safeParseJSON(jsonString) {
             try {
-                if (!jsonString || jsonString.trim().toLowerCase() === "none") return {}; // ✅ Convert 'None' to {}
+                if (!jsonString || jsonString.trim().toLowerCase() === "none") return {};
                 return JSON.parse(jsonString);
             } catch (error) {
                 console.error("Invalid JSON format:", jsonString, error);
-                return {}; // ✅ Return empty object instead of crashing
+                return {};
             }
         }
 
-        // ✅ Parse JSON safely
         var parsedData = safeParseJSON(storedData);
         var parsedUpdateData = safeParseJSON(latestUpdate);
 
-        // ✅ If both parsedData and parsedUpdateData are empty, stop execution
         if ($.isEmptyObject(parsedData) && $.isEmptyObject(parsedUpdateData)) {
             console.log("No picklist data found.");
             return;
         }
 
-        // ✅ Merge data only if both exist, otherwise use the available one
         var mergedData = (!$.isEmptyObject(parsedData) && !$.isEmptyObject(parsedUpdateData))
             ? { ...parsedData, ...parsedUpdateData }
             : (!$.isEmptyObject(parsedData) ? parsedData : parsedUpdateData);
@@ -385,30 +380,29 @@ $(document).ready(function () {
 
         $('[name$="-product"]').each(function () {
             let row = $(this).closest('tr');
-            console.log('row',row,row.length)
             if (row.css('display') === 'none') return; // Skip hidden rows
 
-            var skuElement = $(this).val();
-            if (!skuElement) {
-                console.warn("SKU is missing for row:", row);
-                return; // ✅ Skip rows where SKU is missing
-            }
+            var skuElement = $(this).val()?.trim();
+            if (!skuElement) return; // Skip if SKU is missing
 
             let sku = String(skuElement).trim();
-            console.log('SKU:', sku);
-
-            var pickNos = row.find('[name^="picklistNo_"]').val()?.trim();
+            console.log('skus',sku,typeof(sku))
+            var pickNos = row.find('[name$="-outward_picklist_no"]').val()?.trim();
             var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
-            var checkboxChecked = row.find('.picklistRadio').is(':checked');
-
+            var checkboxChecked = $('.picklistRadio:checked');
+            
+            console.log('checkboxChecked',checkboxChecked)
+            console.log('pickNos',pickNos)
             if (checkboxChecked) picklistSelected = true;
 
+              // ✅ Ensure only rows matching the selected `productKey` are considered
             if (!pickNos || pickNos !== productKey) return;
 
-            if (!Object.prototype.hasOwnProperty.call(totalQty, sku)) {
-                    totalQty[sku] = 0;
-                }
-                totalQty[sku] += qty;
+            // ✅ Ensure totalQty is grouped by picklistNo and sku
+            if (!totalQty[pickNos]) totalQty[pickNos] = {};
+            if (!totalQty[pickNos][sku]) totalQty[pickNos][sku] = 0;
+
+            totalQty[pickNos][sku] += qty; // Sum up outward quantity per SKU under the same PicklistNo
         });
 
         console.log('totalQty:', totalQty);
@@ -420,14 +414,13 @@ $(document).ready(function () {
         }
 
         mergedData[productKey].forEach(item => {
-            if (!item.sku || !item.qty) {
-                console.warn("Skipping invalid item:", item);
-                return;
-            }
-
             let sku = String(item.sku).trim();
             let qty = item.qty;
-            let outwardQty = picklistSelected ? (totalQty.hasOwnProperty(sku) ? totalQty[sku] : 0) : 0;
+            console.log('qty',qty)
+            console.log('sku',sku,typeof(sku))
+            console.log('picklistSelected',picklistSelected)
+            // ✅ Get outwardQty only for the same `productKey` (Picklist No)
+            let outwardQty = picklistSelected ? (totalQty[productKey]?.[sku] || 0) : 0;
             let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
 
             console.log('Processing SKU:', sku);
@@ -624,7 +617,7 @@ $(document).ready(function () {
         row.find('[name$="-bin_no"]').val(productResponse[5])
         row.find('[name$="-quantity"]').val(productResponse[6]);
         row.find('[id^="product_img_"]').attr("src", productResponse[7]);
-        row.find('[name^="picklistNo_"]').val(productResponse[9]);
+        row.find('[name$="-outward_picklist_no"]').val(productResponse[9]);
 
         picklistQtyCheck();
     }
@@ -678,7 +671,7 @@ $(document).ready(function () {
         var selectedRow = checkedRadio.closest('tr'); 
         var pickNo = parseInt(selectedRow.find('.pickId').val()?.trim(), 10) || 0;
         var pickQty = parseInt(selectedRow.find('.pickQty').val()?.trim(), 10) || 0;
-        var pickbalance = parseInt(selectedRow.find('.pickBalance').val()?.trim(), 10)
+        var pickbalance = selectedRow.find('.pickBalance').val()?.trim();
         var picklistId = selectedRow.find('[name$="-pickId"]').val()?.trim();
 
         if (!pickNo) {
@@ -694,9 +687,9 @@ $(document).ready(function () {
             var outwardQty = parseInt($(this).val(), 10) || 0;
             var row = $(this).closest('tr');
             if (row.css('display') === 'none') return; // Skip hidden rows
-            var tablePicklistNo = parseInt(row.find('[name^="picklistNo_"]').val()) || 0;
+            var tablePicklistNo = parseInt(row.find('[name$="-outward_picklist_no"]').val()) || 0;
             var tableSku = String(row.find('[name$="-product"]').val()).trim(); // Ensure SKU is string
-
+            console.log('tablePicklistNo',tablePicklistNo)
             if (pickNo === tablePicklistNo) {
                 if (mergedData.hasOwnProperty(pickNo)) {
                     let picklistItems = mergedData[pickNo];
@@ -718,7 +711,7 @@ $(document).ready(function () {
         console.log('pickbalance',pickbalance)
         console.log('picklistId',picklistId)
 
-        if(picklistId !== 'None'){
+        if(picklistId !== ''){
             pickBal = pickbalance - 1;
         }else{
             pickBal = pickQty - total;
@@ -742,7 +735,7 @@ $(document).ready(function () {
 
 async function sendSerialNumber(serialNo) {
     var checkedRadio = $('.picklistRadio:checked');
-    console.log('checkedRadio',checkedRadio)
+    // console.log('checkedRadio',checkedRadio)
     if (checkedRadio.length === 0) {
         console.warn("No picklist selected.");
         $('#responseMessage').html('<span class="text-danger">Please select a picklist before scanning.</span>');
@@ -754,7 +747,7 @@ async function sendSerialNumber(serialNo) {
     var pickNo = parseInt(selectedRow.find('.pickId').val()?.trim(), 10) || 0;
     var pickQty = parseInt(selectedRow.find('.pickQty').val()?.trim(), 10) || 0;
     var pickBalance = parseInt(selectedRow.find('.pickBalance').val().trim(),10) ;
-    console.log("Picklist:", pickNo, "Qty:", pickQty, "Balance:", pickBalance);
+    // console.log("Picklist:", pickNo, "Qty:", pickQty, "Balance:", pickBalance);
 
     try {
         const response = await $.ajax({
@@ -768,13 +761,13 @@ async function sendSerialNumber(serialNo) {
             $('#responseMessage').html('<span class="text-danger">No product found for this serial number.</span>');
             return;
         }
-
+        console.log('response',response.products)
         const productResponse = response.products[0];
         const sku = String(productResponse[1]).trim();
         const serialNoResponse = String(productResponse[4]).trim();
         const responsePicklistNo = parseInt(productResponse[9], 10);
         const itemQty = parseInt(productResponse[6], 10) || 0;
-
+       
         var storedData = $('#picklistHiddenData').val()
         var updateValue = $('#picklistupdateData').val();
 
@@ -856,7 +849,7 @@ async function sendSerialNumber(serialNo) {
         if (isDuplicate) return;
 
         if (rowToPopulate) {
-            populateRow(rowToPopulate, productResponse);
+            populateRow(rowToPopulate, productResponse );
         } else {
             addNewRow();
             const newRow = $('#outwardSales .mainTableList tr').last();
@@ -908,9 +901,9 @@ async function sendSerialNumber(serialNo) {
         rowElement.value = formIndex + 1;
         rowElement.style.border = "none";
  
-        const picklistElement = lastRow.querySelector('[name^="picklistNo_"]')
-        picklistElement.id = `id_picklistNo_${formIndex}`;
-        picklistElement.name = `picklistNo_${formIndex}`;
+        const picklistElement = lastRow.querySelector('[name$="-outward_picklist_no"]')
+        picklistElement.id = `id_outward_product-${formIndex}-outward_picklist_no`;
+        picklistElement.name = `outward_product-${formIndex}-outward_picklist_no`;
         picklistElement.value = "";
 
         const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
@@ -1036,7 +1029,7 @@ async function sendSerialNumber(serialNo) {
             if (row.css('display') === 'none') return; // Skip hidden rows
             var checkboxChecked = row.find('.picklistRadio'); 
             let sku = String($(this).val()).trim();
-            let pickNos = row.find('[name^="picklistNo_"]').val()?.trim();
+            let pickNos = row.find('[name$="-outward_picklist_no"]').val()?.trim();
             let qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
 
             if (checkboxChecked) picklistSelected = true; // At least one checkbox is selected

@@ -941,18 +941,19 @@ function buttonCheck(){
                 var addbtn =  document.getElementById('addRowButton')
 
                     if (itemInput && itemInput.value === '') {
-                        addbtn.disabled = true;
+                        itemInput.focus()
                         return; 
                     } 
                     // Check if quantity is empty, then focus on it
                     else if (qtyInput && qtyInput.value === '') {
-                        addbtn.disabled = true;
+                        qtyInput.focus()
                         return; 
                     }else{
-                        addbtn.disabled = false; 
-                        itemInput.setAttribute('readonly', true);
-                        binNames.setAttribute('readonly', true);
-                        qtyInput.setAttribute('readonly', true);
+                
+                      // Only set attributes if elements exist
+            if (itemInput) itemInput.setAttribute('readonly', true);
+            if (binNames) binNames.setAttribute('readonly', true);
+            if (qtyInput) qtyInput.setAttribute('readonly', true);
                     } 
             }
       
