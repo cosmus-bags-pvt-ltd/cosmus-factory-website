@@ -14820,6 +14820,7 @@ def otward_data_for_sale_return_ajax(request):
                 'Quantity': data['outward_no__outward_product__quantity'],
             })
 
+        return JsonResponse({'list_to_sent': list_to_sent}, status=200)
 
     except Exception as e:
         logger.error(f"Error in otward_data_for_sale_return_ajax: {str(e)}")
