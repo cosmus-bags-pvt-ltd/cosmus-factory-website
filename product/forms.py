@@ -1317,7 +1317,7 @@ class PicklistProcessInOutwardForm(forms.ModelForm):
 
 PicklistProcessInOutwardFormset = inlineformset_factory(outward_product_master, Picklist_process_in_outward,form=PicklistProcessInOutwardForm, extra=1, can_delete=True)
 
-
+PicklistProcessInOutwardFormsetupdate = inlineformset_factory(outward_product_master, Picklist_process_in_outward,form=PicklistProcessInOutwardForm, extra=0, can_delete=True)
 
 class Salesvouchermasteroutwardscanform(forms.ModelForm):
     class Meta:
