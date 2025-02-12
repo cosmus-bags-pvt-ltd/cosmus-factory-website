@@ -94,9 +94,10 @@
             {{form.id}}
                 {% if form.instance.id %}
                 <tr>
-                    <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="{{form.instance.outward_picklist_no }}">
+                  
 
                     <td>
+                        <input type="text" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="{{ form.instance.outward_picklist_no }}">
                         <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
                     </td>
 
@@ -141,8 +142,9 @@
                 {% elif not form.instance.id %}
                 <tr>
                  
-                    <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
+                    
                     <td>
+                        <input type="text" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
                         <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
                     </td>
 

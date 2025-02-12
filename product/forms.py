@@ -1301,7 +1301,7 @@ class Outwardproductmasterform(forms.ModelForm):
 class OutwardProductForm(forms.ModelForm):
     class Meta:
         model = outward_products
-        fields = ['product', 'unique_serial_no', 'bin_number', 'quantity']
+        fields = ['outward_picklist_no','product', 'unique_serial_no', 'bin_number', 'quantity']
 
 OutwardProductcreateFormSet = inlineformset_factory(outward_product_master,outward_products,form = OutwardProductForm,extra=1, can_delete=True)
 
