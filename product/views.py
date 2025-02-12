@@ -14805,7 +14805,7 @@ def otward_data_for_sale_return_ajax(request):
 
         print('sale_no = ', sale_no)
 
-        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity')
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no')
 
         list_to_sent = [] 
 
@@ -14818,6 +14818,7 @@ def otward_data_for_sale_return_ajax(request):
                 'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
                 'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
                 'Quantity': data['outward_no__outward_product__quantity'],
+                'unique_serial_no': data['outward_no__outward_product__unique_serial_no'],
             })
 
         return JsonResponse({'list_to_sent': list_to_sent}, status=200)
