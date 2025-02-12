@@ -14150,6 +14150,11 @@ def delete_form_quantity_revert(request):
 
 def deletepicklist(request,pl_id):
     picklist = Picklist_voucher_master.objects.get(pk=pl_id)
+
+    if picklist.status != "Pending":
+        messages.error(request, "Only Pending picklists can be deleted.")
+        return redirect("all-picklists-list")
+    
     picklist_product_instance = Picklist_products_list.objects.filter(picklist_master_instance = pl_id)
     for instance in picklist_product_instance:
         bin_qty_object = Product_bin_quantity_through_table.objects.get(bin=instance.bin_number, product=instance.product)
@@ -14448,6 +14453,7 @@ def outward_scan_product_create(request,o_id=None):
         picklist_data_queryset = Picklist_process_in_outward.objects.filter(outward_no=o_id).prefetch_related(
             'picklist__picklist_products_list__product'
         )
+
 
         dict_to_send = {}
 
