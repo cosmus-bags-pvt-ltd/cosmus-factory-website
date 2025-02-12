@@ -76,7 +76,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, salesreturninwardmasterform,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -14797,3 +14797,9 @@ def party_name_search_ajax(request):
     except Exception as e:
         logger.error(f"Error in party_name_search_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+    
+
+
+def sales_return_inward_to_bin(request):
+    master_form = salesreturninwardmasterform()
+    return render(request,'accounts/sales_return_inward.html',{'master_form':master_form})

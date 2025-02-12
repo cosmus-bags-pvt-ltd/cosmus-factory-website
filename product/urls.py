@@ -381,7 +381,7 @@ urlpatterns = [
     path('outwardscanserialnoprocess/', views.outward_scan_serial_no_process, name='outward-scan-serial-no-process'),
     path('outwardpicklistnoajax/', views.outward_picklist_no_ajax, name='outward-picklist-no-ajax'),
       
-
+    path('salesreturninwardtobin/', views.sales_return_inward_to_bin, name='sales-return-inward-to-bin'),
 
 ]   
 

@@ -1351,14 +1351,17 @@ class sales_voucher_outward_scan(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-# class sales_return_inward(models.Model):
-#     sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.CASCADE)
-#     sales_return_no = models.CharField(max_length = 100)
-#     ledger_type = models.CharField(max_length = 20, default = 'sales return')
-#     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
-#     selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
-#     created_date = models.DateTimeField(auto_now_add = True)
-#     modified_date_time = models.DateTimeField(auto_now = True)
+class sales_return_inward(models.Model):
+    sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.CASCADE)
+    sales_return_no = models.CharField(max_length = 100)
+    ledger_type = models.CharField(max_length = 20, default = 'sales return')
+    party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
+    selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add = True)
+    modified_date_time = models.DateTimeField(auto_now = True)
+
+
+
 
 
 
