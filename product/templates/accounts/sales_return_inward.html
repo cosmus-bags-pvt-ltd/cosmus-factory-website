@@ -4,7 +4,7 @@
 {% block body %}
 <form class="mt-3" action="" method="POST" id="salesForm">
     {% csrf_token %}
-    {{ formset }}
+    
     <div class="d-flex mb-3">
       <div class="d-flex mb-1">
         <input type="hidden" id="productSaleDate" value="">
@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (row.css('display') === 'none') return;
                         const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
                         
-                        if (serialValue && serialValue === serialNo) {
+                        if (serialValue && serialValue === serialno) {
                             $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
                             isDuplicate = true;
                             return false;
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
 
         function isTableEmpty() {
-        return $('#outwardSales .mainTableList tr').toArray().every(row => isRowEmpty($(row)));
+        return $('#salesReturnoutwardTable .mainTableList  tr').toArray().every(row => isRowEmpty($(row)));
     }
 
     function populateRow(row, response) {
@@ -528,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function addNewRow() {
-        const tableBody = document.querySelector('#outwardSales .mainTableList');
+        const tableBody = document.querySelector('#salesReturnoutwardTable .mainTableList ');
 
         tableBody.querySelectorAll('tr').forEach(row => {
             if (window.getComputedStyle(row).display !== 'none') {
@@ -536,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        const formCountInput = document.getElementById("id_outward_product-TOTAL_FORMS");
+        const formCountInput = document.getElementById("id_sales_return_product_set-TOTAL_FORMS");
         const formCount = parseInt(formCountInput.value);
         const formIndex = formCount;
         const lastRow = lastVisibleRow.cloneNode(true);
@@ -556,13 +556,13 @@ document.addEventListener('DOMContentLoaded', function () {
         // picklistElement.value = "";
 
         const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
-        inputSelectElement.id = `id_outward_product-${formIndex}-product_RefNo`;
-        inputSelectElement.name = `outward_product-${formIndex}-product_RefNo`;
+        inputSelectElement.id = `id_sales_return_product_set-${formIndex}-product_RefNo`;
+        inputSelectElement.name = `sales_return_product_set-${formIndex}-product_RefNo`;
         inputSelectElement.value = "";
 
         const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
-        inputElement.id = `id_outward_product-${formIndex}-product_name_value`;
-        inputElement.name = `outward_product-${formIndex}-product_name_value`;
+        inputElement.id = `id_sales_return_product_set-${formIndex}-product_name_value`;
+        inputElement.name = `sales_return_product_set-${formIndex}-product_name_value`;
         inputElement.value = "";
 
         const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
@@ -571,8 +571,8 @@ document.addEventListener('DOMContentLoaded', function () {
         colorInputElement.value = "";
 
         const skuInputElement = lastRow.querySelector('.purchase-amount[name$="-product"]');
-        skuInputElement.id = `id_outward_product-${formIndex}-product`;
-        skuInputElement.name = `outward_product-${formIndex}-product`;
+        skuInputElement.id = `id_sales_return_product_set-${formIndex}-product`;
+        skuInputElement.name = `sales_return_product_set-${formIndex}-product`;
         skuInputElement.value = "";
 
         const imgElement = lastRow.querySelector('[id^="product_img_"]');
@@ -580,34 +580,34 @@ document.addEventListener('DOMContentLoaded', function () {
         imgElement.src = "";
 
         const serialNoElement = lastRow.querySelector('input[name$="-unique_serial_no"]');
-        serialNoElement.id = `id_outward_product-${formIndex}-unique_serial_no`;
-        serialNoElement.name = `outward_product-${formIndex}-unique_serial_no`;
+        serialNoElement.id = `id_sales_return_product_set-${formIndex}-unique_serial_no`;
+        serialNoElement.name = `sales_return_product_set-${formIndex}-unique_serial_no`;
         serialNoElement.value = '';
 
         const binNameElement = lastRow.querySelector('input[name$="-bin_number"]');
-        binNameElement.id = `id_outward_product-${formIndex}-bin_number`;
-        binNameElement.name = `outward_product-${formIndex}-bin_number`;
+        binNameElement.id = `sales_return_product_set-${formIndex}-bin_number`;
+        binNameElement.name = `sales_return_product_set-${formIndex}-bin_number`;
         binNameElement.value = '';
 
         const binNoElement = lastRow.querySelector('input[name$="-bin_no"]');
-        binNoElement.id = `id_outward_product-${formIndex}-bin_no`;
-        binNoElement.name = `outward_product-${formIndex}-bin_no`;
+        binNoElement.id = `id_sales_return_product_set-${formIndex}-bin_no`;
+        binNoElement.name = `sales_return_product_set-${formIndex}-bin_no`;
         binNoElement.value = '';
 
         const qunatityInputElement = lastRow.querySelector('[name$="-quantity"]');
-        qunatityInputElement.id = `id_outward_product-${formIndex}-quantity`;
-        qunatityInputElement.name = `outward_product-${formIndex}-quantity`; 
+        qunatityInputElement.id = `id_sales_return_product_set-${formIndex}-quantity`;
+        qunatityInputElement.name = `sales_return_product_set-${formIndex}-quantity`; 
         qunatityInputElement.value="";
 
         const deleteInputElement = lastRow.querySelector('[name$="-DELETE"]');
-        deleteInputElement.id = `id_outward_product-${formIndex}-DELETE`;
-        deleteInputElement.name = `outward_product-${formIndex}-DELETE`; 
+        deleteInputElement.id = `id_sales_return_product_set-${formIndex}-DELETE`;
+        deleteInputElement.name = `sales_return_product_set-${formIndex}-DELETE`; 
         deleteInputElement.value="false";
 
 
         formCountInput.value = formCount + 1;
         tableBody.appendChild(lastRow);
-        // deleteRowData();
+        deleteRowData();
         // inputCheck()
     }
     function getVisibleRows() {
@@ -642,7 +642,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }); 
     }
+    deleteRowData()
    })
-//    deleteRowData()
+
 </script>
 {% endblock body %}
