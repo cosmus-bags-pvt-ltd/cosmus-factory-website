@@ -17,7 +17,7 @@
                   <th>Total Qty</th>
                   <th>Amount</th>
                   <th>Edit</th>
-                  <th>Delete</th>
+                  <!-- <th>Delete</th> -->
                  
                 </tr>
               </thead>
@@ -34,7 +34,7 @@
                 <td>qty</td>
                 <td>{{sale.grand_total}}</td>
                 <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-                <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td> 
+                <!-- <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>  -->
               </tr>
               {% endfor %}
              
@@ -44,7 +44,7 @@
           </div>  
          
         </div>
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header">
@@ -60,7 +60,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
     
     <script>
@@ -70,27 +70,27 @@
 
       document.body.appendChild(document.getElementById('exampleModal'));
 
-  $(document).ready(function () {
+  // $(document).ready(function () {
    
-    $('.delete-btn').click(function () {
-      var itemId = $(this).data('item-id');
-      var name = $(this).closest('tr').find('td').eq(2).text();
-      var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
-      $('#modal-body-text').html('Are you sure you want to delete the party name is ' + coloredName + '?');
-      $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
-      $('#exampleModal').modal('show');
+  //   $('.delete-btn').click(function () {
+  //     var itemId = $(this).data('item-id');
+  //     var name = $(this).closest('tr').find('td').eq(2).text();
+  //     var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
+  //     $('#modal-body-text').html('Are you sure you want to delete the party name is ' + coloredName + '?');
+  //     $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
+  //     $('#exampleModal').modal('show');
 
 
-    });
+  //   });
 
-    // Confirm delete button click event
-    $('#confirmDeleteButton').click(function () {
-      var itemId = $(this).data('item-id');
+  //   // Confirm delete button click event
+  //   $('#confirmDeleteButton').click(function () {
+  //     var itemId = $(this).data('item-id');
   
-      // Redirect to delete view
-      window.location.href = '/salesvoucherdelete/' + itemId;
-    });
-  });
+  //     // Redirect to delete view
+  //     window.location.href = '/salesvoucherdelete/' + itemId;
+  //   });
+  // });
 
     </script>
 

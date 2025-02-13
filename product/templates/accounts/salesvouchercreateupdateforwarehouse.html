@@ -105,7 +105,7 @@
         <th>CGST</th>
         <th>SGST/IGST</th>
         <th>NRP Including GST</th>
-        <th>Delete</th>
+        <!-- <th>Delete</th> -->
       </tr>
     </thead>
     <tbody class="mainTableList" id="salesbody">
@@ -150,7 +150,7 @@
               <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
           </td>
           <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
-          <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
+          <!-- <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>   -->
         </tr>
         {% elif not forms.instance.id %}
         <tr>
@@ -190,7 +190,7 @@
             <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
         </td>
         <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
-        <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
+        <!-- <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>   -->
       </tr>
 
     {% endif %}
@@ -472,50 +472,50 @@ $(document).on('change', 'select[name^="party_name"]', function () {
 
 
 
- function getVisibleRows() {
- // Select all rows that are not hidden (excluding those with display: none)
- const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
- return visibleRows;
-}
-function deleteRowData(){
- // Add click event listener to all delete buttons
- document.querySelectorAll('.delete-btn').forEach(function (button) {
- button.addEventListener('click', function () {
-     // Find all rows in the table
-     const rows =  getVisibleRows();
-     console.log(rows)
-     // Check if more than one row exists
-     if (rows.length > 1) {
-         // Find the row containing the clicked delete button
-         const row = this.closest('tr');
+//  function getVisibleRows() {
+//  // Select all rows that are not hidden (excluding those with display: none)
+//  const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
+//  return visibleRows;
+// }
+// function deleteRowData(){
+//  // Add click event listener to all delete buttons
+//  document.querySelectorAll('.delete-btn').forEach(function (button) {
+//  button.addEventListener('click', function () {
+//      // Find all rows in the table
+//      const rows =  getVisibleRows();
+//      console.log(rows)
+//      // Check if more than one row exists
+//      if (rows.length > 1) {
+//          // Find the row containing the clicked delete button
+//          const row = this.closest('tr');
 
-         if (row) {
-             // Find the checkbox for deletion in the row
-             const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+//          if (row) {
+//              // Find the checkbox for deletion in the row
+//              const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
 
-             if (checkRow) {
-                 checkRow.checked = true; // Mark as checked
-                 checkRow.value = 'true'; // Set the value to 'true'
+//              if (checkRow) {
+//                  checkRow.checked = true; // Mark as checked
+//                  checkRow.value = 'true'; // Set the value to 'true'
 
-                 // Optionally hide the row visually
-                 row.style.display = 'none';
+//                  // Optionally hide the row visually
+//                  row.style.display = 'none';
 
-                 // Call functions to recalculate totals or perform other updates
-                 calculateTotalAmount();
-                 calculateOtherTotal();
-                 inputCheck();
+//                  // Call functions to recalculate totals or perform other updates
+//                  calculateTotalAmount();
+//                  calculateOtherTotal();
+//                  inputCheck();
                  
-             } else {
-                 console.error("Checkbox for deletion not found in this row");
-             }
-         }
-     } else {
-         // If only one row remains, alert the user
-         alert('Cannot delete this row; at least one row must remain.');
-     }
- });
-});
-};
+//              } else {
+//                  console.error("Checkbox for deletion not found in this row");
+//              }
+//          }
+//      } else {
+//          // If only one row remains, alert the user
+//          alert('Cannot delete this row; at least one row must remain.');
+//      }
+//  });
+// });
+// };
 
 function calculateTotalAmount() {
      let total = 0; 
@@ -919,7 +919,7 @@ function inputCheck(){
 calculateTaxSummary()
  calculateTotalAmount();
  calculateOtherTotal();
- deleteRowData();
+//  deleteRowData();
 inputCheck()
 
 </script>
