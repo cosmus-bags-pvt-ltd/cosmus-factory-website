@@ -51,7 +51,7 @@
     </div>
   
     <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-7">
             <div class="mb-2">
                 <label for="inwordSerialNo" class="fw-bold me-2">Scan :</label>
                 <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
@@ -64,10 +64,10 @@
                     <label for="id_manualSerialNo" class="fw-bold">M-Scan :</label>
                     <input type="text" name="manual_serial_number" class="item-selects" id="id_manualSerialNo">
                 </div>
-                <span id="responseMessage" class="ms-5 mb-1 fw-bold"></span>
+                <span id="responseMessage" class="ms-1 mb-1 fw-bold"></span>
             </div>
         </div>
-        <div class="col-lg-6 " style="display:none" id="salesReturnList">
+        <div class="col-lg-5" style="display:none" id="salesReturnList">
             <table class="table table-striped table-hover table-bordered" id="stockTransferInstanceTable">
                 <thead class="name_absolute">
                     <tr>
@@ -80,7 +80,7 @@
                 <tbody class="mainTableList" >
                    
                     <tr>
-                        <td><input name="product_name" type="text" class="productShadeCutting_Material_input" id="id_product" value="" readonly></td>
+                        <td><input name="product_name" type="text" class="productShadeCutting_input bg-transparent border-0" id="id_product" value="" readonly></td>
                         <td><input name="product_sku" type="number" class="productorder_input"  id="id_product_sku" value="" readonly></td>
                         <td><input name="product_color" type="text" class="productorder_input"  id="id_product_color" value="" readonly></td>
                         <td>
@@ -92,7 +92,7 @@
                  
                 </tbody>
             </table>
-                <button type="submit"  class="newProductCreateBtn" name="save" value="Save" id="stockTarnsferBin">Submit</button>
+                <button  class="newProductCreateBtn" name="save" value="Save" id="stockTarnsferBin">Submit</button>
            
         </div>
         
@@ -327,42 +327,20 @@ document.addEventListener('DOMContentLoaded', function () {
    
        // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
-            const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
-            const instance_number = $('#id_voucher_no').val();
-            const instance_type = $('#id_voucher_type').val();
             console.log('serialNo',serialNo)
+            var saleNo = $('#id_sales_voucher_master').val()
             try {
-                const response = await $.ajax({
-                    url: '//',
-                    type: 'GET',
-                    data: { 
-                        serialNo: serialNo, 
-                        csrfmiddlewaretoken: csrfToken,
-                    },
-                });
-                
-              console.log(response)
-              
+                 const response = await $.ajax({
+                     url: '/processserialnoforreturnsalesajax/',
+                     type: 'GET',
+                     data: { 
+                         serialNo: serialNo,
+                         saleNo: saleNo
+                     },
+                 });
                  // Extract product SKU from response
-                 const productSku = response.product_sku;
-                const mainsku = document.querySelectorAll('[name$="-product_sku"]');
-                console.log(productSku, typeof(productSku))
-               
-              
-                let isMatch = false;
-                mainsku.forEach(function (item) {
-                    const sku = parseInt(item.value);
-                    console.log(sku, typeof(sku))
-                    if (sku === productSku) {
-                        isMatch = true;
-                    }
-                });
-
-                if (!isMatch) {
-                    alert('SKU does not match!');
-                    throw new Error('SKU mismatch'); // Prevent further execution and returning the response
-                }
-
+                
+                
                 $('#id_product').val(response.model_name);
                 $('#id_product_sku').val(response.product_sku);
                 $('#id_product_color').val(response.product_color);
@@ -382,6 +360,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 return null; // Optionally return null or handle the error further
             }
         }
+
+
+        $('#stockTarnsferBin').on('click',function(){
+            var binNo = $('#id_bin_Name').val();
+            var productSku = $('#id_product_sku').val();
+
+            console.log('binNo',binNo)
+            console.log('productSku',productSku)
+            $.ajax({
+                url: '//',
+                type: 'GET',
+                data: { 
+                    productSku: productSku,
+                    binNo: binNo
+                },
+                success:function(response){
+                    console.log(response)
+                },
+                error:function(error){
+                    console.log(error)
+                }
+            })
+        })
    })
 </script>
 {% endblock body %}
