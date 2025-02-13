@@ -130,9 +130,9 @@
                         <input type="number" name="{{form.prefix}}-quantity" id="id_{{form.prefix}}-quantity" class="purchase-input" value="{{ form.instance.quantity }}" readonly>
                     </td>
 
-                    <!-- <td>
-                        <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
-                    </td>   -->
+                    <td>
+                        <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
+                    </td>  
                 </tr>
 
 
@@ -882,13 +882,13 @@ $(document).ready(function () {
         document.querySelectorAll('.delete-btn').forEach(function (button) {
             button.addEventListener('click', function () {
                 const rows =  getVisibleRows();
-              
+             
                 if (rows.length > 1) {
                     const row = this.closest('tr');
         
                     if (row) {
                         const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
-        
+                        console.log('checkRow',checkRow)
                         if (checkRow) {
                             checkRow.checked = true; 
                             checkRow.value = 'true'; 
@@ -995,7 +995,7 @@ $(document).ready(function () {
         })
 }
 
-      //deleteRowData()
+    deleteRowData()
     function inputCheck(){
         document.getElementById('id_outward_no').focus();
        
