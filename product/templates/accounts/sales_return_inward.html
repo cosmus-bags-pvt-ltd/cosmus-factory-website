@@ -22,10 +22,14 @@
       <div class="d-flex ms-2">
         <label for="id_sales_voucher_master" class="me-1">Sales No :</label>
         {% if master_form.instance.id %}
-        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
+        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
+          value="" maxlength="255" required>
+        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name"
           value="" maxlength="255" required>
           {% elif not master_form.instance.id %}
-          <input type="text" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
+          <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
+          value="" maxlength="255" required>
+          <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name"
           value="" maxlength="255" required>
           {% endif %}
       </div>
@@ -154,7 +158,7 @@
                             </td>
         
                             <td>
-                                <input type="number" name="{{form.prefix}}-quantity" id="id_{{form.prefix}}-quantity" class="purchase-input" value="{{ form.instance.quantity }}" readonly>
+                                <input type="number" name="{{form.prefix}}-scan_qty" id="id_{{form.prefix}}-scan_qty" class="purchase-input" value="{{ form.instance.quantity }}" readonly>
                             </td>
         
                             <td>
@@ -199,7 +203,7 @@
                             </td>
         
                             <td>
-                                <input type="number" name="{{form.prefix}}-quantity" value="" id="id_{{form.prefix}}-quantity" class="purchase-input" readonly>
+                                <input type="number" name="{{form.prefix}}-scan_qty" value="" id="id_{{form.prefix}}-scan_qty" class="purchase-input" readonly>
                             </td>
         
                             <td>
@@ -286,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function () {
    });
    $(document).ready(function(){
 
-    $('#id_sales_voucher_master').on('blur',function(){
+    $('#id_sales_voucher_master_name').on('blur',function(){
         var saleNo = $(this).val();
         console.log('saleNo',saleNo)
         $.ajax({
@@ -299,8 +303,11 @@ document.addEventListener('DOMContentLoaded', function () {
     
             var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
             salesOutward.empty(); // Clear previous data
-            var partyName = $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name)
-            var warehouseName = $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
+            $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
+            $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
+            $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
+            $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
+            $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
           
         
         
@@ -406,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
        // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
             console.log('serialNo',serialNo)
-            var saleNo = $('#id_sales_voucher_master').val()
+            var saleNo = $('#id_sales_voucher_master_name').val()
             try {
                  const response = await $.ajax({
                      url: '/processserialnoforreturnsalesajax/',
@@ -515,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
       row.find('[name$="-unique_serial_no"]').val(response.serialno);
       row.find('[name$="-bin_number"]').val(response.bin_id);
       row.find('[name$="-bin_no"]').val(response.bin_name)
-      row.find('[name$="-quantity"]').val(1);
+      row.find('[name$="-scan_qty"]').val(1);
       row.find('[id^="product_img_"]').attr("src", response.product_image);
     //   row.find('[name$="-outward_picklist_no"]').val(response[9]);
 
@@ -549,11 +556,7 @@ document.addEventListener('DOMContentLoaded', function () {
         rowElement.name = `rowNo_${formIndex}`;
         rowElement.value = formIndex + 1;
         rowElement.style.border = "none";
- 
-        // const picklistElement = lastRow.querySelector('[name$="-outward_picklist_no"]')
-        // picklistElement.id = `id_outward_product-${formIndex}-outward_picklist_no`;
-        // picklistElement.name = `outward_product-${formIndex}-outward_picklist_no`;
-        // picklistElement.value = "";
+
 
         const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
         inputSelectElement.id = `id_sales_return_product_set-${formIndex}-product_RefNo`;
@@ -594,9 +597,9 @@ document.addEventListener('DOMContentLoaded', function () {
         binNoElement.name = `sales_return_product_set-${formIndex}-bin_no`;
         binNoElement.value = '';
 
-        const qunatityInputElement = lastRow.querySelector('[name$="-quantity"]');
-        qunatityInputElement.id = `id_sales_return_product_set-${formIndex}-quantity`;
-        qunatityInputElement.name = `sales_return_product_set-${formIndex}-quantity`; 
+        const qunatityInputElement = lastRow.querySelector('[name$="-scan_qty"]');
+        qunatityInputElement.id = `id_sales_return_product_set-${formIndex}-scan_qty`;
+        qunatityInputElement.name = `sales_return_product_set-${formIndex}-scan_qty`; 
         qunatityInputElement.value="";
 
         const deleteInputElement = lastRow.querySelector('[name$="-DELETE"]');
