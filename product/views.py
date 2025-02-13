@@ -14443,7 +14443,7 @@ def decimal_to_float(obj):
 from urllib.parse import urlencode
 
 def outward_scan_product_create(request,o_id=None):
-
+    
     if o_id:
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
@@ -14607,6 +14607,53 @@ def outward_scan_product_create(request,o_id=None):
                 sales_voucher = sales_voucher_master_outward_scan.objects.filter(outward_no=master_form_instance).first()
 
                 if sales_voucher:
+                    products = {}
+
+                    post_data = request.POST.dict()
+
+                    total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
+
+                    # Initialize the products dictionary with the outward number as the key
+                    products[master_form_instance.outward_no] = []
+
+                    for i in range(total_forms):
+                        # Get form data
+                        product = post_data.get(f'outward_product-{i}-product')
+                        quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
+                        delete_flag = post_data.get(f'outward_product-{i}-DELETE', False)  # Check if the form is marked for deletion
+
+                        if delete_flag:  # If the product is marked for deletion, skip it
+                            print(f"Product {product} is marked for deletion, skipping.")
+                            continue  # Skip this product and don't count in quantity
+
+                        print(f"Processing product: {product}, Quantity: {quantity}")
+
+                        # Look for the product in the existing list
+                        found = False
+                        for p in products[master_form_instance.outward_no]:
+                            if p['product'] == product:
+                                # If found, just update the quantity
+                                p['quantity'] += quantity
+                                found = True
+                                break
+
+                        if not found:
+                            # If not found, fetch product details and append to the list
+                            product_info = PProduct_Creation.objects.get(PProduct_SKU=product)
+                            products[master_form_instance.outward_no].append({
+                                'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
+                                'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
+                                'product': product,
+                                'color': post_data.get(f'product_color_{i}'),
+                                'quantity': quantity,
+                                'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                'gst': product_info.Product.Product_GST.gst_percentage
+                            })
+
+                    # Store the updated products data in the session
+                    request.session['products_data'] = products
+
                     return redirect(f'/salesvouchercreateupdateforwarehouse/{sales_voucher.id}/')  # Redirect to edit page
                 else:
                     return redirect('/salesvouchercreateupdateforwarehouse/')
@@ -14646,15 +14693,99 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
         master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
-        formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
         warehouse_id = voucher_instance.selected_warehouse.id
         outward_number = voucher_instance.outward_no.outward_no
         print('warehouse_id', warehouse_id)
 
+        products = request.session.get('products_data', None)
+
+        if products:
+            for key, val in products.items():
+                outward_number = key
+                print('outward_number = ', outward_number)
+                product_list2 = val
+                break
+            
+            
+            # print('product_list2 = ', product_list2)
+
+            sales_product_info = sales_voucher_outward_scan.objects.filter(sales_voucher_master = s_id).values('product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','trade_disct','spl_disct')
+
+            # print('sales_product_info = ', sales_product_info)
+            sales_product_info_list = list(sales_product_info)
+
+            merged_product_list = []
+
+            for product in product_list2:
+                sku = product['product']
+                matched = False
+                
+                for sales_product in sales_product_info_list:
+                    if sku == str(sales_product['product_name__PProduct_SKU']):
+                        # Merge the data and add to the list
+                        merged_product_list.append({
+                            'product_ref': product['product_ref'],
+                            'product_name': product['product_name'],
+                            'product': product['product'],
+                            'color': product['color'],
+                            'quantity': product['quantity'],
+                            'mrp': product['mrp'],
+                            'customer_price': product['customer_price'],
+                            'gst': product['gst'],
+                            'trade_disct': sales_product['trade_disct'],
+                            'spl_disct': sales_product['spl_disct'],
+                        })
+                        matched = True
+                        break
+                
+                # If no match found, still append the product with the existing info (no trade_disct or spl_disct)
+                if not matched:
+                    merged_product_list.append({
+                        'product_ref': product['product_ref'],
+                        'product_name': product['product_name'],
+                        'product': product['product'],
+                        'color': product['color'],
+                        'quantity': product['quantity'],
+                        'mrp': product['mrp'],
+                        'customer_price': product['customer_price'],
+                        'gst': product['gst'],
+                        'trade_disct': '',
+                        'spl_disct': '',
+                    })
+
+            # Debug: Print the merged list
+            print('merged_product_list = ', merged_product_list)
+
+
+            salesvoucherfromscanupdateformset = inlineformset_factory(
+            sales_voucher_master_outward_scan, 
+            sales_voucher_outward_scan, 
+            form=SalesvoucheroutwardscanForm, 
+            extra=len(merged_product_list),  # Adds extra forms based on the new product list
+            can_delete=True
+            )
+
+            formset = salesvoucherfromscanupdateformset(
+            request.POST or None, 
+            initial=merged_product_list, 
+            )
+
+        else:
+            merged_product_list = []
+            salesvoucherfromscanupdateformset = inlineformset_factory(
+            sales_voucher_master_outward_scan, 
+            sales_voucher_outward_scan, 
+            form=SalesvoucheroutwardscanForm, 
+            extra=0,  # Adds extra forms based on the new product list
+            can_delete=True
+            )
+            formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
+        
+
     else:
         voucher_instance = None
-
+        
         page_name = 'Create Sales Invoice'
 
         products = request.session.get('products_data', None)
@@ -14675,11 +14806,23 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     if request.method == "POST":
         
         master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
-        
+
         if s_id:
             formset = salesvoucherfromscanupdateformset(request.POST, instance=voucher_instance)
+
+            old_instances = sales_voucher_outward_scan.objects.filter(sales_voucher_master=voucher_instance)
+
+            # Step 2: Loop through the old instances and compare them with merged_product_list
+            # Keep track of which SKUs are still valid (to avoid deletion)
+
+            # existing_skus_in_merged = [product['product'] for product in merged_product_list]
+            # obsolete_instances = old_instances.filter(
+            #     product_name__PProduct_SKU__in=[sku for sku in existing_skus_in_merged if sku]
+            # )  # Only keep the entries that match SKU in the merged list
+            
+            old_instances.delete()
         else:
-            formset = salesvoucherfromscancreateformset(request.POST)
+            formset = salesvoucherfromscancreateformset(request.POST or None )
 
 
         if not master_form.is_valid():
@@ -14706,6 +14849,11 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
                     master_form_instance.save()
 
                     selected_warehouse = master_form_instance.selected_warehouse
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
 
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
