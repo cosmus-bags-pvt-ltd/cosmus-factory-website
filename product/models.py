@@ -1169,10 +1169,7 @@ class finishedgoodsbinallocation(models.Model):
 
 
     def save(self, *args, **kwargs):
-        print("in model save")
-
         if 'update_fields' in kwargs and kwargs['update_fields'] == ['outward_done']:
-            print("✅ Skipping bin validation for outward_done update.")
             super().save(*args, **kwargs)
             return
         
