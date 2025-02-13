@@ -38,12 +38,12 @@
             {% for data in queryset %}
           <tr>
             <td>{{forloop.counter}}</td>
-            <td>{{sale.created_date}}</td>
-            <td>{{sale.party_name.name}}</td>
-            <td>{{sale.ledger_type}}</td>
-            <td>{{sale.sales_no}}</td>
-            <td>{{sale.grand_total}}</td>
-            <td>{{sale.grand_total}}</td>
+            <td>{{data.created_date}}</td>
+            <td>{{data.party_name.name}}</td>
+            <td>{{data.ledger_type}}</td>
+            <td>{{data.sales_no}}</td>
+            <td>{{data.grand_total}}</td>
+            <td>{{data.grand_total}}</td>
             
             <td><a href="{% url 'sales-voucher-create' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
             <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
