@@ -14675,6 +14675,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     if request.method == "POST":
         
         master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
+        
         if s_id:
             formset = salesvoucherfromscanupdateformset(request.POST, instance=voucher_instance)
         else:
