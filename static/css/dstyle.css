@@ -1687,9 +1687,20 @@ table>:not(caption)>*>*{
     height: 33px; 
 }
 
-/* .warehousestock tr {
-    background-color: inherit !important;
-} */
+.table-custom {
+    --bs-table-color: #050505; /* Text color */
+    --bs-table-bg: #ffe5b4; /* Background color */
+    --bs-table-border-color: #e6b980; /* Border color */
+    --bs-table-striped-bg: #ffdab9; /* Striped row background */
+    --bs-table-striped-color: #000; /* Striped row text color */
+    --bs-table-active-bg: #ffcc99; /* Active row background */
+    --bs-table-active-color: #000; /* Active row text color */
+    --bs-table-hover-bg: #ffcba4; /* Hover row background */
+    --bs-table-hover-color: #000; /* Hover row text color */
+
+    color: var(--bs-table-color);
+    border-color: var(--bs-table-border-color);
+}
 
 #warehouseTables {
     --bs-table-bg: transparent !important;
@@ -2285,11 +2296,12 @@ table>:not(caption)>*>*{
 .outwardPick-btn{
     background:  #e059b5;
     color: white;
-    padding-left: 5px;
+    padding-left: 10px;
     font-size: 15px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
+
   }
 /*===product cart rating===*/
  @media screen and (max-width: 600px) {

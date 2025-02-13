@@ -11,7 +11,7 @@
       </div>
       <span id="purchaseError" class="error-messages"></span>
       <div class="d-flex">
-        <label for="id_sales_return_no" class="me-2">Sales Return No:</label>
+        <label for="id_sales_return_no" class="me-1">Sales Return No :</label>
 
         <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="" maxlength="255" required>
 
@@ -19,33 +19,33 @@
 
       <span id="SupplierError" class="error-messages"></span>
 
-      <div class="d-flex ms-3">
-        <label for="id_sales_voucher_master" class="me-2">Sales No :</label>
+      <div class="d-flex ms-2">
+        <label for="id_sales_voucher_master" class="me-1">Sales No :</label>
         {% if master_form.instance.id %}
-        <input type="text" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master"
+        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
           value="" maxlength="255" required>
           {% elif not master_form.instance.id %}
-          <input type="text" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master"
+          <input type="text" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
           value="" maxlength="255" required>
           {% endif %}
       </div>
-      <div class="d-flex ms-3">
+      <div class="d-flex ms-2">
         <label for="id_ledger_type" class="me-1">ledger Type :</label>
-        <input type="text" class="purchase-itemName" name="ledger_type" id="id_ledger_type"
-          value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
+        <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type"
+          value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales return'
           placeholder="Sales" readonly>
       </div>
       <div class="ms-2">
         <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
-        <input type="hidden" class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.selected_warehouse.id}}">
-        <input type="text" class="purchase-itemName text-black" name="selected_warehouse_name" required id="id_selected_warehouse_Name" value="{{master_form.instance.selected_warehouse.warehouse_name_finished}}" readonly>
+        <input type="hidden" class="purchase-amount" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.selected_warehouse.id}}">
+        <input type="text" class="purchase-amount" name="selected_warehouse_name" required id="id_selected_warehouse_Name" value="{{master_form.instance.selected_warehouse.warehouse_name_finished}}" readonly>
         
       </div>
       <span id="purchaseError" class="error-messages"></span>
-      <div class="d-flex">
+      <div class="d-flex ms-2">
         <label for="id_party_name" class="me-3">Party A/C Name :</label>
-        <input type="hidden" class="item-select text-black" name="party_name"  id="id_party_name" value="{{master_form.instance.party_name.id}}">
-        <input type="text" class="item-select text-black" name="party_name_value" required id="id_party_name_value" value="{{master_form.instance.party_name.name}}" readonly>
+        <input type="hidden" class="item-selects" name="party_name"  id="id_party_name" value="{{master_form.instance.party_name.id}}">
+        <input type="text" class="item-selects" name="party_name_value" required id="id_party_name_value" value="{{master_form.instance.party_name.name}}" readonly>
       </div>
     
     </div>
@@ -67,8 +67,7 @@
                 <span id="responseMessage" class="ms-5 mb-1 fw-bold"></span>
             </div>
         </div>
-        <div class="col-lg-6 " style="display:block" id="stockTransferList">
-           
+        <div class="col-lg-6 " style="display:none" id="salesReturnList">
             <table class="table table-striped table-hover table-bordered" id="stockTransferInstanceTable">
                 <thead class="name_absolute">
                     <tr>
@@ -93,13 +92,48 @@
                  
                 </tbody>
             </table>
-            
                 <button type="submit"  class="newProductCreateBtn" name="save" value="Save" id="stockTarnsferBin">Submit</button>
            
         </div>
         
     </div>
     <div>
+        <div class="stock_responsive">
+            <table class="table table-striped table-hover table-bordered " id="inwordDateTable">
+                <thead class="name_absolute sticky-top">
+                    <tr class="table-primary">
+                        <th>No</th>
+                        <th>Ref No</th>
+                        <th>Model Name</th>
+                        <th>Product SKU</th>
+                        <th>Color</th>
+                        <th>Image</th>
+                        <th>Serial No</th>
+                        <th>Scan Qty</th>
+                        <th>Bin NO</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="mainTableList table-primary" style="max-height: 350px; overflow-y: auto;">
+                    <tr>
+                        <td>1</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>    
+            </table>
+        </div>
+        <button type="submit" class="ms-3 newProductCreateBtn" id="parentFormClick">Generate</button>
+    </div>
+
+    <div class="mt-2">
         <table class="table table-striped table-hover table-bordered" id="sales_retrun_outwardTable">
             <thead class="name_absolute">
                 <tr>
@@ -128,6 +162,44 @@
     </div>
 
 <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+       const inwardSearch = document.getElementById('inwordSerialNo');
+       const manualSearch = document.getElementById('id_manualSerialNo');
+       const salesReturnTable = document.getElementById('salesReturnList');
+       const responseMessage = $('#responseMessage');
+    
+       const selectBin = document.getElementById('id_bin_Name')
+  
+      
+       inwardSearch.focus();
+
+       inwardSearch.addEventListener('input', function () {
+           inwardSearch.style.color = 'white';
+             responseMessage.html(''); 
+           if (inwardSearch.value) {
+            salesReturnTable.style.display = "block";
+               manualSearch.value = ''; 
+               inwardSearch.addEventListener('keydown',function(event){
+               
+                   
+               })
+            }
+        });
+
+       manualSearch.addEventListener('input', function () {
+           
+           responseMessage.html(''); 
+           if (manualSearch.value) {
+            salesReturnTable.style.display = "block";
+               inwardSearch.value = ''; 
+
+              
+           }
+      
+       });
+
+   });
    $(document).ready(function(){
 
     $('#id_sales_voucher_master').on('blur',function(){
@@ -140,10 +212,14 @@
                'saleNo':saleNo,
            },
            success: function(response){
-            console.log(response.list_to_sent);
+    
             var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
             salesOutward.empty(); // Clear previous data
-
+            var partyName = $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name)
+            var warehouseName = $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
+          
+        
+        
             response.list_to_sent.forEach(item => {
                 var newRow = $(`
                     <tr>
@@ -166,7 +242,7 @@
         })
     })
 
- 
+    
        let debounceTimeout;
    
        // Handle input in inwordSerialNo
@@ -254,53 +330,53 @@
             const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
             const instance_number = $('#id_voucher_no').val();
             const instance_type = $('#id_voucher_type').val();
-         
+            console.log('serialNo',serialNo)
             try {
-                const response = await $.ajax({
-                    url: '/processserialno/',
-                    type: 'POST',
-                    data: { 
-                        serialNo: serialNo, 
-                        csrfmiddlewaretoken: csrfToken,
-                        instance_number_post: instance_number,
-                        instance_type_post: instance_type
-                    },
-                });
+                // const response = await $.ajax({
+                //     url: '/processserialno/',
+                //     type: 'POST',
+                //     data: { 
+                //         serialNo: serialNo, 
+                //         csrfmiddlewaretoken: csrfToken,
+                //         instance_number_post: instance_number,
+                //         instance_type_post: instance_type
+                //     },
+                // });
                 
                 // Extract product SKU from response
-                const productSku = response.product_sku;
-                const mainsku = document.querySelectorAll('[name$="-product_sku"]');
-                console.log(productSku, typeof(productSku))
+              
+                // const mainsku = document.querySelectorAll('[name$="-product_sku"]');
+                // console.log(productSku, typeof(productSku))
                
               
-                let isMatch = false;
-                mainsku.forEach(function (item) {
-                    const sku = parseInt(item.value);
-                    console.log(sku, typeof(sku))
-                    if (sku === productSku) {
-                        isMatch = true;
-                    }
-                });
+                // let isMatch = false;
+                // mainsku.forEach(function (item) {
+                //     const sku = parseInt(item.value);
+                //     console.log(sku, typeof(sku))
+                //     if (sku === productSku) {
+                //         isMatch = true;
+                //     }
+                // });
 
-                if (!isMatch) {
-                    alert('SKU does not match!');
-                    throw new Error('SKU mismatch'); // Prevent further execution and returning the response
-                }
+                // if (!isMatch) {
+                //     alert('SKU does not match!');
+                //     throw new Error('SKU mismatch'); // Prevent further execution and returning the response
+                // }
 
-                $('#id_product').val(response.model_name);
-                $('#id_product_sku').val(response.product_sku);
-                $('#id_product_color').val(response.product_color);
-                $('#productImgPreview').attr('src', response.product_image);
+                // $('#id_product').val(response.model_name);
+                // $('#id_product_sku').val(response.product_sku);
+                // $('#id_product_color').val(response.product_color);
+                // $('#productImgPreview').attr('src', response.product_image);
 
-                const binSelect = $('#id_bin_Name');  // Container for displaying the bin list
+                // const binSelect = $('#id_bin_Name');  // Container for displaying the bin list
          
-                binSelect.empty(); // Clear existing options
+                // binSelect.empty(); // Clear existing options
 
-                response.bin_to_dict.forEach(bin => {
-                    binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
-                });
+                // response.bin_to_dict.forEach(bin => {
+                //     binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
+                // });
     
-                return response;
+                // return response;
             } catch (error) {
                 console.error('Error:', error);
                 return null; // Optionally return null or handle the error further

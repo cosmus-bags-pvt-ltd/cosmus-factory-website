@@ -517,7 +517,7 @@ $(document).ready(function () {
                     $('#responseMessage').html('<span class="text-success" role="alert">' + response.message + '</span>');
                 } catch (error) {
                     // const errorMessage = error.responseJSON?.error || 'An unexpected error occurred.';
-                    // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    $('#responseMessage').html('<span class="text-danger">Please scan a valid Serial Number.</span>');
                 }
             }
         }, 500);
@@ -546,7 +546,7 @@ $(document).ready(function () {
                         
                     } catch (error) {
                         // const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                        // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                        $('#responseMessage').html('<span class="text-danger">Please enter a valid Manual Serial Number.</span>');
                         $('#id_manualSerialNo').val('');
                     }
                 } else {

@@ -41,7 +41,7 @@
                 <td>{{ picklist.total_qty }}</td>
                 <td {% if picklist.status == "Pending" %} style="color: red; font-weight: bold;" 
                     {% elif picklist.status == "Receiving" %} style="color: green; font-weight: bold;" 
-                    {% elif picklist.status == "Close" %} style="color: gray; font-weight: bold;" 
+                    {% elif picklist.status == "Closed" %} style="color: gray; font-weight: bold;" 
                     {% endif %}>
                     {{ picklist.status }}
                 </td>
