@@ -14805,12 +14805,13 @@ def otward_data_for_sale_return_ajax(request):
 
         print('sale_no = ', sale_no)
 
-        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no')
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no','party_name__name'
+        )
 
-        list_to_sent = [] 
+        list_to_sent_for_outward_data = [] 
 
         for data in outward_queryset:
-            list_to_sent.append({
+            list_to_sent_for_outward_data.append({
                 'PProduct_SKU': data['outward_no__outward_product__product__PProduct_SKU'],
                 'PProduct_image': data['outward_no__outward_product__product__PProduct_image'],
                 'Product_Refrence_ID': data['outward_no__outward_product__product__Product__Product_Refrence_ID'],
@@ -14818,10 +14819,23 @@ def otward_data_for_sale_return_ajax(request):
                 'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
                 'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
                 'Quantity': data['outward_no__outward_product__quantity'],
-                'unique_serial_no': data['outward_no__outward_product__unique_serial_no'],
+                'unique_serial_no': data['outward_no__outward_product__unique_serial_no']
             })
 
-        return JsonResponse({'list_to_sent': list_to_sent}, status=200)
+        list_to_send_for_sales_voucher_data = []
+
+        try:
+            sales_voucher = sales_voucher_master_outward_scan.objects.get(sale_no=sale_no)
+
+            list_to_send_for_sales_voucher_data.append({
+                'party_name': sales_voucher.party_name.name,
+                'warehouse': sales_voucher.selected_warehouse.warehouse_name_finished
+            })
+
+        except ObjectDoesNotExist:
+            print(f"Sales voucher with sale_no {sale_no} not found.")
+
+        return JsonResponse({'list_to_sent': list_to_sent_for_outward_data , 'list_to_send_for_sales_voucher_data':list_to_send_for_sales_voucher_data}, status=200)
 
     except Exception as e:
         logger.error(f"Error in otward_data_for_sale_return_ajax: {str(e)}")
