@@ -14604,7 +14604,12 @@ def outward_scan_product_create(request,o_id=None):
                     
                     request.session['products_data'] = products
 
-                return redirect('/salesvouchercreateupdateforwarehouse/')
+                sales_voucher = sales_voucher_master_outward_scan.objects.filter(outward_no=master_form_instance).first()
+
+                if sales_voucher:
+                    return redirect(f'/salesvouchercreateupdateforwarehouse/{sales_voucher.id}/')  # Redirect to edit page
+                else:
+                    return redirect('/salesvouchercreateupdateforwarehouse/')
                 
             except Exception as e:
                 print(e)
@@ -14636,7 +14641,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     print("in sale")
     party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
     warehouse_names = Finished_goods_warehouse.objects.all()
-    outward_number = None
+    
 
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
@@ -14644,7 +14649,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
         warehouse_id = voucher_instance.selected_warehouse.id
-        
+        outward_number = voucher_instance.outward_no.outward_no
         print('warehouse_id', warehouse_id)
 
     else:
@@ -14670,7 +14675,10 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     if request.method == "POST":
         
         master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
-        formset = salesvoucherfromscancreateformset(request.POST or None, instance=voucher_instance)
+        if s_id:
+            formset = salesvoucherfromscanupdateformset(request.POST, instance=voucher_instance)
+        else:
+            formset = salesvoucherfromscancreateformset(request.POST)
 
 
         if not master_form.is_valid():
@@ -14687,9 +14695,12 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
                 with transaction.atomic():
                     master_form_instance = master_form.save(commit=False)
 
-                    o_id = outward_product_master.objects.get(outward_no = outward_number)
-
-                    master_form_instance.outward_no = o_id
+                    if outward_number:
+                        try:
+                            o_id = outward_product_master.objects.get(outward_no=outward_number)
+                            master_form_instance.outward_no = o_id
+                        except outward_product_master.DoesNotExist:
+                            print(f"Error: Outward No {outward_number} not found.")
 
                     master_form_instance.save()
 
@@ -14706,7 +14717,8 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
                             print('product_name from function = ', product_name)
 
-                    del request.session['products_data']
+                    if 'products_data' in request.session:
+                        del request.session['products_data']
 
                     return redirect('sales-voucher-list-warehouse')
 
