@@ -471,8 +471,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 success:function(response){
                     console.log(response)
-                    var salesRetrunOutwardTable = $('#salesReturnoutwardTable .mainTableList')
-                  
+                    $('#id_manualSerialNo').val('');
+                    $('#inwordSerialNo').val('');
+                    $('#id_bin_Name').val('');
+                    $('#responseMessage').html('');              
+
                     let isDuplicate = false;
                     let rowToPopulate = null;
 
@@ -524,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function () {
       row.find('[name$="-bin_no"]').val(response.bin_name)
       row.find('[name$="-scan_qty"]').val(1);
       row.find('[id^="product_img_"]').attr("src", response.product_image);
-    //   row.find('[name$="-outward_picklist_no"]').val(response[9]);
+   
 
      
   }
