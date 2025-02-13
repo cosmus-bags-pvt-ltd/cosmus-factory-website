@@ -115,18 +115,7 @@
                     </tr>
                 </thead>
                 <tbody class="mainTableList table-primary" style="max-height: 350px; overflow-y: auto;">
-                    <tr>
-                        <td>1</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+                    
                 </tbody>    
             </table>
         </div>
@@ -365,46 +354,50 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#stockTarnsferBin').on('click',function(){
             var binNo = $('#id_bin_Name').val();
             var productSku = $('#id_product_sku').val();
-            var scanSerialNo = $('#inwordSerialNo').val();
-            var manualSerialNo = $('#id_manualSerialNo').val();
-            var serialno
-            console.log('scanSerialNo',scanSerialNo,typeof(scanSerialNo))
-            console.log('manualSerialNo',manualSerialNo,typeof(manualSerialNo))
-            if(scanSerialNo !== '' && manualSerialNo === ''){
-                serialno = scanSerialNo;
-            }else if(scanSerialNo === '' && manualSerialNo !== ''){
-                serialno = manualSerialNo; 
-            }else{
-                alert("Please Enter a valid serial no")
-            }
-            console.log(serialno)
+
+            console.log('binNo',binNo)
+            console.log('productSku',productSku)
             $.ajax({
-                url: '/returnproductwithbinajax/',
+                url: '//',
                 type: 'GET',
                 data: { 
                     productSku: productSku,
-                    binNo: binNo,
-                    serialno:serialno,
+                    binNo: binNo
                 },
                 success:function(response){
                     console.log(response)
                     var salesRetrunOutwardTable = $('#salesReturnoutwardTable .mainTableList')
                     salesRetrunOutwardTable.empty();
 
-                    var newRow = $(`
-                        <tr>
-                             <td><span class="RefNo"></span></td>
-                            <td><span class="modelName"></span></td>
-                            <td><span class="sku"></span></td>
-                            <td><span class="color"></span></td>
-                            <td><img class="img" src="" alt="img" style="width:20px"></img></td>
-                             <td><span class="serialNo"></span></td>
-                            <td><span class="qty text-center"></span></td>
-                            <td><span class="binNo"></span></td>
-                            <td> 
-                        </tr>
-                    `);
-                    salesRetrunOutwardTable.append(newRow)
+                    let isDuplicate = false;
+            let rowToPopulate = null;
+
+            $('#outwardSales .mainTableList tr').each(function () {
+                const row = $(this);
+                if (row.css('display') === 'none') return;
+                const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+                
+                if (serialValue && serialValue === serialNo) {
+                    $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                    isDuplicate = true;
+                    return false;
+                }
+
+                if (!isDuplicate && row.find('[name$="-product_name_value"]').val()?.trim() === "") {
+                    rowToPopulate = row;
+                    return false;
+                }
+            });
+
+            if (isDuplicate) return;
+
+            if (rowToPopulate) {
+                populateRow(rowToPopulate, productResponse );
+            } else {
+                addNewRow();
+                const newRow = $('#outwardSales .mainTableList tr').last();
+                populateRow(newRow, productResponse);
+            }
                 },
                 error:function(error){
                     console.log(error)
