@@ -365,15 +365,26 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#stockTarnsferBin').on('click',function(){
             var binNo = $('#id_bin_Name').val();
             var productSku = $('#id_product_sku').val();
-
-            console.log('binNo',binNo)
-            console.log('productSku',productSku)
+            var scanSerialNo = $('#inwordSerialNo').val();
+            var manualSerialNo = $('#id_manualSerialNo').val();
+            var serialno
+            console.log('scanSerialNo',scanSerialNo,typeof(scanSerialNo))
+            console.log('manualSerialNo',manualSerialNo,typeof(manualSerialNo))
+            if(scanSerialNo !== '' && manualSerialNo === ''){
+                serialno = scanSerialNo;
+            }else if(scanSerialNo === '' && manualSerialNo !== ''){
+                serialno = manualSerialNo; 
+            }else{
+                alert("Please Enter a valid serial no")
+            }
+            console.log(serialno)
             $.ajax({
-                url: '//',
+                url: '/returnproductwithbinajax/',
                 type: 'GET',
                 data: { 
                     productSku: productSku,
-                    binNo: binNo
+                    binNo: binNo,
+                    serialno:serialno,
                 },
                 success:function(response){
                     console.log(response)

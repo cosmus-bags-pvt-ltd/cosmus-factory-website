@@ -15006,6 +15006,9 @@ def otward_data_for_sale_return_ajax(request):
 
 
 
+
+
+
 def process_serial_no_for_return_sales_ajax(request):
     try:
         serial_no = request.GET.get('serialNo')
@@ -15066,6 +15069,42 @@ def process_serial_no_for_return_sales_ajax(request):
         logger.error(f"Error in process_serial_no_for_return_sales_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
+
+
+def return_product_with_bin_ajax(request):
+    try:
+        product_sku = request.GET.get('productSku')
+        bin_no = request.GET.get('binNo')
+        serial_no = request.GET.get('serialno')
+
+        bin_name = get_object_or_404(finished_product_warehouse_bin, pk=bin_no)
+        product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_sku)
+
+        reference_no = product_instance.Product.Product_Refrence_ID if product_instance.Product.Product_Refrence_ID else None
+        model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
+        product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
+        product_sku = product_instance.PProduct_SKU
+        product_color = product_instance.PProduct_color.color_name if product_instance.PProduct_color else None
+        product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
+        bin_id = bin_no
+        bin_name = bin_name.bin_name
+        serialno = serial_no
+
+        return JsonResponse({
+                        'reference_no':reference_no,
+                        'model_name': model_name,
+                        'product_name': product_name,
+                        'product_sku': product_sku,
+                        'product_color': product_color,
+                        'product_image': product_image,
+                        'bin_id':bin_id,
+                        'bin_name':bin_name,
+                        'serialno':serialno
+        },status=200)
+
+    except Exception as e:
+        logger.error(f"Error in return_product_with_bin_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
 
