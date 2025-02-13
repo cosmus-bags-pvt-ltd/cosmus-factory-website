@@ -274,8 +274,8 @@ document.addEventListener('DOMContentLoaded', function () {
                        const response = await sendSerialNumber(serialNo);
                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                    } catch (error) {
-                       const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                       $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    //    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                    //    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
                    }
                }
            }, 500); // Debounce delay
@@ -304,8 +304,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                            
                         } catch (error) {
-                            const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                            $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                            // const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                            // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
                             $('#id_manualSerialNo').val('');
                             $('#id_product').val('');
                             $('#id_product_sku').val('');
@@ -332,51 +332,51 @@ document.addEventListener('DOMContentLoaded', function () {
             const instance_type = $('#id_voucher_type').val();
             console.log('serialNo',serialNo)
             try {
-                // const response = await $.ajax({
-                //     url: '/processserialno/',
-                //     type: 'POST',
-                //     data: { 
-                //         serialNo: serialNo, 
-                //         csrfmiddlewaretoken: csrfToken,
-                //         instance_number_post: instance_number,
-                //         instance_type_post: instance_type
-                //     },
-                // });
+                const response = await $.ajax({
+                    url: '//',
+                    type: 'GET',
+                    data: { 
+                        serialNo: serialNo, 
+                        csrfmiddlewaretoken: csrfToken,
+                    },
+                });
                 
-                // Extract product SKU from response
+              console.log(response)
               
-                // const mainsku = document.querySelectorAll('[name$="-product_sku"]');
-                // console.log(productSku, typeof(productSku))
+                 // Extract product SKU from response
+                 const productSku = response.product_sku;
+                const mainsku = document.querySelectorAll('[name$="-product_sku"]');
+                console.log(productSku, typeof(productSku))
                
               
-                // let isMatch = false;
-                // mainsku.forEach(function (item) {
-                //     const sku = parseInt(item.value);
-                //     console.log(sku, typeof(sku))
-                //     if (sku === productSku) {
-                //         isMatch = true;
-                //     }
-                // });
+                let isMatch = false;
+                mainsku.forEach(function (item) {
+                    const sku = parseInt(item.value);
+                    console.log(sku, typeof(sku))
+                    if (sku === productSku) {
+                        isMatch = true;
+                    }
+                });
 
-                // if (!isMatch) {
-                //     alert('SKU does not match!');
-                //     throw new Error('SKU mismatch'); // Prevent further execution and returning the response
-                // }
+                if (!isMatch) {
+                    alert('SKU does not match!');
+                    throw new Error('SKU mismatch'); // Prevent further execution and returning the response
+                }
 
-                // $('#id_product').val(response.model_name);
-                // $('#id_product_sku').val(response.product_sku);
-                // $('#id_product_color').val(response.product_color);
-                // $('#productImgPreview').attr('src', response.product_image);
+                $('#id_product').val(response.model_name);
+                $('#id_product_sku').val(response.product_sku);
+                $('#id_product_color').val(response.product_color);
+                $('#productImgPreview').attr('src', response.product_image);
 
-                // const binSelect = $('#id_bin_Name');  // Container for displaying the bin list
+                const binSelect = $('#id_bin_Name');  // Container for displaying the bin list
          
-                // binSelect.empty(); // Clear existing options
+                binSelect.empty(); // Clear existing options
 
-                // response.bin_to_dict.forEach(bin => {
-                //     binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
-                // });
+                response.bin_to_dict.forEach(bin => {
+                    binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
+                });
     
-                // return response;
+                return response;
             } catch (error) {
                 console.error('Error:', error);
                 return null; // Optionally return null or handle the error further
