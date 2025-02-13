@@ -1351,7 +1351,6 @@ class sales_voucher_outward_scan(models.Model):
 
 
 
-
 class sales_return_inward(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.CASCADE)
     sales_return_no = models.CharField(max_length = 100)
@@ -1362,10 +1361,14 @@ class sales_return_inward(models.Model):
     modified_date_time = models.DateTimeField(auto_now = True)
 
 
-
-
-# class sales_return_product():
-
+class sales_return_product(models.Model):
+    sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete = models.CASCADE)
+    product = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
+    bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
+    scan_qty = models.IntegerField(default=1)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
 
 
