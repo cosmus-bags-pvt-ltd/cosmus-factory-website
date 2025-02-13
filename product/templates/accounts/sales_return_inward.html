@@ -327,21 +327,17 @@ document.addEventListener('DOMContentLoaded', function () {
    
        // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
-            const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
-            const instance_number = $('#id_voucher_no').val();
-            const instance_type = $('#id_voucher_type').val();
             console.log('serialNo',serialNo)
+            var saleNo = $('#id_sales_voucher_master').val()
             try {
-                // const response = await $.ajax({
-                //     url: '/processserialno/',
-                //     type: 'POST',
-                //     data: { 
-                //         serialNo: serialNo, 
-                //         csrfmiddlewaretoken: csrfToken,
-                //         instance_number_post: instance_number,
-                //         instance_type_post: instance_type
-                //     },
-                // });
+                 const response = await $.ajax({
+                     url: '/processserialnoforreturnsalesajax/',
+                     type: 'GET',
+                     data: { 
+                         serialNo: serialNo,
+                         saleNo: saleNo
+                     },
+                 });
                 
                 // Extract product SKU from response
               

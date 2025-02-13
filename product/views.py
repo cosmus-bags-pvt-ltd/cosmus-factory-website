@@ -14960,6 +14960,8 @@ def party_name_search_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
+
+
 def otward_data_for_sale_return_ajax(request):
     try:
         sale_no = request.GET.get('saleNo')
@@ -15001,6 +15003,70 @@ def otward_data_for_sale_return_ajax(request):
     except Exception as e:
         logger.error(f"Error in otward_data_for_sale_return_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+
+def process_serial_no_for_return_sales_ajax(request):
+    try:
+        serial_no = request.GET.get('serialNo')
+        sale_no = request.GET.get('saleNo')
+
+        try:
+            outward_no = get_object_or_404(sales_voucher_master_outward_scan,sale_no=sale_no)
+            check_if_exist = outward_products.objects.get(outward_no=outward_no.outward_no, unique_serial_no = serial_no)
+
+            if check_if_exist:
+
+                list_to_send_for_serial_no = []
+
+                product_scanned_sku = check_if_exist.product.PProduct_SKU
+
+                product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_scanned_sku)
+
+                model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
+                product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
+                product_sku = product_instance.PProduct_SKU
+                product_color = product_instance.PProduct_color.color_name if product_instance.PProduct_color else None
+                product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
+
+                product_main_cats = product_instance.Product.product_cats.all()
+
+                main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
+
+                bins_related_to_product = []
+
+                for bin_obj in finished_product_warehouse_bin.objects.filter(sub_catergory_id__in=main_cats_all):
+
+                    product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False).count()
+
+                    bins_related_to_product.append({
+                            'bin_id': bin_obj.id,
+                            'bin_name': bin_obj.bin_name,
+                            'bin_size': bin_obj.product_size_in_bin,
+                            'products_in_bin': product_count
+                        })
+
+
+                return JsonResponse({
+                        'model_name': model_name,
+                        'product_name': product_name,
+                        'product_sku': product_sku,
+                        'bin_to_dict': bins_related_to_product,
+                        'product_color': product_color,
+                        'product_image': product_image,
+                        'message': f'Serial No {serial_no} processed successfully.'},status=200)
+            else:
+                message.error(f"This Serial no {sale_no} does not exist in sales voucher")
+        except ObjectDoesNotExist as e:
+            print('This Serial no does not exist in sales voucher')
+            logger.error(f"This Serial no {sale_no} does not exist in sales voucher: {str(e)}")
+            
+
+    except Exception as e:
+        logger.error(f"Error in process_serial_no_for_return_sales_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
 
 
 

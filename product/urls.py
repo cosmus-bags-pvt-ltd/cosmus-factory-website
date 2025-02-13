@@ -384,6 +384,7 @@ urlpatterns = [
     path('salereturnlist/', views.sale_return_list, name='sale-return-list'),
     path('salesreturninwardtobin/', views.sales_return_inward_to_bin, name='sales-return-inward-to-bin'),
     path('otwarddataforsalereturnajax/', views.otward_data_for_sale_return_ajax, name='otward-data-for-sale-return-ajax'),
+    path('processserialnoforreturnsalesajax/', views.process_serial_no_for_return_sales_ajax, name='process-serial-no-for-return-sales-ajax'),
 
 ]   
 
