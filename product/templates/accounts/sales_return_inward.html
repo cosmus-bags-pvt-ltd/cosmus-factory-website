@@ -99,7 +99,7 @@
     </div>
     <div>
         <div class="stock_responsive">
-            <table class="table table-striped table-hover table-bordered " id="inwordDateTable">
+            <table class="table table-striped table-hover table-bordered " id="salesReturnoutwardTable">
                 <thead class="name_absolute sticky-top">
                     <tr class="table-primary">
                         <th>No</th>
@@ -388,6 +388,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 success:function(response){
                     console.log(response)
+                    var salesRetrunOutwardTable = $('#salesReturnoutwardTable .mainTableList')
+                    salesRetrunOutwardTable.empty();
+
+                    var newRow = $(`
+                        <tr>
+                             <td><span class="RefNo"></span></td>
+                            <td><span class="modelName"></span></td>
+                            <td><span class="sku"></span></td>
+                            <td><span class="color"></span></td>
+                            <td><img class="img" src="" alt="img" style="width:20px"></img></td>
+                             <td><span class="serialNo"></span></td>
+                            <td><span class="qty text-center"></span></td>
+                            <td><span class="binNo"></span></td>
+                            <td> 
+                        </tr>
+                    `);
+                    salesRetrunOutwardTable.append(newRow)
                 },
                 error:function(error){
                     console.log(error)
