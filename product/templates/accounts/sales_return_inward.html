@@ -464,8 +464,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 success:function(response){
                     console.log(response)
-                    var salesRetrunOutwardTable = $('#salesReturnoutwardTable .mainTableList')
-                  
+                    $('#id_manualSerialNo').val('');
+                    $('#inwordSerialNo').val('');
+                    $('#id_bin_Name').val('');
+                    $('#responseMessage').html('');              
+
                     let isDuplicate = false;
                     let rowToPopulate = null;
 
@@ -517,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function () {
       row.find('[name$="-bin_no"]').val(response.bin_name)
       row.find('[name$="-quantity"]').val(1);
       row.find('[id^="product_img_"]').attr("src", response.product_image);
-    //   row.find('[name$="-outward_picklist_no"]').val(response[9]);
+   
 
      
   }
@@ -549,11 +552,7 @@ document.addEventListener('DOMContentLoaded', function () {
         rowElement.name = `rowNo_${formIndex}`;
         rowElement.value = formIndex + 1;
         rowElement.style.border = "none";
- 
-        // const picklistElement = lastRow.querySelector('[name$="-outward_picklist_no"]')
-        // picklistElement.id = `id_outward_product-${formIndex}-outward_picklist_no`;
-        // picklistElement.name = `outward_product-${formIndex}-outward_picklist_no`;
-        // picklistElement.value = "";
+
 
         const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
         inputSelectElement.id = `id_sales_return_product_set-${formIndex}-product_RefNo`;
