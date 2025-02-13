@@ -1341,6 +1341,8 @@ class sales_voucher_master_outward_scan(models.Model):
     modified_date_time = models.DateTimeField(auto_now = True)
 
 
+
+
 class sales_voucher_outward_scan(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
@@ -1349,6 +1351,8 @@ class sales_voucher_outward_scan(models.Model):
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
 
 
 class sales_return_inward(models.Model):

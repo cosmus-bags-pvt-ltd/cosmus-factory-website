@@ -14604,7 +14604,12 @@ def outward_scan_product_create(request,o_id=None):
                     
                     request.session['products_data'] = products
 
-                return redirect('/salesvouchercreateupdateforwarehouse/')
+                sales_voucher = sales_voucher_master_outward_scan.objects.filter(outward_no=master_form_instance).first()
+
+                if sales_voucher:
+                    return redirect(f'/salesvouchercreateupdateforwarehouse/{sales_voucher.id}/')  # Redirect to edit page
+                else:
+                    return redirect('/salesvouchercreateupdateforwarehouse/')
                 
             except Exception as e:
                 print(e)
@@ -14636,7 +14641,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     print("in sale")
     party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
     warehouse_names = Finished_goods_warehouse.objects.all()
-    outward_number = None
+    
 
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
@@ -14644,7 +14649,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
         warehouse_id = voucher_instance.selected_warehouse.id
-        
+        outward_number = voucher_instance.outward_no.outward_no
         print('warehouse_id', warehouse_id)
 
     else:
@@ -14670,7 +14675,10 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     if request.method == "POST":
         
         master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
-        formset = salesvoucherfromscancreateformset(request.POST or None, instance=voucher_instance)
+        if s_id:
+            formset = salesvoucherfromscanupdateformset(request.POST, instance=voucher_instance)
+        else:
+            formset = salesvoucherfromscancreateformset(request.POST)
 
 
         if not master_form.is_valid():
@@ -14687,9 +14695,12 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
                 with transaction.atomic():
                     master_form_instance = master_form.save(commit=False)
 
-                    o_id = outward_product_master.objects.get(outward_no = outward_number)
-
-                    master_form_instance.outward_no = o_id
+                    if outward_number:
+                        try:
+                            o_id = outward_product_master.objects.get(outward_no=outward_number)
+                            master_form_instance.outward_no = o_id
+                        except outward_product_master.DoesNotExist:
+                            print(f"Error: Outward No {outward_number} not found.")
 
                     master_form_instance.save()
 
@@ -14706,7 +14717,8 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
                             print('product_name from function = ', product_name)
 
-                    del request.session['products_data']
+                    if 'products_data' in request.session:
+                        del request.session['products_data']
 
                     return redirect('sales-voucher-list-warehouse')
 
@@ -14805,12 +14817,13 @@ def otward_data_for_sale_return_ajax(request):
 
         print('sale_no = ', sale_no)
 
-        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no')
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no','party_name__name'
+        )
 
-        list_to_sent = [] 
+        list_to_sent_for_outward_data = [] 
 
         for data in outward_queryset:
-            list_to_sent.append({
+            list_to_sent_for_outward_data.append({
                 'PProduct_SKU': data['outward_no__outward_product__product__PProduct_SKU'],
                 'PProduct_image': data['outward_no__outward_product__product__PProduct_image'],
                 'Product_Refrence_ID': data['outward_no__outward_product__product__Product__Product_Refrence_ID'],
@@ -14818,10 +14831,23 @@ def otward_data_for_sale_return_ajax(request):
                 'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
                 'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
                 'Quantity': data['outward_no__outward_product__quantity'],
-                'unique_serial_no': data['outward_no__outward_product__unique_serial_no'],
+                'unique_serial_no': data['outward_no__outward_product__unique_serial_no']
             })
 
-        return JsonResponse({'list_to_sent': list_to_sent}, status=200)
+        list_to_send_for_sales_voucher_data = []
+
+        try:
+            sales_voucher = sales_voucher_master_outward_scan.objects.get(sale_no=sale_no)
+
+            list_to_send_for_sales_voucher_data.append({
+                'party_name': sales_voucher.party_name.name,
+                'warehouse': sales_voucher.selected_warehouse.warehouse_name_finished
+            })
+
+        except ObjectDoesNotExist:
+            print(f"Sales voucher with sale_no {sale_no} not found.")
+
+        return JsonResponse({'list_to_sent': list_to_sent_for_outward_data , 'list_to_send_for_sales_voucher_data':list_to_send_for_sales_voucher_data}, status=200)
 
     except Exception as e:
         logger.error(f"Error in otward_data_for_sale_return_ajax: {str(e)}")
