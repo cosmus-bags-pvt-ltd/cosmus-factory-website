@@ -867,6 +867,11 @@ $(document).ready(function () {
         qunatityInputElement.name = `outward_product-${formIndex}-quantity`; 
         qunatityInputElement.value="";
 
+        const deleteInputElement = lastRow.querySelector('[name$="-DELETE"]');
+        deleteInputElement.id = `id_outward_product-${formIndex}-DELETE`;
+        deleteInputElement.name = `outward_product-${formIndex}-DELETE`; 
+        deleteInputElement.value="false";
+
 
         formCountInput.value = formCount + 1;
         tableBody.appendChild(lastRow);
