@@ -38,7 +38,7 @@
                 <td>{{data.sales_voucher_master.sale_no}}</td>
                 <td>{{data.party_name.name}}</td>
                 <td>{{data.ledger_type}}</td>
-                <td></td>
+                <td><a href="{% url 'sales-return-inward-to-bin-view' data.id %}">view</a></td>
               </tr>
             {% endfor %}
        

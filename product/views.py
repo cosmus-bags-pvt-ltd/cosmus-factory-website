@@ -14897,7 +14897,8 @@ def salesvoucherlistwarehouse(request):
         del request.session['products_data']
 
     sales_list = sales_voucher_master_outward_scan.objects.all().annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
-    return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list})
+    sales_return = sales_return_voucher.objects.all()
+    return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list,'sales_return':sales_return})
 
 
 
@@ -15202,14 +15203,21 @@ def return_product_with_bin_ajax(request):
 
 
 
-def sales_return_inward_to_bin(request):
-    master_form = salesreturninwardmasterform()
-    formset = sales_return_product_formset()
+def sales_return_inward_to_bin(request,r_id=None):
+    
+    if r_id:
+        instance_queryset = sales_return_inward.objects.get(id=r_id)
+        master_form = salesreturninwardmasterform(request.POST or None,instance=instance_queryset)
+        formset = sales_return_product_formset(request.POST or None,instance=instance_queryset)
+    else:
+        instance_queryset=None
+        master_form = salesreturninwardmasterform()
+        formset = sales_return_product_formset()
 
     if request.method == 'POST':
         print(request.POST)
-        master_form = salesreturninwardmasterform(request.POST or None)
-        formset = sales_return_product_formset(request.POST or None)
+        master_form = salesreturninwardmasterform(request.POST or None,instance=instance_queryset)
+        formset = sales_return_product_formset(request.POST or None,instance=instance_queryset)
 
         if not master_form.is_valid():
             print("Form Errors:", master_form.errors)
@@ -15244,6 +15252,8 @@ def sales_return_inward_to_bin(request):
             except Exception as e:
                 print(e)
     return render(request,'accounts/sales_return_inward.html',{'master_form':master_form,'formset':formset})
+
+
 
 
 def sale_return_list(request):
@@ -15290,16 +15300,13 @@ def sales_return_create_update(request,s_id,sr_id):
 
     sales_return_voucher_formset = modelformset_factory(sales_return_voucher, form = sales_return_voucher_form, extra=len(product_list))
 
-    formset = sales_return_voucher_formset(initial=product_list)
-
-    for idx, form in enumerate(formset):
-        form.prefix = f"sale_return_forms-{idx}"
-
+    formset = sales_return_voucher_formset(initial=product_list, prefix="sale_return_forms")
 
     master_form_data = sales_return_inward.objects.get(id = sr_id)
 
     if request.method == 'POST':
-        formset = sales_return_voucher_formset(request.POST or None)
+        print(request.POST)
+        formset = sales_return_voucher_formset(request.POST or None ,prefix="sale_return_forms")
         
         if formset.is_valid():
             try:
@@ -15307,7 +15314,9 @@ def sales_return_create_update(request,s_id,sr_id):
                     for form in formset:
                         if form.cleaned_data:
                             instance = form.save(commit=False)
-                            instance.sales_return_inward_instance = sr_id
+                            sales_return_instance = sales_return_inward.objects.get(id=sr_id)
+                            instance.sales_return_inward_instance = sales_return_instance
+                            
                             instance.save()
                     return redirect('sales-voucher-list-warehouse')
             except Exception as e:
