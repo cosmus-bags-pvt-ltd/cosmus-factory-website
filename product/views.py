@@ -15252,11 +15252,9 @@ def sale_return_list(request):
 
 
 def sales_return_create_update(request,s_id,sr_id):
-    print("in function")
     
     products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
 
-    print('products = ', products)
 
     product_list = []
 
@@ -15289,7 +15287,6 @@ def sales_return_create_update(request,s_id,sr_id):
                 'cash_disct':decimal_to_float(sale_objects.sales_voucher_master.cash_disct),
             })
 
-    print('product_list', product_list)
 
     sales_return_voucher_formset = modelformset_factory(sales_return_voucher, form = sales_return_voucher_form, extra=len(product_list))
 
@@ -15300,6 +15297,23 @@ def sales_return_create_update(request,s_id,sr_id):
 
 
     master_form_data = sales_return_inward.objects.get(id = sr_id)
+
+    if request.method == 'POST':
+        formset = sales_return_voucher_formset(request.POST or None)
+        
+        if formset.is_valid():
+            try:
+                with transaction.atomic():
+                    for form in formset:
+                        if form.cleaned_data:
+                            instance = form.save(commit=False)
+                            instance.sales_return_inward_instance = sr_id
+                            instance.save()
+                    return redirect('sales-voucher-list-warehouse')
+            except Exception as e:
+                print(f"Error saving formset: {e}")
+        else:
+            print(f"Formset Errors: {formset.errors}")
 
     return render(request,'accounts/sales_return_create_update.html',{'master_form_data':master_form_data,'formset':formset})
 
