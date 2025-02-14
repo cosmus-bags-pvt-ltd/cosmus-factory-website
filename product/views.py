@@ -15223,10 +15223,10 @@ def sales_return_inward_to_bin(request):
             try:
                 with transaction.atomic():
                     master_form_instance = master_form.save(commit=False)
-                    sale_id = master_form_instance.sales_voucher_master.sale_no
-                    sale_return_id = master_form_instance.sales_return_no
-
                     master_form_instance.save()
+
+                    sale_id = master_form_instance.sales_voucher_master.id
+                    sale_return_id = master_form_instance.id
 
                     for form in formset.deleted_forms:
                         if form.instance.pk:
@@ -15251,35 +15251,14 @@ def sale_return_list(request):
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
 
 
-# def sales_return_create_update(request):
-    
-#     products = request.session.get('products_data_return', None)
-    
-#     for key , value in products.items():
-#         sales_return_no = key
-#         product_list = value
-
-#     sales_return_voucher_formset = modelformset_factory(sales_return_voucher, form = sales_return_voucher_form, extra=len(product_list))
-
-#     formset = sales_return_voucher_formset(initial=product_list)
-
-#     master_form_data = sales_return_inward.objects.get(sales_return_no = sales_return_no)
-
-#     return render(request,'accounts/sales_return_create_update.html',{'formset':formset,'master_form_data':master_form_data})
-
-
-
-def sales_return_create_update(request,s_id,sr_no):
+def sales_return_create_update(request,s_id,sr_id):
     print("in function")
-    
-    sr_id = get_object_or_404(sales_return_inward, sales_return_no = sr_no).id
     
     products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
 
     print('products = ', products)
 
     product_list = []
-
 
     for data in products:
         sku = data.product.PProduct_SKU
@@ -15288,20 +15267,23 @@ def sales_return_create_update(request,s_id,sr_no):
 
         found = False
         for item in product_list:
-            if item['product_name'] == sku:
+            if item['product'] == sku:
                 item['quantity'] += quantity
                 found = True
                 break
 
 
         if not found:
-            sale_objects = sales_voucher_outward_scan.objects.get(sales_voucher_master__sale_no = s_id, product_name=sku)
+            sale_objects = sales_voucher_outward_scan.objects.get(sales_voucher_master = s_id, product_name=sku)
             product_list.append({
                 'ref_no': data.product.Product.Product_Refrence_ID,
-                'product_name': sku,
-                'model_name': data.product.Product.Model_Name,
+                'product': sku,
+                'product_name': data.product.Product.Model_Name,
                 'color': data.product.PProduct_color.color_name,
                 'quantity': quantity,
+                'mrp': decimal_to_float(data.product.Product.Product_MRP),
+                'customer_price': decimal_to_float(data.product.Product.Product_SalePrice_CustomerPrice),
+                'gst': data.product.Product.Product_GST.gst_percentage,
                 'trade_disct':sale_objects.trade_disct,
                 'spl_disct':sale_objects.spl_disct,
                 'cash_disct':decimal_to_float(sale_objects.sales_voucher_master.cash_disct),
@@ -15317,7 +15299,7 @@ def sales_return_create_update(request,s_id,sr_no):
         form.prefix = f"sale_return_forms-{idx}"
 
 
-    master_form_data = sales_return_inward.objects.get(sales_return_no = sr_no)
+    master_form_data = sales_return_inward.objects.get(id = sr_id)
 
     return render(request,'accounts/sales_return_create_update.html',{'master_form_data':master_form_data,'formset':formset})
 

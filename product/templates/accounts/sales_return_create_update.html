@@ -37,7 +37,7 @@
         </div>
         <div class="d-flex ms-3">
           <label for="id_GST_number" class="me-2">Party GST No :</label>
-          <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form.instance.party_name.Gst_no }}" maxlength="15" readonly required>
+          <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form_data.party_name.Gst_no }}" maxlength="15" readonly required>
         </div>
       </div>
     
@@ -212,7 +212,7 @@
             </span>           
         </div>
         <div class=" mb-2">
-          <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form.cash_disct}}" maxlength="50" step=".01">% </label>
+          <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form_data.sales_voucher_master.cash_disct}}" maxlength="50" step=".01">% </label>
           <span class="purchase-span">
               <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="cash_disct_value" id ="id_cash_disct_value" value="" maxlength="50" step=".01" readonly >
           </span>
@@ -220,7 +220,7 @@
         <div class=" mb-2">
             <label class="purchase-lable fw-bold">Fright & Transport</label>
             <span class="purchase-span">
-                <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+                <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form_data.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
             </span>
         </div>
         <div class=" mb-2">
