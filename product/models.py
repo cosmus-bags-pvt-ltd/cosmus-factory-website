@@ -1369,11 +1369,11 @@ class sales_return_product(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-# class sales_return_voucher_master(models.Model):
-#     sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.PROTECT)
-#     sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete = models.PROTECT)
-#     created_date = models.DateTimeField(auto_now_add = True)
-#     modified_date_time = models.DateTimeField(auto_now = True)
+class sales_return_voucher_master(models.Model):
+    sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.PROTECT)
+    sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete = models.PROTECT)
+    created_date = models.DateTimeField(auto_now_add = True)
+    modified_date_time = models.DateTimeField(auto_now = True)
 
 
 class sales_return_voucher(models.Model):
