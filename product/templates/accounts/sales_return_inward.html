@@ -222,7 +222,7 @@
     </div>
 </form>
     <div class="mt-2">
-        <table class="table table-striped table-hover table-bordered" id="sales_retrun_outwardTable">
+        <table class="table table-striped table-hover table-bordered table-warning" id="sales_retrun_outwardTable">
             <thead class="name_absolute">
                 <tr>
                     <th>Outward No:</th>
@@ -654,92 +654,92 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }); 
     }
-    // function inputCheck() {
-    // console.log('tets')
-    //     var salesReturn =document.getElementById('id_sales_return_no');
-    //     var salesNo = document.getElementById('id_sales_voucher_master')
-    //     const inwardScan = document.getElementById('inwordSerialNo');
-    //     const manualScan = document.getElementById('id_manualSerialNo');
-    //     const binName = document.getElementById('id_bin_Name');
-    //     var submitButton = document.getElementById('stockTarnsferBin');
+    function inputCheck() {
+    console.log('tets')
+        var salesReturn =document.getElementById('id_sales_return_no');
+        var salesNo = document.getElementById('id_sales_voucher_master')
+        const inwardScan = document.getElementById('inwordSerialNo');
+        const manualScan = document.getElementById('id_manualSerialNo');
+        const binName = document.getElementById('id_bin_Name');
+        var submitButton = document.getElementById('stockTarnsferBin');
       
 
-    //     // if(salesReturn){
-    //         salesReturn.addEventListener('keydown',function(event){
-    //         if(event.key === 'Tab'){
-    //             event.preventDefault();
-    //             var salesvalue = salesReturn.value.trim();
-    //             console.log('salesvalue',salesvalue,typeof(salesvalue))
-    //             if(salesvalue === ''){
-    //                 salesReturn.focus();
-    //             }else{
-    //                 salesNo.focus();
-    //             }
-    //         } 
-    //     })
-    //     // }
+        // if(salesReturn){
+            salesReturn.addEventListener('keydown',function(event){
+            if(event.key === 'Tab'){
+                event.preventDefault();
+                var salesvalue = salesReturn.value.trim();
+                console.log('salesvalue',salesvalue,typeof(salesvalue))
+                if(salesvalue === ''){
+                    salesReturn.focus();
+                }else{
+                    salesNo.focus();
+                }
+            } 
+        })
+        // }
         
-    //     // if(salesNo){
-    //         salesNo.addEventListener('keydown',function(event){
-    //         if(event.key === 'Tab'){
-    //             event.preventDefault();
-    //             if(salesNo.value === ''){
-    //                 salesNo.focus();
-    //                 return
-    //             }else{
-    //                 inwardScan.focus();
-    //             }
-    //         } 
-    //     })
-    //     // }
+        // if(salesNo){
+            salesNo.addEventListener('keydown',function(event){
+            if(event.key === 'Tab'){
+                event.preventDefault();
+                if(salesNo.value === ''){
+                    salesNo.focus();
+                    return
+                }else{
+                    inwardScan.focus();
+                }
+            } 
+        })
+        // }
         
-    //     if(inwardScan){
-    //         inwardScan.addEventListener('keydown',function(event){
-    //         if(event.key === 'Tab'){
-    //             event.preventDefault();
-    //             if(inwardScan.value === ''){
-    //                 manualScan.focus();
-    //             }else{
-    //                 binName.focus();
-    //             }
-    //         }
-    //     })
-    //     }
+        if(inwardScan){
+            inwardScan.addEventListener('keydown',function(event){
+            if(event.key === 'Tab'){
+                event.preventDefault();
+                if(inwardScan.value === ''){
+                    manualScan.focus();
+                }else{
+                    binName.focus();
+                }
+            }
+        })
+        }
         
-    //     if(manualScan){
-    //         manualScan.addEventListener('keydown',function(event){
-    //         if(event.key === 'Enter'){
-    //             event.preventDefault();
-    //             if(manualScan.value === ''){
-    //                 manualScan.focus();
-    //                 return;
-    //             }else{
-    //                 binName.focus()
-    //             }
-    //         }
-    //     })
-    //     }
+        if(manualScan){
+            manualScan.addEventListener('keydown',function(event){
+            if(event.key === 'Enter'){
+                event.preventDefault();
+                if(manualScan.value === ''){
+                    manualScan.focus();
+                    return;
+                }else{
+                    binName.focus()
+                }
+            }
+        })
+        }
         
-    //     if(binName){
-    //         binName.addEventListener('keydown',function(event){
-    //         if(event.key === 'Tab'){
-    //             event.preventDefault();
-    //             console.log(binName.value,typeof(binName.value))
-    //             const binValue = binName.value.trim(); 
-    //             if(binValue === ''){
-    //                 binName.focus();
-    //                 return;
-    //             }else{
-    //                 submitButton.focus()
-    //             }
-    //         }
-    //     })
-    //     }
+        if(binName){
+            binName.addEventListener('keydown',function(event){
+            if(event.key === 'Tab'){
+                event.preventDefault();
+                console.log(binName.value,typeof(binName.value))
+                const binValue = binName.value.trim(); 
+                if(binValue === ''){
+                    binName.focus();
+                    return;
+                }else{
+                    submitButton.focus()
+                }
+            }
+        })
+        }
                 
-    // }
+    }
    
 
-    // inputCheck()
+    inputCheck()
     
     deleteRowData()
    })

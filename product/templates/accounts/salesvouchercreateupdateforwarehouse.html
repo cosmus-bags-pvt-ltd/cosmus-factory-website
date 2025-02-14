@@ -27,7 +27,7 @@
           <label for="id_sale_no" class="me-2">Sales No :</label>
           {% if master_form.instance.id %}
           <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
-            value="{{master_form.instance.sale_no}}" maxlength="255" required>
+            value="{{master_form.instance.sale_no}}" maxlength="255" required readonly>
             {% elif not master_form.instance.id %}
             <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
             value="{{ master_form.sale_no.initial }}" maxlength="255" required>
@@ -75,7 +75,7 @@
             {% endfor %}
             {% endif %}
           </select>
-          <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+          <button  type="button" id="ledgerpurchase" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
         </div>
         <div class="d-flex ms-3">
           <label for="id_GST_number" class="me-2">Party GST No :</label>
@@ -120,7 +120,7 @@
                 <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" readonly > 
               
             </td>
-            <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+            <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input"  readonly></td>
 
             <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
 
@@ -132,10 +132,10 @@
             <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.instance.product_name.Product.Product_SalePrice_CustomerPrice}}" readonly></td>
 
 
-            <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" ></td>
+            <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}"readonly></td>
 
 
-            <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" ></td>
+            <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" readonly ></td>
             <td>
               <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
           </td>
@@ -160,7 +160,7 @@
               <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{forms.initial.product_name}}" readonly > 
             
           </td>
-          <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.initial.color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+          <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.initial.color}}" class="purchase-input"  readonly></td>
 
           <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.initial.product}}" class="purchase-amount" readonly></td>
 
@@ -291,160 +291,158 @@
 
 <script>
   var popUpNewWindow = null;
-function openPurchasePartyPopup(button){
- openNewPopup(button, '{% url "ledger-popup-create" %}');
-}
+  function openPurchasePartyPopup(button){
+    openNewPopup(button, '{% url "ledger-popup-create" %}');
+  }
 
-function openNewPopup(button, url){
- if (popUpNewWindow === null || popUpNewWindow.closed) {
-     newPopUpwindow(button, url);
- } else {
+  function openNewPopup(button, url){
+    if (popUpNewWindow === null || popUpNewWindow.closed) {
+        newPopUpwindow(button, url);
+    } else {
 
-     popUpNewWindow.focus();
- }
-}
+        popUpNewWindow.focus();
+    }
+  }
 
-function newPopUpwindow(button, path){
- // Specify minimum height and width
-var minWidth = 1150; // minimum width
-var minHeight = 800; // minimum height
+  function newPopUpwindow(button, path){
+    var minWidth = 1150; 
+    var minHeight = 800;
 
-$('body').addClass('popup-open');
-$('body').append('<div class="popup-overlay"></div>');
+    $('body').addClass('popup-open');
+    $('body').append('<div class="popup-overlay"></div>');
 
-// Open new page with specified dimensions
-popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
- // Ensure only one event listener is attached
+    popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
 
- window.addEventListener('message', function(event){
-     if (event.data.message === 'close') {
-             $('body').removeClass('popup-open');
-             $('.popup-overlay').remove();
-             popUpNewWindow.close();
-             
-          }
-        });
-
-
- // Listen for messages from the popup window
- window.addEventListener('click', function(event) {
- handleOutsideClick(event);
-});
-}
-function handleOutsideClick(event) {
-var popUpRect = document.querySelector('body').getBoundingClientRect();
-var clickX = event.clientX;
-var clickY = event.clientY;
-
-// Check if the click is outside the popup window
-if (
- clickX > popUpRect.left || clickX <= popUpRect.right ||
- clickY > popUpRect.top || clickY <= popUpRect.bottom
-) {
-
- popUpNewWindow.focus();
- 
-}
-
-}
-
-window.addEventListener('message', function(event) {
- const data = event.data;
- console.log(data.ledger_labour);
- if (data.ledger_labour) {
-     populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
- }
-});
-
-function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
- const dropdown = $(dropdownSelector);
- dropdown.empty();
- dropdown.append('<option value="">' + defaultText + '</option>');
-
- items.forEach(item => {
-     dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
- });
-}
-
-// This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
-function getGstNo() {
- let partyGstValue = document.getElementById('id_GST_number').value;
- let comapnyGst = document.getElementById('id_company_gst').value;
-
-     comapnyGst = comapnyGst.toString();
-     partyGstValue = partyGstValue.toString();
-
- const newCompanyGst = comapnyGst.slice(0,2);
- const newPartyGst = partyGstValue.slice(0,2);
- return newCompanyGst === newPartyGst;
-}
-
-
-
-$(document).ready(function(){
-var formsSale = $('#id_sales_voucher_outward_scan_set-0-id').val();
- if(formsSale === ''){
-   $('#id_sale_no').on('focusout',function(){
-         var sales_no = $(this).val();
-         var purchase = $("#id_sale_no");
-         var errorElement = $('#purchaseError'); // The error message element
-         var submitForm = $('#parentFormClick');
-         $.ajax({
-             url: '/uniquevalidcheckajax/',
-             method: 'GET',
-             data: {
-                 'sales_no': sales_no,
-                 
-             },
-             success: function (data) {
-                 if(data.validation_flag === true){
-                    purchase.css('border', '1px solid red');
-                     errorElement.text('*Sales number already exists');
-                     errorElement.show();
-                     submitForm.prop('disabled', true);
-                    
-                 }else {
-                     
-                     purchase.css('border', '1px solid black');
-                     errorElement.text('');
-                     errorElement.hide();
-                     submitForm.prop('disabled', false);
-                 }
+    window.addEventListener('message', function(event){
+        if (event.data.message === 'close') {
+                $('body').removeClass('popup-open');
+                $('.popup-overlay').remove();
+                popUpNewWindow.close();
                 
-             },
-             error: function (error) {   
-                 console.log(error);
-             }
+              }
+            });
 
-         })
-     })
- }
+    window.addEventListener('click', function(event) {
+      handleOutsideClick(event);
+    });
+  }
 
-$(document).on('change', 'select[name^="party_name"]', function () {
+  function handleOutsideClick(event) {
+    var popUpRect = document.querySelector('body').getBoundingClientRect();
+    var clickX = event.clientX;
+    var clickY = event.clientY;
 
- const selected_party_name = $(this).val()
- const int_selected_party_name = parseInt(selected_party_name)
+    // Check if the click is outside the popup window
+    if (clickX > popUpRect.left || clickX <= popUpRect.right || clickY > popUpRect.top || clickY <= popUpRect.bottom) {
 
- $.ajax({
-     url: '/purchasevouchercreate/',
-     method: 'GET',
-     data: {
-         'selected_party_name': selected_party_name,
-     },
-     success: function (response) {
-         const party_gst_no_response = response.party_gst_no
-         const gst_no_input = document.getElementById('id_GST_number')
-         gst_no_input.value = party_gst_no_response
-         getGstNo()
-         calculateTotalAmount()
+      popUpNewWindow.focus();
+    
+    }
+
+  }
+
+  window.addEventListener('message', function(event) {
+    const data = event.data;
    
-     },
-     error: function (xhr, errmsg, err) {
-         console.log('Error sending value to the backend');
-     }
- })
-})
-})
+    if (data.ledger_labour) {
+        populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
+    }
+  });
+
+  function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
+    const dropdown = $(dropdownSelector);
+    dropdown.empty();
+    dropdown.append('<option value="">' + defaultText + '</option>');
+
+    items.forEach(item => {
+        dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+    });
+  }
+
+  // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
+  function getGstNo() {
+  let partyGstValue = document.getElementById('id_GST_number').value;
+  let comapnyGst = document.getElementById('id_company_gst').value;
+
+      comapnyGst = comapnyGst.toString();
+      partyGstValue = partyGstValue.toString();
+
+  const newCompanyGst = comapnyGst.slice(0,2);
+  const newPartyGst = partyGstValue.slice(0,2);
+  return newCompanyGst === newPartyGst;
+  }
+
+
+
+  $(document).ready(function(){
+    var formsSale = $('#id_sales_voucher_outward_scan_set-0-id').val();
+    if(formsSale === ''){
+      $('#id_sale_no').on('focusout',function(){
+            var sales_no = $(this).val();
+            var purchase = $("#id_sale_no");
+            var errorElement = $('#purchaseError'); // The error message element
+            var submitForm = $('#parentFormClick');
+            $.ajax({
+                url: '/uniquevalidcheckajax/',
+                method: 'GET',
+                data: {
+                    'sales_no': sales_no,
+                    
+                },
+                success: function (data) {
+                    if(data.validation_flag === true){
+                        purchase.css('border', '1px solid red');
+                        errorElement.text('*Sales number already exists');
+                        errorElement.show();
+                        submitForm.prop('disabled', true);
+                        
+                    }else {
+                        
+                        purchase.css('border', '1px solid black');
+                        errorElement.text('');
+                        errorElement.hide();
+                        submitForm.prop('disabled', false);
+                    }
+                    
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
+
+            })
+        })
+
+    }else{
+      $('#parentFormClick').hide();
+      $('#id_cash_disct').attr('readonly',true);
+      $('#ledgerpurchase').hide()
+    }
+
+    $(document).on('change', 'select[name^="party_name"]', function () {
+
+    const selected_party_name = $(this).val()
+    const int_selected_party_name = parseInt(selected_party_name)
+
+    $.ajax({
+        url: '/purchasevouchercreate/',
+        method: 'GET',
+        data: {
+            'selected_party_name': selected_party_name,
+        },
+        success: function (response) {
+            const party_gst_no_response = response.party_gst_no
+            const gst_no_input = document.getElementById('id_GST_number')
+            gst_no_input.value = party_gst_no_response
+            getGstNo()
+            calculateTotalAmount()
+      
+        },
+        error: function (xhr, errmsg, err) {
+            console.log('Error sending value to the backend');
+        }
+    })
+    })
+  })
 </script>
 <script>
 
