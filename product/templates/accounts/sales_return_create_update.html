@@ -292,10 +292,10 @@ $(document).ready(function(){
 
 
  function bindRowListeners(row) {
-     const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_outward_scan_set-"][name$="-quantity"]');
-     const salePriceInput = row.querySelector('.sales_price[name^="sales_voucher_outward_scan_set-"][name$="-sale_price"]');;
-     const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_outward_scan_set-"][name$="-trade_disct"]');
-     const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_outward_scan_set-"][name$="-spl_disct"]');
+     const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
+     const salePriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');;
+     const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
+     const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
      
      if (quantityInput) {
          quantityInput.addEventListener('input', calculateTotalAmount);
@@ -376,15 +376,15 @@ function calculateTotalAmount() {
    
      rows.forEach(function(row) {
          // Find the quantity, rate, and amount input fields for the current row
-         const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_outward_scan_set-"][name$="-quantity"]');
-         const customPriceInput = row.querySelector('.sales_price[name^="sales_voucher_outward_scan_set-"][name$="-sale_price"]');
-         const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_outward_scan_set-"][name$="-trade_disct"]');
-         const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_outward_scan_set-"][name$="-spl_disct"]');
-         const amountInput = row.querySelector('.total-amount[name^="sales_voucher_outward_scan_set-"][name$="-amount"]');
-         const gstValue = row.querySelector('.purchase-gst[name^="sales_voucher_outward_scan_set-"][name$="-gst"]');
-         const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_outward_scan_set-"][name$="-cgst"]');
-         const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_outward_scan_set-"][name$="-sgst"]');
-         const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_outward_scan_set-"][name$="-total_amount"]');
+         const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
+         const customPriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');
+         const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
+         const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
+         const amountInput = row.querySelector('.total-amount[name^="sale_return_forms-"][name$="-amount"]');
+         const gstValue = row.querySelector('.purchase-gst[name^="sale_return_forms-"][name$="-gst"]');
+         const cgstValue= row.querySelector('.purchase-cgst[name^="sale_return_forms-"][name$="-cgst"]');
+         const sgstValue= row.querySelector('.purchase-sgst[name^="sale_return_forms-"][name$="-sgst"]');
+         const totalAmountInput = row.querySelector('.purchase-total[name^="sale_return_forms-"][name$="-total_amount"]');
       
          // Get the values of quantity and rate
          const quantity = parseFloat(quantityInput.value);
