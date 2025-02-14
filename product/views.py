@@ -15288,20 +15288,23 @@ def sales_return_create_update(request,s_id,sr_no):
 
         found = False
         for item in product_list:
-            if item['sku'] == sku:
+            if item['product_name'] == sku:
                 item['quantity'] += quantity
                 found = True
                 break
 
 
         if not found:
+            sale_objects = sales_voucher_outward_scan.objects.get(sales_voucher_master__sale_no = s_id, product_name=sku)
             product_list.append({
                 'ref_no': data.product.Product.Product_Refrence_ID,
-                'sku': sku,
+                'product_name': sku,
                 'model_name': data.product.Product.Model_Name,
                 'color': data.product.PProduct_color.color_name,
                 'quantity': quantity,
-
+                'trade_disct':sale_objects.trade_disct,
+                'spl_disct':sale_objects.spl_disct,
+                'cash_disct':decimal_to_float(sale_objects.sales_voucher_master.cash_disct),
             })
 
     print('product_list', product_list)
