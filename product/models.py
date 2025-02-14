@@ -1371,10 +1371,23 @@ class sales_return_product(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
+# class sales_return_voucher_master(models.Model):
+#     sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.CASCADE)
+#     sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete = models.CASCADE)
+#     company_gst = models.CharField(max_length = 100)
+#     ledger_type = models.CharField(max_length = 20, default = 'sales')
+#     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
+#     selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+#     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+#     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+#     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+#     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+#     created_date = models.DateTimeField(auto_now_add = True)
+#     modified_date_time = models.DateTimeField(auto_now = True)
 
 
 class sales_return_voucher(models.Model):
-    sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete=models.CASCADE)
+    # sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
