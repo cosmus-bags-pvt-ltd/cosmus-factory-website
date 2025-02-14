@@ -1371,14 +1371,16 @@ class sales_return_product(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-# class sales_return_voucher(models.Model):
-#     sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete=models.CASCADE)
-#     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
-#     quantity = models.IntegerField()
-#     trade_disct = models.IntegerField()
-#     spl_disct = models.IntegerField()
-#     created_date = models.DateTimeField(auto_now_add=True)
-#     updated_date = models.DateTimeField(auto_now=True)
+
+
+class sales_return_voucher(models.Model):
+    sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete=models.CASCADE)
+    product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    quantity = models.IntegerField()
+    trade_disct = models.IntegerField()
+    spl_disct = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
 
 

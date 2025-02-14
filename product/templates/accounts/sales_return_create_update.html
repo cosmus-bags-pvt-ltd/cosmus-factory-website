@@ -1,0 +1,11 @@
+{% extends 'product/base.html' %} 
+{% load static %} 
+
+{% block body %}
+<h1>{{master_form_data.sales_voucher_master.sale_no}}</h1>
+<h1>{{master_form_data.sales_return_no}}</h1>
+<h1>{{master_form_data.ledger_type}}</h1>
+<h1>{{master_form_data.party_name.name}}</h1>
+<h1>{{master_form_data.selected_warehouse.warehouse_name_finished}}</h1>
+{{formset}}
+{% endblock body %}

@@ -386,6 +386,7 @@ urlpatterns = [
     path('otwarddataforsalereturnajax/', views.otward_data_for_sale_return_ajax, name='otward-data-for-sale-return-ajax'),
     path('processserialnoforreturnsalesajax/', views.process_serial_no_for_return_sales_ajax, name='process-serial-no-for-return-sales-ajax'),
     path('returnproductwithbinajax/', views.return_product_with_bin_ajax, name='return-product-with-bin-ajax'),
+    path('salesreturncreateupdate/', views.sales_return_create_update, name='sales-return-create-update'),
 
 ]   
 

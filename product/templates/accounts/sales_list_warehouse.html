@@ -31,7 +31,7 @@
                 <td>{{sale.outward_no.outward_no}}</td>
                 <td>{{sale.party_name.name}}</td>
                 <td>{{sale.ledger_type}}</td>
-                <td>qty</td>
+                <td>{{sale.total_qty}}</td>
                 <td>{{sale.grand_total}}</td>
                 <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
                 <!-- <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>  -->
