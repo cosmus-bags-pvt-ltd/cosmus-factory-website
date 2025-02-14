@@ -12,15 +12,15 @@
           <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{{master_form_data.sales_return_no}}" maxlength="255" readonly>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_sale_no" class="me-2">Sales No :</label>
+          <label for="id_sale_no" class="ms-2 me-2">Sales No :</label>
           <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{master_form_data.sales_voucher_master.sale_no}}" maxlength="255" required readonly>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_company_gst" class="ms-1 me-1">Company GST No :</label>
+          <label for="id_company_gst" class="ms-2 me-2">Company GST No :</label>
           <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238" maxlength="50" readonly>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_ledger_type" class="me-1">ledger Type :</label>
+          <label for="id_ledger_type" class="ms-2 me-2">ledger Type :</label>
           <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form_data.ledger_type}}" maxlength="50" default='Sales Return' readonly>
         </div>
       </div>
@@ -31,12 +31,12 @@
         </div>
 
         <div class="d-flex ms-3">
-          <label for="id_party_name" class="me-3">Party A/C Name:</label>
+          <label for="id_party_name" class=" ms-2 me-2">Party A/C Name:</label>
           <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form_data.party_name.name}}" readonly>
     
         </div>
         <div class="d-flex ms-3">
-          <label for="id_GST_number" class="me-2">Party GST No :</label>
+          <label for="id_GST_number" class="ms-2 me-2">Party GST No :</label>
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form_data.party_name.Gst_no }}" maxlength="15" readonly required>
         </div>
       </div>
@@ -86,10 +86,10 @@
             <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.instance.product_name.Product.Product_SalePrice_CustomerPrice}}" readonly></td>
 
 
-            <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" ></td>
+            <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" readonly></td>
 
 
-            <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" ></td>
+            <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" readonly></td>
             <td>
               <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
           </td>
