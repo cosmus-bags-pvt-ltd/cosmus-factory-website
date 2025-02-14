@@ -15306,9 +15306,13 @@ def sales_return_create_update(request,s_id,sr_no):
 
     print('product_list', product_list)
 
-    sales_return_voucher_formset = modelformset_factory(sales_return_voucher, form = sales_return_voucher_form, extra=len(product_list), prefix='sale_return_forms')
+    sales_return_voucher_formset = modelformset_factory(sales_return_voucher, form = sales_return_voucher_form, extra=len(product_list))
 
     formset = sales_return_voucher_formset(initial=product_list)
+
+    for idx, form in enumerate(formset):
+        form.prefix = f"sale_return_forms-{idx}"
+
 
     master_form_data = sales_return_inward.objects.get(sales_return_no = sr_no)
 
