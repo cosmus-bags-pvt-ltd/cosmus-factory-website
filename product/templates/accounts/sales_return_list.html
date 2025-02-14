@@ -31,20 +31,18 @@
           
           <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
             {% for data in queryset %}
-          <tr>
-            <td>{{forloop.counter}}</td>
-            <td>{{data.created_date}}</td>
-            <td>{{data.party_name.name}}</td>
-            <td>{{data.ledger_type}}</td>
-            <td>{{data.sales_no}}</td>
-            <td>{{data.grand_total}}</td>
-            <td>{{data.grand_total}}</td>
-            
-            <td><a href="{% url 'sales-voucher-create' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-            <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
-            
-          </tr>
-          {% endfor %}
+              <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{data.created_date}}</td>
+                <td>{{data.sales_return_no}}</td>
+                <td>{{data.sales_voucher_master.sale_no}}</td>
+                <td>{{data.party_name.name}}</td>
+                <td>{{data.ledger_type}}</td>
+                <td></td>
+              </tr>
+            {% endfor %}
+       
+
          
           </tbody>
           
