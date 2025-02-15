@@ -6,40 +6,78 @@
     <form class="mt-3" action="" method="POST" id="salesForm">
       {% csrf_token %}
 
-      <div class="d-flex mb-3">
-        <div class="d-flex">
-          <label for="id_sales_return_no" class="me-2">Sales Return No:</label>
-          <input type="hidden" class="purchase-vNo" name="sales_return_inward_instance" id="id_sales_return_inward_instance" value="{{master_form_data.id}}">
-          <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{master_form_data.sales_return_no}}" maxlength="255" readonly>
-        </div>
-        <div class="d-flex ms-3">
-          <label for="id_sales_voucher_master" class="ms-2 me-2">Sales No :</label>
-          <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{master_form_data.sales_voucher_master.id}}" >
-          <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{master_form_data.sales_voucher_master.sale_no}}" maxlength="255" required readonly>
+        <div class="d-flex mb-3">
+          <div class="d-flex mb-3">
+            <div class="d-flex">
+                <label for="id_sales_return_no" class="me-2">Sales Return No:</label>
+                {% if master_form.instance.id %}
+                    <input type="hidden" class="purchase-vNo" name="sales_return_inward_instance" id="id_sales_return_inward_instance" value="{{ master_form.instance.sales_return_inward_instance.id }}">
+                    <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{ master_form.instance.sales_return_inward_instance.sales_return_no }}" maxlength="255" readonly>
+                {% elif not master_form.instance.id %}
+                    <input type="hidden" class="purchase-vNo" name="sales_return_inward_instance" id="id_sales_return_inward_instance" value="{{ master_form_data.id }}">
+                    <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{ master_form_data.sales_return_no }}" maxlength="255" readonly>
+                {% endif %}
+            </div>
+        
+            <div class="d-flex ms-3">
+                <label for="id_sales_voucher_master" class="ms-2 me-2">Sales No :</label>
+                {% if master_form.instance.pk %}
+                    <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{ master_form.instance.sales_voucher_master.id }}">
+                    <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form.instance.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
+                {% elif not master_form.instance.id %}
+                    <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{ master_form_data.sales_voucher_master.id }}">
+                    <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form_data.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
+                {% endif %}
+            </div>
         </div>
         <div class="d-flex ms-3">
           <label for="id_company_gst" class="ms-2 me-2">Company GST No :</label>
           <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238" maxlength="50" readonly>
         </div>
+
         <div class="d-flex ms-3">
+          {% if master_form.instance.pk %}
+          <label for="id_ledger_type" class="ms-2 me-2">ledger Type :</label>
+          <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.sales_return_inward_instance.ledger_type}}" maxlength="50" default='Sales Return' readonly>
+          {% elif not master_form.instance.id %}
           <label for="id_ledger_type" class="ms-2 me-2">ledger Type :</label>
           <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form_data.ledger_type}}" maxlength="50" default='Sales Return' readonly>
+          {% endif %}
+          
         </div>
       </div>
       <div class="mb-3 d-flex">
         <div class="">
+          {% if master_form.instance.pk %}
           <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
-          <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.selected_warehouse.warehouse_name_finished}}" readonly >          
+          <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
+          {% elif not master_form.instance.id %}
+          <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
+          <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.selected_warehouse.warehouse_name_finished}}" readonly > 
+          {% endif %}
+                   
         </div>
 
         <div class="d-flex ms-3">
+          {% if master_form.instance.pk %}
+          <label for="id_party_name" class=" ms-2 me-2">Party A/C Name:</label>
+          <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
+          {% elif not master_form.instance.id %}
           <label for="id_party_name" class=" ms-2 me-2">Party A/C Name:</label>
           <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form_data.party_name.name}}" readonly>
+          {% endif %}
+          
     
         </div>
         <div class="d-flex ms-3">
+          {% if master_form.instance.pk %}
+          <label for="id_GST_number" class="ms-2 me-2">Party GST No :</label>
+          <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form.instance.sales_voucher_master.party_name.Gst_no }}" maxlength="15" readonly required>
+          {% elif not master_form.instance.id %}
           <label for="id_GST_number" class="ms-2 me-2">Party GST No :</label>
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form_data.party_name.Gst_no }}" maxlength="15" readonly required>
+          {% endif %}
+          
         </div>
       </div>
     
@@ -213,17 +251,31 @@
                 <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
             </span>           
         </div>
+
         <div class=" mb-2">
+          {% if master_form.instance.pk %}
+          <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form.instance.sales_voucher_master.cash_disct}}" maxlength="50" step=".01">% </label>
+          
+          {% elif not master_form.instance.id %}
           <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form_data.sales_voucher_master.cash_disct}}" maxlength="50" step=".01">% </label>
+          
+          {% endif %}  
           <span class="purchase-span">
-              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="cash_disct_value" id ="id_cash_disct_value" value="" maxlength="50" step=".01" readonly >
-          </span>
-      </div>
+            <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="cash_disct_value" id ="id_cash_disct_value" value="" maxlength="50" step=".01" readonly >
+        </span>  
+        </div>
+
         <div class=" mb-2">
             <label class="purchase-lable fw-bold">Fright & Transport</label>
+            {% if master_form.instance.pk %}
             <span class="purchase-span">
-                <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form_data.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+                <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
             </span>
+            {% elif not master_form.instance.id %}
+            <span class="purchase-span">
+              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form_data.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+          </span>
+            {% endif %}
         </div>
         <div class=" mb-2">
             <input type="hidden" id="temp_grand_total" value="">
