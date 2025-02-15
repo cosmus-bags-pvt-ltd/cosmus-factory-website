@@ -15424,7 +15424,8 @@ def sales_return_voucher_create_update(request, s_id, sr_id, sv_id=None):
 
     return render(request, 'accounts/sales_return_create_update.html', {
         'master_form_data': master_form_data,
-        'formset': formset
+        'formset': formset,
+        'master_form':master_form
     })
 
 
