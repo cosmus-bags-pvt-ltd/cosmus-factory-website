@@ -1537,7 +1537,7 @@ input[type=number] {
     font-size: 14px;
     border: none;
     border-radius: 10px;
-    margin:0px 860px 0px 0px;
+    /* margin:0px 860px 0px 0px; */
 }
  .cancel-btn{
     font-family:"Poppins", sans-serif;
