@@ -12,36 +12,27 @@
       <span id="purchaseError" class="error-messages"></span>
       <div class="d-flex">
         <label for="id_sales_return_no" class="me-1">Sales Return No :</label>
-
         <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="" maxlength="255" required>
-
       </div>
 
       <span id="SupplierError" class="error-messages"></span>
-
       <div class="d-flex ms-2">
         <label for="id_sales_voucher_master" class="me-1">Sales No :</label>
         {% if master_form.instance.id %}
-        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
-          value="" maxlength="255" required>
-        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name"
-          value="" maxlength="255" required>
-          {% elif not master_form.instance.id %}
-          <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master"
-          value="" maxlength="255" required>
-          <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name"
-          value="" maxlength="255" required>
-          {% endif %}
+        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="">
+        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="" maxlength="255" required>
+        {% elif not master_form.instance.id %}
+        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="" >
+        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="" maxlength="255" required>
+        {% endif %}
       </div>
       <div class="d-flex ms-2">
         <label for="id_ledger_type" class="me-1">ledger Type :</label>
-        <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type"
-          value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales return'
-          placeholder="Sales" readonly>
+        <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales return' readonly>
       </div>
       <div class="ms-2">
         <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
-        <input type="hidden" class="purchase-amount" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.selected_warehouse.id}}">
+        <input type="hidden" class="purchase-amount" name="selected_warehouse" id="id_selected_warehouse" value="{{master_form.instance.selected_warehouse.id}}">
         <input type="text" class="purchase-amount" name="selected_warehouse_name" required id="id_selected_warehouse_Name" value="{{master_form.instance.selected_warehouse.warehouse_name_finished}}" readonly>
         
       </div>
@@ -60,18 +51,22 @@
                 <label for="inwordSerialNo" class="fw-bold me-2">Scan :</label>
                 <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
                 <label for="id_bin_Name" class="fw-bold ms-2 me-3">Bin :</label>
-                <select  class="item-selects ms-3" name="product_bin" id="id_bin_Name">
-                </select>
+                <select  class="item-selects ms-3" name="product_bin" id="id_bin_Name"></select>
             </div>
             <div class="d-flex ">
                 <div class="mb-2">
                     <label for="id_manualSerialNo" class="fw-bold">M-Scan :</label>
                     <input type="text" name="manual_serial_number" class="item-selects" id="id_manualSerialNo">
                 </div>
-                <span id="responseMessage" class="ms-1 mb-1 fw-bold"></span>
+                <div>
+                    <span id="responseMessage" class="ms-1 mb-1 fw-bold"></span>
+                    <div class="ms-4">
+                        <span style="cursor: pointer;"  class="create-btn" id="salesReturnBin">Submit</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-lg-5" style="display:none" id="salesReturnList">
+        <div class="col-lg-5" id="salesReturnList">
             <table class="table table-striped table-hover table-bordered" id="stockTransferInstanceTable">
                 <thead class="name_absolute">
                     <tr>
@@ -82,30 +77,23 @@
                     </tr>
                 </thead>
                 <tbody class="mainTableList" >
-                   
                     <tr>
                         <td><input name="product_name" type="text" class="productShadeCutting_input bg-transparent border-0" id="id_product" value="" readonly></td>
                         <td><input name="product_sku" type="number" class="productorder_input"  id="id_product_sku" value="" readonly></td>
                         <td><input name="product_color" type="text" class="productorder_input"  id="id_product_color" value="" readonly></td>
                         <td>
                             <img id="productImgPreview" name="product_img" src="" alt="img" style="width: 25px; object-fit:contain;">
-                       </td>
-                    
-                        
+                       </td> 
                     </tr>
-                 
                 </tbody>
             </table>
-                <span style="cursor: pointer;"  class="newProductCreateBtn" id="stockTarnsferBin">Submit</span>
-           
         </div>
-        
     </div>
     <div class="mt-2">
         <div class="stock_responsive">
             <table class="table table-striped table-hover table-bordered table-primary" id="salesReturnoutwardTable">
                 <thead class="name_absolute sticky-top">
-                    <tr class="">
+                    <tr>
                         <th>No</th>
                         <th>Ref No</th>
                         <th>Model Name</th>
@@ -125,96 +113,74 @@
                         {% if form.instance.id %}
                         <tr>
                             <td>
-                                
                                 <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
                             </td>
-        
                             <td>
                                 <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly>
                             </td>
-        
                             <td>  
                                 <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{form.instance.product.Product.Model_Name}}" readonly> 
                             </td>
-        
                             <td>
                                 <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color.color_name}}" class="purchase-input"  readonly>
                             </td>
-            
                             <td>
                                 <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly>
                             </td>
-                        
                             <td>
-                                <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
+                                <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 25px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
                             </td>
                             <td>
                                 <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" value="{{ form.instance.unique_serial_no }}" readonly>
                             </td>
-        
                             <td>
                                 <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" value="{{form.instance.bin_number.bin_name}}" readonly>
                                 <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" value="{{ form.instance.bin_number.id }}" readonly>
                             </td>
-        
                             <td>
-                                <input type="number" name="{{form.prefix}}-scan_qty" id="id_{{form.prefix}}-scan_qty" class="purchase-input" value="{{ form.instance.quantity }}" readonly>
+                                <input type="number" name="{{form.prefix}}-scan_qty" id="id_{{form.prefix}}-scan_qty" class="purchase-input" value="{{ form.instance.scan_qty }}" readonly>
                             </td>
-        
                             <td>
                                 <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
                             </td>  
                         </tr>
-        
-        
                         {% elif not form.instance.id %}
                         <tr>
                             <td>
                                 <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
                                 <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
                             </td>
-        
                             <td>
                                 <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly>
                             </td>
-        
                             <td>  
                                 <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="" readonly> 
                             </td>
-        
                             <td>
-                                <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="" class="purchase-input" style="margin-left: 10px;" readonly>
+                                <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="" class="purchase-input" readonly>
                             </td>
-            
                             <td>
                                 <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="" class="purchase-amount" readonly>
                             </td>
-                        
                             <td>
                                 <img src="" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
                             </td>
                             <td>
                                 <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" readonly>
                             </td>
-        
                             <td>
                                 <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" readonly>
                                 <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly>
                             </td>
-        
                             <td>
                                 <input type="number" name="{{form.prefix}}-scan_qty" value="" id="id_{{form.prefix}}-scan_qty" class="purchase-input" readonly>
                             </td>
-        
                             <td>
                                 <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
                             </td>  
                         </tr>
                         {% endif %}
-                    
-        
                     {% endfor %}
-        
                 </tbody>   
             </table>
         </div>
@@ -222,12 +188,12 @@
     </div>
 </form>
     <div class="mt-2">
+        <div>
+            <label>Outward No :</label><span></span>
+            <label>Total Qty :</label><span>Pcs</span>
+        </div>
         <table class="table table-striped table-hover table-bordered table-warning" id="sales_retrun_outwardTable">
             <thead class="name_absolute">
-                <tr>
-                    <th>Outward No:</th>
-                    <th>Total Qty:</th>
-                </tr>
                 <tr>
                     <th>No</th>
                     <th>Img</th>
@@ -256,10 +222,8 @@ document.addEventListener('DOMContentLoaded', function () {
        const manualSearch = document.getElementById('id_manualSerialNo');
        const salesReturnTable = document.getElementById('salesReturnList');
        const responseMessage = $('#responseMessage');
-    
        const selectBin = document.getElementById('id_bin_Name')
   
-      
        inwardSearch.focus();
 
        inwardSearch.addEventListener('input', function () {
@@ -268,10 +232,6 @@ document.addEventListener('DOMContentLoaded', function () {
            if (inwardSearch.value) {
             salesReturnTable.style.display = "block";
                manualSearch.value = ''; 
-               inwardSearch.addEventListener('keydown',function(event){
-               
-                   
-               })
             }
         });
 
@@ -292,68 +252,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $('#id_sales_voucher_master_name').on('blur',function(){
         var saleNo = $(this).val();
-        console.log('saleNo',saleNo)
         $.ajax({
             url: '/otwarddataforsalereturnajax/',
-           type: 'GET',
-           data: { 
-               'saleNo':saleNo,
-           },
-           success: function(response){
-            let counter = 1;
-            var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
-            salesOutward.empty(); // Clear previous data
-            $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
-            $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
-            $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
-            $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
-            $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
+            type: 'GET',
+            data: { 
+                'saleNo':saleNo,
+            },
+            success: function(response){
+                let counter = 1;
+                var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
+                salesOutward.empty(); // Clear previous data
+                $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
+                $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
+                $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
+                $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
+                $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
           
-        
-        
-            response.list_to_sent.forEach(item => {
-                var newRow = $(`
-                    <tr>
-                        <td><span class="">${counter}</span></td>
-                        <td><img src=${item.PProduct_image} alt="img" width="25px"></td>
-                         <td><span class="modelName">${item.Product_Refrence_ID || "N/A"}</span></td>
-                        <td><span class="modelName">${item.Model_Name || "N/A"}</span></td>
-                        <td><span class="color">${item.PProduct_color || "N/A"}</span></td>
-                          <td><span class="sku">${item.PProduct_SKU || "N/A"}</span></td>
-                      <td><span class="balanceqty text-center">${item.unique_serial_no || "N/A"}</span></td> 
-                        <td><span class="balanceqty text-center">${item.Bin_Name || "N/A"}</span></td> 
-                        <td><span class="qty text-center">${item.Quantity || 0}</span></td>
-                    </tr>
-                `);
-                salesOutward.append(newRow);
-                counter++;
-            });
-           },
-           error:function(error){
+                response.list_to_sent.forEach(item => {
+                    var newRow = $(`
+                        <tr>
+                            <td><span class="">${counter}</span></td>
+                            <td><img src=${item.PProduct_image} alt="img" width="25px"></td>
+                            <td><span class="modelName">${item.Product_Refrence_ID || "N/A"}</span></td>
+                            <td><span class="modelName">${item.Model_Name || "N/A"}</span></td>
+                            <td><span class="color">${item.PProduct_color || "N/A"}</span></td>
+                            <td><span class="sku">${item.PProduct_SKU || "N/A"}</span></td>
+                            <td><span class="balanceqty text-center">${item.unique_serial_no || "N/A"}</span></td> 
+                            <td><span class="balanceqty text-center">${item.Bin_Name || "N/A"}</span></td> 
+                            <td><span class="qty text-center">${item.Quantity || 0}</span></td>
+                        </tr>
+                    `);
+                    salesOutward.append(newRow);
+                    counter++;
+                });
+            },
+            error:function(error){
             console.log(error)
            }
         })
     })
 
-    
        let debounceTimeout;
 
        $('#inwordSerialNo').on('input', function () {
-           clearTimeout(debounceTimeout);
+            clearTimeout(debounceTimeout);
 
-           const manual_serial = $('#id_manualSerialNo');
-           manual_serial.val('');
+            const manual_serial = $('#id_manualSerialNo');
+            manual_serial.val('');
            
-           const responseMessage = $('#responseMessage');
-           responseMessage.html(''); 
+            const responseMessage = $('#responseMessage');
+            responseMessage.html(''); 
 
-           const inputField = $(this);
+            const inputField = $(this);
    
-           debounceTimeout = setTimeout(async function () {
+            debounceTimeout = setTimeout(async function () {
                let inputUrl = inputField.val();
                let serialNo = '';
    
-               // Extract serial number
                if (inputUrl.includes('=')) {
                    serialNo = inputUrl.split('=').pop();
                    inputField.val(serialNo);
@@ -369,12 +324,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     //    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
                    }
                }
-           }, 500); 
+            }, 500); 
        });
    
        // Handle input in id_manualSerialNo
        $('#id_manualSerialNo').on('input', function () {
-
            $('#inwordSerialNo').val('');
            const responseMessage = $('#responseMessage');
            responseMessage.html('');
@@ -447,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
-        $('#stockTarnsferBin').on('click',function(){
+        $('#salesReturnBin').on('click',function(){
             var serialno;
             var binNo = $('#id_bin_Name').val();
             var productSku = $('#id_product_sku').val();
@@ -620,7 +574,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formCountInput.value = formCount + 1;
         tableBody.appendChild(lastRow);
         deleteRowData();
-        // inputCheck()
+    
     }
     function getVisibleRows() {
         return document.querySelectorAll('#salesReturnoutwardTable .mainTableList tr:not([style*="display: none"])');;
@@ -642,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             checkRow.value = 'true'; 
                             row.style.display = 'none';
         
-                            inputCheck();
+                           
                             
                         } else {
                             console.error("Checkbox for deletion not found in this row");
@@ -654,36 +608,37 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }); 
     }
+  
     function inputCheck() {
     console.log('tets')
-        var salesReturn =document.getElementById('id_sales_return_no');
-        var salesNo = document.getElementById('id_sales_voucher_master')
-        const inwardScan = document.getElementById('inwordSerialNo');
-        const manualScan = document.getElementById('id_manualSerialNo');
-        const binName = document.getElementById('id_bin_Name');
-        var submitButton = document.getElementById('stockTarnsferBin');
+        var salesReturn =$('#id_sales_return_no');
+        var salesNo = $('#sales_voucher_master_name')
+        const inwardScan = $('#inwordSerialNo');
+        const manualScan = $('#id_manualSerialNo');
+        const binName =$('#id_bin_Name');
+        var submitButton =$('#salesReturnBin');
       
 
-        // if(salesReturn){
-            salesReturn.addEventListener('keydown',function(event){
+         if(salesReturn){
+            salesReturn.on('keydown',function(event){
             if(event.key === 'Tab'){
                 event.preventDefault();
-                var salesvalue = salesReturn.value.trim();
-                console.log('salesvalue',salesvalue,typeof(salesvalue))
-                if(salesvalue === ''){
+        
+                if(salesReturn.val() === ''){
                     salesReturn.focus();
+                    return;
                 }else{
                     salesNo.focus();
                 }
             } 
         })
-        // }
+         }
         
-        // if(salesNo){
-            salesNo.addEventListener('keydown',function(event){
+         if(salesNo){
+            salesNo.on('keydown',function(event){
             if(event.key === 'Tab'){
                 event.preventDefault();
-                if(salesNo.value === ''){
+                if(salesNo.val() === ''){
                     salesNo.focus();
                     return
                 }else{
@@ -691,63 +646,64 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } 
         })
+        }
+        
+        // if(inwardScan){
+        //     inwardScan.addEventListener('keydown',function(event){
+        //     if(event.key === 'Tab'){
+        //         event.preventDefault();
+        //         if(inwardScan.value === ''){
+        //             manualScan.focus();
+        //         }else{
+        //             binName.focus();
+        //         }
+        //     }
+        // })
         // }
         
-        if(inwardScan){
-            inwardScan.addEventListener('keydown',function(event){
-            if(event.key === 'Tab'){
-                event.preventDefault();
-                if(inwardScan.value === ''){
-                    manualScan.focus();
-                }else{
-                    binName.focus();
-                }
-            }
-        })
-        }
+        // if(manualScan){
+        //     manualScan.addEventListener('keydown',function(event){
+        //     if(event.key === 'Enter'){
+        //         event.preventDefault();
+        //         if(manualScan.value === ''){
+        //             manualScan.focus();
+        //             return;
+        //         }else{
+        //             binName.focus()
+        //         }
+        //     }
+        // })
+        // }
         
-        if(manualScan){
-            manualScan.addEventListener('keydown',function(event){
-            if(event.key === 'Enter'){
-                event.preventDefault();
-                if(manualScan.value === ''){
-                    manualScan.focus();
-                    return;
-                }else{
-                    binName.focus()
-                }
-            }
-        })
-        }
-        
-        if(binName){
-            binName.addEventListener('keydown',function(event){
-            if(event.key === 'Tab'){
-                event.preventDefault();
-                console.log(binName.value,typeof(binName.value))
-                const binValue = binName.value.trim(); 
-                if(binValue === ''){
-                    binName.focus();
-                    return;
-                }else{
-                    submitButton.focus()
-                }
-            }
-        })
-        }
+        // if(binName){
+        //     binName.addEventListener('keydown',function(event){
+        //     if(event.key === 'Tab'){
+        //         event.preventDefault();
+        //         console.log(binName.value,typeof(binName.value))
+        //         const binValue = binName.value.trim(); 
+        //         if(binValue === ''){
+        //             binName.focus();
+        //             return;
+        //         }else{
+        //             submitButton.focus()
+        //         }
+        //     }
+        // })
+        // }
                 
     }
    
-
     inputCheck()
-    
     deleteRowData()
    })
 
-//    document.addEventListener('DOMContentLoaded', function () {
-//     document.getElementById('id_sales_return_no').focus()
-//    })
+   document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('id_sales_return_no').focus();
+     //inputCheck()
+   })
 
+   
+   
    
 
 
