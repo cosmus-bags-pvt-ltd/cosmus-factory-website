@@ -353,8 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         $('#id_manualSerialNo').val('');
                         $('#id_product').val('');
                         $('#id_product_sku').val('');
-                        $('#id_product_color').val('');
-                        
+                        $('#id_product_color').val(''); 
                     }
                 } else {
                     $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
@@ -364,11 +363,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     $('#id_product_color').val('');
                 }   
             }
-       });
+        });
    
        // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
-            console.log('serialNo',serialNo)
+   
             var saleNo = $('#id_sales_voucher_master_name').val()
             try {
                  const response = await $.ajax({
@@ -386,7 +385,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 $('#productImgPreview').attr('src', response.product_image);
 
                 const binSelect = $('#id_bin_Name');  
-         
                 binSelect.empty(); 
 
                 response.bin_to_dict.forEach(bin => {
@@ -399,7 +397,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return null; 
             }
         }
-
 
         $('#salesReturnBin').on('click',function(){
             var serialno;
