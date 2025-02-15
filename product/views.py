@@ -85,7 +85,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update)
     
 
 
@@ -14390,6 +14390,8 @@ def outward_scan_serial_no_process(request):
         serialNo = request.GET.get('serialNo')
         picklistNo = request.GET.get('pickNo')
 
+        print('serialNo = ',serialNo)
+
         if not serialNo:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
@@ -14418,6 +14420,7 @@ def outward_scan_serial_no_process(request):
         filtered_product.bin_number.id,
         picklistNo])
 
+        print('list_to_send = ',list_to_send)
         return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
         
     except Exception as e:
@@ -15044,17 +15047,22 @@ def process_serial_no_for_return_sales_ajax(request):
 
                 main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
 
+                session_bin_data = request.session.get('bin_data', {})
+
                 bins_related_to_product = []
 
                 for bin_obj in finished_product_warehouse_bin.objects.filter(sub_catergory_id__in=main_cats_all):
 
                     product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False).count()
 
+                    temp_session_qty = session_bin_data.get(str(bin_obj.id), 0)
+                    total_count = product_count + temp_session_qty
+
                     bins_related_to_product.append({
                             'bin_id': bin_obj.id,
                             'bin_name': bin_obj.bin_name,
                             'bin_size': bin_obj.product_size_in_bin,
-                            'products_in_bin': product_count
+                            'products_in_bin': total_count
                         })
 
 
@@ -15087,34 +15095,41 @@ def return_product_with_bin_ajax(request):
         bin_no = request.GET.get('binNo')
         serial_no = request.GET.get('serialno')
 
-        bin_name = get_object_or_404(finished_product_warehouse_bin, pk=bin_no)
+        bin_obj = get_object_or_404(finished_product_warehouse_bin, pk=bin_no)
         product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_sku)
 
-        reference_no = product_instance.Product.Product_Refrence_ID if product_instance.Product.Product_Refrence_ID else None
-        model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
-        product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
-        product_sku = product_instance.PProduct_SKU
-        product_color = product_instance.PProduct_color.color_name if product_instance.PProduct_color else None
-        product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
-        bin_id = bin_no
-        bin_name = bin_name.bin_name
-        serialno = serial_no
+        session_bin_data = request.session.get('bin_data', {})
+
+        bin_capacity = bin_obj.product_size_in_bin
+        product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_no, outward_done=False).count()
+
+        temp_assigned = session_bin_data.get(str(bin_no), 0)
+        total_count = product_count + temp_assigned
+
+        if total_count + 1 > bin_capacity:
+            return JsonResponse({'error': f"Cannot add to bin '{bin_obj.bin_name}'. Bin capacity exceeded!"}, status=400)
+
+        session_bin_data[str(bin_no)] = temp_assigned + 1
+        request.session['bin_data'] = session_bin_data
+        request.session.modified = True
 
         return JsonResponse({
-                        'reference_no':reference_no,
-                        'model_name': model_name,
-                        'product_name': product_name,
-                        'product_sku': product_sku,
-                        'product_color': product_color,
-                        'product_image': product_image,
-                        'bin_id':bin_id,
-                        'bin_name':bin_name,
-                        'serialno':serialno
-        },status=200)
+            'reference_no': product_instance.Product.Product_Refrence_ID or None,
+            'model_name': product_instance.Product.Model_Name or None,
+            'product_name': product_instance.Product.Product_Name or None,
+            'product_sku': product_instance.PProduct_SKU,
+            'product_color': product_instance.PProduct_color.color_name if product_instance.PProduct_color else None,
+            'product_image': product_instance.PProduct_image.url if product_instance.PProduct_image else None,
+            'bin_id': bin_no,
+            'bin_name': bin_obj.bin_name,
+            'serialno': serial_no,
+            'message': f"Product added to bin {bin_obj.bin_name} successfully."
+        }, status=200)
 
     except Exception as e:
         logger.error(f"Error in return_product_with_bin_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
 
 
 
@@ -15205,11 +15220,35 @@ def return_product_with_bin_ajax(request):
 
 def sales_return_inward_to_bin(request,r_id=None):
     
+    if 'bin_data' in request.session:
+        del request.session['bin_data']
+        request.session.modified = True
+
+
     if r_id:
         instance_queryset = sales_return_inward.objects.get(id=r_id)
         master_form = salesreturninwardmasterform(request.POST or None,instance=instance_queryset)
-        formset = sales_return_product_formset(request.POST or None,instance=instance_queryset)
+        formset = sales_return_product_formset_update(request.POST or None,instance=instance_queryset)
+
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = master_form.instance.sales_voucher_master.sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no','party_name__name'
+        )
+
+        list_to_sent_for_outward_data = [] 
+
+        for data in outward_queryset:
+            list_to_sent_for_outward_data.append({
+                'PProduct_SKU': data['outward_no__outward_product__product__PProduct_SKU'],
+                'PProduct_image': data['outward_no__outward_product__product__PProduct_image'],
+                'Product_Refrence_ID': data['outward_no__outward_product__product__Product__Product_Refrence_ID'],
+                'PProduct_color': data['outward_no__outward_product__product__PProduct_color__color_name'],
+                'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
+                'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
+                'Quantity': data['outward_no__outward_product__quantity'],
+                'unique_serial_no': data['outward_no__outward_product__unique_serial_no']
+            })
+
     else:
+        list_to_sent_for_outward_data = None
         instance_queryset=None
         master_form = salesreturninwardmasterform()
         formset = sales_return_product_formset()
@@ -15247,17 +15286,19 @@ def sales_return_inward_to_bin(request,r_id=None):
                             form_instance.sales_return_inward_instance = master_form_instance
                             form_instance.save()
 
-                return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id]))
+                            
+
+                return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id,0]))
                 
             except Exception as e:
                 print(e)
-    return render(request,'accounts/sales_return_inward.html',{'master_form':master_form,'formset':formset})
+    return render(request,'accounts/sales_return_inward.html',{'master_form':master_form,'formset':formset,'list_to_sent_for_outward_data':list_to_sent_for_outward_data})
 
 
 
 
 def sale_return_list(request):
-    queryset = sales_return_inward.objects.all()
+    queryset = sales_return_inward.objects.all().annotate(total_qty = Sum('sales_return_product__scan_qty'))
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
 
 
@@ -15328,7 +15369,7 @@ def sale_return_list(request):
 
 
 
-def sales_return_voucher_create_update(request, s_id, sr_id, sv_id=None):
+def sales_return_voucher_create_update(request, s_id=None, sr_id=None, sv_id=None):
     
 
     if sv_id:
@@ -15344,7 +15385,7 @@ def sales_return_voucher_create_update(request, s_id, sr_id, sv_id=None):
         )
         formset = sales_return_voucher_formset_create(instance=master_form_data_instance, prefix="sale_return_forms")
         
-        master_form_data = None
+        master_form_data = get_object_or_404(sales_return_inward, id=master_form_data_instance.sales_return_inward_instance.id)
     else:
         # Create new sales return voucher
         products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
@@ -15389,7 +15430,7 @@ def sales_return_voucher_create_update(request, s_id, sr_id, sv_id=None):
         )
         formset = sales_return_voucher_formset_create(initial=product_list, prefix="sale_return_forms")
 
-        # Fetch sales return inward data
+        
         master_form_data = get_object_or_404(sales_return_inward, id=sr_id)
 
     if request.method == 'POST':
@@ -15427,7 +15468,7 @@ def sales_return_voucher_create_update(request, s_id, sr_id, sv_id=None):
     return render(request, 'accounts/sales_return_create_update.html', {
         'master_form_data': master_form_data,
         'formset': formset,
-        'master_form':master_form
+        'master_form':master_form,
     })
 
 

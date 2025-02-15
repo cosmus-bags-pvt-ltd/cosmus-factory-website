@@ -1310,7 +1310,8 @@ class outward_products(models.Model):
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     quantity = models.IntegerField(default = 1)
 
-
+    class Meta:
+        unique_together = [['outward_no', 'unique_serial_no']]
 
 
 class Picklist_process_in_outward(models.Model):

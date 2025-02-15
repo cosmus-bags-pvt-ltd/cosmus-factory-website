@@ -12,15 +12,15 @@
       <span id="purchaseError" class="error-messages"></span>
       <div class="d-flex">
         <label for="id_sales_return_no" class="me-1">Sales Return No :</label>
-        <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="" maxlength="255" required>
+        <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{master_form.instance.sales_return_no}}" maxlength="255" required>
       </div>
 
       <span id="SupplierError" class="error-messages"></span>
       <div class="d-flex ms-2">
         <label for="id_sales_voucher_master" class="me-1">Sales No :</label>
         {% if master_form.instance.id %}
-        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="">
-        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="" maxlength="255" required>
+        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="{{master_form.instance.sales_voucher_master.id}}">
+        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="{{master_form.instance.sales_voucher_master.sale_no}}" maxlength="255" required>
         {% elif not master_form.instance.id %}
         <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="" >
         <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="" maxlength="255" required>
@@ -206,9 +206,25 @@
                 </tr>
             </thead>
             <tbody class="mainTableList" >
-                <tr>
+                
                     
-                </tr>
+                    {% if master_form.instance.id %}
+                    {% for data in list_to_sent_for_outward_data %}
+                    <tr>
+                        
+                      <td>{{forloop.counter}}</td>
+                      <td><img src="{{ data.PProduct_image }}" alt=""></td>
+                      <td>{{data.Product_Refrence_ID}}</td>
+                      <td>{{data.Model_Name}}</td>
+                      <td>{{data.PProduct_color}}</td>
+                      <td>{{data.PProduct_SKU}}</td>
+                      <td>{{data.unique_serial_no}}</td>
+                      <td>{{data.Bin_Name}}</td>
+                      <td>{{data.Quantity}}</td>
+                    </tr>
+                    {% endfor %}                   
+                    {% endif %}
+            
             </tbody>
             
         </table>

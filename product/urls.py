@@ -389,5 +389,4 @@ urlpatterns = [
     path('returnproductwithbinajax/', views.return_product_with_bin_ajax, name='return-product-with-bin-ajax'),
     path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/<int:sv_id>/', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
 
-]   
-
+]
