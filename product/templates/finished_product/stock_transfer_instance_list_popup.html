@@ -401,11 +401,19 @@
                 // Extract product SKU from response
                 const productSku = response.product_sku;
                 const mainsku = document.querySelectorAll('[name$="-product_sku"]');
-                console.log(productSku, typeof(productSku))
+                const stockTransferSku = document.querySelectorAll('[name$="-stock_transfer_sku"]');
+                console.log('tets',productSku, typeof(productSku))
                
               
                 let isMatch = false;
                 mainsku.forEach(function (item) {
+                    const sku = parseInt(item.value);
+                    console.log(sku, typeof(sku))
+                    if (sku === productSku) {
+                        isMatch = true;
+                    }
+                });
+                stockTransferSku.forEach(function (item) {
                     const sku = parseInt(item.value);
                     console.log(sku, typeof(sku))
                     if (sku === productSku) {

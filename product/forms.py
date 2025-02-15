@@ -1358,6 +1358,7 @@ class sales_return_product_form(forms.ModelForm):
         fields = ['product','unique_serial_no','bin_number','scan_qty']
 
 sales_return_product_formset = inlineformset_factory(sales_return_inward,sales_return_product,form = sales_return_product_form,extra=1, can_delete=True)
+sales_return_product_formset_update = inlineformset_factory(sales_return_inward,sales_return_product,form = sales_return_product_form,extra=0, can_delete=True)
 
 
 
