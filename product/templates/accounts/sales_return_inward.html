@@ -251,50 +251,55 @@
    $(document).ready(function(){
 
         $('#id_sales_voucher_master_name').on('blur',function(){
-            var saleNo = $(this).val();
-            if(saleNo !== ''){
-                $.ajax({
-                url: '/otwarddataforsalereturnajax/',
-                type: 'GET',
-                data: { 
-                    'saleNo':saleNo,
-                },
-                success: function(response){
-                    let counter = 1;
-                    var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
-                    salesOutward.empty(); // Clear previous data
-                    $('#inwordSerialNo').focus();
-                    $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
-                    $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
-                    $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
-                    $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
-                    $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
-            
-                    response.list_to_sent.forEach(item => {
-                        var newRow = $(`
-                            <tr>
-                                <td><span class="">${counter}</span></td>
-                                <td><img src=${item.PProduct_image} alt="img" width="25px"></td>
-                                <td><span class="modelName">${item.Product_Refrence_ID || "N/A"}</span></td>
-                                <td><span class="modelName">${item.Model_Name || "N/A"}</span></td>
-                                <td><span class="color">${item.PProduct_color || "N/A"}</span></td>
-                                <td><span class="sku">${item.PProduct_SKU || "N/A"}</span></td>
-                                <td><span class="balanceqty text-center">${item.unique_serial_no || "N/A"}</span></td> 
-                                <td><span class="balanceqty text-center">${item.Bin_Name || "N/A"}</span></td> 
-                                <td><span class="qty text-center">${item.Quantity || 0}</span></td>
-                            </tr>
-                        `);
-                        salesOutward.append(newRow);
-                        counter++;
-                    });
+            var salesId = $('#id_sales_return_product_set-0-id').val();
+            console.log('salesId',salesId)
+            if(salesId === ''){
+                var saleNo = $(this).val();
+                if(saleNo !== ''){
+                    $.ajax({
+                    url: '/otwarddataforsalereturnajax/',
+                    type: 'GET',
+                    data: { 
+                        'saleNo':saleNo,
                     },
-                    error:function(error){
-                    console.log(error)
+                    success: function(response){
+                        let counter = 1;
+                        var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
+                        salesOutward.empty(); // Clear previous data
+                        $('#inwordSerialNo').focus();
+                        $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
+                        $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
+                        $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
+                        $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
+                        $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
+                
+                        response.list_to_sent.forEach(item => {
+                            var newRow = $(`
+                                <tr>
+                                    <td><span class="">${counter}</span></td>
+                                    <td><img src=${item.PProduct_image} alt="img" width="25px"></td>
+                                    <td><span class="modelName">${item.Product_Refrence_ID || "N/A"}</span></td>
+                                    <td><span class="modelName">${item.Model_Name || "N/A"}</span></td>
+                                    <td><span class="color">${item.PProduct_color || "N/A"}</span></td>
+                                    <td><span class="sku">${item.PProduct_SKU || "N/A"}</span></td>
+                                    <td><span class="balanceqty text-center">${item.unique_serial_no || "N/A"}</span></td> 
+                                    <td><span class="balanceqty text-center">${item.Bin_Name || "N/A"}</span></td> 
+                                    <td><span class="qty text-center">${item.Quantity || 0}</span></td>
+                                </tr>
+                            `);
+                            salesOutward.append(newRow);
+                            counter++;
+                        });
+                        },
+                        error:function(error){
+                        console.log(error)
+                    }
+                    }) 
+                }else{
+                    $(this).focus()
                 }
-                }) 
-            }else{
-                $(this).focus()
             }
+            
             
         })
 

@@ -1,5 +1,6 @@
 {% extends 'product/base.html' %} 
-{% load static %} 
+{% load static %}
+
 {% block body %}
 
 <div>
@@ -9,7 +10,7 @@
         <div class="d-flex mb-3">
           <div class="d-flex mb-3">
             <div class="d-flex">
-                <label for="id_sales_return_no" class="me-2">Sales Return No:</label>
+                <label for="id_sales_return_no" class="me-2">Sales Return No :</label>
                 {% if master_form.instance.id %}
                     <input type="hidden" class="purchase-vNo" name="sales_return_inward_instance" id="id_sales_return_inward_instance" value="{{ master_form.instance.sales_return_inward_instance.id }}">
                     <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{ master_form.instance.sales_return_inward_instance.sales_return_no }}" maxlength="255" readonly>
@@ -20,7 +21,7 @@
             </div>
         
             <div class="d-flex ms-3">
-                <label for="id_sales_voucher_master" class="ms-2 me-2">Sales No :</label>
+                <label for="id_sale_no" class="ms-2 me-2">Sales No :</label>
                 {% if master_form.instance.pk %}
                     <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{ master_form.instance.sales_voucher_master.id }}">
                     <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form.instance.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
@@ -36,11 +37,11 @@
         </div>
 
         <div class="d-flex ms-3">
+            <label for="id_ledger_type" class="ms-2 me-2">ledger Type :</label>
           {% if master_form.instance.pk %}
-          <label for="id_ledger_type" class="ms-2 me-2">ledger Type :</label>
           <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.sales_return_inward_instance.ledger_type}}" maxlength="50" default='Sales Return' readonly>
           {% elif not master_form.instance.id %}
-          <label for="id_ledger_type" class="ms-2 me-2">ledger Type :</label>
+      
           <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form_data.ledger_type}}" maxlength="50" default='Sales Return' readonly>
           {% endif %}
           
@@ -48,33 +49,32 @@
       </div>
       <div class="mb-3 d-flex">
         <div class="">
+            <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
           {% if master_form.instance.pk %}
-          <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
+        
           <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
           {% elif not master_form.instance.id %}
-          <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
           <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.selected_warehouse.warehouse_name_finished}}" readonly > 
           {% endif %}
                    
         </div>
 
         <div class="d-flex ms-3">
+            <label for="id_party_name" class=" ms-2 me-2">Party A/C Name:</label>
           {% if master_form.instance.pk %}
-          <label for="id_party_name" class=" ms-2 me-2">Party A/C Name:</label>
           <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
           {% elif not master_form.instance.id %}
-          <label for="id_party_name" class=" ms-2 me-2">Party A/C Name:</label>
           <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form_data.party_name.name}}" readonly>
           {% endif %}
           
     
         </div>
         <div class="d-flex ms-3">
+            <label for="id_GST_number" class="ms-2 me-2">Party GST No :</label>
           {% if master_form.instance.pk %}
-          <label for="id_GST_number" class="ms-2 me-2">Party GST No :</label>
+         
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form.instance.sales_voucher_master.party_name.Gst_no }}" maxlength="15" readonly required>
           {% elif not master_form.instance.id %}
-          <label for="id_GST_number" class="ms-2 me-2">Party GST No :</label>
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form_data.party_name.Gst_no }}" maxlength="15" readonly required>
           {% endif %}
           
@@ -254,7 +254,7 @@
 
         <div class=" mb-2">
           {% if master_form.instance.pk %}
-          <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form.instance.sales_voucher_master.cash_disct}}" maxlength="50" step=".01">% </label>
+          <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form.instance.sales_voucher_master.cash_disct}}" maxlength="50" step=".01" readonly>% </label>
           
           {% elif not master_form.instance.id %}
           <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form_data.sales_voucher_master.cash_disct}}" maxlength="50" step=".01">% </label>
@@ -292,530 +292,301 @@
     </div>
   </div>
 </div>
+{% if master_form.instance.pk %}
+<button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick" style="display: none;">Submit</button>
+{% elif not master_form.instance.id %}
 <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
-
-
+{% endif %}
 </div>
 
 <script>
+    // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
+    function getGstNo() {
+        let partyGstValue = document.getElementById('id_GST_number').value;
+        let comapnyGst = document.getElementById('id_company_gst').value;
 
-// This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
-function getGstNo() {
- let partyGstValue = document.getElementById('id_GST_number').value;
- let comapnyGst = document.getElementById('id_company_gst').value;
+            comapnyGst = comapnyGst.toString();
+            partyGstValue = partyGstValue.toString();
 
-     comapnyGst = comapnyGst.toString();
-     partyGstValue = partyGstValue.toString();
+        const newCompanyGst = comapnyGst.slice(0,2);
+        const newPartyGst = partyGstValue.slice(0,2);
+        return newCompanyGst === newPartyGst;
+    }
 
- const newCompanyGst = comapnyGst.slice(0,2);
- const newPartyGst = partyGstValue.slice(0,2);
- return newCompanyGst === newPartyGst;
-}
-
-
-
-$(document).ready(function(){
-
-// $(document).on('change', 'select[name^="party_name"]', function () {
-
-//  const selected_party_name = $(this).val()
-//  const int_selected_party_name = parseInt(selected_party_name)
-
-//  $.ajax({
-//      url: '/purchasevouchercreate/',
-//      method: 'GET',
-//      data: {
-//          'selected_party_name': selected_party_name,
-//      },
-//      success: function (response) {
-//          const party_gst_no_response = response.party_gst_no
-//          const gst_no_input = document.getElementById('id_GST_number')
-//          gst_no_input.value = party_gst_no_response
-//          getGstNo()
-//          calculateTotalAmount()
-   
-//      },
-//      error: function (xhr, errmsg, err) {
-//          console.log('Error sending value to the backend');
-//      }
-//  })
-// })
-})
-</script>
-<script>
-
-
- function bindRowListeners(row) {
-     const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
-     const salePriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');;
-     const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
-     const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
-     
-     if (quantityInput) {
-         quantityInput.addEventListener('input', calculateTotalAmount);
-     }
-     if (salePriceInput) {
-       salePriceInput.addEventListener('input', calculateTotalAmount);
-     }
-     if (saletreadInput) {
-       saletreadInput.addEventListener('input', calculateTotalAmount);
-     }
-     if (saleSplInput) {
-       saleSplInput.addEventListener('input', calculateTotalAmount);
-       saleSplInput.addEventListener('input',calculateTaxSummary);
-     }
- }
-
-
-
-//  function getVisibleRows() {
-//  // Select all rows that are not hidden (excluding those with display: none)
-//  const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
-//  return visibleRows;
-// }
-// function deleteRowData(){
-//  // Add click event listener to all delete buttons
-//  document.querySelectorAll('.delete-btn').forEach(function (button) {
-//  button.addEventListener('click', function () {
-//      // Find all rows in the table
-//      const rows =  getVisibleRows();
-//      console.log(rows)
-//      // Check if more than one row exists
-//      if (rows.length > 1) {
-//          // Find the row containing the clicked delete button
-//          const row = this.closest('tr');
-
-//          if (row) {
-//              // Find the checkbox for deletion in the row
-//              const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
-
-//              if (checkRow) {
-//                  checkRow.checked = true; // Mark as checked
-//                  checkRow.value = 'true'; // Set the value to 'true'
-
-//                  // Optionally hide the row visually
-//                  row.style.display = 'none';
-
-//                  // Call functions to recalculate totals or perform other updates
-//                  calculateTotalAmount();
-//                  calculateOtherTotal();
-//                  inputCheck();
-                 
-//              } else {
-//                  console.error("Checkbox for deletion not found in this row");
-//              }
-//          }
-//      } else {
-//          // If only one row remains, alert the user
-//          alert('Cannot delete this row; at least one row must remain.');
-//      }
-//  });
-// });
-// };
-
-function calculateTotalAmount() {
-     let total = 0; 
-     let totalQty = 0;
-     let newGst =0;
-     let newCgst = 0;
-     let totalCgst =0;
-     let newSgst = 0;
-     let totalSgst =0;
-     let grandTotal = 0;
-     let grandTotalAmount = 0;
-     let newTotalAmount;
-     // Iterate through each row
-     const rows = Array.from(document.querySelectorAll('#salesbody tr'))
-     .filter(row => row.style.display !== 'none');
-   
-     rows.forEach(function(row) {
-         // Find the quantity, rate, and amount input fields for the current row
-         const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
-         const customPriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');
-         const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
-         const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
-         const amountInput = row.querySelector('.total-amount[name^="sale_return_forms-"][name$="-amount"]');
-         const gstValue = row.querySelector('.purchase-gst[name^="sale_return_forms-"][name$="-gst"]');
-         const cgstValue= row.querySelector('.purchase-cgst[name^="sale_return_forms-"][name$="-cgst"]');
-         const sgstValue= row.querySelector('.purchase-sgst[name^="sale_return_forms-"][name$="-sgst"]');
-         const totalAmountInput = row.querySelector('.purchase-total[name^="sale_return_forms-"][name$="-total_amount"]');
-      
-         // Get the values of quantity and rate
-         const quantity = parseFloat(quantityInput.value);
-         const rate = parseFloat(customPriceInput.value);
-         const tradeamount = parseFloat(saletreadInput.value)
-         const splAmount = parseFloat(saleSplInput.value);
-         const gst = parseFloat(gstValue.value);
+    function bindRowListeners(row) {
+        const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
+        const salePriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');;
+        const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
+        const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
         
-         // Calculate the amount for the current row
-         const amount = quantity * rate;
-         const tradeDisc = amount * tradeamount/100;
-         const newAmount = amount - tradeDisc;
+        if (quantityInput) {
+                quantityInput.addEventListener('input', calculateTotalAmount);
+        }
+        if (salePriceInput) {
+            salePriceInput.addEventListener('input', calculateTotalAmount);
+        }
+        if (saletreadInput) {
+            saletreadInput.addEventListener('input', calculateTotalAmount);
+        }
+        if (saleSplInput) {
+            saleSplInput.addEventListener('input', calculateTotalAmount);
+            saleSplInput.addEventListener('input',calculateTaxSummary);
+        }
+    }
 
-         const splDisc = newAmount * splAmount/100;
-         const addsplAmount = newAmount -splDisc;
-   
-         totalQty  += quantity;
-
-         // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst
-         if(getGstNo()){ 
-
-         newTotalAmount = addsplAmount / (1 + gst / 100);
-         const totalGst = addsplAmount - newTotalAmount;
+    function calculateTotalAmount() {
+        let total = 0; 
+        let totalQty = 0;
+        let newGst =0;
+        let newCgst = 0;
+        let totalCgst =0;
+        let newSgst = 0;
+        let totalSgst =0;
+        let grandTotal = 0;
+        let grandTotalAmount = 0;
+        let newTotalAmount;
+        // Iterate through each row
+        const rows = Array.from(document.querySelectorAll('#salesbody tr'))
+        .filter(row => row.style.display !== 'none');
     
-         newCgst = totalGst / 2;
-         newSgst = totalGst / 2;
+        rows.forEach(function(row) {
+            // Find the quantity, rate, and amount input fields for the current row
+            const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
+            const customPriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');
+            const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
+            const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
+            const amountInput = row.querySelector('.total-amount[name^="sale_return_forms-"][name$="-amount"]');
+            const gstValue = row.querySelector('.purchase-gst[name^="sale_return_forms-"][name$="-gst"]');
+            const cgstValue= row.querySelector('.purchase-cgst[name^="sale_return_forms-"][name$="-cgst"]');
+            const sgstValue= row.querySelector('.purchase-sgst[name^="sale_return_forms-"][name$="-sgst"]');
+            const totalAmountInput = row.querySelector('.purchase-total[name^="sale_return_forms-"][name$="-total_amount"]');
         
-         cgstValue.value = isNaN(newCgst) ? '' : newCgst.toFixed(2);
-         sgstValue.value = isNaN(newSgst) ? '' : newSgst.toFixed(2);
+            // Get the values of quantity and rate
+            const quantity = parseFloat(quantityInput.value);
+            const rate = parseFloat(customPriceInput.value);
+            const tradeamount = parseFloat(saletreadInput.value)
+            const splAmount = parseFloat(saleSplInput.value);
+            const gst = parseFloat(gstValue.value);
+            
+            // Calculate the amount for the current row
+            const amount = quantity * rate;
+            const tradeDisc = amount * tradeamount/100;
+            const newAmount = amount - tradeDisc;
 
-         totalCgst +=  newCgst;
-         totalSgst +=  newSgst;
-       
-         total += newTotalAmount; 
-         grandTotal = newTotalAmount + newCgst + newSgst;
-       
-       
-     
-        }else{
-         cgstValue.value = ''
-         newTotalAmount =  addsplAmount / (1 + gst / 100);
-         const totalIgst = addsplAmount - newTotalAmount;
-   
-         sgstValue.value = isNaN(totalIgst) ? '' : totalIgst.toFixed(2);
-         totalSgst += totalIgst;
-         total +=  newTotalAmount;  
-         grandTotal = newTotalAmount + totalIgst ;
-        
-     }
-         amountInput.value = isNaN(newTotalAmount) ? '' : newTotalAmount.toFixed(2);
-         totalAmountInput.value = isNaN(grandTotal) ? '' : grandTotal.toFixed(2); 
-       
-         grandTotalAmount += grandTotal; 
-        
-     }); 
-  
-         document.getElementById('id_grand_taxableAmount').value = isNaN(total) ? '' :total.toFixed(2);
-         document.getElementById('id_grand_quantity').value = isNaN(totalQty) ? '' :totalQty.toFixed(2);
-         document.getElementById('id_grand_cgst').value = isNaN(totalCgst) ? '' :totalCgst.toFixed(2);
-         document.getElementById('id_grand_sgst').value = isNaN(totalSgst) ? '' : totalSgst.toFixed(2);
-         document.getElementById('id_grand_amount').value =isNaN(grandTotalAmount) ? '' : grandTotalAmount.toFixed(2);   
-         calculateOtherTotal()   
- }
-
-
-  function calculateOtherTotal(grandTotal) {
-  
-    const grandTotals = parseFloat(document.getElementById('id_grand_amount').value);
-    let  grossTotal = grandTotals;      
- 
-     // Set the calculated gross total value to the gross total input field
-    document.getElementById('id_gross_total').value =isNaN(grossTotal) ? '' : grossTotal.toFixed(2);
-
-    const cashDiscount = parseInt(document.getElementById('id_cash_disct').value);
-  
-    const taxablevalue = parseFloat(document.getElementById('id_grand_taxableAmount').value);
-
-    let cashdisc = taxablevalue * cashDiscount / 100;
-
-    document.getElementById('id_cash_disct_value').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
-    const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
-
-    let finalTotal = grossTotal - cashdisc + frightTransport;
-
-    document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
-
-      
-    let finalTotals = Math.round(finalTotal)
-    let roundOff = finalTotals - finalTotal;
-
-     document.getElementById('id_round_off').value =isNaN(roundOff) ? '' : roundOff.toFixed(2);
-     document.getElementById('id_grand_total').value = isNaN(finalTotals) ? '' : finalTotals.toFixed(2);
-  }
-    // Call the function initially to calculate total amount, GST, and grand total on page load
-      // Add onchange event handler to id_fright_transport
-  document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
-  document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
-  document.getElementById('id_cash_disct').addEventListener('input', calculateOtherTotal);
- 
-  function calculateTaxSummary(){
-    const row = document.querySelectorAll('#salesbody tr')
-    const taxSummary = {}; 
-    const isGstMatching = getGstNo();
-
-    row.forEach(row => {
-      if (row.style.display === 'none') return; // Skip hidden rows
-      const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
-      const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
-  
-      if (!taxSummary[gstRate]) {
+            const splDisc = newAmount * splAmount/100;
+            const addsplAmount = newAmount -splDisc;
     
-        taxSummary[gstRate] = {
-          taxableValue: 0,
-          cgst: 0,
-          sgst: 0
-        };
-      }
-      taxSummary[gstRate].taxableValue += taxableValue;
+            totalQty  += quantity;
 
-      if (isGstMatching) {
-        // GST numbers match: split equally into CGST and SGST
-        taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
-        taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
-      } else {
-        // GST numbers do not match: treat all as SGST (or IGST)
-        taxSummary[gstRate].cgst += 0; // No CGST
-        taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
-      }
-      
-   })
+            // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst
+            if(getGstNo()){ 
 
-   const taxSummaryBody = document.querySelector('#taxSummary .mainTableList');
-    taxSummaryBody.innerHTML = ''; // Clear previous summary
-    let totalAmount = 0; // To calculate total amount
-    let totalTaxAmount = 0;
-    let totalcgstAmount = 0;
-    let totalsgstAmount = 0;
+                newTotalAmount = addsplAmount / (1 + gst / 100);
+                const totalGst = addsplAmount - newTotalAmount;
+            
+                newCgst = totalGst / 2;
+                newSgst = totalGst / 2;
+                
+                cgstValue.value = isNaN(newCgst) ? '' : newCgst.toFixed(2);
+                sgstValue.value = isNaN(newSgst) ? '' : newSgst.toFixed(2);
 
-
-    Object.keys(taxSummary).forEach(rate => {
-     const { taxableValue, cgst, sgst } = taxSummary[rate];
-     const total = taxableValue + cgst + sgst; // Total amount for this GST rate
-     totalAmount += total;
-     totalTaxAmount +=taxableValue;
-     totalcgstAmount += cgst;
-     totalsgstAmount += sgst;
-     let row;
-     if (isGstMatching) {
-       // GST numbers match: show both CGST and SGST rates
-       row = `
-         <tr>
-           <td>${taxableValue.toFixed(2)}</td>
-           <td>${rate / 2}%</td>
-           <td>${cgst.toFixed(2)}</td>
-           <td>${rate / 2}%</td>
-           <td>${sgst.toFixed(2)}</td>
-           <td>${total.toFixed(2)}</td>
-         </tr>
-       `;
-     } else {
-       // GST numbers do not match: show only SGST/IGST
-       row = `
-         <tr>
-           <td>${taxableValue.toFixed(2)}</td>
-           <td class="">0%</td>
-           <td  class="">0.00</td>
-           <td>${rate}%</td>
-           <td>${sgst.toFixed(2)}</td>
-           <td>${total.toFixed(2)}</td>
-         </tr>
-       `;
-     }
-
-     taxSummaryBody.insertAdjacentHTML('beforeend', row);
-   });
-   const totalRow = `
-   <tr class="Total">
-     <td class=" fw-bold">${totalTaxAmount.toFixed(2)}</td>
-     <td></td>
-     <td class=" fw-bold">${totalcgstAmount.toFixed(2)}</td>
-     <td></td>
-     <td class="fw-bold">${totalsgstAmount.toFixed(2)}</td>
-     <td class="fw-bold">${totalAmount.toFixed(2)}</td>
-   </tr>
- `;
- taxSummaryBody.insertAdjacentHTML('beforeend', totalRow);
-   }
-
-
- document.addEventListener("DOMContentLoaded", function () {
-   calculateTaxSummary()
-  document.querySelectorAll('[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
-     input.addEventListener('input', function(){
-       calculateTotalAmount();
-       calculateOtherTotal();
-
-     });
-   });
-     document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
-     input.addEventListener('input', function(){
-       calculateTaxSummary();
+                totalCgst +=  newCgst;
+                totalSgst +=  newSgst;
+        
+                total += newTotalAmount; 
+                grandTotal = newTotalAmount + newCgst + newSgst;
     
-     });
-     });
+            }else{
+                cgstValue.value = ''
+                newTotalAmount =  addsplAmount / (1 + gst / 100);
+                const totalIgst = addsplAmount - newTotalAmount;
+        
+                sgstValue.value = isNaN(totalIgst) ? '' : totalIgst.toFixed(2);
+                totalSgst += totalIgst;
+                total +=  newTotalAmount;  
+                grandTotal = newTotalAmount + totalIgst ;
+            
+            }
 
-    const table = document.getElementById("salesreturnTable");
-    const salesTotal = document.getElementById('saleTotal');
-
-   // Prevent Enter key from submitting the form inside table inputs
-   table.addEventListener("keydown", function (event) {
-       if (event.key === "Enter" && event.target.tagName === "INPUT") {
-           event.preventDefault(); // Prevent form submission
-
-       }
-   });
-   salesTotal.addEventListener("keydown", function (event) {
-       if (event.key === "Enter" && event.target.tagName === "INPUT") {
-           event.preventDefault(); // Prevent form submission
-           console.log(`Enter key prevented on input: ${event.target.id}`);
-
-       }
-   });
-   
-//    window.onload = function() {
-//             document.getElementById("id_sale_no").focus();
-//         };
-//    inputCheck()
- })
- 
-
-// function inputCheck(){
-
-//   const qtyValues = document.querySelectorAll('[name$="-quantity"]')
-//   var tableRows = document.querySelectorAll('#salesreturnTable .mainTableList tr');
-//   const saleNo = document.getElementById('id_sale_no');
-//   const warhouseNo = document.getElementById('id_selected_warehouse');
-//   const partyName = document.getElementById('id_party_name');
-//   const cashdic = document.getElementById('id_cash_disct');
-//   const submitbtn = document.getElementById('parentFormClick')
-
-//   if(saleNo){
-//     saleNo.addEventListener('keydown',function(event){
-//             if(event.key === "Tab"){
-//                 event.preventDefault()
-          
-//                 if(saleNo.value === ''){
-      
-//                   saleNo.focus();
-//                     return;
-//                 }else{
-//                   warhouseNo.focus() ;
-//                 }
-              
-//             }
-//         })
-//   }
-//   if(warhouseNo){
-//     warhouseNo.addEventListener('keydown',function(event){
-//             if(event.key === "Tab"){
-//                 event.preventDefault()
-          
-//                 if(warhouseNo.value === ''){
-      
-//                   warhouseNo.focus();
-//                     return;
-//                 }else{
-//                   partyName.focus() ;
-//                 }
-              
-//             }
-//         })
-//   } 
-
-//   if(partyName){
-//     partyName.addEventListener('keydown',function(event){
-//             if(event.key === "Tab"){
-//                 event.preventDefault()
-          
-//                 if(partyName.value === ''){
-      
-//                   partyName.focus();
-//                     return;
-//                 }else{
-//                   var tableRow = document.querySelectorAll('#salesreturnTable .mainTableList tr');
-//                 for (let row of tableRow) {
-//                     var spdisc = row.querySelector('[name$="-spl_disct"]');
-//                     var trDisc = row.querySelector('[name$="-trade_disct"]');
-
-//                     if (trDisc && trDisc.value === '') {
-//                       trDisc.focus();
-//                         return; 
-//                     } 
-//                     // Check if quantity is empty, then focus on it
-//                     else if (spdisc && spdisc.value === '') {
-//                       spdisc.focus();
-//                         return; 
-//                     }
-//                 }
-//                 }
-              
-//             }
-//         })
-//   }
-
-
-//   tableRows.forEach(function (row, index) {
-//     const rate = row.querySelector('[name$="-spl_disct"]');
-//     const tredDisc = row.querySelector('[name$="-trade_disct"]');
-
-//     if (tredDisc) {
-//         tredDisc.addEventListener('keydown', function (event) {
-//             if (event.key === "Tab") {
-//                 event.preventDefault(); // Prevent default tabbing behavior
-
-//                 if (tredDisc.value === '') {
-//                     tredDisc.focus(); // Focus on tredDisc if it's empty
-//                     return; // Stop further processing
-//                 } else if (rate) {
-//                     rate.focus(); // Focus on rate if tredDisc has a value
-//                 }
-//             }
-//         });
-//     }
-
-//     if (rate) {
-//         rate.addEventListener('keydown', function (event) {
-//             if (event.key === "Tab") {
-//                 event.preventDefault(); // Prevent default tabbing behavior
-
-//                 if (rate.value === '') {
-//                     rate.focus(); // Focus on rate if it's empty
-//                     return; // Stop further processing
-//                 } else {
-                   
-//                     var tableRow = document.querySelectorAll('#salesbody tr');
-//                       for (let row of tableRow) {
-//                           var itemInput = row.querySelector('[name$="-trade_disct"]');;
-//                           var qtyInput = row.querySelector('[name$="-spl_disct"]')
-
-//                           if (itemInput && itemInput.value === '') {
-//                               itemInput.focus();
-//                               return; 
-//                           } 
-//                           // Check if quantity is empty, then focus on it
-//                           else if (qtyInput && qtyInput.value === '') {
-//                               qtyInput.focus();
-//                               return; 
-//                           }
-//                       }
-//                 }
-//             }
-//         });
-//     }
-// });
+            amountInput.value = isNaN(newTotalAmount) ? '' : newTotalAmount.toFixed(2);
+            totalAmountInput.value = isNaN(grandTotal) ? '' : grandTotal.toFixed(2); 
+            grandTotalAmount += grandTotal; 
+        
+        }); 
   
-//   if(cashdic){
-//     cashdic.addEventListener('keydown', function (event) {
-//             if (event.key === "Tab") {
-//                 event.preventDefault(); // Prevent default tabbing behavior
-
-//                 if (cashdic.value === '') {
-//                   cashdic.focus(); // Focus on tredDisc if it's empty
-//                     return; // Stop further processing
-//                 } else {
-//                   submitbtn.focus()
-//                 }
-
-//             }
-//         });
-//   }
+        document.getElementById('id_grand_taxableAmount').value = isNaN(total) ? '' :total.toFixed(2);
+        document.getElementById('id_grand_quantity').value = isNaN(totalQty) ? '' :totalQty.toFixed(2);
+        document.getElementById('id_grand_cgst').value = isNaN(totalCgst) ? '' :totalCgst.toFixed(2);
+        document.getElementById('id_grand_sgst').value = isNaN(totalSgst) ? '' : totalSgst.toFixed(2);
+        document.getElementById('id_grand_amount').value =isNaN(grandTotalAmount) ? '' : grandTotalAmount.toFixed(2);   
+        calculateOtherTotal()   
+    }
 
 
-// }
-calculateTaxSummary()
- calculateTotalAmount();
- calculateOtherTotal();
-//  deleteRowData();
+    function calculateOtherTotal(grandTotal) {
+        const grandTotals = parseFloat(document.getElementById('id_grand_amount').value);
+        let  grossTotal = grandTotals;      
+    
+        // Set the calculated gross total value to the gross total input field
+        document.getElementById('id_gross_total').value =isNaN(grossTotal) ? '' : grossTotal.toFixed(2);
+
+        const cashDiscount = parseInt(document.getElementById('id_cash_disct').value);
+    
+        const taxablevalue = parseFloat(document.getElementById('id_grand_taxableAmount').value);
+
+        let cashdisc = taxablevalue * cashDiscount / 100;
+
+        document.getElementById('id_cash_disct_value').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
+        const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
+
+        let finalTotal = grossTotal - cashdisc + frightTransport;
+
+        document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
+
+        
+        let finalTotals = Math.round(finalTotal)
+        let roundOff = finalTotals - finalTotal;
+
+        document.getElementById('id_round_off').value =isNaN(roundOff) ? '' : roundOff.toFixed(2);
+        document.getElementById('id_grand_total').value = isNaN(finalTotals) ? '' : finalTotals.toFixed(2);
+    }
+  
+    document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
+    document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
+    document.getElementById('id_cash_disct').addEventListener('input', calculateOtherTotal);
+ 
+    function calculateTaxSummary(){
+        const row = document.querySelectorAll('#salesbody tr')
+        const taxSummary = {}; 
+        const isGstMatching = getGstNo();
+
+        row.forEach(row => {
+        if (row.style.display === 'none') return; // Skip hidden rows
+            const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
+            const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
+    
+            if (!taxSummary[gstRate]) {
+            
+                taxSummary[gstRate] = {
+                taxableValue: 0,
+                cgst: 0,
+                sgst: 0
+                };
+            }
+            taxSummary[gstRate].taxableValue += taxableValue;
+
+            if (isGstMatching) {
+                // GST numbers match: split equally into CGST and SGST
+                taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
+                taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
+            } else {
+                // GST numbers do not match: treat all as SGST (or IGST)
+                taxSummary[gstRate].cgst += 0; // No CGST
+                taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
+            }
+        
+        })
+
+        const taxSummaryBody = document.querySelector('#taxSummary .mainTableList');
+        taxSummaryBody.innerHTML = ''; // Clear previous summary
+        let totalAmount = 0; // To calculate total amount
+        let totalTaxAmount = 0;
+        let totalcgstAmount = 0;
+        let totalsgstAmount = 0;
+
+
+        Object.keys(taxSummary).forEach(rate => {
+            const { taxableValue, cgst, sgst } = taxSummary[rate];
+            const total = taxableValue + cgst + sgst; // Total amount for this GST rate
+            totalAmount += total;
+            totalTaxAmount +=taxableValue;
+            totalcgstAmount += cgst;
+            totalsgstAmount += sgst;
+            let row;
+            if (isGstMatching) {
+            // GST numbers match: show both CGST and SGST rates
+            row = `
+                <tr>
+                <td>${taxableValue.toFixed(2)}</td>
+                <td>${rate / 2}%</td>
+                <td>${cgst.toFixed(2)}</td>
+                <td>${rate / 2}%</td>
+                <td>${sgst.toFixed(2)}</td>
+                <td>${total.toFixed(2)}</td>
+                </tr>
+            `;
+            } else {
+            // GST numbers do not match: show only SGST/IGST
+            row = `
+                <tr>
+                <td>${taxableValue.toFixed(2)}</td>
+                <td class="">0%</td>
+                <td  class="">0.00</td>
+                <td>${rate}%</td>
+                <td>${sgst.toFixed(2)}</td>
+                <td>${total.toFixed(2)}</td>
+                </tr>
+            `;
+            }
+
+            taxSummaryBody.insertAdjacentHTML('beforeend', row);
+        });
+
+        const totalRow = `
+        <tr class="Total">
+            <td class=" fw-bold">${totalTaxAmount.toFixed(2)}</td>
+            <td></td>
+            <td class=" fw-bold">${totalcgstAmount.toFixed(2)}</td>
+            <td></td>
+            <td class="fw-bold">${totalsgstAmount.toFixed(2)}</td>
+            <td class="fw-bold">${totalAmount.toFixed(2)}</td>
+        </tr>
+        `;
+        taxSummaryBody.insertAdjacentHTML('beforeend', totalRow);
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        calculateTaxSummary()
+        document.querySelectorAll('[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
+            input.addEventListener('input', function(){
+                calculateTotalAmount();
+                calculateOtherTotal();
+
+            });
+        });
+        document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
+            input.addEventListener('input', function(){
+                calculateTaxSummary();
+            
+            });
+        });
+
+        const table = document.getElementById("salesreturnTable");
+        const salesTotal = document.getElementById('saleTotal');
+
+    // Prevent Enter key from submitting the form inside table inputs
+    table.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.tagName === "INPUT") {
+            event.preventDefault(); // Prevent form submission
+
+        }
+    });
+    salesTotal.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.tagName === "INPUT") {
+            event.preventDefault(); // Prevent form submission
+            console.log(`Enter key prevented on input: ${event.target.id}`);
+
+        }
+    });
+    
+    })
+
+
+    calculateTaxSummary()
+    calculateTotalAmount();
+    calculateOtherTotal();
+
 
 
 </script>

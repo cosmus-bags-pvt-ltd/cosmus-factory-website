@@ -44,9 +44,9 @@
  
 <div class="side-bar">
     <div class="menu">
-      <div class="item"><a href="{% url 'dashboard-main' %}" ><img src="../../../static/images/analytics.png" alt="Monitor Icon" style="width: 33px; padding-right: 10px;"><span>Dashboard</span></a></div>
+      <div class="item"><a href="{% url 'dashboard-main' %}" ><img src="{% static 'images/analytics.png' %}" alt="Icon" style="width: 33px; padding-right: 10px;"><span>Dashboard</span></a></div>
       <div class="item">
-        <a class="sub-btn" ><img src="../../../static/images/category.png" alt="menu Icon" style="width: 33px; padding-right: 10px;">
+        <a class="sub-btn" ><img src="{% static 'images/category.png' %}" alt="Icon" style="width: 33px; padding-right: 10px;">
           <span>Main Category</span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'pproductlist' %}" class="sub-item">Product</a>
@@ -55,7 +55,7 @@
       </div>
       </div>
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/list.png" alt="list Icon" style="width: 33px; padding-right: 10px;">
+        <a class="sub-btn"><img src="{% static 'images/list.png' %}" alt="Icon" style="width: 33px; padding-right: 10px;">
           <span>Sub Category</span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'simplecolorlist' %}" class="sub-item">Color</a>
@@ -70,7 +70,7 @@
         </div>
       </div> 
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/document.png" alt="document" style="width: 33px; padding-right: 10px;">
+        <a class="sub-btn"><img src="{% static 'images/document.png' %}" alt="icon" style="width: 33px; padding-right: 10px;">
           <span>Accounts</span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'account_sub_group-create' %}" class="sub-item">Group</a>
@@ -80,7 +80,7 @@
         </div>
       </div>
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/shop.png" alt="document" style="width: 33px; padding-right: 10px; ">
+        <a class="sub-btn"><img src="{% static 'images/shop.png' %}" alt="icon" style="width: 33px; padding-right: 10px; ">
           <span>Vouchers <b>(RM)</b></span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'purchase-voucher-list' %}" class="sub-item">Purchase Invoice(RM)</a>
@@ -89,7 +89,7 @@
         </div>
       </div>
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/shop.png" alt="document" style="width: 33px; padding-right: 10px; ">
+        <a class="sub-btn"><img src="{% static 'images/shop.png' %}" alt="icon" style="width: 33px; padding-right: 10px; ">
           <span>Vouchers <b>(FG)</b></span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'product-purchase-voucher-list' %}" class="sub-item">Purchase Invoice(FG)</a>
@@ -99,7 +99,7 @@
         </div>
       </div>
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/research.png" alt="document" style="width: 33px; padding-right: 10px;">
+        <a class="sub-btn"><img src="{% static 'images/research.png' %}" alt="icon" style="width: 33px; padding-right: 10px;">
           <span>Reports</span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'all-raw-material-stock-report' %}" class="sub-item">Raw Material</a>
@@ -112,7 +112,7 @@
         </div>
       </div>
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/industrial-park.png" alt="document" style="width: 33px; padding-right: 10px;">
+        <a class="sub-btn"><img src="{% static 'images/industrial-park.png' %}" alt="icon" style="width: 33px; padding-right: 10px;">
           <span>Product Definition</span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'define-main-category-product' %}" class="sub-item">Main Cat Create</a>
@@ -122,7 +122,7 @@
       </div>
       
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/industry.png" alt="industry icon" style="width: 33px; padding-right: 10px;">
+        <a class="sub-btn"><img src="{% static 'images/industry.png' %}" alt="icon" style="width: 33px; padding-right: 10px;">
           <span>Production</span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'purchase-order-list' %}" class="sub-item">New Order</a>
@@ -135,7 +135,7 @@
       </div>
 
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/industry.png" alt="industry icon" style="width: 33px; padding-right: 10px;">
+        <a class="sub-btn"><img src="{% static 'images/industry.png' %}" alt="icon" style="width: 33px; padding-right: 10px;">
           <span>Planning </span><i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'purchase-order-for-puchase-voucher-rm-list' %}" class="sub-item">Purchase Order</a>
@@ -144,7 +144,7 @@
       </div>
 
       <div class="item">
-        <a class="sub-btn"><img src="../../../static/images/warehouse.png" alt="industry icon" style="width: 33px; padding-right: 10px;">Warehouse<i class="fas fa-angle-right dropdown"></i></a>
+        <a class="sub-btn"><img src="{% static 'images/warehouse.png' %}" alt="icon" style="width: 33px; padding-right: 10px;">Warehouse<i class="fas fa-angle-right dropdown"></i></a>
         <div class="sub-menu">
           <a href="{% url 'finished-goods-sorting-list' %}" class="sub-item " style="font-size: 12px;" >Inward FG to Warehose (QR)</a>
           <a href="{% url 'all-picklists-list' %}" class="navText">Pick List</a>
@@ -166,7 +166,7 @@
 </div> 
 <nav class="navbar navbar-expand-lg coder-navbar navbar-light headerpos-fixed header-blue navbar-fixed-top ">
   <div class="container-fluid">
-    <a class="navbar-brand text-white" href="{% url 'dashboard-main' %}" ><img src="../../../static/images/CosmusTechLogo_White-p-1600.png" class="brand_image">Cosmus</a>
+    <a class="navbar-brand text-white" href="{% url 'dashboard-main' %}" ><img src="{% static 'images/CosmusTechLogo_White-p-1600.png' %}" class="brand_image">Cosmus</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
