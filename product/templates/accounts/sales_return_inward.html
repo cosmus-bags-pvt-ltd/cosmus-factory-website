@@ -453,7 +453,7 @@
                         serialno:serialno,
                     },
                     success:function(response){
-                
+                        console.log(response)
                         $('#id_manualSerialNo').val('');
                         $('#inwordSerialNo').val('');
                         $('#id_bin_Name').val('');
@@ -484,19 +484,30 @@
                             }
                         });
 
-                if (isDuplicate) return;
+                        if (isDuplicate) return;
 
-                if (rowToPopulate) {
-                    populateRow(rowToPopulate, response );
-                } else {
-                    addNewRow();
-                    const newRow = $('#salesReturnoutwardTable .mainTableList tr').last();
-                    populateRow(newRow, response);
-                }
+                        if (rowToPopulate) {
+                            populateRow(rowToPopulate, response );
+                        } else {
+                            addNewRow();
+                            const newRow = $('#salesReturnoutwardTable .mainTableList tr').last();
+                            populateRow(newRow, response);
+                        }
                     },
-                    error:function(error){
-                        console.log(error)
-                    }
+                    error:function(xhr, status, error){
+                        let errorMessage = 'An error occurred';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.error) {
+                                    errorMessage = response.error;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON response:', e);
+                            }
+                            // Display the error message
+                            $('#responseMessage').html(`<span class="text-danger">${errorMessage}</span>`);
+                        }
+                    
                 })
             })
 
