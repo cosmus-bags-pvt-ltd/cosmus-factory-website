@@ -57,7 +57,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
-                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_return_inward, sales_return_product, sales_return_voucher, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
+                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
                     shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
 
@@ -77,7 +77,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, sales_return_voucher_form, salesreturninwardmasterform,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, sales_return_voucher_form, sales_return_voucher_master_form, salesreturninwardmasterform,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -15247,7 +15247,7 @@ def sales_return_inward_to_bin(request,r_id=None):
                             form_instance.sales_return_inward_instance = master_form_instance
                             form_instance.save()
 
-                return redirect(reverse('sales-return-create-update', args=[sale_id, sale_return_id]))
+                return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id]))
                 
             except Exception as e:
                 print(e)
@@ -15261,70 +15261,172 @@ def sale_return_list(request):
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
 
 
-def sales_return_create_update(request,s_id,sr_id):
+# def sales_return_create_update(request,s_id,sr_id):
     
-    products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
+#     products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
+
+#     product_list = []
+
+#     for data in products:
+#         sku = data.product.PProduct_SKU
+#         quantity = data.scan_qty
 
 
-    product_list = []
-
-    for data in products:
-        sku = data.product.PProduct_SKU
-        quantity = data.scan_qty
-
-
-        found = False
-        for item in product_list:
-            if item['product'] == sku:
-                item['quantity'] += quantity
-                found = True
-                break
+#         found = False
+#         for item in product_list:
+#             if item['product'] == sku:
+#                 item['quantity'] += quantity
+#                 found = True
+#                 break
 
 
-        if not found:
-            sale_objects = sales_voucher_outward_scan.objects.get(sales_voucher_master = s_id, product_name=sku)
-            product_list.append({
-                'ref_no': data.product.Product.Product_Refrence_ID,
-                'product': sku,
-                'product_name': data.product.Product.Model_Name,
-                'color': data.product.PProduct_color.color_name,
-                'quantity': quantity,
-                'mrp': decimal_to_float(data.product.Product.Product_MRP),
-                'customer_price': decimal_to_float(data.product.Product.Product_SalePrice_CustomerPrice),
-                'gst': data.product.Product.Product_GST.gst_percentage,
-                'trade_disct':sale_objects.trade_disct,
-                'spl_disct':sale_objects.spl_disct,
-                'cash_disct':decimal_to_float(sale_objects.sales_voucher_master.cash_disct),
-            })
+#         if not found:
+#             sale_objects = sales_voucher_outward_scan.objects.get(sales_voucher_master = s_id, product_name=sku)
+#             product_list.append({
+#                 'ref_no': data.product.Product.Product_Refrence_ID,
+#                 'product': sku,
+#                 'product_name': data.product.Product.Model_Name,
+#                 'color': data.product.PProduct_color.color_name,
+#                 'quantity': quantity,
+#                 'mrp': decimal_to_float(data.product.Product.Product_MRP),
+#                 'customer_price': decimal_to_float(data.product.Product.Product_SalePrice_CustomerPrice),
+#                 'gst': data.product.Product.Product_GST.gst_percentage,
+#                 'trade_disct':sale_objects.trade_disct,
+#                 'spl_disct':sale_objects.spl_disct,
+#                 'cash_disct':decimal_to_float(sale_objects.sales_voucher_master.cash_disct),
+#             })
 
 
-    sales_return_voucher_formset = modelformset_factory(sales_return_voucher, form = sales_return_voucher_form, extra=len(product_list))
+#     sales_return_voucher_formset = modelformset_factory(sales_return_voucher, form = sales_return_voucher_form, extra=len(product_list))
 
-    formset = sales_return_voucher_formset(initial=product_list, prefix="sale_return_forms")
+#     formset = sales_return_voucher_formset(initial=product_list, prefix="sale_return_forms")
 
-    master_form_data = sales_return_inward.objects.get(id = sr_id)
+#     master_form_data = sales_return_inward.objects.get(id = sr_id)
+
+#     if request.method == 'POST':
+#         print(request.POST)
+#         formset = sales_return_voucher_formset(request.POST or None ,prefix="sale_return_forms")
+        
+#         if formset.is_valid():
+#             try:
+#                 with transaction.atomic():
+#                     for form in formset:
+#                         if form.cleaned_data:
+#                             instance = form.save(commit=False)
+#                             sales_return_instance = sales_return_inward.objects.get(id=sr_id)
+#                             instance.sales_return_inward_instance = sales_return_instance
+                            
+#                             instance.save()
+#                     return redirect('sales-voucher-list-warehouse')
+#             except Exception as e:
+#                 print(f"Error saving formset: {e}")
+#         else:
+#             print(f"Formset Errors: {formset.errors}")
+
+#     return render(request,'accounts/sales_return_create_update.html',{'master_form_data':master_form_data,'formset':formset})
+
+
+
+
+def sales_return_voucher_create_update(request, s_id, sr_id, sv_id=None):
+    master_form_data = None
+
+    if sv_id:
+        # Fetch the existing master record for update
+        master_form_data = get_object_or_404(sales_return_voucher_master, id=sv_id)
+        master_form = sales_return_voucher_master_form(instance=master_form_data)
+
+        # Fetch related vouchers for update
+        sales_return_voucher_formset_create = inlineformset_factory(
+            sales_return_voucher_master, sales_return_voucher,
+            form=sales_return_voucher_form, extra=0, can_delete=True
+        )
+        formset = sales_return_voucher_formset_create(instance=master_form_data, prefix="sale_return_forms")
+
+    else:
+        # Create new sales return voucher
+        products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
+        product_list = []
+
+        for data in products:
+            sku = data.product.PProduct_SKU
+            quantity = data.scan_qty
+
+            found = False
+            for item in product_list:
+                if item['product'] == sku:
+                    item['quantity'] += quantity
+                    found = True
+                    break
+
+            if not found:
+                sale_objects = sales_voucher_outward_scan.objects.filter(
+                    sales_voucher_master=s_id, product_name=sku
+                ).first()
+
+                if sale_objects:
+                    product_list.append({
+                        'ref_no': data.product.Product.Product_Refrence_ID,
+                        'product': sku,
+                        'product_name': data.product.Product.Model_Name,
+                        'color': data.product.PProduct_color.color_name,
+                        'quantity': quantity,
+                        'mrp': decimal_to_float(data.product.Product.Product_MRP),
+                        'customer_price': decimal_to_float(data.product.Product.Product_SalePrice_CustomerPrice),
+                        'gst': data.product.Product.Product_GST.gst_percentage,
+                        'trade_disct': sale_objects.trade_disct,
+                        'spl_disct': sale_objects.spl_disct,
+                        'cash_disct': decimal_to_float(sale_objects.sales_voucher_master.cash_disct),
+                    })
+
+        master_form = sales_return_voucher_master_form()
+        
+        sales_return_voucher_formset_create = inlineformset_factory(
+            sales_return_voucher_master, sales_return_voucher,
+            form=sales_return_voucher_form, extra=len(product_list), can_delete=True
+        )
+        formset = sales_return_voucher_formset_create(initial=product_list, prefix="sale_return_forms")
+
+        # Fetch sales return inward data
+        master_form_data = get_object_or_404(sales_return_inward, id=sr_id)
 
     if request.method == 'POST':
         print(request.POST)
-        formset = sales_return_voucher_formset(request.POST or None ,prefix="sale_return_forms")
-        
-        if formset.is_valid():
+
+        master_form = sales_return_voucher_master_form(request.POST)
+
+        formset = sales_return_voucher_formset_create(request.POST, prefix="sale_return_forms")
+
+        if master_form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
                     for form in formset:
                         if form.cleaned_data:
-                            instance = form.save(commit=False)
-                            sales_return_instance = sales_return_inward.objects.get(id=sr_id)
-                            instance.sales_return_inward_instance = sales_return_instance
-                            
-                            instance.save()
+                            if form.cleaned_data.get("DELETE"):
+                                if form.instance.pk:  # Only delete if it exists in DB
+                                    form.instance.delete()
+                            else:
+                                instance = form.save(commit=False)
+                                instance.sales_return_master = master_form_instance
+                                instance.save()
+                    
                     return redirect('sales-voucher-list-warehouse')
+
             except Exception as e:
                 print(f"Error saving formset: {e}")
+
         else:
+            print(f"Master Form Errors: {master_form.errors}")
             print(f"Formset Errors: {formset.errors}")
 
-    return render(request,'accounts/sales_return_create_update.html',{'master_form_data':master_form_data,'formset':formset})
+    return render(request, 'accounts/sales_return_create_update.html', {
+        'master_form_data': master_form_data,
+        'formset': formset
+    })
+
 
 
 
