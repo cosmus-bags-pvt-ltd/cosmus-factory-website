@@ -60,8 +60,8 @@
                 </div>
                 <div>
                     <span id="responseMessage" class="ms-1 mb-1 fw-bold"></span>
-                    <div class="ms-4">
-                        <span style="cursor: pointer;"  class="create-btn" id="salesReturnBin">Submit</span>
+                    <div id="salesReturnBins" class="ms-4" >
+                        <span style="cursor: pointer;"  class="create-btn" id="salesReturnBin" role="button" tabindex="0">Submit</span>
                     </div>
                 </div>
             </div>
@@ -217,7 +217,7 @@
 
 <script>
 
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
        const inwardSearch = document.getElementById('inwordSerialNo');
        const manualSearch = document.getElementById('id_manualSerialNo');
        const salesReturnTable = document.getElementById('salesReturnList');
@@ -250,93 +250,99 @@ document.addEventListener('DOMContentLoaded', function () {
    });
    $(document).ready(function(){
 
-    $('#id_sales_voucher_master_name').on('blur',function(){
-        var saleNo = $(this).val();
-        $.ajax({
-            url: '/otwarddataforsalereturnajax/',
-            type: 'GET',
-            data: { 
-                'saleNo':saleNo,
-            },
-            success: function(response){
-                let counter = 1;
-                var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
-                salesOutward.empty(); // Clear previous data
-                $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
-                $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
-                $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
-                $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
-                $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
-          
-                response.list_to_sent.forEach(item => {
-                    var newRow = $(`
-                        <tr>
-                            <td><span class="">${counter}</span></td>
-                            <td><img src=${item.PProduct_image} alt="img" width="25px"></td>
-                            <td><span class="modelName">${item.Product_Refrence_ID || "N/A"}</span></td>
-                            <td><span class="modelName">${item.Model_Name || "N/A"}</span></td>
-                            <td><span class="color">${item.PProduct_color || "N/A"}</span></td>
-                            <td><span class="sku">${item.PProduct_SKU || "N/A"}</span></td>
-                            <td><span class="balanceqty text-center">${item.unique_serial_no || "N/A"}</span></td> 
-                            <td><span class="balanceqty text-center">${item.Bin_Name || "N/A"}</span></td> 
-                            <td><span class="qty text-center">${item.Quantity || 0}</span></td>
-                        </tr>
-                    `);
-                    salesOutward.append(newRow);
-                    counter++;
-                });
-            },
-            error:function(error){
-            console.log(error)
-           }
+        $('#id_sales_voucher_master_name').on('blur',function(){
+            var saleNo = $(this).val();
+            if(saleNo !== ''){
+                $.ajax({
+                url: '/otwarddataforsalereturnajax/',
+                type: 'GET',
+                data: { 
+                    'saleNo':saleNo,
+                },
+                success: function(response){
+                    let counter = 1;
+                    var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
+                    salesOutward.empty(); // Clear previous data
+                    $('#inwordSerialNo').focus();
+                    $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
+                    $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
+                    $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
+                    $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
+                    $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
+            
+                    response.list_to_sent.forEach(item => {
+                        var newRow = $(`
+                            <tr>
+                                <td><span class="">${counter}</span></td>
+                                <td><img src=${item.PProduct_image} alt="img" width="25px"></td>
+                                <td><span class="modelName">${item.Product_Refrence_ID || "N/A"}</span></td>
+                                <td><span class="modelName">${item.Model_Name || "N/A"}</span></td>
+                                <td><span class="color">${item.PProduct_color || "N/A"}</span></td>
+                                <td><span class="sku">${item.PProduct_SKU || "N/A"}</span></td>
+                                <td><span class="balanceqty text-center">${item.unique_serial_no || "N/A"}</span></td> 
+                                <td><span class="balanceqty text-center">${item.Bin_Name || "N/A"}</span></td> 
+                                <td><span class="qty text-center">${item.Quantity || 0}</span></td>
+                            </tr>
+                        `);
+                        salesOutward.append(newRow);
+                        counter++;
+                    });
+                    },
+                    error:function(error){
+                    console.log(error)
+                }
+                }) 
+            }else{
+                $(this).focus()
+            }
+            
         })
-    })
 
-       let debounceTimeout;
+        let debounceTimeout;
 
-       $('#inwordSerialNo').on('input', function () {
+        $('#inwordSerialNo').on('input', function () {
             clearTimeout(debounceTimeout);
 
             const manual_serial = $('#id_manualSerialNo');
             manual_serial.val('');
-           
+            
             const responseMessage = $('#responseMessage');
             responseMessage.html(''); 
 
             const inputField = $(this);
-   
+
             debounceTimeout = setTimeout(async function () {
-               let inputUrl = inputField.val();
-               let serialNo = '';
-   
-               if (inputUrl.includes('=')) {
-                   serialNo = inputUrl.split('=').pop();
-                   inputField.val(serialNo);
-                   inputField.css('color', 'black');
-               }
-   
-               if (serialNo) {
-                   try {
-                       const response = await sendSerialNumber(serialNo);
-                       $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
-                   } catch (error) {
+                let inputUrl = inputField.val();
+                let serialNo = '';
+
+                if (inputUrl.includes('=')) {
+                    serialNo = inputUrl.split('=').pop();
+                    inputField.val(serialNo);
+                    inputField.css('color', 'black');
+                }
+
+                if (serialNo) {
+                    try {
+                        const response = await sendSerialNumber(serialNo);
+                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                    } catch (error) {
                     //    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
                     //    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
-                   }
-               }
+                    }
+                }
             }, 500); 
-       });
-   
-       // Handle input in id_manualSerialNo
-       $('#id_manualSerialNo').on('input', function () {
-           $('#inwordSerialNo').val('');
-           const responseMessage = $('#responseMessage');
-           responseMessage.html('');
+        });
 
-       });
-   
-       // Handle click on the normal button
-       $('#id_manualSerialNo').on('keydown', async function (event) {
+        // Handle input in id_manualSerialNo
+        $('#id_manualSerialNo').on('input', function () {
+            $('#inwordSerialNo').val('');
+            const responseMessage = $('#responseMessage');
+            responseMessage.html('');
+
+        });
+
+        // Handle click on the normal button
+        $('#id_manualSerialNo').on('keydown', async function (event) {
             if(event.key === 'Enter'){
                 event.preventDefault();
                 const manualSerialNo = $('#id_manualSerialNo').val();
@@ -364,339 +370,301 @@ document.addEventListener('DOMContentLoaded', function () {
                 }   
             }
         });
-   
-       // Function to send serial number to the backend
+
+        // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
-   
-            var saleNo = $('#id_sales_voucher_master_name').val()
-            try {
-                 const response = await $.ajax({
-                     url: '/processserialnoforreturnsalesajax/',
-                     type: 'GET',
-                     data: { 
-                         serialNo: serialNo,
-                         saleNo: saleNo
-                     },
-                 });
-                
-                $('#id_product').val(response.model_name);
-                $('#id_product_sku').val(response.product_sku);
-                $('#id_product_color').val(response.product_color);
-                $('#productImgPreview').attr('src', response.product_image);
 
-                const binSelect = $('#id_bin_Name');  
-                binSelect.empty(); 
-
-                response.bin_to_dict.forEach(bin => {
-                    binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
+        var saleNo = $('#id_sales_voucher_master_name').val()
+        try {
+                const response = await $.ajax({
+                    url: '/processserialnoforreturnsalesajax/',
+                    type: 'GET',
+                    data: { 
+                        serialNo: serialNo,
+                        saleNo: saleNo
+                    },
                 });
-    
-                return response;
-            } catch (error) {
-                console.error('Error:', error);
-                return null; 
-            }
+            
+            $('#id_product').val(response.model_name);
+            $('#id_product_sku').val(response.product_sku);
+            $('#id_product_color').val(response.product_color);
+            $('#productImgPreview').attr('src', response.product_image);
+
+            const binSelect = $('#id_bin_Name');  
+            binSelect.empty(); 
+
+            response.bin_to_dict.forEach(bin => {
+                binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
+            });
+
+            return response;
+        } catch (error) {
+            console.error('Error:', error);
+            return null; 
         }
+    }
 
         $('#salesReturnBin').on('click',function(){
-            var serialno;
-            var binNo = $('#id_bin_Name').val();
-            var productSku = $('#id_product_sku').val();
-            var scanSerialNo = $('#inwordSerialNo').val();
-            var manualSerialNo = $('#id_manualSerialNo').val();
-            
-            if(scanSerialNo !== '' && manualSerialNo === ''){
-                serialno = scanSerialNo;
-            }else if(scanSerialNo === '' && manualSerialNo !== ''){
-                serialno = manualSerialNo; 
-            }else{
-                alert("Please Enter a valid serial no")
-            }
-       
-
-            $.ajax({
-                url: '/returnproductwithbinajax/',
-                type: 'GET',
-                data: { 
-                    productSku: productSku,
-                    binNo: binNo,
-                    serialno:serialno,
-                },
-                success:function(response){
-               
-                    $('#id_manualSerialNo').val('');
-                    $('#inwordSerialNo').val('');
-                    $('#id_bin_Name').val('');
-                    $('#responseMessage').html('');   
-                    $('#id_manualSerialNo').val('');
-                    $('#id_product').val('');
-                    $('#id_product_sku').val('');
-                    $('#id_product_color').val('');           
-
-                    let isDuplicate = false;
-                    let rowToPopulate = null;
-
-                    $('#salesReturnoutwardTable .mainTableList tr').each(function () {
-                        const row = $(this);
-                        if (row.css('display') === 'none') return;
-                        const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
-                        
-                        if (serialValue && serialValue === serialno) {
-                            $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
-                            isDuplicate = true;
-                            return false;
-                        }
-
-                        if (!isDuplicate && row.find('[name$="-product_name_value"]').val()?.trim() === "") {
-                            rowToPopulate = row;
-                            return false;
-                        }
-                    });
-
-            if (isDuplicate) return;
-
-            if (rowToPopulate) {
-                populateRow(rowToPopulate, response );
-            } else {
-                addNewRow();
-                const newRow = $('#salesReturnoutwardTable .mainTableList tr').last();
-                populateRow(newRow, response);
-            }
-                },
-                error:function(error){
-                    console.log(error)
+                var serialno;
+                var binNo = $('#id_bin_Name').val();
+                var productSku = $('#id_product_sku').val();
+                var scanSerialNo = $('#inwordSerialNo').val();
+                var manualSerialNo = $('#id_manualSerialNo').val();
+                
+                if(scanSerialNo !== '' && manualSerialNo === ''){
+                    serialno = scanSerialNo;
+                }else if(scanSerialNo === '' && manualSerialNo !== ''){
+                    serialno = manualSerialNo; 
+                }else{
+                    alert("Please Enter a valid serial no")
                 }
+        
+
+                $.ajax({
+                    url: '/returnproductwithbinajax/',
+                    type: 'GET',
+                    data: { 
+                        productSku: productSku,
+                        binNo: binNo,
+                        serialno:serialno,
+                    },
+                    success:function(response){
+                
+                        $('#id_manualSerialNo').val('');
+                        $('#inwordSerialNo').val('');
+                        $('#id_bin_Name').val('');
+                        $('#responseMessage').html('');   
+                        $('#id_manualSerialNo').val('');
+                        $('#id_product').val('');
+                        $('#id_product_sku').val('');
+                        $('#id_product_color').val('');           
+
+                        let isDuplicate = false;
+                        let rowToPopulate = null;
+
+                        $('#salesReturnoutwardTable .mainTableList tr').each(function () {
+                            const row = $(this);
+                            if (row.css('display') === 'none') return;
+                            const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+                            
+                            if (serialValue && serialValue === serialno) {
+                                $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                                isDuplicate = true;
+                                return false;
+                            }
+
+                            if (!isDuplicate && row.find('[name$="-product_name_value"]').val()?.trim() === "") {
+                                rowToPopulate = row;
+                                return false;
+                            }
+                        });
+
+                if (isDuplicate) return;
+
+                if (rowToPopulate) {
+                    populateRow(rowToPopulate, response );
+                } else {
+                    addNewRow();
+                    const newRow = $('#salesReturnoutwardTable .mainTableList tr').last();
+                    populateRow(newRow, response);
+                }
+                    },
+                    error:function(error){
+                        console.log(error)
+                    }
+                })
             })
-        })
 
         function isTableEmpty() {
-        return $('#salesReturnoutwardTable .mainTableList  tr').toArray().every(row => isRowEmpty($(row)));
-    }
+            return $('#salesReturnoutwardTable .mainTableList  tr').toArray().every(row => isRowEmpty($(row)));
+        }
 
-    function populateRow(row, response) {
-      
-      row.find('[name$="-product_RefNo"]').val(response.reference_no);
-      row.find('[name$="-product_name_value"]').val(response.model_name);
-      row.find('[name^="product_color_"]').val(response.product_color);
-      row.find('[name$="-product"]').val(response.product_sku);
-      row.find('[name$="-unique_serial_no"]').val(response.serialno);
-      row.find('[name$="-bin_number"]').val(response.bin_id);
-      row.find('[name$="-bin_no"]').val(response.bin_name)
-      row.find('[name$="-scan_qty"]').val(1);
-      row.find('[id^="product_img_"]').attr("src", response.product_image);
-   
+        function populateRow(row, response) {
+        
+            row.find('[name$="-product_RefNo"]').val(response.reference_no);
+            row.find('[name$="-product_name_value"]').val(response.model_name);
+            row.find('[name^="product_color_"]').val(response.product_color);
+            row.find('[name$="-product"]').val(response.product_sku);
+            row.find('[name$="-unique_serial_no"]').val(response.serialno);
+            row.find('[name$="-bin_number"]').val(response.bin_id);
+            row.find('[name$="-bin_no"]').val(response.bin_name)
+            row.find('[name$="-scan_qty"]').val(1);
+            row.find('[id^="product_img_"]').attr("src", response.product_image);
+        }
+    
+        function isRowEmpty(row) {
+            return row.find('td :input').filter(function () {
+                return $(this).val().trim() !== "";
+            }).length === 0;
+        }
 
-     
-  }
-    function isRowEmpty(row) {
-        return row.find('td :input').filter(function () {
-            return $(this).val().trim() !== "";
-        }).length === 0;
-    }
+        function addNewRow() {
+            const tableBody = document.querySelector('#salesReturnoutwardTable .mainTableList ');
 
-    function addNewRow() {
-        const tableBody = document.querySelector('#salesReturnoutwardTable .mainTableList ');
+            tableBody.querySelectorAll('tr').forEach(row => {
+                if (window.getComputedStyle(row).display !== 'none') {
+                    lastVisibleRow = row;
+                }
+            });
 
-        tableBody.querySelectorAll('tr').forEach(row => {
-            if (window.getComputedStyle(row).display !== 'none') {
-                lastVisibleRow = row;
+            const formCountInput = document.getElementById("id_sales_return_product_set-TOTAL_FORMS");
+            const formCount = parseInt(formCountInput.value);
+            const formIndex = formCount;
+            const lastRow = lastVisibleRow.cloneNode(true);
+            lastRow.querySelectorAll("input select").forEach(function (e) {
+                e.value = "";
+            });
+
+            const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
+            rowElement.id = `rowNo_${formIndex}`;
+            rowElement.name = `rowNo_${formIndex}`;
+            rowElement.value = formIndex + 1;
+            rowElement.style.border = "none";
+
+
+            const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
+            inputSelectElement.id = `id_sales_return_product_set-${formIndex}-product_RefNo`;
+            inputSelectElement.name = `sales_return_product_set-${formIndex}-product_RefNo`;
+            inputSelectElement.value = "";
+
+            const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
+            inputElement.id = `id_sales_return_product_set-${formIndex}-product_name_value`;
+            inputElement.name = `sales_return_product_set-${formIndex}-product_name_value`;
+            inputElement.value = "";
+
+            const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
+            colorInputElement.id = `product_color_${formIndex}`;
+            colorInputElement.name = `product_color_${formIndex}`;
+            colorInputElement.value = "";
+
+            const skuInputElement = lastRow.querySelector('.purchase-amount[name$="-product"]');
+            skuInputElement.id = `id_sales_return_product_set-${formIndex}-product`;
+            skuInputElement.name = `sales_return_product_set-${formIndex}-product`;
+            skuInputElement.value = "";
+
+            const imgElement = lastRow.querySelector('[id^="product_img_"]');
+            imgElement.id = `product_img_${formIndex}`;
+            imgElement.src = "";
+
+            const serialNoElement = lastRow.querySelector('input[name$="-unique_serial_no"]');
+            serialNoElement.id = `id_sales_return_product_set-${formIndex}-unique_serial_no`;
+            serialNoElement.name = `sales_return_product_set-${formIndex}-unique_serial_no`;
+            serialNoElement.value = '';
+
+            const binNameElement = lastRow.querySelector('input[name$="-bin_number"]');
+            binNameElement.id = `sales_return_product_set-${formIndex}-bin_number`;
+            binNameElement.name = `sales_return_product_set-${formIndex}-bin_number`;
+            binNameElement.value = '';
+
+            const binNoElement = lastRow.querySelector('input[name$="-bin_no"]');
+            binNoElement.id = `id_sales_return_product_set-${formIndex}-bin_no`;
+            binNoElement.name = `sales_return_product_set-${formIndex}-bin_no`;
+            binNoElement.value = '';
+
+            const qunatityInputElement = lastRow.querySelector('[name$="-scan_qty"]');
+            qunatityInputElement.id = `id_sales_return_product_set-${formIndex}-scan_qty`;
+            qunatityInputElement.name = `sales_return_product_set-${formIndex}-scan_qty`; 
+            qunatityInputElement.value="";
+
+            const deleteInputElement = lastRow.querySelector('[name$="-DELETE"]');
+            deleteInputElement.id = `id_sales_return_product_set-${formIndex}-DELETE`;
+            deleteInputElement.name = `sales_return_product_set-${formIndex}-DELETE`; 
+            deleteInputElement.value="false";
+
+
+            formCountInput.value = formCount + 1;
+            tableBody.appendChild(lastRow);
+            deleteRowData();
+        
+        }
+        function getVisibleRows() {
+            return document.querySelectorAll('#salesReturnoutwardTable .mainTableList tr:not([style*="display: none"])');;
+        }
+
+        function deleteRowData(){
+            document.querySelectorAll('.delete-btn').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const rows =  getVisibleRows();
+                
+                    if (rows.length > 1) {
+                        const row = this.closest('tr');
+            
+                        if (row) {
+                            const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+                
+                            if (checkRow) {
+                                checkRow.checked = true; 
+                                checkRow.value = 'true'; 
+                                row.style.display = 'none';
+                                
+                            } else {
+                                console.error("Checkbox for deletion not found in this row");
+                            }
+                        }
+                    } else {
+                        alert('Cannot delete this row; at least one row must remain.');
+                    }
+                });
+            }); 
+        }
+
+        $(document).on('keydown', '#id_sales_return_no', function(event) {
+            if (event.key === 'Tab') {
+                if ($(this).val().trim() === '') {
+                    event.preventDefault();
+                    $(this).focus();
+                } else {
+                    $('#sales_voucher_master_name').focus();
+                }
             }
         });
 
-        const formCountInput = document.getElementById("id_sales_return_product_set-TOTAL_FORMS");
-        const formCount = parseInt(formCountInput.value);
-        const formIndex = formCount;
-        const lastRow = lastVisibleRow.cloneNode(true);
-        lastRow.querySelectorAll("input select").forEach(function (e) {
-            e.value = "";
+        $(document).on('keydown', '#inwordSerialNo', function(event) {
+            if (event.key === 'Tab') {
+                if ($(this).val().trim() === '') {
+                    event.preventDefault();
+                    $('#id_manualSerialNo').focus();
+                } else {
+                    $('#id_bin_Name').focus();
+                }
+            }
         });
 
-        const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
-        rowElement.id = `rowNo_${formIndex}`;
-        rowElement.name = `rowNo_${formIndex}`;
-        rowElement.value = formIndex + 1;
-        rowElement.style.border = "none";
-
-
-        const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
-        inputSelectElement.id = `id_sales_return_product_set-${formIndex}-product_RefNo`;
-        inputSelectElement.name = `sales_return_product_set-${formIndex}-product_RefNo`;
-        inputSelectElement.value = "";
-
-        const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
-        inputElement.id = `id_sales_return_product_set-${formIndex}-product_name_value`;
-        inputElement.name = `sales_return_product_set-${formIndex}-product_name_value`;
-        inputElement.value = "";
-
-        const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
-        colorInputElement.id = `product_color_${formIndex}`;
-        colorInputElement.name = `product_color_${formIndex}`;
-        colorInputElement.value = "";
-
-        const skuInputElement = lastRow.querySelector('.purchase-amount[name$="-product"]');
-        skuInputElement.id = `id_sales_return_product_set-${formIndex}-product`;
-        skuInputElement.name = `sales_return_product_set-${formIndex}-product`;
-        skuInputElement.value = "";
-
-        const imgElement = lastRow.querySelector('[id^="product_img_"]');
-        imgElement.id = `product_img_${formIndex}`;
-        imgElement.src = "";
-
-        const serialNoElement = lastRow.querySelector('input[name$="-unique_serial_no"]');
-        serialNoElement.id = `id_sales_return_product_set-${formIndex}-unique_serial_no`;
-        serialNoElement.name = `sales_return_product_set-${formIndex}-unique_serial_no`;
-        serialNoElement.value = '';
-
-        const binNameElement = lastRow.querySelector('input[name$="-bin_number"]');
-        binNameElement.id = `sales_return_product_set-${formIndex}-bin_number`;
-        binNameElement.name = `sales_return_product_set-${formIndex}-bin_number`;
-        binNameElement.value = '';
-
-        const binNoElement = lastRow.querySelector('input[name$="-bin_no"]');
-        binNoElement.id = `id_sales_return_product_set-${formIndex}-bin_no`;
-        binNoElement.name = `sales_return_product_set-${formIndex}-bin_no`;
-        binNoElement.value = '';
-
-        const qunatityInputElement = lastRow.querySelector('[name$="-scan_qty"]');
-        qunatityInputElement.id = `id_sales_return_product_set-${formIndex}-scan_qty`;
-        qunatityInputElement.name = `sales_return_product_set-${formIndex}-scan_qty`; 
-        qunatityInputElement.value="";
-
-        const deleteInputElement = lastRow.querySelector('[name$="-DELETE"]');
-        deleteInputElement.id = `id_sales_return_product_set-${formIndex}-DELETE`;
-        deleteInputElement.name = `sales_return_product_set-${formIndex}-DELETE`; 
-        deleteInputElement.value="false";
-
-
-        formCountInput.value = formCount + 1;
-        tableBody.appendChild(lastRow);
-        deleteRowData();
-    
-    }
-    function getVisibleRows() {
-        return document.querySelectorAll('#salesReturnoutwardTable .mainTableList tr:not([style*="display: none"])');;
-    }
-
-    function deleteRowData(){
-        document.querySelectorAll('.delete-btn').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const rows =  getVisibleRows();
-             
-                if (rows.length > 1) {
-                    const row = this.closest('tr');
-        
-                    if (row) {
-                        const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
-                        console.log('checkRow',checkRow)
-                        if (checkRow) {
-                            checkRow.checked = true; 
-                            checkRow.value = 'true'; 
-                            row.style.display = 'none';
-        
-                           
-                            
-                        } else {
-                            console.error("Checkbox for deletion not found in this row");
-                        }
-                    }
+        $(document).on('keydown', '#id_manualSerialNo', function(event) {
+            if (event.key === 'Enter' || event.key === 'Tab' ) {
+                if ($(this).val() === '') {
+                    event.preventDefault();
+                    $(this).focus();
                 } else {
-                    alert('Cannot delete this row; at least one row must remain.');
+                    event.preventDefault();
+                    $('#id_bin_Name').focus();
                 }
-            });
-        }); 
-    }
-  
-    function inputCheck() {
-    console.log('tets')
-        var salesReturn =$('#id_sales_return_no');
-        var salesNo = $('#sales_voucher_master_name')
-        const inwardScan = $('#inwordSerialNo');
-        const manualScan = $('#id_manualSerialNo');
-        const binName =$('#id_bin_Name');
-        var submitButton =$('#salesReturnBin');
-      
+            }
+        });
 
-         if(salesReturn){
-            salesReturn.on('keydown',function(event){
-            if(event.key === 'Tab'){
-                event.preventDefault();
-        
-                if(salesReturn.val() === ''){
-                    salesReturn.focus();
-                    return;
-                }else{
-                    salesNo.focus();
+        $(document).on('keydown', '#id_bin_Name', function(event) {
+            if (event.key === 'Tab') {
+                if ($(this).val() === '') {
+                    event.preventDefault();
+                    $(this).focus();
+                } else {
+                    event.preventDefault();
+                    $('#salesReturnBin').focus();
                 }
-            } 
-        })
-         }
-        
-         if(salesNo){
-            salesNo.on('keydown',function(event){
-            if(event.key === 'Tab'){
-                event.preventDefault();
-                if(salesNo.val() === ''){
-                    salesNo.focus();
-                    return
-                }else{
-                    inwardScan.focus();
-                }
-            } 
-        })
-        }
-        
-        // if(inwardScan){
-        //     inwardScan.addEventListener('keydown',function(event){
-        //     if(event.key === 'Tab'){
-        //         event.preventDefault();
-        //         if(inwardScan.value === ''){
-        //             manualScan.focus();
-        //         }else{
-        //             binName.focus();
-        //         }
-        //     }
-        // })
-        // }
-        
-        // if(manualScan){
-        //     manualScan.addEventListener('keydown',function(event){
-        //     if(event.key === 'Enter'){
-        //         event.preventDefault();
-        //         if(manualScan.value === ''){
-        //             manualScan.focus();
-        //             return;
-        //         }else{
-        //             binName.focus()
-        //         }
-        //     }
-        // })
-        // }
-        
-        // if(binName){
-        //     binName.addEventListener('keydown',function(event){
-        //     if(event.key === 'Tab'){
-        //         event.preventDefault();
-        //         console.log(binName.value,typeof(binName.value))
-        //         const binValue = binName.value.trim(); 
-        //         if(binValue === ''){
-        //             binName.focus();
-        //             return;
-        //         }else{
-        //             submitButton.focus()
-        //         }
-        //     }
-        // })
-        // }
-                
-    }
-   
-    inputCheck()
-    deleteRowData()
+            }
+        });
+        $(document).on('keydown', '#salesReturnBin', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent the default action
+                $(this).click(); // Trigger the click event
+            }
+        });
+        deleteRowData()
    })
 
    document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('id_sales_return_no').focus();
-     //inputCheck()
+   
    })
 
    
