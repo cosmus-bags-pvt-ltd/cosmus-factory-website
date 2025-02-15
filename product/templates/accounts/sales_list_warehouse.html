@@ -24,20 +24,53 @@
               
               <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
                 {% for sale in sales_list %}
-              <tr>
-                <td>{{forloop.counter}}</td>
-                <td>{{sale.created_date}}</td>
-                <td class="text-center">{{sale.sale_no}}</td>
-                <td class="text-center">{{sale.outward_no.outward_no}}</td>
-                <td>{{sale.party_name.name}}</td>
-                <td>{{sale.ledger_type}}</td>
-                <td class="text-center">{{sale.total_qty}}</td>
-                <td>{{sale.grand_total}}</td>
-                <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
-                <!-- <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>  -->
-              </tr>
+                {% for return in sales_return %}
+                {% if sale.sale_no == return.sales_voucher_master.sale_no %}
+                <tr>
+                  <td>{{forloop.counter}}</td>
+                  <td>{{sale.created_date}}</td>
+                  <td class="text-center">{{sale.sale_no}}</td>
+                  <td class="text-center">{{sale.outward_no.outward_no}}</td>
+                  <td>{{sale.party_name.name}}</td>
+                  <td>{{sale.ledger_type}}</td>
+                  <td class="text-center">{{sale.total_qty}}</td>
+                  <td>{{sale.grand_total}}</td>
+                  <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+                  <!-- <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>  -->
+                </tr>
+                <tr>
+                  <td>{{forloop.counter}}</td>
+                  <td>{{return.created_date}}</td>
+                  <td>{{return.sales_voucher_master.sale_no}}</td>
+                  <td>{{return.sales_voucher_master.outward_no.outward_no}}</td>
+                  <td>{{return.sales_voucher_master.party_name.name}}</td>
+                  <td>{{return.sales_return_inward_instance.ledger_type}}</td>
+                  <td></td>
+                  <td></td>
+                  <td><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+                </tr>
+                
+                  
+                {% else %}
+                  
+                <tr>
+                  <td>{{forloop.counter}}</td>
+                  <td>{{sale.created_date}}</td>
+                  <td class="text-center">{{sale.sale_no}}</td>
+                  <td class="text-center">{{sale.outward_no.outward_no}}</td>
+                  <td>{{sale.party_name.name}}</td>
+                  <td>{{sale.ledger_type}}</td>
+                  <td class="text-center">{{sale.total_qty}}</td>
+                  <td>{{sale.grand_total}}</td>
+                  <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+                  <!-- <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>  -->
+                </tr>
+
+                {% endif %}
+                
+                
               {% endfor %}
-             
+              {% endfor %}
               </tbody>
               
             </table>

@@ -14897,7 +14897,7 @@ def salesvoucherlistwarehouse(request):
         del request.session['products_data']
 
     sales_list = sales_voucher_master_outward_scan.objects.all().annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
-    sales_return = sales_return_voucher.objects.all()
+    sales_return = sales_return_voucher_master.objects.all()
     return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list,'sales_return':sales_return})
 
 
@@ -15329,20 +15329,22 @@ def sale_return_list(request):
 
 
 def sales_return_voucher_create_update(request, s_id, sr_id, sv_id=None):
-    master_form_data = None
+    
 
     if sv_id:
         # Fetch the existing master record for update
-        master_form_data = get_object_or_404(sales_return_voucher_master, id=sv_id)
-        master_form = sales_return_voucher_master_form(instance=master_form_data)
+        master_form_data_instance = get_object_or_404(sales_return_voucher_master, id=sv_id)
+
+        master_form = sales_return_voucher_master_form(instance = master_form_data_instance)
 
         # Fetch related vouchers for update
         sales_return_voucher_formset_create = inlineformset_factory(
             sales_return_voucher_master, sales_return_voucher,
             form=sales_return_voucher_form, extra=0, can_delete=True
         )
-        formset = sales_return_voucher_formset_create(instance=master_form_data, prefix="sale_return_forms")
-
+        formset = sales_return_voucher_formset_create(instance=master_form_data_instance, prefix="sale_return_forms")
+        
+        master_form_data = None
     else:
         # Create new sales return voucher
         products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
