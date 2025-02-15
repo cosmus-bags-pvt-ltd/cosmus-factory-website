@@ -21,7 +21,7 @@
                         </div>
                         <div class="d-flex"> 
                             <label for="id_model_name" class="ms-1">Model Name:</label> 
-                            <input class="product-ModelInput text-danger ms-1 pb-1" id="id_model_name"value="{{model_name | default_if_none:''}}" readonly>
+                            <input class="productShadeCutting_Material_input text-danger ms-1 pb-1" id="id_model_name"value="{{model_name | default_if_none:''}}" readonly>
                         </div>
                        
                       
@@ -30,9 +30,9 @@
                     <div class="d-flex mb-2">
                         <div class="d-flex mb-2">
                             <label for="id_temp_godown_select" class="">Godown:</label>
-                            <input type="text" name="temp_godown_select" class="product-ModelInput text-danger ms-2 me-3 pb-1" value="{{ form.instance.temp_godown_select }}" required id="id_temp_godown_select" readonly>  
+                            <input type="text" name="temp_godown_select" class="productShadeCutting_Material_input text-danger ms-2 pb-1" value="{{ form.instance.temp_godown_select }}" required id="id_temp_godown_select" readonly>  
                         </div>
-                        <div class="d-flex ms-5">
+                        <div class="d-flex ms-3">
                             <label for="id_ledger_party_name" class="">Party Name:</label>
                             <input name="ledger_party_name" class="product-ModelInput text-danger ms-2 pb-1 " id="id_ledger_party_name" value="{{form.instance.ledger_party_name.name}}" readonly>
                         </div>
