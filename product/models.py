@@ -1377,7 +1377,6 @@ class sales_return_voucher_master(models.Model):
 
 
 class sales_return_voucher(models.Model):
-    # sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete=models.CASCADE)
     sales_return_master = models.ForeignKey(sales_return_voucher_master,on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
     quantity = models.IntegerField()
