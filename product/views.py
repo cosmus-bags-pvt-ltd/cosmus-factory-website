@@ -15076,6 +15076,10 @@ def sales_return_inward_to_bin(request,r_id=None):
         del request.session['bin_data']
         request.session.modified = True
 
+    if 'product_data' in request.session:
+        del request.session['product_data']
+        request.session.modified = True
+
 
     if r_id:
         instance_queryset = sales_return_inward.objects.get(id=r_id)
