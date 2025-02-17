@@ -8,7 +8,7 @@
     <!-- {% for form in picklist_formset %}
       {{ form.as_p }}
     {% endfor %} -->
-    <div class="mb-3 mt-2">
+    <div class="mb-1 mt-2">
         <div class="d-flex">
             <input type="hidden" id="picklistupdateData" value="{{dict_to_send}}">
             <input type="hidden" id="picklistHiddenData" value="">
@@ -52,10 +52,10 @@
                             <td><input type="hidden" class="rowNo picklistId" name="{{form.prefix}}-picklist" id="id_{{form.prefix}}-picklist" value="{% if form.instance.id %}{{ form.instance.picklist.id }}{% endif %}" readonly>
                                 <input type="number" class="rowNo pickId" name="{{form.prefix}}-picklistNo" id="id_{{form.prefix}}-picklistNo" value="{% if form.instance.id %}{{ form.instance.picklist.picklist_no }}{% endif %}" readonly></td>
                             <td>
-                                <input type="number" class="rowNo pickQty outwardPick-btn" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="{% if form.instance.id %}{{ form.instance.picklist.total_qty }}{% endif %}" readonly data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="cursor: pointer;">
+                                <input type="number" class="rowNo pickQty" name="{{form.prefix}}-picklistQty" id="id_{{form.prefix}}-picklistQty" value="{% if form.instance.id %}{{ form.instance.picklist.total_qty }}{% endif %}" readonly  style="cursor: pointer;">
                             </td>
                             <td><input type="number" class="rowNo pickBalance" name="{{form.prefix}}-balance_qty" id="id_{{form.prefix}}-balance_qty" value="{% if form.instance.id %}{{ form.instance.balance_qty }}{% endif %}" readonly></td>
-                            <td><input type="radio" class="picklistRadio" name="picklist_group"></td>
+                            <td><input type="radio" class="picklistRadio outwardPick-btn" name="picklist_group"></td>
                         </tr>
 
                         {% endfor %}
@@ -72,10 +72,16 @@
         
     </div>   
     
-    <table class="table table-striped table-hover table-bordered" id="outwardSales">
+    <table class="table table-striped table-hover table-bordered table-success" id="outwardSales">
         <thead class="name_absolute">
             <tr>
+                <th colspan="9"></th>
+                <th><span class="text-danger">Total : </span><span class="text-success" id="scanTotalQty"></span></th>
+                <th></th>
+            </tr>
+            <tr>
                 <th>No</th>
+                <th>Pick No</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
@@ -94,10 +100,11 @@
                 {% if form.instance.id %}
                 <tr>
                     <td>
-                        <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="{{ form.instance.outward_picklist_no }}">
                         <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
                     </td>
-
+                    <td class="text-center">
+                        <input type="text" class="purchase-mark bg-transparent border-0" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="{{ form.instance.outward_picklist_no }}">
+                    </td>
                     <td>
                         <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly>
                     </td>
@@ -139,10 +146,12 @@
                 {% elif not form.instance.id %}
                 <tr>
                     <td>
-                        <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
+                        <!-- <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value=""> -->
                         <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
                     </td>
-
+                    <td class="text-center">
+                        <input type="text" class="purchase-mark bg-transparent border-0" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
+                    </td>
                     <td>
                         <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly>
                     </td>
@@ -186,11 +195,32 @@
 
         </tbody>
     </table>
-
-        
- 
     <button type="submit" class="ms-3 newProductCreateBtn" id="parentFormClick">Generate</button>
 </form>
+<div>
+    <div class="row">
+        <div class="col-lg-6">
+            <h1 class="modal-title fs-5" id="staticBackdropLabel">PickList Products</h1>
+            <table class="table table-bordered table-warning" id="picklistProductTable">
+                <thead class="name_absolute">
+                    <tr>
+                        <th>Model Name</th>
+                        <th>Sku</th>
+                        <th>Color</th>
+                        <th class="text-primary">Qty</th>
+                        <th class="text-success">Scan Qty</th>
+                        <th class="text-danger">Balance</th>
+                       
+                    </tr>
+                </thead>
+                <tbody class="mainTableList">
+        
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+</div>
 
 <div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
     <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
@@ -198,20 +228,21 @@
 
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content">
+      <div class="modal-content" style="width: 110% !important;">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">PickList Products</h1>
+          
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <table class="table table-bordered " id="picklistProductTable">
+            <table class="table table-bordered table-warning" id="picklistProductTable">
                 <thead class="name_absolute">
                     <tr>
                         <th>Model Name</th>
                         <th>Sku</th>
                         <th>Color</th>
-                        <th>Qty</th>
-                        <th>Balance</th>
+                        <th class="text-primary">Qty</th>
+                        <th class="text-success">Scan Qty</th>
+                        <th class="text-danger">Balance</th>
                        
                     </tr>
                 </thead>
@@ -233,7 +264,16 @@
 <script>
 
 $(document).ready(function () {
-    // Event listener for when the picklist number is entered
+    
+    var scanTotal = 0;
+    var serialQty = $('[name$="-quantity"]'); 
+    serialQty.each(function () {   
+        var outwardValue = parseInt($(this).val(), 10) || 0;
+        scanTotal += outwardValue;
+        $('#scanTotalQty').text(scanTotal);
+    });
+
+// Event listener for when the picklist number is entered
     $('#id_pickList_no').on('blur', function () { 
         var picklistNo = parseInt($(this).val(), 10);
         var picklistTable = $('#picklistTable .mainTableList tr');
@@ -392,13 +432,15 @@ $(document).ready(function () {
             let outwardQty = picklistSelected ? (totalQty[productKey]?.[sku] || 0) : 0;
             let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
 
+            console.log('outwardQty',outwardQty)
             var newRow = $(`
                 <tr class="picklistRow" data-sku="${sku}" data-picklistno="${productKey}">
                     <td><span class="modelName">${item.model_name || "N/A"}</span></td>
                     <td><span class="sku">${sku}</span></td>
                     <td><span class="color">${item.color || "N/A"}</span></td>
-                    <td><span class="qty text-center">${qty}</span></td>
-                    <td><span class="balanceqty text-center">${balanceQty}</span></td> 
+                    <td class="text-center"><span class="qty text-center text-primary">${qty}</span></td>
+                    <td class="text-center"><span class=" text-success scanQty">${outwardQty}</span></td>
+                    <td class="text-center"><span class="balanceqty text-danger">${balanceQty}</span></td> 
                 </tr>
             `);
 
@@ -623,6 +665,7 @@ $(document).ready(function () {
         }
 
         var total = 0;
+      
         var serialNoQty = $('[name$="-quantity"]'); 
 
         serialNoQty.each(function () {
@@ -631,7 +674,7 @@ $(document).ready(function () {
             if (row.css('display') === 'none') return;
             var tablePicklistNo = parseInt(row.find('[name$="-outward_picklist_no"]').val()) || 0;
             var tableSku = String(row.find('[name$="-product"]').val()).trim(); 
-    
+
             if (pickNo === tablePicklistNo) {
                 if (mergedData.hasOwnProperty(pickNo)) {
                     let picklistItems = mergedData[pickNo];
@@ -661,10 +704,11 @@ $(document).ready(function () {
             $('#responseMessage').html('<span class="text-danger">Outward quantity cannot be greater than picklist quantity.</span>');
             return;
         }
-
+      
         selectedRow.find('.pickBalance').val(pickBal);
     }
 
+   
     async function sendSerialNumber(serialNo) {
         var checkedRadio = $('.picklistRadio:checked');
 
@@ -1019,14 +1063,31 @@ $(document).ready(function () {
         selectedRow.find('.pickBalance').val(pickBal);
     }
 
-    deleteRowData()
     function inputCheck(){
-        document.getElementById('id_outward_no').focus();
-       
+        document.getElementById('id_pickList_no').focus();
+        const picklistNo = document.getElementById('id_pickList_no')
         const outwardNo = document.getElementById('id_outward_no');
         const inwardNo = document.getElementById('inwordSerialNo');
         const mscanNo = document.getElementById('id_manualSerialNo')
-        const submit = document.getElementById('parentFormClick')
+        const submit = document.getElementById('parentFormClick');
+
+        if(picklistNo){
+            picklistNo.addEventListener('keydown',function(event){
+                if(event.key === "Tab"){
+                    event.preventDefault()
+               
+                    if(picklistNo.value === ''){
+                 
+                        picklistNo.focus();
+                        return;
+                    }else{
+                        outwardNo.focus() ;
+                    }
+                  
+                }
+            })
+        }
+
         if(outwardNo){
             outwardNo.addEventListener('keydown',function(event){
                 if(event.key === "Tab"){
@@ -1050,7 +1111,7 @@ $(document).ready(function () {
                     event.preventDefault();
               
                     if (inwardNo.value === '' ) {
-                        inwardNo.focus();
+                        mscanNo.focus();
                         return;
                         
                     }  
@@ -1063,11 +1124,7 @@ $(document).ready(function () {
                     event.preventDefault();
               
                     if (mscanNo.value === '' ) {
-                        mscanNo.focus();
-                        return;
-                        
-                    }else{
-                        submit.focus();
+                        inwardNo.focus();   
                     }  
                 }
             })
@@ -1076,7 +1133,7 @@ $(document).ready(function () {
     }
     
     inputCheck();
-
+    deleteRowData()
  })
 
  

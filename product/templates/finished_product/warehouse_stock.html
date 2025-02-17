@@ -15,7 +15,7 @@
                 <th>Product SKU</th>
                 <th>Total Rec QTY</th>
                 <th>Inward QTY</th>
-                <th>Balance For Inward</th>
+                <th>Balance For Inward <span class="fw-bold text-danger">= <span class="totalBalanceValues me-1"></span>Pcs</span></th>
                 <th>Sales</th>
                 <th>Total QTY</th>
             </tr>
@@ -36,7 +36,7 @@
                 <td>{{data.product_sku}}</td>
                 <td class="text-center"><a href="{% url 'model-name-wise-purchase-transfer-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalValue" style="background-color: #bb43dc; text-decoration: none;">{{data.total}}</a></td>
                 <td class="text-center"><a href="{% url 'scan-single-product-list' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white totalInvard" style="background-color: #1030ff; text-decoration: none;">{{data.total_inward}}</a></td>
-                <td class="text-center">{{data.total_balance}}</td>
+                <td class="text-center"><span class="text-danger fw-bold totalBalance">{{data.total_balance}}</span></td>
                 <td class="text-center"><a href="{% url 'model-name-wise-purchase-transfer-sales-report' data.product_sku %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4dc3ce; text-decoration: none;">{{data.total_sale}}</a></td>
                 <td class="text-center">{{data.inward_minus_sales}}</td>
              </tr>
@@ -67,20 +67,17 @@
 
 function calculateValue() {
     var warehouseTables = document.querySelectorAll('#warehouseTables .mainTableList tr');
-
-    console.log('Total Rows Found:', warehouseTables.length); // Debugging
-
+    var total = 0;
     warehouseTables.forEach(function (row, index) {
         var totalValueElement = row.querySelector('.totalValue ');
         var inwardValueElement = row.querySelector('.totalInvard ');
+        var totalBalance = parseInt(row.querySelector('.totalBalance').textContent)
 
         // Ensure elements exist before accessing textContent
+        total += totalBalance
         if (totalValueElement && inwardValueElement) {
             var totalValue = Number(totalValueElement.textContent.trim().replace(/,/g, '')) || 0;
             var inwardValue = Number(inwardValueElement.textContent.trim().replace(/,/g, '')) || 0;
-
-
-            
 
             if (totalValue === inwardValue) {
                 row.style.setProperty("background-color", "#C7EDC7", "important"); // Green
@@ -92,6 +89,7 @@ function calculateValue() {
         } else {
             console.warn(`Missing elements in row ${index + 1}`);
         }
+        document.querySelector('.totalBalanceValues').textContent = total;
     });
 }
 

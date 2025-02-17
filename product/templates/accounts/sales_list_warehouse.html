@@ -2,79 +2,71 @@
 {% load static %} 
 {% block body %}
   
-  <div class="mt-2">  
+<div class="mt-2">  
          
-          <div class="mt-2 table-responsives">
-            <table  class="table table-striped table-hover table-bordered" style="width:100%;">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Date</th>
-                  <th>Sales No</th>
-                  <th>Outward No</th>
-                  <th>Party A/c Name</th>
-                  <th>Voucher Type</th>
-                  <th>Total Qty</th>
-                  <th>Amount</th>
-                  <th>View</th>
-        
-                 
-                </tr>
-              </thead>
-              
-              <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-                {% for sale in sales_list %}
-                <tr>
-                  <td>{{forloop.counter}}</td>
-                  <td>{{sale.created_date}}</td>
-                  <td class="text-center">{{sale.sale_no}}</td>
-                  <td class="text-center">{{sale.outward_no.outward_no}}</td>
-                  <td>{{sale.party_name.name}}</td>
-                  <td>{{sale.ledger_type}}</td>
-                  <td class="text-center">{{sale.total_qty}}</td>
-                  <td>{{sale.grand_total}}</td>
-                  <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
-
-                </tr>
-              {% endfor %}
-              </tbody>
-              
-            </table>
-          </div>  
-         
-          <div class="mt-2 table-responsives">
-            <table  class="table table-striped table-hover table-bordered" style="width:100%;">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Date</th>
-                  <th>Sales Return No</th>
-                  <th>Sales No</th>
-                  <th>Party A/c Name</th>
-                  <th>Voucher Type</th>
-                  <th>Total Qty</th>
-                  <th>View</th>
-                </tr>
-              </thead>
-              
-              <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-                {% for return in sales_return %}
-                <tr>
-                  <td>{{forloop.counter}}</td>
-                  <td>{{return.created_date}}</td>
-                  <td>{{return.sales_voucher_master}}</td>
-                  <td>{{return.sales_voucher_master.sale_no}}</td>
-                  <td>{{return.sales_voucher_master.party_name.name}}</td>
-                  <td>{{return.sales_return_inward_instance.ledger_type}}</td>
+  <div class="mt-2 table-responsives">
+    <table  class="table table-striped table-hover table-bordered" style="width:100%;">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Date</th>
+          <th>Outward No</th>
+          <th>SalesMan</th>
+          <th>Voucher Type</th>
+          <th>Sale No/Sale Return No</th>
+          <th>Party A/c Name</th>
+          <th>Total Qty</th>
+          <th>Debit</th>
+          <th>Credit</th>
+          <th>View</th>
+          <th>Print</th>
           
-                  <td></td>
-                  <td><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        </tr>
+      </thead>
+      
+      <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+        {% for sale in sales_list %}
+        
+        <tr class="table-success">
+          <td>{{forloop.counter}}</td>
+          <td>{{sale.created_date}}</td>
+          <td class="text-center">{{sale.outward_no.outward_no}}</td>
+          <td>SalesMan</td>
+          <td>{{sale.ledger_type}}</td>
+          <td class="text-center">{{sale.sale_no}}</td>
+          <td>{{sale.party_name.name}}</td>
+          <td class="text-center">{{sale.total_qty}}</td>
+          <td>{{sale.grand_total}}</td>
+          <td></td>
+          <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+          <td></td>
+        </tr>
+        
+      {% endfor %}
+      {% for return in sales_return %}
+      <tr class="table-danger">
+        <td>{{forloop.counter}}</td>
+        <td>{{return.created_date}}</td>
+        <td></td>
+        <td>SalesMan</td>
+        <td>{{return.sales_return_inward_instance.ledger_type}}</td>
+        <td>{{return.sales_voucher_master}}</td>
+        <!-- <td>{{return.sales_voucher_master.sale_no}}</td> -->
+        <td>{{return.sales_voucher_master.party_name.name}}</td>
+        <td>Qty</td>
+        <td></td>
+
+        <td>credit</td>
+        <td><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+        <td>Print</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+      
+    </table>
+  </div>  
+</div>        
+          
   
 
 {% endblock body %}
