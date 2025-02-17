@@ -673,17 +673,18 @@ $(document).ready(function () {
             $('#responseMessage').html('<span class="text-danger">Please select a picklist before scanning.</span>');
             return;
         }
-
+        var outwardNo = $('#id_outward_no').val()
         var selectedRow = checkedRadio.closest('tr');
         var pickNo = parseInt(selectedRow.find('.pickId').val()?.trim(), 10) || 0;
         var pickQty = parseInt(selectedRow.find('.pickQty').val()?.trim(), 10) || 0;
         var pickBalance = parseInt(selectedRow.find('.pickBalance').val().trim(),10) ;
+        
 
         try {
             const response = await $.ajax({
                 url: '/outwardscanserialnoprocess/',
                 type: 'GET',
-                data: { serialNo: serialNo, pickNo: pickNo },
+                data: { serialNo: serialNo, pickNo: pickNo, outwardNo:outwardNo },
             });
 
             if (!response.products || response.products.length === 0) {

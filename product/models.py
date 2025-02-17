@@ -1306,7 +1306,7 @@ class outward_products(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT,related_name='outward_product')
     outward_picklist_no = models.CharField(max_length=25)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
-    unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
+    unique_serial_no = models.CharField(max_length=25, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     quantity = models.IntegerField(default = 1)
 
@@ -1368,6 +1368,7 @@ class sales_return_product(models.Model):
     scan_qty = models.IntegerField(default=1)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
 
 
 class sales_return_voucher_master(models.Model):
