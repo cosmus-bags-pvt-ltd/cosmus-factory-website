@@ -11,13 +11,13 @@
       </div>
       <span id="purchaseError" class="error-messages"></span>
       <div class="d-flex">
-        <label for="id_sales_return_no" class="me-1">Sales Return No :</label>
+        <label for="id_sales_return_no" class="fw-bold me-1">Sales Return No :</label>
         <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{master_form.instance.sales_return_no}}" maxlength="255" required>
       </div>
 
       <span id="SupplierError" class="error-messages"></span>
       <div class="d-flex ms-2">
-        <label for="id_sales_voucher_master" class="me-1">Sales No :</label>
+        <label for="id_sales_voucher_master" class="fw-bold me-1">Sales No :</label>
         {% if master_form.instance.id %}
         <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="{{master_form.instance.sales_voucher_master.id}}">
         <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="{{master_form.instance.sales_voucher_master.sale_no}}" maxlength="255" required>
@@ -27,18 +27,18 @@
         {% endif %}
       </div>
       <div class="d-flex ms-2">
-        <label for="id_ledger_type" class="me-1">ledger Type :</label>
+        <label for="id_ledger_type" class="fw-bold me-1">ledger Type :</label>
         <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales return' readonly>
       </div>
       <div class="ms-2">
-        <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
+        <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
         <input type="hidden" class="purchase-amount" name="selected_warehouse" id="id_selected_warehouse" value="{{master_form.instance.selected_warehouse.id}}">
         <input type="text" class="purchase-amount" name="selected_warehouse_name" required id="id_selected_warehouse_Name" value="{{master_form.instance.selected_warehouse.warehouse_name_finished}}" readonly>
         
       </div>
       <span id="purchaseError" class="error-messages"></span>
       <div class="d-flex ms-2">
-        <label for="id_party_name" class="me-3">Party A/C Name :</label>
+        <label for="id_party_name" class="fw-bold me-3">Party A/C Name :</label>
         <input type="hidden" class="item-selects" name="party_name"  id="id_party_name" value="{{master_form.instance.party_name.id}}">
         <input type="text" class="item-selects" name="party_name_value" required id="id_party_name_value" value="{{master_form.instance.party_name.name}}" readonly>
       </div>
@@ -188,8 +188,8 @@
 </form>
     <div class="mt-2">
         <div>
-            <label>Outward No :</label><span></span>
-            <label>Total Qty :</label><span>Pcs</span>
+            <label class="fw-bold">Outward No :</label><span></span>
+            <label class="fw-bold">Total Qty :</label><span class="">Pcs</span>
         </div>
         <table class="table table-striped table-hover table-bordered table-warning" id="sales_retrun_outwardTable">
             <thead class="name_absolute">

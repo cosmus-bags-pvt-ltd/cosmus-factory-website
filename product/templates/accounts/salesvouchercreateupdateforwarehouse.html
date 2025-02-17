@@ -15,7 +15,7 @@
         </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex">
-          <label for="id_outward_no" class="ms-2 me-2">Outward No:</label>
+          <label for="id_outward_no" class="fw-bold ms-2 me-2">Outward No:</label>
 
           <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{% if master_form.instance and master_form.instance.outward_no %}{{ master_form.instance.outward_no.outward_no }}{% elif outward_number %}{{ outward_number }}{% endif %}" maxlength="255" readonly>
 
@@ -24,7 +24,7 @@
         <span id="SupplierError" class="error-messages"></span>
 
         <div class="d-flex ms-3">
-          <label for="id_sale_no" class="me-2">Sales No :</label>
+          <label for="id_sale_no" class="fw-bold me-2">Sales No :</label>
           {% if master_form.instance.id %}
           <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
             value="{{master_form.instance.sale_no}}" maxlength="255" required readonly>
@@ -34,12 +34,12 @@
             {% endif %}
         </div>
         <div class="d-flex ms-3">
-          <label for="id_company_gst" class="ms-1 me-1">Company GST No :</label>
+          <label for="id_company_gst" class="fw-bold ms-1 me-1">Company GST No :</label>
           <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
             maxlength="50" readonly>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_ledger_type" class="me-1">ledger Type :</label>
+          <label for="id_ledger_type" class="fw-bold me-1">ledger Type :</label>
           <input type="text" class="purchase-vNo" name="ledger_type" id="id_ledger_type"
             value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
             placeholder="Sales" readonly>
@@ -47,7 +47,7 @@
       </div>
       <div class="mb-3 d-flex">
         <div class="">
-          <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
+          <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
           <select class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.selected_warehouse.id}}">
@@ -63,7 +63,7 @@
         </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex ms-3">
-          <label for="id_party_name" class="me-3">Party A/C Name:</label>
+          <label for="id_party_name" class="fw-bold me-3">Party A/C Name :</label>
           <select class="item-select text-black" name="party_name" required id="id_party_name">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.party_name.id}}">
@@ -78,7 +78,7 @@
           <button  type="button" id="ledgerpurchase" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_GST_number" class="me-2">Party GST No :</label>
+          <label for="id_GST_number" class="fw-bold me-2">Party GST No :</label>
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
             value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
             readonly required>

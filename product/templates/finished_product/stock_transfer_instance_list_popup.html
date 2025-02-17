@@ -588,6 +588,15 @@ function inputCheck() {
                 binName.focus()
             }
         }
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(manualScan.value === ''){
+                manualScan.focus();
+                return;
+            }else{
+                binName.focus()
+            }
+        }
     })
     binName.addEventListener('keydown',function(event){
         if(event.key === 'Tab'){
@@ -598,6 +607,12 @@ function inputCheck() {
             }else{
                 submitButton.focus()
             }
+        }
+    });
+    submitButton.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            inwardScan.focus();
         }
     })
     

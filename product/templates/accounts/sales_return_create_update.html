@@ -10,7 +10,7 @@
         <div class="d-flex mb-3">
           <div class="d-flex mb-3">
             <div class="d-flex">
-                <label for="id_sales_return_no" class="me-2">Sales Return No :</label>
+                <label for="id_sales_return_no" class="fw-bold me-2">Sales Return No :</label>
                 {% if master_form.instance.id %}
                     <input type="hidden" class="purchase-vNo" name="sales_return_inward_instance" id="id_sales_return_inward_instance" value="{{ master_form.instance.sales_return_inward_instance.id }}">
                     <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{ master_form.instance.sales_return_inward_instance.sales_return_no }}" maxlength="255" readonly>
@@ -21,7 +21,7 @@
             </div>
         
             <div class="d-flex ms-3">
-                <label for="id_sale_no" class="ms-2 me-2">Sales No :</label>
+                <label for="id_sale_no" class="fw-bold ms-2 me-2">Sales No :</label>
                 {% if master_form.instance.pk %}
                     <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{ master_form.instance.sales_voucher_master.id }}">
                     <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form.instance.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
@@ -32,12 +32,12 @@
             </div>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_company_gst" class="ms-2 me-2">Company GST No :</label>
+          <label for="id_company_gst" class="fw-bold ms-2 me-2">Company GST No :</label>
           <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238" maxlength="50" readonly>
         </div>
 
         <div class="d-flex ms-3">
-            <label for="id_ledger_type" class="ms-2 me-2">ledger Type :</label>
+            <label for="id_ledger_type" class="fw-bold ms-2 me-2">ledger Type :</label>
           {% if master_form.instance.pk %}
           <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.sales_return_inward_instance.ledger_type}}" maxlength="50" default='Sales Return' readonly>
           {% elif not master_form.instance.id %}
@@ -49,7 +49,7 @@
       </div>
       <div class="mb-3 d-flex">
         <div class="">
-            <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
+            <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
           {% if master_form.instance.pk %}
         
           <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
@@ -60,7 +60,7 @@
         </div>
 
         <div class="d-flex ms-3">
-            <label for="id_party_name" class=" ms-2 me-2">Party A/C Name:</label>
+            <label for="id_party_name" class="fw-bold ms-2 me-2">Party A/C Name:</label>
           {% if master_form.instance.pk %}
           <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
           {% elif not master_form.instance.id %}
@@ -70,7 +70,7 @@
     
         </div>
         <div class="d-flex ms-3">
-            <label for="id_GST_number" class="ms-2 me-2">Party GST No :</label>
+            <label for="id_GST_number" class="fw-bold ms-2 me-2">Party GST No :</label>
           {% if master_form.instance.pk %}
          
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form.instance.sales_voucher_master.party_name.Gst_no }}" maxlength="15" readonly required>
