@@ -398,8 +398,23 @@
         // Function to send serial number to the backend
         async function sendSerialNumber(serialNo) {
 
-        var saleNo = $('#id_sales_voucher_master_name').val()
-        try {
+            var saleNo = $('#id_sales_voucher_master_name').val()
+            let isDuplicate = false;
+                
+            $('#salesReturnoutwardTable .mainTableList tr').each(function () {
+                const row = $(this);
+                if (row.css('display') === 'none') return;
+                const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+                
+                if (serialValue && serialValue === serialNo) {
+                    $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                    isDuplicate = true;
+                    return false;
+                } 
+            });
+
+            if (isDuplicate) return;
+            try {
                 const response = await $.ajax({
                     url: '/processserialnoforreturnsalesajax/',
                     type: 'GET',
@@ -409,24 +424,24 @@
                     },
                 });
             
-            $('#id_product').val(response.model_name);
-            $('#id_product_sku').val(response.product_sku);
-            $('#id_product_color').val(response.product_color);
-            $('#productImgPreview').attr('src', response.product_image);
+                $('#id_product').val(response.model_name);
+                $('#id_product_sku').val(response.product_sku);
+                $('#id_product_color').val(response.product_color);
+                $('#productImgPreview').attr('src', response.product_image);
 
-            const binSelect = $('#id_bin_Name');  
-            binSelect.empty(); 
+                const binSelect = $('#id_bin_Name');  
+                binSelect.empty(); 
 
-            response.bin_to_dict.forEach(bin => {
-                binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
-            });
+                response.bin_to_dict.forEach(bin => {
+                    binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
+                });
 
-            return response;
-        } catch (error) {
-            console.error('Error:', error);
-            return null; 
+                return response;
+            } catch (error) {
+                console.error('Error:', error);
+                return null; 
+            }
         }
-    }
 
         $('#salesReturnBin').on('click',function(){
                 var serialno;
@@ -442,7 +457,28 @@
                 }else{
                     alert("Please Enter a valid serial no")
                 }
+
+                let isDuplicate = false;
+                let rowToPopulate = null;
+
+                $('#salesReturnoutwardTable .mainTableList tr').each(function () {
+                    const row = $(this);
+                    if (row.css('display') === 'none') return;
+                    const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+                    
+                    if (serialValue && serialValue === serialno) {
+                        $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                        isDuplicate = true;
+                        return false;
+                    }
+
+                    if (!isDuplicate && row.find('[name$="-product_name_value"]').val()?.trim() === "") {
+                        rowToPopulate = row;
+                        return false;
+                    }
+                });
         
+                if (isDuplicate) return;
 
                 $.ajax({
                     url: '/returnproductwithbinajax/',
@@ -464,28 +500,6 @@
                         $('#id_product_color').val('');           
                         $('#productImgPreview').attr('src', '');
 
-                        let isDuplicate = false;
-                        let rowToPopulate = null;
-
-                        $('#salesReturnoutwardTable .mainTableList tr').each(function () {
-                            const row = $(this);
-                            if (row.css('display') === 'none') return;
-                            const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
-                            
-                            if (serialValue && serialValue === serialno) {
-                                $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
-                                isDuplicate = true;
-                                return false;
-                            }
-
-                            if (!isDuplicate && row.find('[name$="-product_name_value"]').val()?.trim() === "") {
-                                rowToPopulate = row;
-                                return false;
-                            }
-                        });
-
-                        if (isDuplicate) return;
-
                         if (rowToPopulate) {
                             populateRow(rowToPopulate, response );
                         } else {
@@ -496,17 +510,17 @@
                     },
                     error:function(xhr, status, error){
                         let errorMessage = 'An error occurred';
-                            try {
-                                const response = JSON.parse(xhr.responseText);
-                                if (response.error) {
-                                    errorMessage = response.error;
-                                }
-                            } catch (e) {
-                                console.error('Error parsing JSON response:', e);
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.error) {
+                                errorMessage = response.error;
                             }
-                            // Display the error message
-                            $('#responseMessage').html(`<span class="text-danger">${errorMessage}</span>`);
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
                         }
+                        // Display the error message
+                        $('#responseMessage').html(`<span class="text-danger">${errorMessage}</span>`);
+                    }
                     
                 })
             })

@@ -36,21 +36,21 @@
                 <tr>
                     <td>{{forloop.counter}}</td>
                     <td>{{outward.created_date}}</td>
-                    <td>{{outward.outward_no}}</td>
-                    <td>
+                    <td class="text-center">{{outward.outward_no}}</td>
+                    <td class="text-center">
                         {% for picklist_process in outward.picklist_process_in_outward_set.all %}
                             {{ picklist_process.picklist.picklist_no }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </td>
-                    <td>{{outward.picklist_total_qty}}</td>
-                    <td>{{outward.total_qty}}</td>
-                    <td>{{outward.remaining_qty}}</td>
+                    <td class="text-center">{{outward.picklist_total_qty}}</td>
+                    <td class="text-center">{{outward.total_qty}}</td>
+                    <td class="text-center">{{outward.remaining_qty}}</td>
                     {% with outward.sales_voucher_master_outward_scan_set.all as sales %}
                     {% if sales %}
                         {% for sale_process in sales %}
-                            <td>{{ sale_process.sale_no |default_if_none:'' }}</td>
-                            <td>{{ sale_process.party_name.name |default_if_none:'' }}</td>
-                            <td>{{ sale_process.grand_total |default_if_none:'' }}</td>
+                            <td class="text-center">{{ sale_process.sale_no |default_if_none:'' }}</td>
+                            <td class="text-center">{{ sale_process.party_name.name |default_if_none:'' }}</td>
+                            <td class="text-center">{{ sale_process.grand_total |default_if_none:'' }}</td>
                         {% endfor %}
                     {% else %}
                         <!-- Show empty cells if no sales are linked -->
