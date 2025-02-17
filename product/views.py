@@ -15286,7 +15286,16 @@ def sales_return_inward_to_bin(request,r_id=None):
                             form_instance.sales_return_inward_instance = master_form_instance
                             form_instance.save()
 
-                            
+                            bin_no = form_instance.bin_number
+                            serial_no = form_instance.unique_serial_no
+
+                            inward_data, created = finishedgoodsbinallocation.objects.get_or_create(
+                                unique_serial_no=serial_no, 
+                            )
+
+                            if not created:
+                                finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).update(bin_number=bin_no,outward_done=False)
+
 
                 return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id,0]))
                 
@@ -15387,7 +15396,7 @@ def sales_return_voucher_create_update(request, s_id=None, sr_id=None, sv_id=Non
         
         master_form_data = get_object_or_404(sales_return_inward, id=master_form_data_instance.sales_return_inward_instance.id)
     else:
-        # Create new sales return voucher
+
         products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
         product_list = []
 
