@@ -15106,7 +15106,7 @@ def sales_return_inward_to_bin(request,r_id=None):
         formset = sales_return_product_formset()
 
     if request.method == 'POST':
-        print(request.POST)
+        # print(request.POST)
         master_form = salesreturninwardmasterform(request.POST or None,instance=instance_queryset)
         formset = sales_return_product_formset(request.POST or None,instance=instance_queryset)
 
@@ -15131,6 +15131,7 @@ def sales_return_inward_to_bin(request,r_id=None):
                         if form.instance.pk:
                             form.instance.delete()
 
+                    formset.forms = [form for form in formset.forms if form.has_changed()]
 
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
@@ -15152,8 +15153,49 @@ def sales_return_inward_to_bin(request,r_id=None):
                                 bin_qty_increase.product_quantity += 1
                                 bin_qty_increase.save()
 
+                    sales_return_master, created = sales_return_voucher_master.objects.get_or_create(sales_voucher_master=master_form_instance.sales_voucher_master,sales_return_inward_instance=master_form_instance)
 
-                return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id,0]))
+                    if sales_return_master:
+
+                        products = {}
+
+                        post_data = request.POST.dict()
+
+                        total_forms = int(post_data.get('sales_return_product_set-TOTAL_FORMS', 0))
+
+                        products[master_form_instance.sales_return_no] = []
+
+                        for i in range(total_forms):
+
+                            product = post_data.get(f'sales_return_product_set-{i}-product')
+                            quantity = int(post_data.get(f'sales_return_product_set-{i}-scan_qty', 0))
+
+                            found = False
+                            for p in products[master_form_instance.sales_return_no]:
+                                if p['product'] == product:
+                                    p['quantity'] += quantity
+                                    found = True
+                                    break
+
+                            if not found:
+                                product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
+                                products[master_form_instance.sales_return_no].append({
+                                'product_ref': post_data.get(f'sales_return_product_set-{i}-product_RefNo'),
+                                'product_name': post_data.get(f'sales_return_product_set-{i}-product_name_value'),
+                                'product': product,
+                                'color': post_data.get(f'product_color_{i}'),
+                                'quantity': quantity,
+                                'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                'gst': product_info.Product.Product_GST.gst_percentage
+                                })
+
+                        
+                        request.session['products_data'] = products   
+
+                        return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id, sales_return_master.id]))
+                    else:
+                        return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id,0]))   
                 
             except Exception as e:
                 print(e)
@@ -15170,23 +15212,79 @@ def sale_return_list(request):
 @login_required(login_url='login')
 def sales_return_voucher_create_update(request, s_id=None, sr_id=None, sv_id=None):
 
+    print("in sale return")
+
     if sv_id:
-        # Fetch the existing master record for update
+        
         master_form_data_instance = get_object_or_404(sales_return_voucher_master, id=sv_id)
 
         master_form = sales_return_voucher_master_form(instance = master_form_data_instance)
 
-        # Fetch related vouchers for update
-        sales_return_voucher_formset_create = inlineformset_factory(
-            sales_return_voucher_master, sales_return_voucher,
-            form=sales_return_voucher_form, extra=0, can_delete=True
-        )
-        formset = sales_return_voucher_formset_create(instance=master_form_data_instance, prefix="sale_return_forms")
-        
         master_form_data = get_object_or_404(sales_return_inward, id=master_form_data_instance.sales_return_inward_instance.id)
+
+        products = request.session.get('products_data', None)
+
+        if products:
+            for key, val in products.items():
+                sale_return_id = key
+                product_list2 = val
+                break
+            
+            sales_product_info = sales_return_voucher.objects.filter(sales_return_master = sv_id).values('product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','trade_disct','spl_disct')
+
+            sales_product_info_list = list(sales_product_info)
+
+            merged_product_list = []
+
+            for product in product_list2:
+                sku = product['product']
+                matched = False
+
+                for sales_product in sales_product_info_list:
+                    if sku == str(sales_product['product_name__PProduct_SKU']):
+                        merged_product_list.append({
+                            'product_ref': product['product_ref'],
+                            'product_name': product['product_name'],
+                            'product': product['product'],
+                            'color': product['color'],
+                            'quantity': product['quantity'],
+                            'mrp': product['mrp'],
+                            'customer_price': product['customer_price'],
+                            'gst': product['gst'],
+                            'trade_disct': sales_product['trade_disct'],
+                            'spl_disct': sales_product['spl_disct'],
+                        })
+                        matched = True
+                        break
+
+                if not matched:
+                    merged_product_list.append({
+                        'product_ref': product['product_ref'],
+                        'product_name': product['product_name'],
+                        'product': product['product'],
+                        'color': product['color'],
+                        'quantity': product['quantity'],
+                        'mrp': product['mrp'],
+                        'customer_price': product['customer_price'],
+                        'gst': product['gst'],
+                        'trade_disct': '',
+                        'spl_disct': '',
+                    })
+
+            sales_return_voucher_formset_create = inlineformset_factory(sales_return_voucher_master, sales_return_voucher,form=sales_return_voucher_form, extra=len(merged_product_list), can_delete=True)
+        
+            formset = sales_return_voucher_formset_create(initial=merged_product_list, prefix="sale_return_forms")
+
+        else:
+            
+            sales_return_voucher_formset_create = inlineformset_factory(sales_return_voucher_master, sales_return_voucher,form=sales_return_voucher_form, extra=0, can_delete=True)
+            
+            formset = sales_return_voucher_formset_create(instance=master_form_data_instance, prefix="sale_return_forms")
+
     else:
 
         products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
+
         product_list = []
 
         for data in products:
