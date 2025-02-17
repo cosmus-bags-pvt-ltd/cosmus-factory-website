@@ -292,14 +292,22 @@
     </div>
   </div>
 </div>
-<!-- {% if master_form.instance.pk %}
-<button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick" style="display: none;">Submit</button>
-{% elif not master_form.instance.id %} -->
+
 <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
-<!-- {% endif %} -->
+
 </div>
 
 <script>
+    $(document).ready(function(){
+        var formsSale = $('#id_sale_return_forms-0-id').val();
+        var submitForm = $('#parentFormClick');
+        if(formsSale === ''){
+            submitForm.show()
+        }else{
+            submitForm.hide();
+        }
+
+    })
     // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
     function getGstNo() {
         let partyGstValue = document.getElementById('id_GST_number').value;
