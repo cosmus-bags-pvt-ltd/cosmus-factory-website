@@ -30,7 +30,14 @@ def subtract(value, arg):
         return float(value) - float(arg)
     except (ValueError, TypeError):
         return ''
-    
 
+
+@register.filter
+def minus(value, arg):
+    """Subtracts arg from value."""
+    try:
+        return value - arg
+    except TypeError:
+        return 0
 
 

@@ -1,0 +1,17 @@
+{% extends 'product/base.html' %} 
+{% load static %} 
+{% block body %}
+  
+<form action="" method="POST">
+    {% csrf_token %}
+    {{form}}
+    <input type="submit">
+</form>  
+
+{% for salesman in salesman_list %}
+    <p>{{ salesman.salesman_name }}</p>
+    <a href="{% url 'salesman-update' salesman.id %}">Edit</a>
+    <a href="{% url 'delete-salesman' salesman.id %}">Delete</a>
+{% endfor %}
+
+{% endblock body %}
