@@ -15457,7 +15457,11 @@ def sales_return_voucher_create_update(request,s_id=None, sr_id=None, sv_id=None
 
 @login_required(login_url='login')
 def sale_return_list(request):
-    queryset = sales_return_inward.objects.all().annotate(total_qty = Sum('sales_return_product__scan_qty'))
+    total_sale_qty_subquery = sales_voucher_outward_scan.objects.filter(sales_voucher_master=OuterRef('sales_voucher_master')).values('sales_voucher_master').annotate(total_sale_qty=Sum('quantity')).values('total_sale_qty')
+
+    
+    queryset = sales_return_inward.objects.annotate(total_qty=Sum('sales_return_product__scan_qty'),total_sale_qty=Subquery(total_sale_qty_subquery))
+    
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
 
 

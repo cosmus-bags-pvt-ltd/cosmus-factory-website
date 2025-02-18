@@ -1352,7 +1352,7 @@ salesvoucherfromscanupdateformset = inlineformset_factory(sales_voucher_master_o
 class salesreturninwardmasterform(forms.ModelForm):
     class Meta:
         model = sales_return_inward
-        fields = ['sales_voucher_master','sales_return_no','party_name','selected_warehouse']
+        fields = ['sales_voucher_master','sales_return_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_warehouse','salesman']
 
 
 class sales_return_product_form(forms.ModelForm):

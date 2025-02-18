@@ -1376,6 +1376,15 @@ class sales_return_product(models.Model):
 class sales_return_voucher_master(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.PROTECT)
     sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete = models.PROTECT)
+    company_gst = models.CharField(max_length = 100)
+    ledger_type = models.CharField(max_length = 20, default = 'sales')
+    party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
+    selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    salesman = models.ForeignKey(Salesman_info,on_delete=models.PROTECT)
+    fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
