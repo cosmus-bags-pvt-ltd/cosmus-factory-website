@@ -4,18 +4,20 @@
 
 <div class="row mt-3">
     
+    
+    
       <div class="d-flex mb-3">
+        {% for product in product_data %}
+        <label class="fw-bold">Ref No :</label><span class="text-danger fw-bold ms-2 me-3">{{ product.Product__Product_Refrence_ID }}</span>
 
-        <label class="fw-bold">Ref No :</label><span class="text-danger fw-bold ms-2 me-3">{{ ref_no }}</span>
-
-        <label class="fw-bold">Model Name :</label><span class="text-danger fw-bold ms-2 me-3">{{ model_name }}</span>
-        <label class="fw-bold">Color :</label><span class="text-danger fw-bold ms-2 me-3"></span>
+        <label class="fw-bold">Model Name :</label><span class="text-danger fw-bold ms-2 me-3">{{ product.Product__Model_Name }}</span>
+        <label class="fw-bold">Color :</label><span class="text-danger fw-bold ms-2 me-3">{{ product.PProduct_color__color_name }}</span>
 
         <label class="fw-bold">Total Quantity :</label>
         <span id="total" class="text-danger ms-2 me-3"> pcs</span> 
         <label class="fw-bold">IMG :</label>
-        <img src="" alt="img" class=" ms-2 me-3" style="width: 30px;">
-
+        <img src="{{MEDIA_URL}}{{ product.PProduct_image }}" alt="img" class=" ms-2 me-3" style="width: 30px;">
+        {% endfor %}
       </div>
 
 

@@ -20,7 +20,7 @@
           <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{% if master_form.instance and master_form.instance.outward_no %}{{ master_form.instance.outward_no.outward_no }}{% elif outward_number %}{{ outward_number }}{% endif %}" maxlength="255" readonly>
 
         </div>
-
+        {{ master_form }}
         <span id="SupplierError" class="error-messages"></span>
 
         <div class="d-flex ms-3">

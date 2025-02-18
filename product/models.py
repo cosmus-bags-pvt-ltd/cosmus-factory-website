@@ -101,6 +101,9 @@ class gst(models.Model):
         ordering = ["gst_percentage"]
 
 
+class Salesman_info(models.Model):
+    salesman_name = models.CharField(max_length=252)
+
 class Product(models.Model):
     BRAND_CHOICES = [
         ("Cosmus", 'Cosmus'),
@@ -1279,8 +1282,6 @@ class Picklist_voucher_master(models.Model):
 
 
 
-
-
 class Picklist_products_list(models.Model):
     picklist_master_instance = models.ForeignKey(Picklist_voucher_master,on_delete=models.CASCADE,related_name="picklist_products_list")
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
@@ -1329,6 +1330,7 @@ class sales_voucher_master_outward_scan(models.Model):
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    salesman = models.ForeignKey(Salesman_info,on_delete=models.PROTECT)
     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)

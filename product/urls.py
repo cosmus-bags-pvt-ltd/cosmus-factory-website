@@ -221,6 +221,11 @@ urlpatterns = [
     path('factory_emp_update/<int:pk>',views.factory_employee_create_update_list, name = 'factory-emp-update'),
     path('factory_emp_delete/<int:pk>',views.factoryempdelete, name = 'factory-emp-delete'),
 
+    #salesman
+    path('salesmancreate/',views.salesman_create_update, name = 'salesman-create'),
+    path('salesmanupdate/<int:e_id>/',views.salesman_create_update, name = 'salesman-update'),
+    path('deletesalesman/<int:e_id>/',views.delete_salesman, name = 'delete-salesman'),
+
     # cutting Room 
     path('cutting_room_create/',views.cutting_room_create_update_list, name = 'cutting_room-create'),
     path('cutting_room_update/<int:pk>',views.cutting_room_create_update_list, name = 'cutting_room-update'),
@@ -387,6 +392,6 @@ urlpatterns = [
     path('otwarddataforsalereturnajax/', views.otward_data_for_sale_return_ajax, name='otward-data-for-sale-return-ajax'),
     path('processserialnoforreturnsalesajax/', views.process_serial_no_for_return_sales_ajax, name='process-serial-no-for-return-sales-ajax'),
     path('returnproductwithbinajax/', views.return_product_with_bin_ajax, name='return-product-with-bin-ajax'),
-    path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/<int:sv_id>/', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
-
+    path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/<int:sv_id>/<str:action>', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
+    path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
 ]
