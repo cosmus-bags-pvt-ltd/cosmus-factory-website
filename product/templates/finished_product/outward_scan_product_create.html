@@ -96,8 +96,9 @@
         <tbody class="mainTableList">
             {{ formset.management_form }}
             {% for form in formset %}
-            {{form.id}}
+           
                 {% if form.instance.id %}
+                {{form.id}}
                 <tr>
                     <td>
                         <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
@@ -139,11 +140,13 @@
 
                     <td>
                         <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
-                    </td>  
+                        <input type="hidden" class="px-2"   name="{{form.prefix}}-ids" id="id_{{form.prefix}}-ids" value="{{ form.instance.id }}" readonly>
+                    </td> 
                 </tr>
 
 
                 {% elif not form.instance.id %}
+                {{form.id}}
                 <tr>
                     <td>
                         <!-- <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value=""> -->
@@ -186,6 +189,7 @@
 
                     <td>
                         <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
+                        <input type="hidden" class="px-2"   name="{{form.prefix}}-ids" id="id_{{form.prefix}}-ids" value="" >
                     </td>  
                 </tr>
                 {% endif %}
@@ -264,15 +268,7 @@
 <script>
 
 $(document).ready(function () {
-    
-    var scanTotal = 0;
-    var serialQty = $('[name$="-quantity"]'); 
-    serialQty.each(function () {   
-        var outwardValue = parseInt($(this).val(), 10) || 0;
-        scanTotal += outwardValue;
-        $('#scanTotalQty').text(scanTotal);
-    });
-
+   
 // Event listener for when the picklist number is entered
     $('#id_pickList_no').on('blur', function () { 
         var picklistNo = parseInt($(this).val(), 10);
@@ -350,6 +346,7 @@ $(document).ready(function () {
         $('#id_pickList_no').val('');
     });
 
+
     function populatePicklistRow(row, response){
         row.find('.picklistId').val(response.id);
         row.find('.pickId').val(response.picklistNo);
@@ -403,7 +400,7 @@ $(document).ready(function () {
         $('[name$="-product"]').each(function () {
             let row = $(this).closest('tr');
             if (row.css('display') === 'none') return; 
-            var skuElement = $(this).val()?.trim();
+            var skuElement = row.find('[name$="-product"]').val()?.trim();
             if (!skuElement) return; 
 
             let sku = String(skuElement).trim();
@@ -426,13 +423,20 @@ $(document).ready(function () {
         }
 
         mergedData[productKey].forEach(item => {
+            let balanceQty;
             let sku = String(item.sku).trim();
             let qty = item.qty;
-       
+         
             let outwardQty = picklistSelected ? (totalQty[productKey]?.[sku] || 0) : 0;
-            let balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
-
-            console.log('outwardQty',outwardQty)
+            
+            if(outwardQty > qty){
+                $('#responseMessage').html('<span class="text-danger">Outward quantity exceeds available quantity.</span>');
+                return;
+            }else{
+                balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
+                
+            
+            }
             var newRow = $(`
                 <tr class="picklistRow" data-sku="${sku}" data-picklistno="${productKey}">
                     <td><span class="modelName">${item.model_name || "N/A"}</span></td>
@@ -446,6 +450,7 @@ $(document).ready(function () {
 
             productTable.append(newRow);
         });
+        
 
     });
 
@@ -612,6 +617,9 @@ $(document).ready(function () {
         row.find('[name$="-outward_picklist_no"]').val(productResponse[9]);
 
         picklistQtyCheck();
+        totalValueCalculate()
+        $('input.outwardPick-btn').trigger('click');
+       
     }
 
     function picklistQtyCheck() {
@@ -669,9 +677,9 @@ $(document).ready(function () {
         var serialNoQty = $('[name$="-quantity"]'); 
 
         serialNoQty.each(function () {
-            var outwardQty = parseInt($(this).val(), 10) || 0;
             var row = $(this).closest('tr');
             if (row.css('display') === 'none') return;
+            var outwardQty = parseInt(row.find('[name$="-quantity"]').val(), 10) || 0;
             var tablePicklistNo = parseInt(row.find('[name$="-outward_picklist_no"]').val()) || 0;
             var tableSku = String(row.find('[name$="-product"]').val()).trim(); 
 
@@ -710,7 +718,9 @@ $(document).ready(function () {
 
    
     async function sendSerialNumber(serialNo) {
+    
         var checkedRadio = $('.picklistRadio:checked');
+       
 
         if (checkedRadio.length === 0) {
             console.warn("No picklist selected.");
@@ -738,8 +748,8 @@ $(document).ready(function () {
             }
             $('#inwordSerialNo').val('');
             $('#id_manualSerialNo').val('');
+
             const productResponse = response.products[0];
-            console.log('productResponse',productResponse)
             const sku = String(productResponse[1]).trim();
             const serialNoResponse = String(productResponse[4]).trim();
             const responsePicklistNo = parseInt(productResponse[9], 10);
@@ -790,6 +800,7 @@ $(document).ready(function () {
                 $('#responseMessage').html('<span class="text-danger">SKU mismatch! This item is not in the picklist.</span>');
                 return;
             }
+           
 
             if (pickBalance < 1) {
                 console.error("No stock available. Balance is zero.");
@@ -799,9 +810,11 @@ $(document).ready(function () {
 
             let isDuplicate = false;
             let rowToPopulate = null;
+            var totalQty = {};
+            var picklistSelected = false;
 
             $('#outwardSales .mainTableList tr').each(function () {
-                const row = $(this);
+                const row = $(this).closest('tr');
                 if (row.css('display') === 'none') return;
                 const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
                 
@@ -816,17 +829,62 @@ $(document).ready(function () {
                     return false;
                 }
             });
+            
+            $('[name$="-product"]').each(function () {
+                const row = $(this).closest('tr');
+                if (row.css('display') === 'none') return;
+                var skuElement = row.find('[name$="-product"]').val()?.trim();
+                if (!skuElement) return;
 
-            if (isDuplicate) return;
+                let sku = String(skuElement).trim();
+                var pickNos = parseInt(row.find('[name$="-outward_picklist_no"]').val()?.trim());
+                var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
+                var checkboxChecked = $('.picklistRadio:checked');
 
-            if (rowToPopulate) {
-                populateRow(rowToPopulate, productResponse );
-            } else {
-                addNewRow();
-                const newRow = $('#outwardSales .mainTableList tr').last();
-                populateRow(newRow, productResponse);
+                if (checkboxChecked) picklistSelected = true;
+
+                if (!pickNos || pickNos !== pickNo) return;
+
+                if (!totalQty[pickNos]) totalQty[pickNos] = {};
+                if (!totalQty[pickNos][sku]) totalQty[pickNos][sku] = 0;
+
+                totalQty[pickNos][sku] += qty;
+
+            })
+
+        if (!Array.isArray(mergedData[pickNo])) {
+            console.warn("Invalid or missing picklist data for productKey:", pickNo);
+            return;
+        }
+
+        mergedData[pickNo].forEach(item => {
+            let skus = String(item.sku).trim();
+            let qty = item.qty;
+            let outwardQty = picklistSelected ? (totalQty[pickNo]?.[sku] || 0) : 0;
+        
+            if (outwardQty < qty) {
+
+                if(skus === sku){
+                    console.log('test')
+                    if (rowToPopulate) {
+                    populateRow(rowToPopulate, productResponse);
+                    } else {
+                        addNewRow();
+                        const newRow = $('#outwardSales .mainTableList tr').last();
+                        populateRow(newRow, productResponse);
+                    } 
+                }
+                    
+            }else{
+                $('#responseMessage').html('<span class="text-danger">Outward quantity exceeds available quantity.</span>');
+                return false;
             }
-
+           
+        })
+        
+    
+            if (isDuplicate) return;
+           
         } catch (error) {
             console.error("Error sending serial number:", error);
             $('#responseMessage').html('<span class="text-danger">Error processing request.</span>');
@@ -920,11 +978,18 @@ $(document).ready(function () {
         deleteInputElement.name = `outward_product-${formIndex}-DELETE`; 
         deleteInputElement.value="false";
 
+        const deleteElementId = lastRow.querySelector('[name$="-ids"]');
+        deleteElementId.id = `id_outward_product-${formIndex}-ids`;
+        deleteElementId.name = `outward_product-${formIndex}-ids`; 
+        deleteElementId.value="";
+
 
         formCountInput.value = formCount + 1;
         tableBody.appendChild(lastRow);
+        totalValueCalculate()
         deleteRowData();
         inputCheck()
+        
     }
 
     function getVisibleRows() {
@@ -938,37 +1003,47 @@ $(document).ready(function () {
              
                 if (rows.length > 1) {
                     const row = this.closest('tr');
+                    const productRow = row.querySelector('[name$="-DELETE"]').getAttribute('name');
+                    const nameValue =productRow.split('-')[1];
+                 
+                    var outwardId = document.getElementById('id_outward_product-'+ nameValue +'-ids').value;
         
-                    if (row) {
-                        const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
-                        console.log('checkRow',checkRow)
-                        var checkedRadio = $('.picklistRadio:checked');
+                    if(outwardId === ''){
+                        if (row) {
+                            const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+                            console.log('checkRow',checkRow)
+                            var checkedRadio = $('.picklistRadio:checked');
 
-                        if (checkedRadio.length === 0) {
-                            console.warn("No picklist selected.");
-                            $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
-                            return;
+                            if (checkedRadio.length === 0) {
+                                console.warn("No picklist selected.");
+                                $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
+                                return;
+                            }
+                            if (checkRow) {
+                                checkRow.checked = true; 
+                                checkRow.value = 'true'; 
+                                row.style.display = 'none';
+                                
+                        
+                                var selectedRow = checkedRadio.closest('tr'); 
+                                var pickNo = parseInt(selectedRow.find('.pickId').val().trim(), 10);
+                                var pickQty = parseInt(selectedRow.find('.pickQty').val().trim(), 10) || 0; 
+
+
+                                recalculatePicklistBalances(selectedRow,pickNo ,pickQty);
+            
+                                inputCheck();
+                                totalValueCalculate()
+                                
+                            } else {
+                                console.error("Checkbox for deletion not found in this row");
+                            }
                         }
-                        if (checkRow) {
-                            checkRow.checked = true; 
-                            checkRow.value = 'true'; 
-                            row.style.display = 'none';
-                            
-                            
-
-                            var selectedRow = checkedRadio.closest('tr'); 
-                            var pickNo = parseInt(selectedRow.find('.pickId').val().trim(), 10);
-                            var pickQty = parseInt(selectedRow.find('.pickQty').val().trim(), 10) || 0; 
-
-
-                            recalculatePicklistBalances(selectedRow,pickNo ,pickQty);
-        
-                            inputCheck();
-                            
-                        } else {
-                            console.error("Checkbox for deletion not found in this row");
-                        }
+                    }else{
+                        alert('This Serial No Already use in Sales');
+                        return;
                     }
+                    
                 } else {
                     alert('Cannot delete this row; at least one row must remain.');
                 }
@@ -1021,8 +1096,7 @@ $(document).ready(function () {
             let row = $(this).closest('tr');
             if (row.css('display') === 'none') return; // Skip hidden rows
             var checkboxChecked = $('.picklistRadio:checked'); 
-
-            let sku = String($(this).val()).trim();
+            let sku = String(row.find('[name$="-product"]').val()).trim();
             let pickNos = parseInt(row.find('[name$="-outward_picklist_no"]').val()?.trim());
             let qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
         
@@ -1041,7 +1115,7 @@ $(document).ready(function () {
                 }
             }
         });
-        console.log('totalQty',total)
+   
         if (!Array.isArray(mergedData[pickNo])) {
             console.warn("Invalid or missing picklist data for productKey:", pickNo);
             return;
@@ -1064,13 +1138,28 @@ $(document).ready(function () {
         selectedRow.find('.pickBalance').val(pickBal);
     }
 
+    function totalValueCalculate(){
+        var scanTotal = 0;
+        var serialQty = $('[name$="-quantity"]'); 
+        serialQty.each(function () {   
+            var row = $(this).closest('tr');
+            if (row.css('display') === 'none') return;
+            var outwardValue = parseInt($(row).find('[name$="-quantity"]').val(), 10) || 0;
+          
+            scanTotal += outwardValue;
+            $('#scanTotalQty').text(scanTotal);
+        });
+
+    }
+    
+    
     function inputCheck(){
         document.getElementById('id_pickList_no').focus();
         const picklistNo = document.getElementById('id_pickList_no')
         const outwardNo = document.getElementById('id_outward_no');
         const inwardNo = document.getElementById('inwordSerialNo');
         const mscanNo = document.getElementById('id_manualSerialNo')
-        const submit = document.getElementById('parentFormClick');
+       
 
         if(picklistNo){
             picklistNo.addEventListener('keydown',function(event){
@@ -1132,7 +1221,7 @@ $(document).ready(function () {
         }
         
     }
-    
+    totalValueCalculate()
     inputCheck();
     deleteRowData()
  })
