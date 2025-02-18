@@ -273,7 +273,7 @@
             </span>
             {% elif not master_form.instance.id %}
             <span class="purchase-span">
-              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form_data.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
           </span>
             {% endif %}
         </div>
