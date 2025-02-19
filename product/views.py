@@ -14914,11 +14914,51 @@ def salesvoucherlistwarehouse(request):
     if 'products_data' in request.session:
         del request.session['products_data']
 
-    sales_list = sales_voucher_master_outward_scan.objects.all().annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+    sales_list = sales_voucher_master_outward_scan.objects.all().select_related(
+        'outward_no',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).prefetch_related('sales_voucher_outward_scan').values(
+            'id',
+            'created_date',
+            'outward_no__id',
+            'outward_no__outward_no',
+            'salesman__salesman_name',
+            'salesman__id',
+            'ledger_type',
+            'sale_no',
+            'party_name__name',
+            'party_name__id',
+            'sales_voucher_outward_scan__quantity',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
 
-    sales_return = sales_return_voucher_master.objects.all().annotate(total_qty = Sum('sales_return_voucher__quantity'))
+    sales_return = sales_return_voucher_master.objects.all().select_related(
+        'sales_voucher_master',
+        'sales_return_inward_instance',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).prefetch_related('sales_return_voucher').values(
+            'id',
+            'sales_voucher_master__id',
+            'sales_return_inward_instance__id',
+            'created_date',
+            'salesman__salesman_name',
+            'salesman__id',
+            'ledger_type',
+            'sales_return_inward_instance__sales_return_no',
+            'grand_total',
+            'party_name__name','party_name__id',
+            'sales_return_voucher__quantity'
+            ).annotate(total_qty = Sum('sales_return_voucher__quantity'))
 
-    return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list,'sales_return':sales_return})
+    final_list = sorted(
+        chain(sales_list, sales_return), key=lambda x: x['created_date']
+    )
+
+    return render(request,'accounts/sales_list_warehouse.html',{'final_list':final_list})
 
 
 @login_required(login_url='login')
