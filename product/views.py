@@ -14908,7 +14908,10 @@ def sales_voucher_view_sort_with_salesman_and_partyname(request,id,identity):
         sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(salesman__id = id).select_related('sales_voucher_master','sales_return_inward_instance','party_name','selected_warehouse','salesman').values('created_date','sales_return_inward_instance__sales_return_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_return_voucher__quantity'))
         
     else:
-        pass
+        sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(party_name__id = id).select_related('outward_no','party_name','selected_warehouse','salesman').values('created_date','sale_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+
+        sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(party_name__id = id).select_related('sales_voucher_master','sales_return_inward_instance','party_name','selected_warehouse','salesman').values('created_date','sales_return_inward_instance__sales_return_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_return_voucher__quantity'))
+
     return render(request,'accounts/sales_voucher_view_sort_with_salesman_and_partyname.html',{'sales_vouchers_queryset':sales_vouchers_queryset,'sales_return_vouchers_queryset':sales_return_vouchers_queryset})
 
 
