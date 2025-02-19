@@ -10175,14 +10175,17 @@ def scan_product_list(request,pk,v_type):
 def warehouse_stock(request):
 
     purchase_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
+
+    purchase_sales_return_quantity_subquery = sales_return_voucher.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_retutn_quantity=Sum('quantity')).values('sales_retutn_quantity')
     
-    product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty')))
+    product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'),total_sales_return = Subquery(purchase_sales_return_quantity_subquery)))
 
 
     transfer_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
 
+    transfer_sales_return_quantity_subquery = sales_return_voucher.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_retutn_quantity=Sum('quantity')).values('sales_retutn_quantity')
 
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'),total_sales_return = Subquery(transfer_sales_return_quantity_subquery))
 
     
     merged_list = []
@@ -10204,7 +10207,8 @@ def warehouse_stock(request):
                     'total_inward':(x['total_inward'] or 0) + (y['total_inward'] or 0),
                     'total_balance':(x['total_balance'] or 0) + (y['total_balance'] or 0),
                     'inward_minus_sales': ((x['total_inward'] or 0) + (y['total_inward'] or 0)) - (x['total_sale'] or 0),
-                    'img': x['product_name__PProduct_image']
+                    'img': x['product_name__PProduct_image'],
+                    'total_sale_return':x['total_sales_return']
                 }
                 merged_list.append(dict_to_append)
                 break
@@ -10222,7 +10226,8 @@ def warehouse_stock(request):
                     'total_inward':x['total_inward'] or 0,
                     'total_balance':x['total_balance'] or 0,
                     'inward_minus_sales': (x['total_inward'] if x['total_inward'] else 0) -  (x['total_sale'] if x['total_sale'] else 0),
-                    'img': x['product_name__PProduct_image']
+                    'img': x['product_name__PProduct_image'],
+                    'total_sale_return':x['total_sales_return']
                 }
             merged_list.append(dict_to_append)
 
@@ -10239,7 +10244,8 @@ def warehouse_stock(request):
                     'total_inward':y['total_inward'] if y['total_inward'] else 0,
                     'total_balance':y['total_balance'],
                     'inward_minus_sales': (y['total_inward'] if y['total_inward'] else 0) -  (y['total_sale'] if y['total_sale'] else 0),
-                    'img': y['product__PProduct_image']
+                    'img': y['product__PProduct_image'],
+                    'total_sale_return':y['total_sales_return']
                 }
             merged_list.append(dict_to_append)
 
@@ -14249,7 +14255,7 @@ def picklist_view(request,pl_id):
 
 
 
-
+@login_required(login_url='login')
 def download_picklist_pdf(request,pl_id):
  # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14293,10 +14299,7 @@ def download_picklist_pdf(request,pl_id):
 
 
 
-
-
-
-
+@login_required(login_url='login')
 def download_picklist_excel(request,pl_id):
     # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14346,9 +14349,7 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
-
-
-
+@login_required(login_url='login')
 def outward_picklist_no_ajax(request):
 
     picklistNo = request.GET.get('picklistNo')
@@ -14393,9 +14394,7 @@ def outward_picklist_no_ajax(request):
         return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
 
 
-
-
-
+@login_required(login_url='login')
 def outward_scan_serial_no_process(request):
     print("in scan def")
     try:
@@ -14440,21 +14439,11 @@ def outward_scan_serial_no_process(request):
         return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
 
 
-
-
-
-
-
 from decimal import Decimal
 def decimal_to_float(obj):
     if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError("Type not serializable")
-
-
-
-
-
 
 
 from urllib.parse import urlencode
@@ -14687,6 +14676,7 @@ def outward_scan_product_create(request,o_id=None):
                 print(e)
     
     return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset ,'dict_to_send':dict_to_send})
+
 
 @login_required(login_url='login')
 def outward_scan_product_list(request):
@@ -14962,21 +14952,75 @@ def salesvoucherlistwarehouse(request):
 
 
 @login_required(login_url='login')
-def sales_voucher_view_sort_with_salesman_and_partyname(request,id,identity):
-    sales_vouchers_queryset = None
-    sales_return_vouchers_queryset = None
+def sales_voucher_view_sort_with_salesman(request,id):
 
-    if identity == 'salesman':
-        sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(salesman__id = id).select_related('outward_no','party_name','selected_warehouse','salesman').values('created_date','sale_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+    sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(salesman__id = id).select_related(
+        'outward_no',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sale_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
 
-        sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(salesman__id = id).select_related('sales_voucher_master','sales_return_inward_instance','party_name','selected_warehouse','salesman').values('created_date','sales_return_inward_instance__sales_return_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_return_voucher__quantity'))
+    sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(salesman__id = id).select_related(
+        'sales_voucher_master',
+        'sales_return_inward_instance',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sales_return_inward_instance__sales_return_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_return_voucher__quantity'))
+    
+
+    final_list = sorted(chain(sales_vouchers_queryset, sales_return_vouchers_queryset), key=lambda x: x['created_date'])
         
-    else:
-        sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(party_name__id = id).select_related('outward_no','party_name','selected_warehouse','salesman').values('created_date','sale_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+    return render(request,'accounts/sales_voucher_view_sort_with_salesman.html',{'final_list':final_list,})
 
-        sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(party_name__id = id).select_related('sales_voucher_master','sales_return_inward_instance','party_name','selected_warehouse','salesman').values('created_date','sales_return_inward_instance__sales_return_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_return_voucher__quantity'))
 
-    return render(request,'accounts/sales_voucher_view_sort_with_salesman_and_partyname.html',{'sales_vouchers_queryset':sales_vouchers_queryset,'sales_return_vouchers_queryset':sales_return_vouchers_queryset})
+@login_required(login_url='login')
+def sales_voucher_view_sort_with_partyname(request,id):
+
+    sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(party_name__id = id).select_related(
+        'outward_no',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sale_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+
+    sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(party_name__id = id).select_related(
+        'sales_voucher_master',
+        'sales_return_inward_instance',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sales_return_inward_instance__sales_return_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_return_voucher__quantity'))
+
+    final_list = sorted(chain(sales_vouchers_queryset, sales_return_vouchers_queryset), key=lambda x: x['created_date'])
+
+    return render(request,'accounts/sales_voucher_view_sort_with_partyname.html',{'final_list':final_list,}) 
+
 
 
 @login_required(login_url='login')
