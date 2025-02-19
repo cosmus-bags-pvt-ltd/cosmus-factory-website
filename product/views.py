@@ -10100,9 +10100,13 @@ from django.utils import timezone
 
 def scan_product_list(request,pk,v_type):
 
+    instance_entries_all = None
+    instance_entries = []
+
     if v_type == "purchase":
 
         instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number').values(
+            'related_purchase_item__product_purchase_master__id',
             'related_purchase_item__product_purchase_master__purchase_number',
             'related_purchase_item__product_purchase_master__ledger_type',
             'product__Product__Product_Refrence_ID',
@@ -10120,6 +10124,7 @@ def scan_product_list(request,pk,v_type):
     elif v_type == "transfer":
 
         instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number').values(
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id',
             'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no',
             'product__Product__Product_Refrence_ID',
             'product__PProduct_image',
@@ -10132,6 +10137,24 @@ def scan_product_list(request,pk,v_type):
             'bin_number__rack_finished_name__rack_name',
             'bin_number__bin_name'
             )
+    else:
+        instance_entries_all = finishedgoodsbinallocation.objects.all().select_related('related_transfer_record','product','bin_number').values(
+            'related_purchase_item__product_purchase_master__id',
+            'related_purchase_item__product_purchase_master__purchase_number',
+            'related_purchase_item__product_purchase_master__ledger_type',
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id',
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no',
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date',
+            'bin_number__rack_finished_name__zone_finished_name__zone_name',
+            'bin_number__rack_finished_name__rack_name',
+            'bin_number__bin_name'
+            ).annotate(total_qty = Sum('related_purchase_item__qc_recieved_qty'),total_qty_tr = Sum('related_transfer_record__qc_recieved_qty')).order_by('-created_date')
 
 
     current_date = timezone.now()
@@ -10141,7 +10164,7 @@ def scan_product_list(request,pk,v_type):
         entry['age_in_days'] = age_in_days
 
 
-    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries,'MEDIA_URL':settings.MEDIA_URL})
+    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries,'MEDIA_URL':settings.MEDIA_URL,'instance_entries_all':instance_entries_all})
 
 
 
@@ -14898,6 +14921,7 @@ def salesvoucherlistwarehouse(request):
     return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list,'sales_return':sales_return})
 
 
+@login_required(login_url='login')
 def sales_voucher_view_sort_with_salesman_and_partyname(request,id,identity):
     sales_vouchers_queryset = None
     sales_return_vouchers_queryset = None
