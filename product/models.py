@@ -66,22 +66,14 @@ class Product2SubCategory(models.Model):
     Product_id = models.ForeignKey('Product', on_delete = models.PROTECT, related_name='product_cats')
     SubCategory_id = models.ForeignKey(SubCategory, on_delete = models.PROTECT, related_name='subcategories')
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     class Meta:
         unique_together = [['Product_id','SubCategory_id']]
     
     def __str__(self):  
         return f'{self.SubCategory_id.product_sub_category_name} --- {self.Product_id.Product_Name}'
     
+
+
 
 class Color(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
@@ -92,7 +84,8 @@ class Color(models.Model):
 
     def __str__(self):
         return self.color_name
-    
+
+
     
 class gst(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
@@ -101,8 +94,11 @@ class gst(models.Model):
         ordering = ["gst_percentage"]
 
 
+
 class Salesman_info(models.Model):
     salesman_name = models.CharField(max_length=252)
+
+
 
 class Product(models.Model):
     BRAND_CHOICES = [
@@ -378,9 +374,7 @@ class Item_Creation(models.Model):
     item_shade_image = models.ImageField(upload_to = 'rawmaterial/images', null=True , blank=True)
     created_date = models.DateTimeField(auto_now_add =True)
     modified_date_time = models.DateTimeField(auto_now = True)
-    
-
-    
+     
     def Color_Name(self):
         return self.Item_Color.color_name
 
