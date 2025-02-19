@@ -1,0 +1,60 @@
+{% extends 'product/base.html' %}
+{% load static %}
+{% block body %}
+
+<div class="mt-3">
+    <table class="table table-bordered" id="warehouseTables">
+        <thead class="name_absolute sticky-top bg-white text-dark">
+            <tr>
+                <th>No</th>
+                <th>Date</th>
+                <th>Image</th>
+                <th>Sales No</th>
+                <th>Salesman</th>
+                <th>Party Name</th>
+                <th>Ref No</th>
+                <th>Model Name</th>
+                <th>Color</th>
+                <th>Product SKU</th>
+                <th>Total QTY</th>
+                <th>Types of Sale</th>
+                <th>Entry by</th>
+            </tr>
+        </thead>
+        <tbody class="mainTableList warehousestock" style="max-height: 450px; overflow-y: auto;">
+            
+            {% for data in sales_voucher_queryset %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+
+                <td>{{data.created_date}}</td>
+
+                <td><img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ data.product_name__PProduct_image }}" alt="Product" style="width: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
+
+                <td>{{data.sales_return_master__sales_voucher_master__sale_no}}</td>
+                
+                <td>{{data.sales_return_master__salesman__salesman_name}}</td>
+                
+                <td>{{data.sales_return_master__party_name__name}}</td>
+                
+                <td>{{data.product_name__Product__Product_Refrence_ID}}</td>
+                
+                <td>{{data.product_name__Product__Model_Name}}</td>
+                
+                <td>{{data.product_name__PProduct_color__color_name}}</td>
+                
+                <td>{{data.product_name__PProduct_SKU}}</td>
+                
+                <td>{{data.quantity}}</td>
+                
+                <td>{{data.sales_return_master__ledger_type}}</td>
+                
+                <td></td>
+                
+             </tr>
+            {% endfor %}
+      
+        </tbody>    
+    </table>
+</div>
+{% endblock body %}

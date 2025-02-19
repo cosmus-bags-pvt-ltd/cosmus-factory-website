@@ -4,6 +4,9 @@
 <div class="mt-3">
     <form action="" method="POST" id="picklistForm">
         {% csrf_token %}
+        {% if master_form.instance.id %}
+            <input type="text" class="purchase-input" name="picklist_status" id="picklist_status" value="{{ master_form.instance.status}}" maxlength="255" readonly>
+        {% endif %}
         <div class="d-flex mb-2">
             <div>
                 <label for="id_picklist_no" class="fw-bold me-2">PickList No :</label>
@@ -59,6 +62,7 @@
                         {{form.id}}
                         {% if form.instance.id %}
                         <tr>
+                            
                             <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
                             
                             <td><input type="number" name="{{form.prefix}}-product_refNo" class="purchase-amount stock_color" id="id_{{form.prefix}}-product_refNo" value="{% if form.instance.id %}{{form.instance.product.Product.Product_Refrence_ID}}{% endif %}"style="outline:none" readonly></td>

@@ -10049,7 +10049,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
 
 
-
+@login_required(login_url='login')
 def delete_sigle_entries(request, e_id, voucher_type):
     try:
         delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
@@ -10079,7 +10079,7 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 
 
-
+@login_required(login_url='login')
 def scan_product_qty_list(request):
 
     product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name').values('id','product_purchase_master__ledger_type','product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image','quantity_total','qc_recieved_qty','diffrence_qty')
@@ -10097,7 +10097,7 @@ def scan_product_qty_list(request):
 
 
 from django.utils import timezone
-
+@login_required(login_url='login')
 def scan_product_list(request,pk,v_type):
 
     instance_entries_all = None
@@ -10171,7 +10171,7 @@ def scan_product_list(request,pk,v_type):
 
 
 
-
+@login_required(login_url='login')
 def warehouse_stock(request):
 
     purchase_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
@@ -10180,7 +10180,6 @@ def warehouse_stock(request):
     
     product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'),total_sales_return = Subquery(purchase_sales_return_quantity_subquery)))
 
-
     transfer_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
 
     transfer_sales_return_quantity_subquery = sales_return_voucher.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_retutn_quantity=Sum('quantity')).values('sales_retutn_quantity')
@@ -10188,71 +10187,58 @@ def warehouse_stock(request):
     stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'),total_sales_return = Subquery(transfer_sales_return_quantity_subquery))
 
     
-    merged_list = []
 
-    for x in product_purchase_voucher:
-        purchase_sku = x['product_name__PProduct_SKU']
-        total = 0
-        for y in stock_transfer_voucher:
-            if purchase_sku == y['product__PProduct_SKU']:
-                total = x['total_quantity'] + y['total_quantity']
-                
-                dict_to_append = {
-                    'ref_id':x['product_name__Product__Product_Refrence_ID'],
-                    'model_name':x['product_name__Product__Model_Name'],
-                    'color':x['product_name__PProduct_color__color_name'],
-                    'product_sku': purchase_sku,
-                    'total':total,
-                    'total_sale':x['total_sale'] or 0,
-                    'total_inward':(x['total_inward'] or 0) + (y['total_inward'] or 0),
-                    'total_balance':(x['total_balance'] or 0) + (y['total_balance'] or 0),
-                    'inward_minus_sales': ((x['total_inward'] or 0) + (y['total_inward'] or 0)) - (x['total_sale'] or 0),
-                    'img': x['product_name__PProduct_image'],
-                    'total_sale_return':x['total_sales_return']
-                }
-                merged_list.append(dict_to_append)
-                break
-
-
-    for x in product_purchase_voucher:
-        if not any(d['product_sku'] == x['product_name__PProduct_SKU'] for d in merged_list):     
-            dict_to_append = {
-                    'ref_id':x['product_name__Product__Product_Refrence_ID'],
-                    'model_name':x['product_name__Product__Model_Name'],
-                    'color':x['product_name__PProduct_color__color_name'],
-                    'product_sku': x['product_name__PProduct_SKU'],
-                    'total':x['total_quantity'] or 0,
-                    'total_sale':x['total_sale'] or 0,
-                    'total_inward':x['total_inward'] or 0,
-                    'total_balance':x['total_balance'] or 0,
-                    'inward_minus_sales': (x['total_inward'] if x['total_inward'] else 0) -  (x['total_sale'] if x['total_sale'] else 0),
-                    'img': x['product_name__PProduct_image'],
-                    'total_sale_return':x['total_sales_return']
-                }
-            merged_list.append(dict_to_append)
-
+    product_dict = {
+        x['product_name__PProduct_SKU']: {
+            'ref_id': x['product_name__Product__Product_Refrence_ID'],
+            'model_name': x['product_name__Product__Model_Name'],
+            'color': x['product_name__PProduct_color__color_name'],
+            'product_sku': x['product_name__PProduct_SKU'],
+            'total_quantity': x.get('total_quantity', 0) or 0,
+            'total_sale': x.get('total_sale', 0) or 0,
+            'total_inward': x.get('total_inward', 0) or 0,
+            'total_balance': x.get('total_balance', 0) or 0,
+            'total_sale_return': x.get('total_sales_return', 0) or 0,
+            'img': x['product_name__PProduct_image'],
+            'total': x.get('total_quantity', 0) or 0,
+        }
+        for x in product_purchase_voucher
+    }
 
     for y in stock_transfer_voucher:
-        if not any(d['product_sku'] == y['product__PProduct_SKU'] for d in merged_list):     
-            dict_to_append = {
-                    'ref_id':y['product__Product__Product_Refrence_ID'],
-                    'model_name':y['product__Product__Model_Name'],
-                    'color':y['product__PProduct_color__color_name'],
-                    'product_sku': y['product__PProduct_SKU'],
-                    'total':y['total_quantity'] or 0,
-                    'total_sale': y['total_sale'] if y['total_sale'] else 0,
-                    'total_inward':y['total_inward'] if y['total_inward'] else 0,
-                    'total_balance':y['total_balance'],
-                    'inward_minus_sales': (y['total_inward'] if y['total_inward'] else 0) -  (y['total_sale'] if y['total_sale'] else 0),
-                    'img': y['product__PProduct_image'],
-                    'total_sale_return':y['total_sales_return']
-                }
-            merged_list.append(dict_to_append)
+        sku = y['product__PProduct_SKU']
+        if sku in product_dict:
+            
+            product_dict[sku]['total_quantity'] += y.get('total_quantity', 0) or 0
+            product_dict[sku]['total_inward'] += y.get('total_inward', 0) or 0
+            product_dict[sku]['total_balance'] += y.get('total_balance', 0) or 0
+            product_dict[sku]['total'] += y.get('total_quantity', 0) or 0
+        else:
+            # Add new SKU from stock transfer
+            product_dict[sku] = {
+                'ref_id': y['product__Product__Product_Refrence_ID'],
+                'model_name': y['product__Product__Model_Name'],
+                'color': y['product__PProduct_color__color_name'],
+                'product_sku': sku,
+                'total_quantity': y.get('total_quantity', 0) or 0,
+                'total_sale': y.get('total_sale', 0) or 0,
+                'total_inward': y.get('total_inward', 0) or 0,
+                'total_balance': y.get('total_balance', 0) or 0,
+                'total_sale_return': y.get('total_sales_return', 0) or 0,
+                'img': y['product__PProduct_image'],
+                'total': y.get('total_quantity', 0) or 0,
+            }
+
+    merged_list = []
+    for data in product_dict.values():
+        data['inward_minus_sales'] = (data['total_inward'] + data['total_sale_return']) - data['total_sale']
+        merged_list.append(data)
+
 
     return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list,'MEDIA_URL': settings.MEDIA_URL})
 
 
-
+@login_required(login_url='login')
 def scan_single_product_list(request,sku):
     instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values('product__Product__Product_Refrence_ID',
             'product__PProduct_image',
@@ -10276,7 +10262,7 @@ def scan_single_product_list(request,sku):
 
 
 
-
+@login_required(login_url='login')
 def model_name_wise_purchase_transfer_sales_report(request,sku):
     purchase_instance = product_purchase_voucher_items.objects.filter(product_name__PProduct_SKU = sku)
 
@@ -10361,6 +10347,49 @@ def model_name_wise_purchase_transfer_sales_report(request,sku):
     # list_to_send = sorted(merge_list, key = itemgetter('date'))
 
     return render(request,'finished_product/modelnamewisepurchasetransfersalesreport.html',{'merge_list':merge_list,'model_name':model_name,'ref_no':ref_no})
+
+
+
+@login_required(login_url='login')
+def product_wise_sales_report(request,sku):
+    sales_voucher_queryset = sales_voucher_outward_scan.objects.filter(product_name = sku).select_related(
+        'sales_voucher_master'
+        ).values(
+            'created_date',
+            'product_name__PProduct_image',
+            'sales_voucher_master__sale_no',
+            'sales_voucher_master__outward_no__outward_no',
+            'sales_voucher_master__salesman__salesman_name',
+            'sales_voucher_master__party_name__name',
+            'product_name__Product__Product_Refrence_ID',
+            'product_name__Product__Model_Name',
+            'product_name__PProduct_color__color_name',
+            'product_name__PProduct_SKU',
+            'quantity',
+            'sales_voucher_master__ledger_type', 
+        )
+    return render(request,'finished_product/product_wise_sales_report.html',{'MEDIA_URL':settings.MEDIA_URL,'sales_voucher_queryset':sales_voucher_queryset})
+
+
+
+@login_required(login_url='login')
+def product_wise_sales_return_report(request,sku):
+    sales_voucher_queryset = sales_return_voucher.objects.filter(product_name = sku).select_related(
+        'sales_return_master'
+        ).values(
+            'created_date',
+            'product_name__PProduct_image',
+            'sales_return_master__sales_voucher_master__sale_no',
+            'sales_return_master__salesman__salesman_name',
+            'sales_return_master__party_name__name',
+            'product_name__Product__Product_Refrence_ID',
+            'product_name__Product__Model_Name',
+            'product_name__PProduct_color__color_name',
+            'product_name__PProduct_SKU',
+            'quantity',
+            'sales_return_master__ledger_type', 
+        )
+    return render(request,'finished_product/product_wise_sales_return_report.html',{'MEDIA_URL':settings.MEDIA_URL,'sales_voucher_queryset':sales_voucher_queryset})
 
 
 
@@ -13773,7 +13802,7 @@ def raw_material_excel_upload(request):
         
 
 
-
+@login_required(login_url='login')
 def finished_goods_model_wise_report(request,ref_id):
     
     if ref_id:
@@ -13807,6 +13836,7 @@ def finished_goods_model_wise_report(request,ref_id):
     return render(request, 'reports/finishedgoodsmodelwisereport.html',{'data_list':initial_sorted_data , 'product_instance':product_instance})
 
 
+@login_required(login_url='login')
 def lwo_and_lwi_report_vendor_wise(request):
 
     vendor_name = request.POST.get("vendor_name")
@@ -13847,7 +13877,7 @@ def lwo_and_lwi_report_vendor_wise(request):
 
 
 
-
+@login_required(login_url='login')
 def finished_goods_sorting_list(request):
     
     finished_goods_purchase_voucher_instances = product_purchase_voucher_master.objects.all().annotate(
@@ -13876,7 +13906,7 @@ def finished_goods_sorting_list(request):
 
 
 
-
+@login_required(login_url='login')
 def warehouse_navigator(request):
     warehouses = Finished_goods_warehouse.objects.prefetch_related('warehouses__zones__racks').all()
     return render(request,'finished_product/warehouse_navigator.html',{'warehouses':warehouses})
@@ -13889,7 +13919,7 @@ def warehouse_navigator(request):
 
 
 
-
+@login_required(login_url='login')
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
@@ -14021,7 +14051,7 @@ def picklist_product_ajax(request):
 
 
 
-
+@login_required(login_url='login')
 def bin_quantity_ajax(request):
     logger.info('Temp bin quantity function called using sessions')
 
@@ -14088,7 +14118,7 @@ def bin_quantity_ajax(request):
 
 
 
-
+@login_required(login_url='login')
 def create_update_picklist(request, p_id=None):
     
     if 'temp_bins' in request.session:
@@ -14174,7 +14204,7 @@ def create_update_picklist(request, p_id=None):
 
 
 
-
+@login_required(login_url='login')
 def delete_form_quantity_revert(request):
     """
     Handles reverting bin quantity when a product is deleted from the picklist.
@@ -14220,7 +14250,7 @@ def delete_form_quantity_revert(request):
 
 
 
-
+@login_required(login_url='login')
 def deletepicklist(request,pl_id):
     picklist = Picklist_voucher_master.objects.get(pk=pl_id)
 
@@ -14238,7 +14268,7 @@ def deletepicklist(request,pl_id):
 
 
 
-
+@login_required(login_url='login')
 def all_picklists_list(request):
     all_picklists = Picklist_voucher_master.objects.all().annotate(scanned_qty=Sum("picklist_process_in_outward__balance_qty"))
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
@@ -14246,7 +14276,7 @@ def all_picklists_list(request):
 
 
 
-
+@login_required(login_url='login')
 def picklist_view(request,pl_id):
     picklist_number=get_object_or_404(Picklist_voucher_master,pk=pl_id)
     picklist_data = Picklist_products_list.objects.filter(picklist_master_instance=pl_id)
@@ -14358,38 +14388,42 @@ def outward_picklist_no_ajax(request):
 
         picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
 
-        picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance')
-
-        dict_to_send = {}
-
-
-        for i in picklist_data:
-            sku = i.product.PProduct_SKU
-            id = i.picklist_master_instance.id
-            
-            if picklistNo not in dict_to_send:
-                dict_to_send[picklistNo] = []
-
-            
-            check_sku = next((j for j in dict_to_send[picklistNo] if j['sku'] == sku), None)
-
-            if check_sku:
-                check_sku['qty'] += i.product_quantity  # Add quantity if SKU exists
-            else:
-                
-                dict_to_send[picklistNo].append({
-                    'sku': sku,
-                    'model_name': i.product.Product.Model_Name,
-                    'color': i.product.PProduct_color.color_name,
-                    'qty': i.product_quantity,
-                    'id':i.id
-                })
-
-        print('dict_to_send = ', dict_to_send)
-
+        picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance').exclude(picklist_master_instance__status = 'close')
         
-        return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklistNo":picklistNo, "picklisQty": picklist_qty['total_qty'],'id':id}, status=200)
+        try:
+            dict_to_send = {}
 
+
+            for i in picklist_data:
+                sku = i.product.PProduct_SKU
+                id = i.picklist_master_instance.id
+                
+                if picklistNo not in dict_to_send:
+                    dict_to_send[picklistNo] = []
+
+                
+                check_sku = next((j for j in dict_to_send[picklistNo] if j['sku'] == sku), None)
+
+                if check_sku:
+                    check_sku['qty'] += i.product_quantity  # Add quantity if SKU exists
+                else:
+                    
+                    dict_to_send[picklistNo].append({
+                        'sku': sku,
+                        'model_name': i.product.Product.Model_Name,
+                        'color': i.product.PProduct_color.color_name,
+                        'qty': i.product_quantity,
+                        'id':i.id
+                    })
+
+            print('dict_to_send = ', dict_to_send)
+
+            return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklistNo":picklistNo, "picklisQty": picklist_qty['total_qty'],'id':id}, status=200)
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({"status": "error", 'message':'Picklist close'}, status=400)
+            
     except Exception as e:
         return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
 
