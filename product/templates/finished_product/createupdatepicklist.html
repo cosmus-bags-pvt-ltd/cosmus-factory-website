@@ -5,7 +5,7 @@
     <form action="" method="POST" id="picklistForm">
         {% csrf_token %}
         {% if master_form.instance.id %}
-            <input type="text" class="purchase-input" name="picklist_status" id="picklist_status" value="{{ master_form.instance.status}}" maxlength="255" readonly>
+            <input type="hidden" id="picklist_status" value="{{ master_form.instance.status}}" maxlength="255" readonly>
         {% endif %}
         <div class="d-flex mb-2">
             <div>
@@ -53,7 +53,7 @@
                         <th>Bin</th>
                         <th>Reserve Qty</th>
                         <th>Quantity</th>
-                        <th>Delete</th>
+                        <th class="deletercol">Delete</th>
                     </tr>
                 </thead>
                 <tbody class="mainTableList">
@@ -106,7 +106,7 @@
                                 
                             </td>
 
-                            <td>
+                            <td class="deletercol">
                                 <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
                             </td>
 
@@ -158,7 +158,7 @@
                                 
                             </td>
 
-                            <td>
+                            <td class="deletercol">
                                 <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value=""></i></span>
                             </td>
                         </tr>
@@ -230,50 +230,38 @@
     }
 
     function newPopUpwindow(button, path) {
-        // Specify minimum height and width
-        const minWidth = 800; // minimum width
-        const minHeight = 600; // minimum height
+        const minWidth = 800; 
+        const minHeight = 600; 
 
         $('body').addClass('popup-open');
         $('body').append('<div class="popup-overlay"></div>');
 
-        // Open new page with specified dimensions
         popUpWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-        // Ensure only one event listener is attached
         
         window.addEventListener('message', function(event){
             if (event.data.message === 'close') {
-                    $('body').removeClass('popup-open');
-                    $('.popup-overlay').remove();
-                    popUpWindow.close();
-                }
-                });
-
-                
-        // Listen for messages from the popup window
+                $('body').removeClass('popup-open');
+                $('.popup-overlay').remove();
+                popUpWindow.close();
+            }
+        });
         window.addEventListener('click', function(event) {
-        handleOutsideClick(event);
+            handleOutsideClick(event);
         });
 
     }
     function handleOutsideClick(event) {
-
         var popUpRect = document.querySelector('body').getBoundingClientRect();
         var clickX = event.clientX;
         var clickY = event.clientY;
         
-        // Check if the click is outside the popup window
         if (clickX > popUpRect.left || clickX <= popUpRect.right || clickY > popUpRect.top || clickY <= popUpRect.bottom) {
-        
-            popUpWindow.focus();
-            
+            popUpWindow.focus();  
         }
-        
     }
 
     window.addEventListener('message', function(event) {
         const data = event.data;
-        console.log('data',data)
         if (data.ledger_type) {
             populateDropdownLedgerTypes(data.ledger_type, '#id_ledgerTypes', 'type_name', 'Select Channel');
         }
@@ -294,6 +282,22 @@
         $('#modalSubmitButton').on('click',function(){
             $('#picklistForm').submit();
        })
+       var status = $('#picklist_status').val().trim();
+       console.log('status',status)
+       if(status === 'Closed'){
+        $('#id_narration').attr('readonly',true)
+        $('#addRowButton').hide()
+        $('#picklistSubmit').hide();
+        $('.delete-btn').hide();
+        $('.deletercol').hide();
+       }else if(status === 'Receiving'){
+        $('.delete-btn').css({
+            'pointer-events': 'none',
+            'cursor': 'not-allowed'
+         });
+
+       }
+
     })
 
 
@@ -800,6 +804,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         deleteElement.id = `id_picklist_products_list-${formIndex}-DELETE`;
                         deleteElement.name = `picklist_products_list-${formIndex}-DELETE`;
                         deleteElement.value= "";
+
+                        const deleteSpanElement = lastRow.querySelector('.delete-btn')
+                        deleteSpanElement.style.cursor = 'pointer';
+                        deleteSpanElement.style.pointerEvents = 'auto';
 
                         formCountInput.value = formCount + 1; 
                         tableBody.appendChild(lastRow);
