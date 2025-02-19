@@ -3,7 +3,7 @@
 
 {% block body %}
 
-<form method="POST">
+<form method="POST" id="outwardScanForm">
     {% csrf_token %}
     <!-- {% for form in picklist_formset %}
       {{ form.as_p }}
@@ -107,35 +107,35 @@
                         <input type="text" class="purchase-mark bg-transparent border-0" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="{{ form.instance.outward_picklist_no }}">
                     </td>
                     <td>
-                        <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly>
+                        <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount border-0 bg-transparent" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly>
                     </td>
 
                     <td>  
-                        <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{form.instance.product.Product.Model_Name}}" readonly> 
+                        <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="item-selects border-0 bg-transparent"  placeholder="Product Name" value="{{form.instance.product.Product.Model_Name}}" readonly> 
                     </td>
 
                     <td>
-                        <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color.color_name}}" class="purchase-input"  readonly>
+                        <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color.color_name}}" class="purchase-input border-0 bg-transparent"  readonly>
                     </td>
     
                     <td>
-                        <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly>
+                        <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount border-0 bg-transparent" readonly>
                     </td>
                 
                     <td>
-                        <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
+                        <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 25px; object-fit: contain; cursor: pointer;" alt="Img"  onclick="showLargeImage(this.src)">
                     </td>
                     <td>
-                        <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" value="{{ form.instance.unique_serial_no }}" readonly>
+                        <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount border-0 bg-transparent" value="{{ form.instance.unique_serial_no }}" readonly>
                     </td>
 
                     <td>
-                        <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" value="{{form.instance.bin_number.bin_name}}" readonly>
+                        <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount border-0 bg-transparent" value="{{form.instance.bin_number.bin_name}}" readonly>
                         <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" value="{{ form.instance.bin_number.id }}" readonly>
                     </td>
 
                     <td>
-                        <input type="number" name="{{form.prefix}}-quantity" id="id_{{form.prefix}}-quantity" class="purchase-input" value="{{ form.instance.quantity }}" readonly>
+                        <input type="number" name="{{form.prefix}}-quantity" id="id_{{form.prefix}}-quantity" class="purchase-input border-0 bg-transparent" value="{{ form.instance.quantity }}" readonly>
                     </td>
 
                     <td>
@@ -156,35 +156,35 @@
                         <input type="text" class="purchase-mark bg-transparent border-0" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
                     </td>
                     <td>
-                        <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly>
+                        <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount border-0 bg-transparent" value="" readonly>
                     </td>
 
                     <td>  
-                        <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="" readonly> 
+                        <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="item-selects border-0 bg-transparent"  placeholder="Product Name" value="" readonly> 
                     </td>
 
                     <td>
-                        <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="" class="purchase-input" style="margin-left: 10px;" readonly>
+                        <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="" class="purchase-input border-0 bg-transparent" style="margin-left: 10px;" readonly>
                     </td>
     
                     <td>
-                        <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="" class="purchase-amount" readonly>
+                        <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="" class="purchase-amount border-0 bg-transparent" readonly>
                     </td>
                 
                     <td>
                         <img src="" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
                     </td>
                     <td>
-                        <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" readonly>
+                        <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount border-0 bg-transparent" readonly>
                     </td>
 
                     <td>
-                        <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" readonly>
-                        <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly>
+                        <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount border-0 bg-transparent" readonly>
+                        <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount border-0 bg-transparent" readonly>
                     </td>
 
                     <td>
-                        <input type="number" name="{{form.prefix}}-quantity" value="" id="id_{{form.prefix}}-quantity" class="purchase-input" readonly>
+                        <input type="number" name="{{form.prefix}}-quantity" value="" id="id_{{form.prefix}}-quantity" class="purchase-input border-0 bg-transparent" readonly>
                     </td>
 
                     <td>
@@ -199,7 +199,7 @@
 
         </tbody>
     </table>
-    <button type="submit" class="ms-3 newProductCreateBtn" id="parentFormClick">Generate</button>
+    <button type="button" class="ms-3 newProductCreateBtn" id="parentFormClick"  data-bs-toggle="modal" data-bs-target="#staticBackdrop">Generate</button>
 </form>
 <div>
     <div class="row">
@@ -231,32 +231,19 @@
 </div>
 
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content" style="width: 110% !important;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-success-subtle text-success-emphasis">
         <div class="modal-header">
-          
+            <h5 class="modal-title">Outward Scan Confirmation</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <table class="table table-bordered table-warning" id="picklistProductTable">
-                <thead class="name_absolute">
-                    <tr>
-                        <th>Model Name</th>
-                        <th>Sku</th>
-                        <th>Color</th>
-                        <th class="text-primary">Qty</th>
-                        <th class="text-success">Scan Qty</th>
-                        <th class="text-danger">Balance</th>
-                       
-                    </tr>
-                </thead>
-                <tbody class="mainTableList">
-
-                </tbody>
-            </table>
+           "Are you sure you want to Submit Outward Scan ?" 
+           
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer bg-success-subtle text-success-emphasis">
           <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
         
         </div>
       </div>
@@ -268,7 +255,10 @@
 <script>
 
 $(document).ready(function () {
-   
+   $('#modalSubmitButton').on('click',function(){
+        $('#outwardScanForm').submit();
+   })
+
 // Event listener for when the picklist number is entered
     $('#id_pickList_no').on('blur', function () { 
         var picklistNo = parseInt($(this).val(), 10);

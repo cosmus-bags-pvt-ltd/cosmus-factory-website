@@ -15,7 +15,7 @@
         </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex">
-          <label for="id_outward_no" class="fw-bold ms-2 me-2">Outward No:</label>
+          <label for="id_outward_no" class="fw-bold ms-2 me-2">Outward No :</label>
 
           <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{% if master_form.instance and master_form.instance.outward_no %}{{ master_form.instance.outward_no.outward_no }}{% elif outward_number %}{{ outward_number }}{% endif %}" maxlength="255" readonly>
 
@@ -34,7 +34,7 @@
             {% endif %}
         </div>
         <div class="d-flex ms-3">
-          <label for="id_company_gst" class="fw-bold ms-1 me-1">Company GST No :</label>
+          <label for="id_company_gst" class="fw-bold ms-1 me-1">GST No :</label>
           <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
             maxlength="50" readonly>
         </div>
@@ -47,7 +47,7 @@
       </div>
       <div class="mb-3 d-flex">
         <div class="">
-          <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
+          <label for="id_selected_warehouse" class="fw-bold">Warehouse :</label>
           <select class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.selected_warehouse.id}}">
@@ -61,9 +61,9 @@
           </select>
           
         </div>
-        <div>
-          <label for="id_salesman" class="fw-bold me-3">SalseMan :</label>
-          <select class="item-select text-black" name="salesman" required id="id_salesman">
+        <div class="ms-3">
+          <label for="id_salesman" class="fw-bold">SalseMan :</label>
+          <select class="item-selects text-black" name="salesman" required id="id_salesman">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.salesman.id}}">
               {{master_form.instance.salesman.salesman_name}}</option>
@@ -77,7 +77,7 @@
         </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex ms-3">
-          <label for="id_party_name" class="fw-bold me-3">Party A/C Name :</label>
+          <label for="id_party_name" class="fw-bold me-1">Party Name :</label>
           <select class="item-select text-black" name="party_name" required id="id_party_name">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.party_name.id}}">
@@ -92,7 +92,7 @@
           <button  type="button" id="ledgerpurchase" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_GST_number" class="fw-bold me-2">Party GST No :</label>
+          <label for="id_GST_number" class="fw-bold me-1">Party GST No :</label>
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
             value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
             readonly required>
@@ -298,25 +298,44 @@
     </div>
   </div>
 </div>
-<button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
+<button type="button" class="ms-5 newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
 
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-success-subtle text-success-emphasis">
+      <div class="modal-header">
+          <h5 class="modal-title">Sales Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         "Are you sure you want to Submit Sales ?" 
+         
+      </div>
+      <div class="modal-footer bg-success-subtle text-success-emphasis">
+        <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
+      
+      </div>
+    </div>
+  </div>
+</div>
 
 </div>
 
 <script>
-  var popUpNewWindow = null;
-  function openPurchasePartyPopup(button){
-    openNewPopup(button, '{% url "ledger-popup-create" %}');
-  }
-
-  function openNewPopup(button, url){
-    if (popUpNewWindow === null || popUpNewWindow.closed) {
-        newPopUpwindow(button, url);
-    } else {
-
-        popUpNewWindow.focus();
+    var popUpNewWindow = null;
+    function openPurchasePartyPopup(button){
+      openNewPopup(button, '{% url "ledger-popup-create" %}');
     }
-  }
+
+    function openNewPopup(button, url){
+      if (popUpNewWindow === null || popUpNewWindow.closed) {
+          newPopUpwindow(button, url);
+      } else {
+
+          popUpNewWindow.focus();
+      }
+    }
 
   function newPopUpwindow(button, path){
     var minWidth = 1150; 
@@ -328,13 +347,13 @@
     popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
 
     window.addEventListener('message', function(event){
-        if (event.data.message === 'close') {
-                $('body').removeClass('popup-open');
-                $('.popup-overlay').remove();
-                popUpNewWindow.close();
-                
-              }
-            });
+      if (event.data.message === 'close') {
+        $('body').removeClass('popup-open');
+        $('.popup-overlay').remove();
+        popUpNewWindow.close();
+              
+      }
+    });
 
     window.addEventListener('click', function(event) {
       handleOutsideClick(event);
@@ -375,20 +394,23 @@
 
   // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
   function getGstNo() {
-  let partyGstValue = document.getElementById('id_GST_number').value;
-  let comapnyGst = document.getElementById('id_company_gst').value;
+    let partyGstValue = document.getElementById('id_GST_number').value;
+    let comapnyGst = document.getElementById('id_company_gst').value;
 
-      comapnyGst = comapnyGst.toString();
-      partyGstValue = partyGstValue.toString();
+        comapnyGst = comapnyGst.toString();
+        partyGstValue = partyGstValue.toString();
 
-  const newCompanyGst = comapnyGst.slice(0,2);
-  const newPartyGst = partyGstValue.slice(0,2);
-  return newCompanyGst === newPartyGst;
+    const newCompanyGst = comapnyGst.slice(0,2);
+    const newPartyGst = partyGstValue.slice(0,2);
+    return newCompanyGst === newPartyGst;
   }
 
 
-
+  document.body.appendChild(document.getElementById('staticBackdrop'));
   $(document).ready(function(){
+    $('#modalSubmitButton').on('click',function(){
+        $('#salesForm').submit();
+   })
     var formsSale = $('#id_sales_voucher_outward_scan_set-0-id').val();
     if(formsSale === ''){
       $('#id_sale_no').on('focusout',function(){

@@ -2,7 +2,7 @@
 {% load static %} 
 
 {% block body %}
-<form class="mt-3" action="" method="POST" id="salesForm">
+<form class="mt-3" action="" method="POST" id="salesInwardForm">
     {% csrf_token %}
     
     <div class="d-flex mb-3">
@@ -183,7 +183,7 @@
                 </tbody>   
             </table>
         </div>
-        <button type="submit" class="ms-3 newProductCreateBtn" id="parentFormClick">Generate</button>
+        <button type="button" class="ms-3 newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Generate</button>
     </div>
 </form>
     <div class="mt-2">
@@ -230,6 +230,26 @@
         </table>
     </div>
 
+
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content bg-success-subtle text-success-emphasis">
+            <div class="modal-header">
+                <h5 class="modal-title">Sales Return inward Confirmation</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               "Are you sure you want to Generate Sales Return Inward ?" 
+               
+            </div>
+            <div class="modal-footer bg-success-subtle text-success-emphasis">
+              <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
+            
+            </div>
+          </div>
+        </div>
+      </div>
 <script>
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -263,7 +283,11 @@
        });
 
    });
+   document.body.appendChild(document.getElementById('staticBackdrop'));
    $(document).ready(function(){
+    $('#modalSubmitButton').on('click',function(){
+            $('#salesInwardForm').submit();
+       })
 
         $('#id_sales_voucher_master_name').on('blur',function(){
             var salesId = $('#id_sales_return_product_set-0-id').val();
