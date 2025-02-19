@@ -4,11 +4,11 @@
 {% block body %}
 
 <div>
-    <form class="mt-3" action="" method="POST" id="salesForm">
+    <form class="mt-3" action="" method="POST" id="salesReturnForm">
       {% csrf_token %}
 
-        <div class="d-flex mb-3">
-          <div class="d-flex mb-3">
+        <div class="d-flex mb-2">
+          
             <div class="d-flex">
                 <label for="id_sales_return_no" class="fw-bold me-2">Sales Return No :</label>
                 {% if master_form.instance.id %}
@@ -19,9 +19,8 @@
                     <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{ master_form_data.sales_return_no }}" maxlength="255" readonly>
                 {% endif %}
             </div>
-        
             <div class="d-flex ms-3">
-                <label for="id_sale_no" class="fw-bold ms-2 me-2">Sales No :</label>
+                <label for="id_sale_no" class="fw-bold me-2">Sales No :</label>
                 {% if master_form.instance.pk %}
                     <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{ master_form.instance.sales_voucher_master.id }}">
                     <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form.instance.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
@@ -30,47 +29,60 @@
                     <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form_data.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
                 {% endif %}
             </div>
-        </div>
-        <div class="d-flex ms-3">
-          <label for="id_company_gst" class="fw-bold ms-2 me-2">Company GST No :</label>
-          <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238" maxlength="50" readonly>
-        </div>
+        
+            <div class="d-flex ms-3">
+            <label for="id_company_gst" class="fw-bold me-2">GST No :</label>
+            <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238" maxlength="50" readonly>
+            </div>
 
-        <div class="d-flex ms-3">
-            <label for="id_ledger_type" class="fw-bold ms-2 me-2">ledger Type :</label>
-          {% if master_form.instance.pk %}
-          <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.sales_return_inward_instance.ledger_type}}" maxlength="50" default='Sales Return' readonly>
-          {% elif not master_form.instance.id %}
-      
-          <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form_data.ledger_type}}" maxlength="50" default='Sales Return' readonly>
-          {% endif %}
-          
-        </div>
+            <div class="d-flex ms-3">
+                <label for="id_ledger_type" class="fw-bold me-2">ledger Type :</label>
+            {% if master_form.instance.pk %}
+            <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.sales_return_inward_instance.ledger_type}}" maxlength="50" default='Sales Return' readonly>
+            {% elif not master_form.instance.id %}
+        
+            <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form_data.ledger_type}}" maxlength="50" default='Sales Return' readonly>
+            {% endif %}
+            
+            </div>
       </div>
-      <div class="mb-3 d-flex">
+      <div class="mb-2 d-flex">
         <div class="">
             <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
-          {% if master_form.instance.pk %}
-        
-          <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
-          {% elif not master_form.instance.id %}
-          <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.selected_warehouse.warehouse_name_finished}}" readonly > 
-          {% endif %}
+            {% if master_form.instance.pk %}
+            <input type="hidden" class="purchase-itemName " name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.id}}"> 
+            <input class="purchase-itemName text-black" name="selected_warehouse_name" required id="id_selected_warehouse_name" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly >
+            {% elif not master_form.instance.id %}
+            <input type="hidden" class="purchase-itemName " name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.sales_voucher_master.selected_warehouse.id}}"> 
+            <input class="purchase-itemName text-black" name="selected_warehouse_name" required id="id_selected_warehouse_name" value="{{master_form_data.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
+            {% endif %}
                    
         </div>
+        <div class="ms-2">
+            <label for="id_salesman" class="fw-bold me-2">SalseMan :</label>
+            {% if master_form.instance.pk %}
+                <input type="hidden" class="" name="salesman"  id="id_salesman" value="{{master_form_data.sales_voucher_master.salesman.id}}" readonly>
+                <input class="item-selects text-black" name="salesmanname" required id="id_salesmanname" value="{{master_form.instance.salesman.salesman_name}}" readonly>
+            {% elif not master_form.instance.id %}
+                <input type="hidden" class="" name="salesman"  id="id_salesman" value="{{master_form_data.sales_voucher_master.salesman.id}}" readonly>
+                <input type="text" class="item-selects" name="salesmanname" required id="id_salesmanname" value="{{master_form_data.sales_voucher_master.salesman.salesman_name}}" readonly>
+            {% endif %}
+          </div>
 
-        <div class="d-flex ms-3">
-            <label for="id_party_name" class="fw-bold ms-2 me-2">Party A/C Name:</label>
-          {% if master_form.instance.pk %}
-          <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
-          {% elif not master_form.instance.id %}
-          <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form_data.party_name.name}}" readonly>
-          {% endif %}
+        <div class="d-flex ms-2">
+            <label for="id_party_name" class="fw-bold me-2">Party Name :</label>
+            {% if master_form.instance.pk %}
+            <input type="hidden" class="" name="party_name"  id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.id}}" readonly>
+            <input type="text" class="item-select text-black" name="party_name_value" required id="id_party_name_value" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
+            {% elif not master_form.instance.id %}
+            <input type="hidden" class="" name="party_name"  id="id_party_name" value="{{master_form_data.sales_voucher_master.party_name.id}}" readonly>
+            <input type="text" class="item-select text-black" name="party_name_value" required id="id_party_name_value" value="{{master_form_data.party_name.name}}" readonly>
+            {% endif %}
           
     
         </div>
-        <div class="d-flex ms-3">
-            <label for="id_GST_number" class="fw-bold ms-2 me-2">Party GST No :</label>
+        <div class="d-flex ms-2">
+            <label for="id_GST_number" class="fw-bold me-2">Party GST No :</label>
           {% if master_form.instance.pk %}
          
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form.instance.sales_voucher_master.party_name.Gst_no }}" maxlength="15" readonly required>
@@ -293,10 +305,9 @@
   </div>
 </div>
 
-<button type="button" class="newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
+<button type="button" class="ms-5 newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
 
 </div>
-
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-success-subtle text-success-emphasis">
@@ -305,7 +316,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-           "Are you sure you want to Submit Sales Return ?" 
+           "Are you sure you want to Generate Sales Return ?" 
            
         </div>
         <div class="modal-footer bg-success-subtle text-success-emphasis">
@@ -316,12 +327,12 @@
       </div>
     </div>
   </div>
+
 <script>
-      document.body.appendChild(document.getElementById('staticBackdrop'));
-   
     $(document).ready(function(){
-        $('#modalSubmitButton').on('click',function(){
-            $('#salesForm').submit();
+  
+    $('#modalSubmitButton').on('click',function(){
+            $('#salesReturnForm').submit();
        })
         var formsSale = $('#id_sale_return_forms-0-id').val();
         var submitForm = $('#parentFormClick');
