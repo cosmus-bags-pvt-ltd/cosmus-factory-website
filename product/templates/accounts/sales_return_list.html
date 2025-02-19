@@ -24,7 +24,6 @@
               <th class="table-success">Sale Value</th>
               <th class="table-danger">Sale Return Qty</th>
               <th class="table-danger">Sale Return Value</th>
-              <th class="table-danger">Narration</th>
               <th class="table-danger">Edit</th>
             </tr>
           </thead>
@@ -41,8 +40,7 @@
                 <td class="table-success text-center">{{data.total_sale_qty}}</td>
                 <td class="table-success text-center">{{data.sales_voucher_master.grand_total}}</td>
                 <td class="table-danger text-center">{{data.total_qty}}</td>
-                <td class="table-danger text-center"></td>
-                <td class="table-danger text-center">Narration</td>
+                <td class="table-danger text-center">{{data.grand_total}}</td>
                 <td class="table-danger text-center"><a href="{% url 'sales-return-inward-to-bin-view' data.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
                 
               </tr>

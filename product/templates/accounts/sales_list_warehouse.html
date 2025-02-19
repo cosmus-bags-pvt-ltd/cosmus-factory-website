@@ -30,13 +30,13 @@
         <tr class="table-success">
           <td>{{forloop.counter}}</td>
           <td>{{sale.created_date}}</td>
-          <td class="text-center">{{sale.outward_no.outward_no}}</td>
-          <td>SalesMan</td>
+          <td class="text-center"><a href="{% url 'outward-scan-product-update' sale.outward_no.id %}"  class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f7b82f; text-decoration: none;">{{sale.outward_no.outward_no}}</a></td>          
+          <td class="text-center"><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.salesman.id 'salesman' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4991e9; text-decoration: none;">{{sale.salesman.salesman_name}}</a></td>
           <td>{{sale.ledger_type}}</td>
-          <td class="text-center">{{sale.sale_no}}</td>
+          <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ed276c; text-decoration: none;">{{sale.sale_no}}</a></td>
           <td>{{sale.party_name.name}}</td>
           <td class="text-center">{{sale.total_qty}}</td>
-          <td>{{sale.grand_total}}</td>
+          <td class="text-center fw-bold">{{sale.grand_total}}</td>
           <td></td>
           <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
           <td></td>
@@ -48,14 +48,17 @@
         <td>{{forloop.counter}}</td>
         <td>{{return.created_date}}</td>
         <td></td>
-        <td>SalesMan</td>
+
+        <td class="text-center"><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' return.salesman.id 'salesman' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4991e9; text-decoration: none;">{{return.salesman.salesman_name}}</a></td>
+
         <td>{{return.sales_return_inward_instance.ledger_type}}</td>
-        <td>{{return.sales_return_inward_instance.sales_return_no}}</td>
+
+        <td class="text-center"><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id 'view' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ed276c; text-decoration: none;">{{return.sales_return_inward_instance.sales_return_no}}</a></td>
         <td>{{return.sales_voucher_master.party_name.name}}</td>
-        <td>Qty</td>
+        <td class="text-center">{{return.total_qty}}</td>
         <td></td>
 
-        <td>credit</td>
+        <td class="text-center fw-bold">{{return.grand_total}}</td>
         <td><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id 'view' %}"><i class="fa-solid fa-eye px-1"></i></a></td>
         <td>Print</td>
       </tr>

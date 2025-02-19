@@ -152,6 +152,7 @@ urlpatterns = [
     path('salesvouchercreateupdateforwarehouse/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
     path('salesvouchercreateupdateforwarehouse/<int:s_id>/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
     path('salesvoucherlistwarehouse/', views.salesvoucherlistwarehouse, name = 'sales-voucher-list-warehouse'),
+    path('salesvoucherviewsortwithsalesmanorpartyname/<int:id>/<str:identity>/', views.sales_voucher_view_sort_with_salesman_and_partyname, name = 'sales-voucher-view-sort-with-salesman-or-partyname'),
     path('salesscanproductdynamicajax/', views.sales_scan_product_dynamic_ajax, name = 'sales-scan-product-dynamic-ajax'),
 
     #picklist
