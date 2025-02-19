@@ -293,12 +293,36 @@
   </div>
 </div>
 
-<button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
+<button type="button" class="newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
 
 </div>
 
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-success-subtle text-success-emphasis">
+        <div class="modal-header">
+            <h5 class="modal-title">Sales Return Confirmation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+           "Are you sure you want to Submit Sales Return ?" 
+           
+        </div>
+        <div class="modal-footer bg-success-subtle text-success-emphasis">
+          <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
+        
+        </div>
+      </div>
+    </div>
+  </div>
 <script>
+      document.body.appendChild(document.getElementById('staticBackdrop'));
+   
     $(document).ready(function(){
+        $('#modalSubmitButton').on('click',function(){
+            $('#salesForm').submit();
+       })
         var formsSale = $('#id_sale_return_forms-0-id').val();
         var submitForm = $('#parentFormClick');
         if(formsSale === ''){

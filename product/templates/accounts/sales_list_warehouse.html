@@ -34,7 +34,7 @@
           <td class="text-center"><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.salesman.id 'salesman' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4991e9; text-decoration: none;">{{sale.salesman.salesman_name}}</a></td>
           <td>{{sale.ledger_type}}</td>
           <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ed276c; text-decoration: none;">{{sale.sale_no}}</a></td>
-          <td>{{sale.party_name.name}}</td>
+          <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.party_name.id 'party' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #e94949; text-decoration: none;">{{sale.party_name.name}}</a></td>
           <td class="text-center">{{sale.total_qty}}</td>
           <td class="text-center fw-bold">{{sale.grand_total}}</td>
           <td></td>
@@ -54,7 +54,7 @@
         <td>{{return.sales_return_inward_instance.ledger_type}}</td>
 
         <td class="text-center"><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id 'view' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ed276c; text-decoration: none;">{{return.sales_return_inward_instance.sales_return_no}}</a></td>
-        <td>{{return.sales_voucher_master.party_name.name}}</td>
+        <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' return.sales_voucher_master.party_name.id 'party' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #e94949; text-decoration: none;">{{return.sales_voucher_master.party_name.name}}</a></td>
         <td class="text-center">{{return.total_qty}}</td>
         <td></td>
 

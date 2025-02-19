@@ -123,7 +123,7 @@
                     </td>
                 
                     <td>
-                        <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
+                        <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 25px; object-fit: contain; cursor: pointer;" alt="Img"  onclick="showLargeImage(this.src)">
                     </td>
                     <td>
                         <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount border-0 bg-transparent" value="{{ form.instance.unique_serial_no }}" readonly>
