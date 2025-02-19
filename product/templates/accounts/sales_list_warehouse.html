@@ -36,7 +36,7 @@
 
         <td class="text-center">{% if sale.outward_no__outward_no %}<a href="{% url 'outward-scan-product-update' sale.outward_no__id %}">{{sale.outward_no__outward_no}}</a>{% endif %}</td>
 
-        <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.salesman__id 'salesman' %}">{{sale.salesman__salesman_name}}</a></td>
+        <td><a href="{% url 'sales-voucher-view-sort-with-salesman' sale.salesman__id %}">{{sale.salesman__salesman_name}}</a></td>
 
         <td>{{sale.ledger_type}}</td>
 
@@ -50,7 +50,7 @@
 
         {% endif %}
 
-        <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.party_name__id 'party' %}">{{sale.party_name__name}}</a></td>
+        <td><a href="{% url 'sales-voucher-view-sort-with-partyname' sale.party_name__id %}">{{sale.party_name__name}}</a></td>
 
         <td class="text-center">{{sale.total_qty}}</td>
 
