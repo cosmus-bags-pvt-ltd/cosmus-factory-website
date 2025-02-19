@@ -10240,17 +10240,22 @@ def warehouse_stock(request):
 
 @login_required(login_url='login')
 def scan_single_product_list(request,sku):
-    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values('product__Product__Product_Refrence_ID',
-            'product__PProduct_image',
-            'product__Product__Model_Name',
-            'product__PProduct_color__color_name',
-            'product__PProduct_SKU',
-            'unique_serial_no',
-            'created_date',
-            'bin_number__rack_finished_name__zone_finished_name__zone_name',
-            'bin_number__rack_finished_name__rack_name',
-            'bin_number__bin_name'
-            )
+    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values(
+        'related_purchase_item__product_purchase_master__purchase_number' or None,
+        'related_purchase_item__product_purchase_master__id' or None,
+        'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no' or None,
+        'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id' or None,
+        'product__Product__Product_Refrence_ID',
+        'product__PProduct_image',
+        'product__Product__Model_Name',
+        'product__PProduct_color__color_name',
+        'product__PProduct_SKU',
+        'unique_serial_no',
+        'created_date',
+        'bin_number__rack_finished_name__zone_finished_name__zone_name',
+        'bin_number__rack_finished_name__rack_name',
+        'bin_number__bin_name'
+        )
     
     current_date = timezone.now()
     for entry in instance_entries:

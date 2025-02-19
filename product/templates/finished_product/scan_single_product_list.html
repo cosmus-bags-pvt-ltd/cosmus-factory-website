@@ -14,6 +14,7 @@
             <tr>
                 <th>No</th>
                 <th>Inward date</th>
+                <th>voucher</th>
                 <th>Img</th>
                 <th>Serial No</th>
                 <th>Ref No</th>
@@ -31,6 +32,12 @@
             <tr>
                 <td>{{forloop.counter}}</td>
                 <td>{{ entry.created_date }}</td>
+                {% if entry.related_purchase_item__product_purchase_master__id %}
+                <td><a href="{% url 'product-purchase-voucher-update' entry.related_purchase_item__product_purchase_master__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff8410; text-decoration: none;">{{ entry.related_purchase_item__product_purchase_master__purchase_number}}</a></td>
+                {% else %}
+                <td><a href="{% url 'warehouse-product-transfer-update' entry.related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff8410; text-decoration: none;">{{ entry.related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no}}</a></td>   
+                {% endif %}
+                
                 <td>
                     {% if entry.product__PProduct_image %}
                         <img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ entry.product__PProduct_image }}" alt="img" style="width:25px; object-fit: contain;" onclick="showLargeImage(this.src)">
