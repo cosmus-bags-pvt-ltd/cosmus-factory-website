@@ -10103,6 +10103,8 @@ def scan_product_list(request,pk,v_type):
     if v_type == "purchase":
 
         instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number').values(
+            'related_purchase_item__product_purchase_master__purchase_number',
+            'related_purchase_item__product_purchase_master__ledger_type',
             'product__Product__Product_Refrence_ID',
             'product__PProduct_image',
             'product__Product__Model_Name',
@@ -10118,6 +10120,7 @@ def scan_product_list(request,pk,v_type):
     elif v_type == "transfer":
 
         instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number').values(
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no',
             'product__Product__Product_Refrence_ID',
             'product__PProduct_image',
             'product__Product__Model_Name',
@@ -14683,9 +14686,10 @@ def outward_scan_product_list(request):
 def sales_voucher_create_update_for_warehouse(request, s_id=None):
     print("in sale")
     party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
+
     warehouse_names = Finished_goods_warehouse.objects.all()
     
-    
+    salesman_list = Salesman_info.objects.all()
 
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
@@ -14876,7 +14880,8 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         'page_name': page_name,
         'party_name': party_name,
         'warehouse_names': warehouse_names,
-        'outward_number':outward_number
+        'outward_number':outward_number,
+        'salesman_list':salesman_list
     })
 
 
@@ -14888,9 +14893,23 @@ def salesvoucherlistwarehouse(request):
 
     sales_list = sales_voucher_master_outward_scan.objects.all().annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
 
-    sales_return = sales_return_voucher_master.objects.all()
+    sales_return = sales_return_voucher_master.objects.all().annotate(total_qty = Sum('sales_return_voucher__quantity'))
 
     return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list,'sales_return':sales_return})
+
+
+def sales_voucher_view_sort_with_salesman_and_partyname(request,id,identity):
+    sales_vouchers_queryset = None
+    sales_return_vouchers_queryset = None
+
+    if identity == 'salesman':
+        sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(salesman__id = id).select_related('outward_no','party_name','selected_warehouse','salesman').values('created_date','sale_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+
+        sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(salesman__id = id).select_related('sales_voucher_master','sales_return_inward_instance','party_name','selected_warehouse','salesman').values('created_date','sales_return_inward_instance__sales_return_no','ledger_type','party_name__name','grand_total').annotate(total_qty = Sum('sales_return_voucher__quantity'))
+        
+    else:
+        pass
+    return render(request,'accounts/sales_voucher_view_sort_with_salesman_and_partyname.html',{'sales_vouchers_queryset':sales_vouchers_queryset,'sales_return_vouchers_queryset':sales_return_vouchers_queryset})
 
 
 @login_required(login_url='login')
@@ -15457,11 +15476,14 @@ def sales_return_voucher_create_update(request,s_id=None, sr_id=None, sv_id=None
 
 @login_required(login_url='login')
 def sale_return_list(request):
+
     total_sale_qty_subquery = sales_voucher_outward_scan.objects.filter(sales_voucher_master=OuterRef('sales_voucher_master')).values('sales_voucher_master').annotate(total_sale_qty=Sum('quantity')).values('total_sale_qty')
 
+    grand_total_subquery = sales_return_voucher_master.objects.filter(
+    sales_return_inward_instance=OuterRef('pk')).values('grand_total')[:1]
     
-    queryset = sales_return_inward.objects.annotate(total_qty=Sum('sales_return_product__scan_qty'),total_sale_qty=Subquery(total_sale_qty_subquery))
-    
+    queryset = sales_return_inward.objects.annotate(total_qty=Sum('sales_return_product__scan_qty'),total_sale_qty=Subquery(total_sale_qty_subquery),grand_total=Subquery(grand_total_subquery))
+
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
 
 

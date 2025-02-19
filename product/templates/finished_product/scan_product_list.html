@@ -16,6 +16,8 @@
                 <th>No</th>
                 <th>Inward date</th>
                 <th>Img</th>
+                <th>Source VCH No</th>
+                <th>Voucher Type</th>
                 <th>Serial No</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
@@ -39,6 +41,14 @@
                         <span>No Image Available</span>
                     {% endif %}
                 </td>
+                {% if entry.related_purchase_item__product_purchase_master__purchase_number %}
+                <td>{{ entry.related_purchase_item__product_purchase_master__purchase_number }}</td>
+                <td>{{ entry.related_purchase_item__product_purchase_master__ledger_type }}</td>
+                {% else %}
+                <td>{{ entry.related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no }}</td>
+                <td>Transfer</td>
+                {% endif %}
+                
                 <td>{{ entry.unique_serial_no }}</td>
                 <td class="refNo">{{ entry.product__Product__Product_Refrence_ID }}</td>
                 <td>{{ entry.product__Product__Model_Name }}</td>

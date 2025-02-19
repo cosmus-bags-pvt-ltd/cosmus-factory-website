@@ -20,7 +20,7 @@
           <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{% if master_form.instance and master_form.instance.outward_no %}{{ master_form.instance.outward_no.outward_no }}{% elif outward_number %}{{ outward_number }}{% endif %}" maxlength="255" readonly>
 
         </div>
-        {{ master_form }}
+        
         <span id="SupplierError" class="error-messages"></span>
 
         <div class="d-flex ms-3">
@@ -65,12 +65,12 @@
           <label for="id_salesman" class="fw-bold me-3">SalseMan :</label>
           <select class="item-select text-black" name="salesman" required id="id_salesman">
             {% if master_form.instance.id %}
-            <option value="{{master_form.instance.party_name.id}}">
-              {{master_form.instance.party_name.name}}</option>
+            <option value="{{master_form.instance.salesman.id}}">
+              {{master_form.instance.salesman.salesman_name}}</option>
             {% else %}
             <option value="" selected disabled>Select SalesMan name</option>
-            {% for x in salsemanList %}
-            <option value="{{x.id}}">{{x.name}}</option>
+            {% for x in salesman_list %}
+            <option value="{{x.id}}">{{x.salesman_name}}</option>
             {% endfor %}
             {% endif %}
           </select>

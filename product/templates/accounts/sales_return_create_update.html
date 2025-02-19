@@ -51,20 +51,39 @@
         <div class="">
             <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
           {% if master_form.instance.pk %}
-        
-          <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
+          <input type="hidden" class="purchase-itemName " name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.id}}"> 
+          <input class="purchase-itemName text-black" name="selected_warehouse_name" required id="id_selected_warehouse_name" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
           {% elif not master_form.instance.id %}
-          <input class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.selected_warehouse.warehouse_name_finished}}" readonly > 
+          <input type="hidden" class="purchase-itemName " name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.sales_voucher_master.selected_warehouse.id}}"> 
+          <input class="purchase-itemName text-black" name="selected_warehouse_name" required id="id_selected_warehouse_name" value="{{master_form_data.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
           {% endif %}
                    
         </div>
 
+
+        <div class="ms-2">
+            <label for="id_salesman" class="fw-bold me-3">SalseMan :</label>
+            
+           
+              {% if master_form.instance.pk %}
+              <input type="hidden" class="item-select text-black" name="salesman"  id="id_salesman" value="{{master_form_data.sales_voucher_master.salesman.id}}" readonly>
+            <input class="item-select text-black" name="salesmanname" required id="id_salesmanname" value="{{master_form.instance.salesman.salesman_name}}" readonly>
+            {% elif not master_form.instance.id %}
+            <input type="hidden" class="item-select text-black" name="salesman"  id="id_salesman" value="{{master_form_data.sales_voucher_master.salesman.id}}" readonly>
+            <input type="text" class="item-select text-black" name="salesmanname" required id="id_salesmanname" value="{{master_form_data.sales_voucher_master.salesman.salesman_name}}" readonly>
+            {% endif %}
+          
+          </div>
+          
+
         <div class="d-flex ms-3">
             <label for="id_party_name" class="fw-bold ms-2 me-2">Party A/C Name:</label>
           {% if master_form.instance.pk %}
-          <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
+          <input type="hidden" class="" name="party_name"  id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.id}}" readonly>
+          <input type="text" class="item-select text-black" name="party_name_value" required id="id_party_name_value" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
           {% elif not master_form.instance.id %}
-          <input class="item-select text-black" name="party_name" required id="id_party_name" value="{{master_form_data.party_name.name}}" readonly>
+          <input type="hidden" class="" name="party_name"  id="id_party_name" value="{{master_form_data.sales_voucher_master.party_name.id}}" readonly>
+          <input type="text" class="item-select text-black" name="party_name_value" required id="id_party_name_value" value="{{master_form_data.party_name.name}}" readonly>
           {% endif %}
           
     
@@ -273,7 +292,7 @@
             </span>
             {% elif not master_form.instance.id %}
             <span class="purchase-span">
-              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form_data.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
           </span>
             {% endif %}
         </div>
