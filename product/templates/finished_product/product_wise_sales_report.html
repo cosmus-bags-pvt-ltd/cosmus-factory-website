@@ -9,7 +9,7 @@
                 <th>No</th>
                 <th>Date</th>
                 <th>Image</th>
-                <th>Sales No</th>
+                <th class="table-success">Sales No</th>
                 <th>Outward No</th>
                 <th>Salesman</th>
                 <th>Party Name</th>
@@ -17,7 +17,7 @@
                 <th>Model Name</th>
                 <th>Color</th>
                 <th>Product SKU</th>
-                <th>Total QTY</th>
+                <th class="table-success">Total QTY</th>
                 <th>Types of Sale</th>
                 <th>Entry by</th>
             </tr>
@@ -32,7 +32,7 @@
 
                 <td><img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ data.product_name__PProduct_image }}" alt="Product" style="width: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
 
-                <td>{{data.sales_voucher_master__sale_no}}</td>
+                <td class="text-center table-success">{{data.sales_voucher_master__sale_no}}</td>
 
                 <td>{{data.sales_voucher_master__outward_no__outward_no}}</td>
                 
@@ -48,7 +48,7 @@
                 
                 <td>{{data.product_name__PProduct_SKU}}</td>
                 
-                <td>{{data.quantity}}</td>
+                <td class="text-center table-success">{{data.quantity}}</td>
                 
                 <td>{{data.sales_voucher_master__ledger_type}}</td>
                 
