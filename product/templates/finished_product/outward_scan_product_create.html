@@ -3,7 +3,7 @@
 
 {% block body %}
 
-<form method="POST">
+<form method="POST" id="outwardScanForm">
     {% csrf_token %}
     <!-- {% for form in picklist_formset %}
       {{ form.as_p }}
@@ -199,7 +199,7 @@
 
         </tbody>
     </table>
-    <button type="submit" class="ms-3 newProductCreateBtn" id="parentFormClick">Generate</button>
+    <button type="button" class="ms-3 newProductCreateBtn" id="parentFormClick"  data-bs-toggle="modal" data-bs-target="#staticBackdrop">Generate</button>
 </form>
 <div>
     <div class="row">
@@ -231,32 +231,19 @@
 </div>
 
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content" style="width: 110% !important;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
         <div class="modal-header">
           
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <table class="table table-bordered table-warning" id="picklistProductTable">
-                <thead class="name_absolute">
-                    <tr>
-                        <th>Model Name</th>
-                        <th>Sku</th>
-                        <th>Color</th>
-                        <th class="text-primary">Qty</th>
-                        <th class="text-success">Scan Qty</th>
-                        <th class="text-danger">Balance</th>
-                       
-                    </tr>
-                </thead>
-                <tbody class="mainTableList">
-
-                </tbody>
-            </table>
+           "Are you sure you want to Submit Outward Scan " 
+           
         </div>
         <div class="modal-footer">
           <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
         
         </div>
       </div>
@@ -268,7 +255,10 @@
 <script>
 
 $(document).ready(function () {
-   
+   $('#modalSubmitButton').on('click',function(){
+        $('#outwardScanForm').submit();
+   })
+
 // Event listener for when the picklist number is entered
     $('#id_pickList_no').on('blur', function () { 
         var picklistNo = parseInt($(this).val(), 10);
