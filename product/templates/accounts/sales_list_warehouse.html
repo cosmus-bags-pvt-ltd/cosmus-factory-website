@@ -2,6 +2,9 @@
 {% load static %} 
 {% block body %}
   
+
+
+
 <div class="mt-2">  
          
   <div class="mt-2 table-responsives">
@@ -25,49 +28,58 @@
       </thead>
       
       <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-        {% for sale in sales_list %}
-        
-        <tr class="table-success">
-          <td>{{forloop.counter}}</td>
-          <td>{{sale.created_date}}</td>
-          <td class="text-center"><a href="{% url 'outward-scan-product-update' sale.outward_no.id %}"  class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f7b82f; text-decoration: none;">{{sale.outward_no.outward_no}}</a></td>          
-          <td class="text-center"><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.salesman.id 'salesman' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4991e9; text-decoration: none;">{{sale.salesman.salesman_name}}</a></td>
-          <td>{{sale.ledger_type}}</td>
-          <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ed276c; text-decoration: none;">{{sale.sale_no}}</a></td>
-          <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.party_name.id 'party' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #e94949; text-decoration: none;">{{sale.party_name.name}}</a></td>
-          <td class="text-center">{{sale.total_qty}}</td>
-          <td class="text-center fw-bold">{{sale.grand_total}}</td>
-          <td></td>
-          <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
-          <td></td>
-        </tr>
-        
-      {% endfor %}
-      {% for return in sales_return %}
-      <tr class="table-danger">
+      {% for sale in final_list %}
+      <tr class="table-success">
         <td>{{forloop.counter}}</td>
-        <td>{{return.created_date}}</td>
+
+        <td>{{sale.created_date}}</td>
+
+        <td class="text-center">{% if sale.outward_no__outward_no %}<a href="{% url 'outward-scan-product-update' sale.outward_no__id %}">{{sale.outward_no__outward_no}}</a>{% endif %}</td>
+
+        <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.salesman__id 'salesman' %}">{{sale.salesman__salesman_name}}</a></td>
+
+        <td>{{sale.ledger_type}}</td>
+
+        {% if sale.sale_no %}
+
+        <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}">{{sale.sale_no}}</a></td>
+
+        {% elif sale.sales_return_inward_instance__sales_return_no %}
+
+        <td class="text-center"><a href="{% url 'sales-return-voucher-create-update' sale.sales_voucher_master__id sale.sales_return_inward_instance__id sale.id 'view' %}">{{ sale.sales_return_inward_instance__sales_return_no }}</a></td>
+
+        {% endif %}
+
+        <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' sale.party_name__id 'party' %}">{{sale.party_name__name}}</a></td>
+
+        <td class="text-center">{{sale.total_qty}}</td>
+
+        {% if sale.sale_no %}
+        <td>{{sale.grand_total}}</td>
+        {% else %}
         <td></td>
-
-        <td class="text-center"><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' return.salesman.id 'salesman' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #4991e9; text-decoration: none;">{{return.salesman.salesman_name}}</a></td>
-
-        <td>{{return.sales_return_inward_instance.ledger_type}}</td>
-
-        <td class="text-center"><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id 'view' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ed276c; text-decoration: none;">{{return.sales_return_inward_instance.sales_return_no}}</a></td>
-        <td><a href="{% url 'sales-voucher-view-sort-with-salesman-or-partyname' return.sales_voucher_master.party_name.id 'party' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #e94949; text-decoration: none;">{{return.sales_voucher_master.party_name.name}}</a></td>
-        <td class="text-center">{{return.total_qty}}</td>
+        {% endif %}
+        
+        {% if sale.sales_return_inward_instance__sales_return_no %}
+        <td>{{sale.grand_total}}</td>
+        {% else %}
         <td></td>
+        {% endif %}
 
-        <td class="text-center fw-bold">{{return.grand_total}}</td>
-        <td><a href="{% url 'sales-return-voucher-create-update' return.sales_voucher_master.id return.sales_return_inward_instance.id return.id 'view' %}"><i class="fa-solid fa-eye px-1"></i></a></td>
-        <td>Print</td>
+        {% if sale.sale_no %}
+        <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+        {% else %}
+        <td><a href="{% url 'sales-return-voucher-create-update' sale.sales_voucher_master__id sale.sales_return_inward_instance__id sale.id 'view' %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+        {% endif %}
+
+        <td></td>
       </tr>
       {% endfor %}
       </tbody>
       
     </table>
   </div>  
-</div>        
+</div> 
           
   
 
