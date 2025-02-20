@@ -49,10 +49,10 @@
                         <th>GRN No</th>
                         <th>labour name</th>
                         <th>Issues Pcs</th>
-                        <th>Return Pcs</th>
-                        <th>Balance Pcs</th>
-                        <th>Pending approval</th>
-                        <th>Approved Pcs</th>
+                        <th class="text-success">Return Pcs</th>
+                        <th class="text-danger">Balance Pcs</th>
+                        <th class="text-danger">Pending approval</th>
+                        <th class="text-success">Approved Pcs</th>
                         <th>Approve</th>
                         <th>Approve log</th>
                         <th>Edit</th>
@@ -68,11 +68,11 @@
                         <td>{{forloop.counter}}</td>
                         <td>{{record.voucher_number}}</td>
                         <td>{{record.labour_voucher_number.labour_name.name}}</td>
-                        <td>{{record.labour_voucher_number.total_process_pcs}}</td>
-                        <td class="returnQty">{{record.total_return_pcs}}</td>
-                        <td>{{record.total_balance_pcs}}</td>
-                        <td class="pendingValue">{{record.pending_for_approval_pcs}}</td>
-                        <td class="processedQty">{{record.total_approved_pcs}}</td>
+                        <td class=" text-center">{{record.labour_voucher_number.total_process_pcs}}</td>
+                        <td class="returnQty text-success text-center">{{record.total_return_pcs}}</td>
+                        <td class="text-danger text-center">{{record.total_balance_pcs}}</td>
+                        <td class="pendingValue text-danger text-center">{{record.pending_for_approval_pcs}}</td>
+                        <td class="processedQty text-success text-center">{{record.total_approved_pcs}}</td>
                         <td><button class="border-0 bg-transparent btnValue" onclick="approvedGoodsReturnSingle(this)"><a class="approved-btn" ><i class="fa-regular fa-thumbs-up ps-3 fs-5"></i></a></button></td>
                         <td><button type="button" data-id="{{ cutting_order.processed_qty }}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"  class="border-0 bg-transparent " onclick="cuttingPkValue(this)"><i class="fa-solid fa-person-circle-check px-3 fs-5"></i></button></td>
                         
@@ -132,7 +132,7 @@
                 <th>Date</th>
                 <th>Sku</th>
                 <th>Color</th>
-                <th>Approved QTY</th>
+                <th class="text-success">Approved QTY</th>
               </tr>
             </thead>
             <tbody class="mainTableList" >
@@ -228,11 +228,6 @@ $(document).ready(function(){
 
 
 function cuttingPkValue(button){
-    // var title = button.getAttribute('data-id');
-    // console.log(title)
-    // var Qty = document.getElementById('tQty');
-
-    // Qty.textContent = title
     var labour_workin_key = $(button).closest('tr').find('#id_labour_workin_id').val();
     var newTable = document.querySelector('#approvalDataLogs tbody'); 
     document.getElementById('cuttingVNo').textContent = labour_workin_key; 
@@ -287,9 +282,13 @@ function cuttingPkValue(button){
 
               var cell3 = document.createElement('td');
               cell3.textContent = approvedcolor;
+              cell3.style.color = 'green';
+              cell3.style.textAlign = 'center';
               
               var cell4 = document.createElement('td');
               cell4.textContent = approvedQty;
+              cell4.style.color = 'red';
+              cell4.style.textAlign = 'center';
         
               // Append cells to the row
               row.appendChild(cell1);

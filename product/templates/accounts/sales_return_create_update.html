@@ -285,7 +285,7 @@
             </span>
             {% elif not master_form.instance.id %}
             <span class="purchase-span">
-              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form_data.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
           </span>
             {% endif %}
         </div>
@@ -317,7 +317,7 @@
         </div>
         <div class="modal-body">
            "Are you sure you want to Generate Sales Return ?" 
-           
+           <p>"Once you Submit you <span class="fw-bold text-danger">Can't Edit or increase QTY</span>"</p>
         </div>
         <div class="modal-footer bg-success-subtle text-success-emphasis">
           <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
@@ -329,6 +329,7 @@
   </div>
 
 <script>
+    document.body.appendChild(document.getElementById('staticBackdrop'));
     $(document).ready(function(){
   
     $('#modalSubmitButton').on('click',function(){
