@@ -1139,11 +1139,11 @@ class Migration(migrations.Migration):
             name='Item_Packing',
             field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='product.packaging'),
         ),
-        migrations.AddField(
-            model_name='item_creation',
-            name='allocated_bin',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='allocated_items', to='product.finished_product_warehouse_bin'),
-        ),
+        # migrations.AddField(
+        #     model_name='item_creation',
+        #     name='allocated_bin',
+        #     field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='allocated_items', to='product.finished_product_warehouse_bin'),
+        # ),
         migrations.AddField(
             model_name='item_creation',
             name='c_user',

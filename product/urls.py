@@ -59,6 +59,7 @@ urlpatterns = [
     #item_routes
     path('itemedit/<int:pk>',views.item_edit , name= 'item-edit'),
     path('itemcreate/',views.item_create , name= 'item-create'),
+    path('item_bin_ajax/',views.item_bin_ajax , name= 'item_bin_ajax'),
     path('itemlist/',views.item_list ,name= 'item-list'),
     path('itemdelete/<int:pk>',views.item_delete , name= 'item-delete'),
 

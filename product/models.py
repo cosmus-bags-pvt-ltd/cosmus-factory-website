@@ -343,6 +343,13 @@ class packaging(models.Model):
         ordering = ['packing_material']
 
 
+class rack_for_raw_material(models.Model):
+    rack_name = models.CharField(max_length=255, unique=True)
+
+class bin_for_raw_material(models.Model):
+    rack = models.ForeignKey(rack_for_raw_material, on_delete=models.PROTECT)
+    bin_name = models.CharField(max_length=255, unique=True)
+
 
 class Item_Creation(models.Model):
 
@@ -374,7 +381,7 @@ class Item_Creation(models.Model):
     item_shade_image = models.ImageField(upload_to = 'rawmaterial/images', null=True , blank=True)
     created_date = models.DateTimeField(auto_now_add =True)
     modified_date_time = models.DateTimeField(auto_now = True)
-     
+
     def Color_Name(self):
         return self.Item_Color.color_name
 
@@ -393,8 +400,18 @@ class Item_Creation(models.Model):
     def Packaging_Material(self):
         return self.Item_Packing.packing_material
 
+
+
+class ItemBinAssignment(models.Model):
+    item = models.ForeignKey(Item_Creation, on_delete=models.CASCADE)
+    bin = models.ForeignKey(bin_for_raw_material, on_delete=models.CASCADE)
+    class Meta:
+        unique_together = ('item', 'bin')
+
     def __str__(self):
-        return f"{self.item_name}"
+        return f"{self.bin.bin_name}"
+
+
     
 #This
 class item_color_shade(models.Model):
@@ -413,6 +430,7 @@ class item_color_shade(models.Model):
 
     def __str__(self):
         return self.item_shade_name
+
 
 
 

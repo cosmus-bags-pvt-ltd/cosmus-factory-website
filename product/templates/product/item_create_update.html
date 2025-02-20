@@ -274,24 +274,22 @@
           
         </div>
         {% endif %}
+        <label><strong>Select Bins:</strong></label>
+            {% for checkbox in bin_form.bins %}
+                <p>{{ checkbox.tag }} {{ checkbox.choice_label }}</p>
+            {% endfor %}
         
       </div>
     </div>
-      
-  
+
    
     <button type="submit" class="newProductCreateBtn mt-3" name="save" value="Save" id="submitButtonItemCreate">Submit</button>
   </form>
 
-
-
-
-
-  
-  
-    
-
 </div>
+
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
