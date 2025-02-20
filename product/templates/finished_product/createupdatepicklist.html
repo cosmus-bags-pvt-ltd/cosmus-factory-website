@@ -190,6 +190,7 @@
         </div>
         <div class="modal-body">
            "Are you sure you want to Submit Picklist ?" 
+           <p>"Once you Submit you <span class="fw-bold text-danger">Can't Edit or increase QTY</span>"</p>
            
         </div>
         <div class="modal-footer bg-success-subtle text-success-emphasis">
@@ -712,24 +713,17 @@ document.addEventListener('DOMContentLoaded', function () {
         
         if(addButton && tableBody){
             addButton.addEventListener('click', function() {
-                // let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
-
-                //     if (isNaN(addInputRow) || addInputRow <= 0) {
-                //         addInputRow = 1;
-                //         return;
-                //     }
-            
-                    let lastVisibleRow = null;
-                    tableBody.querySelectorAll('tr').forEach(row => {
-                        if (window.getComputedStyle(row).display !== 'none') {
-                            lastVisibleRow = row;
-                        }
+        
+                let lastVisibleRow = null;
+                tableBody.querySelectorAll('tr').forEach(row => {
+                    if (window.getComputedStyle(row).display !== 'none') {
+                        lastVisibleRow = row;
+                    }
                 });
 
                 if (lastVisibleRow) {
                     const formCountInput = document.getElementById("id_picklist_products_list-TOTAL_FORMS");
-                
-                    // for(let i = 0; i<addInputRow; i++){
+            
                         const formCount = parseInt(formCountInput.value); 
                         const formIndex = formCount;
                         const lastRow = lastVisibleRow.cloneNode(true);
@@ -738,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             e.value = "";
                         });
 
-                        // update the input name,id and value of the last row   
+                      
                         const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
                         rowElement.id = `rowNo_${formIndex}`;
                         rowElement.name = `rowNo_${formIndex}`;
@@ -780,7 +774,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         imageInputElement.id = `id_productInward_img_${formIndex}`
                         imageInputElement.value="";
 
-
                         const binElement = lastRow.querySelector('select[name^="picklist_products_list-"][name$="-bin_number"]');
                         binElement.id = `id_picklist_products_list-${formIndex}-bin_number`;
                         binElement.name = `picklist_products_list-${formIndex}-bin_number`;
@@ -798,8 +791,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         qunatityInputElement.value="";
                         qunatityInputElement.removeAttribute('readonly');
 
-
-                    
                         const deleteElement = lastRow.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
                         deleteElement.id = `id_picklist_products_list-${formIndex}-DELETE`;
                         deleteElement.name = `picklist_products_list-${formIndex}-DELETE`;
@@ -812,8 +803,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         formCountInput.value = formCount + 1; 
                         tableBody.appendChild(lastRow);
 
-                    // }
-                    // document.getElementById('id_productRow').value = '1';
                     deleteRowData()
                     inputCheck()
                 
@@ -824,16 +813,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }else{
             console.error("Could not find addFormButton or table body element.");
 
-        }
-    
-    // }
-    
-    
-});
+        }    
+    });
 
 
     function getVisibleRows() {
-    // Select all rows that are not hidden (excluding those with display: none)
+
         const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
         return visibleRows;
     }
@@ -843,21 +828,20 @@ document.addEventListener('DOMContentLoaded', function () {
             const rows =  getVisibleRows();
             console.log(rows.length)
         
-            if (rows.length > 1) { // Find the row containing the clicked delete button
+            if (rows.length > 1) {
                 
                 const row = this.closest('tr');
-                if (row) { // Find the checkbox for deletion in the row
+                if (row) { 
                     
                     const checkRow = row.querySelector('input[name^="picklist_products_list-"][name$="-DELETE"]');
-                     const sku = row.querySelector('[name^="product_Sku_"]').value;
+                    const sku = row.querySelector('[name^="product_Sku_"]').value;
                     const binName = row.querySelector('[name$="-bin_number"]').value
                      const productQty = parseInt(row.querySelector('[name$="-product_quantity"]').value) || 0;
                     if (checkRow) {
-                        checkRow.checked = true; // Mark as checked
-                        checkRow.value = 'true'; // Set the value to 'true'
+                        checkRow.checked = true;
+                        checkRow.value = 'true'; 
                         row.style.display = 'none';
               
-
                         $.ajax({
                             url: '/deleteformquantityrevert/',
                             method: 'GET',
@@ -1023,21 +1007,23 @@ document.addEventListener('DOMContentLoaded', function () {
                         if(qty.value === '') {
                             qty.focus();    
                         }else{
-                            var tableRow = document.querySelectorAll('#createpickListTable tr');
-                            for (let row of tableRow) {
-                                var itemInput = row.querySelector('[name$="product_name_value"]');
-                                var qtyInput = row.querySelector('[name$="-bin_number"]');
+                            addBtn.focus()
+                            
+                            // var tableRow = document.querySelectorAll('#createpickListTable tr');
+                            // for (let row of tableRow) {
+                            //     var itemInput = row.querySelector('[name$="product_name_value"]');
+                            //     var qtyInput = row.querySelector('[name$="-bin_number"]');
 
-                                if (itemInput && itemInput.value === '') {
-                                    itemInput.focus();
-                                    return; 
-                                } 
-                                // Check if quantity is empty, then focus on it
-                                else if (qtyInput && qtyInput.value === '') {
-                                    qtyInput.focus();
-                                    return; 
-                                }
-                            }
+                            //     if (itemInput && itemInput.value === '') {
+                            //         itemInput.focus();
+                            //         return; 
+                            //     } 
+                            //     // Check if quantity is empty, then focus on it
+                            //     else if (qtyInput && qtyInput.value === '') {
+                            //         qtyInput.focus();
+                            //         return; 
+                            //     }
+                            // }
                         }
                     }
                 })
@@ -1059,6 +1045,28 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 });
+            }
+            if(addBtn){
+                addBtn.addEventListener('keydown',function(event){
+                    if(event.key === 'Enter'){
+                    
+                        var tableRow = document.querySelectorAll('#createpickListTable tr');
+                            for (let row of tableRow) {
+                                var itemInput = row.querySelector('[name$="product_name_value"]');
+                                var qtyInput = row.querySelector('[name$="-bin_number"]');
+
+                                if (itemInput && itemInput.value === '') {
+                                    itemInput.focus();
+                                    return; 
+                                } 
+                                // Check if quantity is empty, then focus on it
+                                else if (qtyInput && qtyInput.value === '') {
+                                    qtyInput.focus();
+                                    return; 
+                                }
+                            }
+                    }
+                })
             }
         
         });

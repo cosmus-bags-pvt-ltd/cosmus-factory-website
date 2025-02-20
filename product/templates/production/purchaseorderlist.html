@@ -41,8 +41,8 @@
                 <th>Model Name</th>
                 <th>Party Name</th>
                 <th>Target Date</th>
-                <th>Total P.O Qty</th>
-                <th>Balance Qty</th>
+                <th class="text-success">Total P.O Qty</th>
+                <th class="text-danger">Balance Qty</th>
                 <th>Edit</th>
                 <th>Delete</th>
             </tr>
@@ -57,8 +57,8 @@
                 <td>{{po.product_reference_number.Model_Name}}</td>
                 <td>{{po.ledger_party_name.name}}</td>
                 <td>{{po.target_date}}</td>
-                <td class="text-center">{{po.number_of_pieces}}</td>
-                <td class="text-center">{{po.balance_number_of_pieces}}</td>
+                <td class="text-center text-success">{{po.number_of_pieces}}</td>
+                <td class="text-center text-danger">{{po.balance_number_of_pieces}}</td>
                 <td><a href="{% url 'purchase-order-update' po.id %}" class="border-0 bg-transparent" ><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
                 <td><button class="border-0 bg-transparent deletes-btn" data-item-id="{{po.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></i></button></td> 
                   <input type="hidden" value="{{po.raw_materials.exists}}" class="purchaseOderDelete">

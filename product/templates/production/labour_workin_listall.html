@@ -34,10 +34,10 @@
                     <th>PO Qty</th>
                     <th>Model Name</th>
                     <th>Total LWO QTY</th>
-                    <th>Total LWI QTY</th>
-                    <th>Balance Qty</th>
-                    <th>Approved QTY</th>
-                    <th>Pending Approval</th>
+                    <th class="text-success">Total LWI QTY</th>
+                    <th class="text-danger">Balance Qty</th>
+                    <th class="text-success">Approved QTY</th>
+                    <th class="text-danger">Pending Approval</th>
                     <th>Create</th>
       
                   </tr>
@@ -46,16 +46,16 @@
                   {% for instance in purchase_order_instances %}
                   <tr>
                     <td>{{forloop.counter}}</td>
-                    <td>{{instance.purchase_order_number}}</td>
+                    <td class="text-center">{{instance.purchase_order_number}}</td>
                     <td>{{instance.ledger_party_name.name}}</td> 
-                    <td><a class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' instance.product_reference_number.Product_Refrence_ID %}">{{instance.product_reference_number.Product_Refrence_ID}}</a></button></td>
-                    <td>{{instance.number_of_pieces}}</td>
+                    <td class="text-center"><a class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' instance.product_reference_number.Product_Refrence_ID %}">{{instance.product_reference_number.Product_Refrence_ID}}</a></button></td>
+                    <td class="text-center">{{instance.number_of_pieces}}</td>
                     <td>{{instance.product_reference_number.Model_Name}}</td>
-                    <td>{{instance.total_lwo_pcs|default_if_none:0}}</td>
-                    <td>{{instance.total_labour_workin_pcs|default_if_none:0}}</td>
-                    <td>{{instance.total_labour_workin_pending|default_if_none:0}}</td>
-                    <td>{{instance.total_approved_qty|default_if_none:0}}</td>
-                    <td>{{instance.total_pending_approved_qty|default_if_none:0}}</td>
+                    <td class="text-center">{{instance.total_lwo_pcs|default_if_none:0}}</td>
+                    <td class="text-center text-success">{{instance.total_labour_workin_pcs|default_if_none:0}}</td>
+                    <td class="text-center text-danger">{{instance.total_labour_workin_pending|default_if_none:0}}</td>
+                    <td class="text-center text-success">{{instance.total_approved_qty|default_if_none:0}}</td>
+                    <td class="text-center text-danger">{{instance.total_pending_approved_qty|default_if_none:0}}</td>
                     <td><a href="{% url 'labour-workin-pur-order-list' instance.id %}" id="labourWorkInCreateClick"><i class="fa-solid fa-circle-plus px-2"></i></a></td>
                     
                   </tr>
@@ -86,10 +86,10 @@
                   <th>Model Name</th>
                   <th>Vendor Name</th>
                   <th>Issued Qty</th>
-                  <th>Recieved Qty</th>
-                  <th>Balance Qty</th>
-                  <th>Approved Qty</th>
-                  <th>Pending Approval</th>
+                  <th class="text-success">Recieved Qty</th>
+                  <th class="text-danger">Balance Qty</th>
+                  <th class="text-success">Approved Qty</th>
+                  <th class="text-danger">Pending Approval</th>
                   <th>Edit</th>
                   <th>OverDue</th>
                 </tr>
@@ -98,28 +98,28 @@
                 {% for instance in labour_workout_child_instances_all %}
                 <tr>
                   <td>{{forloop.counter}}</td>
-                  <td>
+                  <td class="text-center">
                     {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}
                   </td>
-                  <td>
+                  <td >
                     {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}
                   </td>
-                  <td>
+                  <td class="text-center">
                     {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces}}
                   </td>
-                  <td>{{instance.challan_no}}</td>
+                  <td class="text-center">{{instance.challan_no}}</td>
                   <td><a href="{% url 'edit_production_product' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;" >{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a>
                   </td>
                   <td>
                     {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Name}}
                   </td>
                   <td>{{instance.labour_name.name|default_if_none:0}}</td>
-                  <td>{{instance.total_process_pcs|default_if_none:0}}</td>
-                  <td>{{instance.labour_workin_pcs|default_if_none:0}}</td>
-                  <td>{{instance.labour_workin_pending_pcs|default_if_none:0}}</td>
-                  <td>{{instance.total_approved_qty|default_if_none:0}}</td>
-                  <td>{{instance.total_pending_approved_qty|default_if_none:0}}</td>
-                  <td><a href="{% url 'labour-workin-list-create' instance.id %}"><i
+                  <td class="text-center">{{instance.total_process_pcs|default_if_none:0}}</td>
+                  <td class="text-center text-success">{{instance.labour_workin_pcs|default_if_none:0}}</td>
+                  <td class="text-center text-danger">{{instance.labour_workin_pending_pcs|default_if_none:0}}</td>
+                  <td class="text-center text-success">{{instance.total_approved_qty|default_if_none:0}}</td>
+                  <td class="text-center text-danger">{{instance.total_pending_approved_qty|default_if_none:0}}</td>
+                  <td class="text-center"><a href="{% url 'labour-workin-list-create' instance.id %}"><i
                         class="fa-solid fa-pen-to-square px-2"></i></a></td>
                   <td class="text-nowrap">{{ instance.created_date.date}}<br>
                     {% if instance.created_date|subtract_datestime:current_date < 0 %} 
@@ -152,10 +152,10 @@
               <th>Vendor Name</th>
               <th>Product Ref No</th>
               <th>Model Name</th>
-              <th>GRN Qty</th>
-              <th>Pending Qty</th>
+              <th class="text-success">GRN Qty</th>
+              <th class="text-danger">Pending Qty</th>
               <th>Challan No</th>
-              <th>Total LWO</th>
+              <th class="text-success">Total LWO</th>
               <th>View</th>
             </tr>
           </thead>
@@ -163,17 +163,17 @@
             {% for instance in labour_workin_child_instances_all %}
             <tr>
               <td>{{forloop.counter}}</td>
-              <td>{{instance.voucher_number}}</td>
+              <td class="text-center">{{instance.voucher_number}}</td>
               <td>{{instance.created_date}}</td>
               <td>{{instance.labour_voucher_number.labour_name.name}}</td>
               <td><a href="{% url 'edit_production_product' instance.labour_voucher_number.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;" >{{instance.labour_voucher_number.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a>
               </td>
               <td>{{instance.labour_voucher_number.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name}}</td>
-              <td>{{instance.total_return_pcs}}</td>
-              <td>{{instance.total_balance_pcs}}</td>
-              <td><a href="{% url 'labour-workout-single-view' instance.labour_voucher_number.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #f5a623; text-decoration: none;" >{{instance.labour_voucher_number.challan_no}}</a>
+              <td class="text-center text-success">{{instance.total_return_pcs}}</td>
+              <td class="text-center text-danger">{{instance.total_balance_pcs}}</td>
+              <td class="text-center text-success"><a href="{% url 'labour-workout-single-view' instance.labour_voucher_number.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #f5a623; text-decoration: none;" >{{instance.labour_voucher_number.challan_no}}</a>
               </td>
-              <td>{{instance.labour_voucher_number.total_process_pcs}}</td>
+              <td class="text-center">{{instance.labour_voucher_number.total_process_pcs}}</td>
               <td><a href="{% url 'labour-workin-view-update' instance.labour_voucher_number.id instance.id True %}"><i class="fa-solid fa-eye px-2"></i></a></td>
             </tr>
             {% endfor %}

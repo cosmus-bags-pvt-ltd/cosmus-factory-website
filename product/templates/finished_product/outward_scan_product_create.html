@@ -239,7 +239,7 @@
         </div>
         <div class="modal-body">
            "Are you sure you want to Submit Outward Scan ?" 
-           
+           <p>"Once you Submit you <span class="fw-bold text-danger">Can't Edit or increase QTY</span>"</p>
         </div>
         <div class="modal-footer bg-success-subtle text-success-emphasis">
           <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
@@ -255,6 +255,7 @@
 <script>
 
 $(document).ready(function () {
+    $('#id_pickList_no').focus();
    $('#modalSubmitButton').on('click',function(){
         $('#outwardScanForm').submit();
    })
@@ -1144,7 +1145,7 @@ $(document).ready(function () {
     
     
     function inputCheck(){
-        document.getElementById('id_pickList_no').focus();
+        
         const picklistNo = document.getElementById('id_pickList_no')
         const outwardNo = document.getElementById('id_outward_no');
         const inwardNo = document.getElementById('inwordSerialNo');

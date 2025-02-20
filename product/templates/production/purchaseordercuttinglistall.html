@@ -37,10 +37,10 @@
                                 <th>Ref No</th>
                                 <th>Model Name</th>
                                 <th>Party Name</th>
-                                <th>Total P.O Qty</th>
-                                <th>Total Processed Qty</th>
-                                <th>Pend QTY at Cutting Stage</th>
-                                <th>Cut Appr Pend QTY</th>
+                                <th class="text-success">Total P.O Qty</th>
+                                <th class="text-primary">Total Processed Qty</th>
+                                <th class="text-danger">Pend QTY at Cutting Stage</th>
+                                <th class="text-danger fw-bold">Cut Appr Pend QTY</th>
                                 <th>Create</th>
                                 <th>Target Date</th>
                             </tr>
@@ -50,14 +50,14 @@
                             <tr> 
                                 <td>{{forloop.counter}}</td>
                                 <td class="text-nowrap">{{po.created_date}}</td>
-                                <td>{{po.purchase_order_number}}</td>
+                                <td class="text-center">{{po.purchase_order_number}}</td>
                                 <td class="text-center"><a class="border-0 rounded  mb-1 px-2 py-1 text-white d-inline-block" style="background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' po.product_reference_number.Product_Refrence_ID %}">{{po.product_reference_number.Product_Refrence_ID}}</a></td>
                                 <td class="text-nowrap">{{po.product_reference_number.Model_Name}}</td>
                                 <td class="text-nowrap">{{po.ledger_party_name.name}}</td>       
-                                <td>{{po.number_of_pieces}}</td>
-                                <td>{{po.cutting_total_processed_qty}}</td>
-                                <td>{{po.balance_number_of_pieces}}</td>
-                                <td>{{po.total_approved_balance | default_if_none:'0'}}</td>
+                                <td class="text-center text-success">{{po.number_of_pieces}}</td>
+                                <td class="text-center text-primary">{{po.cutting_total_processed_qty}}</td>
+                                <td class="text-center text-danger">{{po.balance_number_of_pieces}}</td>
+                                <td class="text-center text-danger fw-bold">{{po.total_approved_balance | default_if_none:'0'}}</td>
                                 <td><a href="{% url 'purchase-order-cutting-list' po.id po.product_reference_number.Product_Refrence_ID %}"><i class="fa-solid fa-circle-plus px-2"></i></a></td>
                                 <td class="text-nowrap">{{po.target_date}}<br>
                                     {% if po.target_date|subtract_dates:current_date < 0 %}
@@ -92,10 +92,10 @@
                                 <th>Model Name</th>
                                 <th>Party Name</th>
                                 <th>Target Date</th>
-                                <th>Total P.O Qty</th>
-                                <th>Total Processed Qty</th>
-                                <th>Pend QTY at Cutting Stage</th>
-                                <th>Cut Appr Pend QTY</th>
+                                <th class="text-success">Total P.O Qty</th>
+                                <th class="text-primary">Total Processed Qty</th>
+                                <th class="text-danger">Pend QTY at Cutting Stage</th>
+                                <th class="text-danger fw-bold">Cut Appr Pend QTY</th>
                                 <th>Edit</th>
                             </tr>
                         </thead>
@@ -104,15 +104,15 @@
                             <tr>
                                 <td>{{forloop.counter}}</td>
                                 <td>{{po.created_date}}</td>
-                                <td>{{po.purchase_order_number}}</td>
+                                <td class="text-center">{{po.purchase_order_number}}</td>
                                 <td class="text-center"><a class="border-0 rounded  mb-1 px-2 py-1 text-white d-inline-block" style="background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' po.product_reference_number.Product_Refrence_ID %}">{{po.product_reference_number.Product_Refrence_ID}}</a></td>
                                 <td>{{po.product_reference_number.Model_Name}}</td>
                                 <td>{{po.ledger_party_name.name}}</td>
                                 <td>{{po.target_date}}</td>
-                                <td>{{po.number_of_pieces}}</td>
-                                <td>{{po.cutting_total_processed_qty}}</td>
-                                <td>{{po.balance_number_of_pieces}}</td>
-                                <td>{{po.total_approved_balance}}</td>
+                                <td class="text-center text-success">{{po.number_of_pieces}}</td>
+                                <td class="text-center text-primary">{{po.cutting_total_processed_qty}}</td>
+                                <td class="text-center text-danger">{{po.balance_number_of_pieces}}</td>
+                                <td class="text-center text-danger fw-bold">{{po.total_approved_balance}}</td>
                                 <td><a href="{% url 'purchase-order-cutting-list' po.id po.product_reference_number.Product_Refrence_ID %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
                                 </tr>
                             {% endfor %}
@@ -140,9 +140,9 @@
                         <th>Product Ref. No </th>
                         <th>Model Name</th>
                         <th>Party Name</th>
-                        <th>Total P.O Qty</th>
-                        <th>Total Processed Qty</th>
-                        <th>balance For Cutting</th>
+                        <th class="text-success">Total P.O Qty</th>
+                        <th class="text-primary">Total Processed Qty</th>
+                        <th class="text-danger">balance For Cutting</th>
                         <th>View</th>
                     </tr>
                    </thead>
@@ -156,9 +156,9 @@
                             <td class="text-center"><a class="border-0 rounded  mb-1 px-2 py-1 text-white d-inline-block" style="background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' instance.purchase_order_id.product_reference_number.Product_Refrence_ID %}">{{instance.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a></td>
                             <td>{{instance.purchase_order_id.product_reference_number.Model_Name}}</td>
                             <td>{{instance.purchase_order_id.ledger_party_name.name}}</td>
-                            <td>{{instance.purchase_order_id.number_of_pieces}}</td>
-                            <td>{{instance.processed_qty}}</td>
-                            <td>{{instance.balance_qty}}</td>
+                            <td class="text-center text-success">{{instance.purchase_order_id.number_of_pieces}}</td>
+                            <td class="text-center text-primary">{{instance.processed_qty}}</td>
+                            <td class="text-center text-danger">{{instance.balance_qty}}</td>
                             <td><a href="{% url 'purchase-order-cutting-update' instance.purchase_order_id.id instance.purchase_order_id.product_reference_number.Product_Refrence_ID instance.raw_material_cutting_id %}"><i class="fa-solid fa-eye px-2"></i></a></td>
                         </tr>
                         {% endfor %}

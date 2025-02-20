@@ -33,8 +33,8 @@
                         <th>Ref No </th>
                         <th>Model Name</th>
                         <th>Issued QTY</th>
-                        <th>Rec QTY</th>
-                        <th>Balance QTY</th>
+                        <th class="text-success">Rec QTY</th>
+                        <th class="text-danger">Balance QTY</th>
                         <th>Over Due</th>
                     </tr>
                 </thead>
@@ -87,9 +87,9 @@
                                     <th>Product Sku</th>
                                     <th>Color</th>
                                     <th>Issue QTY</th>
-                                    <th>Received QTY</th>
-                                    <th>Balance QTY</th>
-                                    <th>Return QTY <input type="checkbox" class="mx-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>
+                                    <th class="text-success">Received QTY</th>
+                                    <th class="text-danger">Balance QTY</th>
+                                    <th class="text-primary">Return QTY <input type="checkbox" class="mx-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>
                                 </tr>
                             </thead>
                             <tbody class="mainTableList ">
@@ -129,7 +129,7 @@
                     </div>
                     <input type="hidden" id="childId" name="labour_workout_child_instance_id" value="">
                 </div>
-                <div class="col-lg-5">
+                <div class="col-lg-6">
                     <table class=" table table-striped table-hover table-bordered table-primary" id="grNoTotalQty">
                         <thead class="name_absolute">
                             <tr>
@@ -349,14 +349,14 @@ $(document).ready(function () {
                  
 
                     var newRows = $('<tr>').append(
-                    $('<td>').text(value.Challan_No || 'N/A'),
-                    $('<td>').text(value.PO_No || 'N/A'),
-                    $('<td>').text(value.PO_Total_QTY || '0'),
+                    $('<td class="text-center">').text(value.Challan_No || 'N/A'),
+                    $('<td class="text-center">').text(value.PO_No || 'N/A'),
+                    $('<td class="text-center">').text(value.PO_Total_QTY || '0'),
                     $('<td>').text(value.Ref_No || 'N/A'),
                     $('<td>').text(value.Model_Name || 'N/A'),
-                    $('<td>').text(value.Issued_QTY || '0'),
-                    $('<td>').text(value.Rec_QTY || '0'),
-                    $('<td>').text(value.Balance_QTY || 0),
+                    $('<td class="text-center">').text(value.Issued_QTY || '0'),
+                    $('<td class="text-center text-success">').text(value.Rec_QTY || '0'),
+                    $('<td class="text-center text-danger">').text(value.Balance_QTY || 0),
                     dateCell,
                     $('<input type="hidden" id="id_labour_workout_id">').val(value.labour_workout_id  || 'N/A')
                     );
@@ -587,17 +587,17 @@ $(document).on('click', '.search-input',function(){
                         
                         newRow.append('<input type="hidden" name="l_w_in_products-' + index + '-id" value="" id="id_l_w_in_products-0-id">');
                     // Create the input fields dynamically for each column
-                    newRow.append($('<td>').html('<input type="text" class="productinput" name="l_w_in_products-' + index + '-product_sku" value="' + rowData.product_sku + '" maxlength="100" id="id_l_w_in_products-' + index + '-product_sku">'));
+                    newRow.append($('<td>').html('<input type="text" class="itemNewQty" name="l_w_in_products-' + index + '-product_sku" value="' + rowData.product_sku + '" maxlength="100" id="id_l_w_in_products-' + index + '-product_sku">'));
                     
                     newRow.append($('<td>').html('<input type="text" class="productinput" name="l_w_in_products-' + index + '-product_color" value="' + rowData.product_color + '" maxlength="100" id="id_l_w_in_products-' + index + '-product_color">'));
                     
                     newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input text-center" name="l_w_in_products-' + index + '-L_work_out_pcs" value="' + rowData.L_work_out_pcs + '" id="id_l_w_in_products-' + index + '-L_work_out_pcs" readonly>' ));
                     
-                    newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input text-center" name="l_w_in_products-' + index + '-total_recieved_qty" value="' + rowData.total_recieved_qty + '" id="id_l_w_in_products-' + index + '-total_recieved_qty" readonly> <input type="hidden" class="productorderrawqty-input" name="l_w_in_products-' + index + '-pending_to_return_pcs" value="' + rowData.pending_to_return_pcs + '" id="id_l_w_in_products-' + index + '-pending_to_return_pcs">'));
+                    newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input text-center text-success" name="l_w_in_products-' + index + '-total_recieved_qty" value="' + rowData.total_recieved_qty + '" id="id_l_w_in_products-' + index + '-total_recieved_qty" readonly> <input type="hidden" class="productorderrawqty-input" name="l_w_in_products-' + index + '-pending_to_return_pcs" value="' + rowData.pending_to_return_pcs + '" id="id_l_w_in_products-' + index + '-pending_to_return_pcs">'));
                     
-                    newRow.append($('<td>').html('<input type="number"  class="productorderrawqty-input text-center" name="l_w_in_products-' + index +'-qty_to_compare" value="'+ rowData.qty_to_compare+'" id="id_id_l_w_in_products-' + index + '-qty_to_compare" readonly>'));
+                    newRow.append($('<td>').html('<input type="number"  class="productorderrawqty-input text-center text-danger" name="l_w_in_products-' + index +'-qty_to_compare" value="'+ rowData.qty_to_compare+'" id="id_id_l_w_in_products-' + index + '-qty_to_compare" readonly>'));
                     
-                    newRow.append($('<td>').html('<input type="number" class="productorderqty-input" name="l_w_in_products-' + index + '-return_pcs" value="' + rowData.return_pcs + '" id="id_l_w_in_products-' + index + '-return_pcs">'));
+                    newRow.append($('<td>').html('<input type="number" class="productorderqty-input text-primary" name="l_w_in_products-' + index + '-return_pcs" value="' + rowData.return_pcs + '" id="id_l_w_in_products-' + index + '-return_pcs">'));
                     
                     // Hidden field for balance
                     newRow.append($('<input type="hidden" class="productorderrawqty-input" name="l_w_in_products-' + index + '-cur_bal_plus_return_qty" value="' + rowData.cur_bal_plus_return_qty + '" id="id_l_w_in_products-' + index + '-cur_bal_plus_return_qty" readonly>'));
@@ -612,9 +612,9 @@ $(document).on('click', '.search-input',function(){
                         totalRow.append($('<td>').html('<span >Total :</span>'))
                         totalRow.append($('<td>').html(''))
                         totalRow.append($('<td class="text-center">').html('<span id="totalLWoPic"></span>'))
-                        totalRow.append($('<td class="text-center">').html('<span id="totalIssuePic"></span>'))
-                        totalRow.append($('<td class="text-center">').html('<span id="totalBalancePic"></span>'))
-                        totalRow.append($('<td class="text-center">').html('<span id="totalReturnPic"></span>'))
+                        totalRow.append($('<td class="text-center text-success">').html('<span id="totalIssuePic"></span>'))
+                        totalRow.append($('<td class="text-center text-danger">').html('<span id="totalBalancePic"></span>'))
+                        totalRow.append($('<td class="text-center text-primary">').html('<span id="totalReturnPic"></span>'))
                         totalupdateRows.append(totalRow) 
                         
                         
