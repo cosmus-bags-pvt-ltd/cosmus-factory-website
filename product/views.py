@@ -6446,10 +6446,11 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     parent_form = master_form.save(commit = False)
                     parent_form.labour_voucher_number = labour_workout_child_instance
 
-                    labour_workin_qty_diff = labour_workout_child_instance.finalReceivedQty - labour_workout_child_instance.finalReturnQty
-                    print(labour_workin_qty_diff)
-
-                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + labour_workin_qty_diff
+                    finalReceivedQty =  int(request.POST.get('finalReceivedQty'))
+                    finalReturnQty = int(request.POST.get('finalReturnQty'))
+                    diffrence_qty = finalReturnQty - finalReceivedQty 
+                    
+                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + diffrence_qty
 
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
 
@@ -6478,8 +6479,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                             else:
                                 qty_to_change = product_to_item_form.return_pcs
 
-                            print(qty_to_change)
-
                             l_w_o_instance.labour_w_in_pending = l_w_o_instance.labour_w_in_pending - qty_to_change
 
                             l_w_o_instance.save()
@@ -6488,9 +6487,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
 
                 else:
-                    
-                    
-                    
                     
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
                     
@@ -6507,10 +6503,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
 
 
-
-
-
-from django.db.models import F, Case, When, IntegerField
 @login_required(login_url='login')
 def labourworkinlistall(request):
 
