@@ -344,7 +344,13 @@ class packaging(models.Model):
 
 
 
+class rack_for_raw_material(models.Model):
+    rack_name = models.CharField(max_length=255, unique=True)
+
+
+
 class bin_for_raw_material(models.Model):
+    rack = models.ForeignKey(rack_for_raw_material, on_delete=models.PROTECT)
     bin_name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
