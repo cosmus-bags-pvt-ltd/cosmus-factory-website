@@ -1010,7 +1010,9 @@ def product2subcategoryajax(request):
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
             return JsonResponse({'dict_result':dict_result})
-    
+
+
+
 
 @login_required(login_url='login')
 def create_update_rack_for_raw_material(request, r_id=None):
@@ -1043,25 +1045,51 @@ def create_update_rack_for_raw_material(request, r_id=None):
 
 
 
+@login_required(login_url='login')
+def delete_rack_for_raw_material(request,r_id):
+    try:
+        rack_instance = get_object_or_404(rack_for_raw_material, id=r_id)
+        
+        rack_instance.delete()
+        messages.success(request, "rack deleted successfully!")
+
+    except rack_for_raw_material.DoesNotExist:
+        messages.error(request, "The rack does not exist.")
+
+    except Exception as e:
+        messages.error(request, f"An error occurred while deleting the rack: {str(e)}")
+        print(f"Error in delete_rack_for_raw_material: {str(e)}")
+
+    return redirect('create-rack-for-raw-material')
+
+
+
 
 @login_required(login_url='login')
-def create_update_bin_for_raw_material(request, b_id=None):
+def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
     try:
-        bin_list = bin_for_raw_material.objects.all()
+        bin_list = bin_for_raw_material.objects.filter(rack = r_id)
+
         bin_instance = get_object_or_404(bin_for_raw_material, id=b_id) if b_id else None
+
         form = bin_for_raw_material_form(request.POST or None, instance=bin_instance)
+
+        rack_instance = get_object_or_404(rack_for_raw_material, id=r_id) if r_id else None
 
         if request.method == 'POST':
             if form.is_valid():
-                form.save()
+                bin_form = form.save(commit=False)
+                bin_form.rack = rack_instance
+                bin_form.save()
+
                 messages.success(request, "Bin details saved successfully!")
-                return redirect('create-bin-for-raw-material')
+                return redirect('create-bin-for-raw-material', r_id=r_id)
             else:
                 messages.error(request, "Please correct the errors below.")
 
     except bin_for_raw_material.DoesNotExist:
         messages.error(request, "The bin record does not exist.")
-        return redirect('create-bin-for-raw-material')
+        return redirect('create-bin-for-raw-material', r_id=r_id)
 
     except Exception as e:
         messages.error(request, f"An unexpected error occurred: {str(e)}")
@@ -1076,10 +1104,10 @@ def delete_bin_for_raw_material(request,b_id):
 
     try:
         bin_instance = get_object_or_404(bin_for_raw_material, id=b_id)
-
+        rack_id = bin_instance.rack.id
         if Item_Creation.objects.filter(bin=bin_instance).exists():
             messages.error(request, "Cannot delete: This bin is assigned to one or more items.")
-            return redirect('create-bin-for-raw-material')
+            return redirect('create-bin-for-raw-material', r_id=rack_id)
         
         bin_instance.delete()
         messages.success(request, "Bin deleted successfully!")
@@ -1091,7 +1119,16 @@ def delete_bin_for_raw_material(request,b_id):
         messages.error(request, f"An error occurred while deleting the bin: {str(e)}")
         print(f"Error in delete_bin_for_raw_material: {str(e)}")
 
-    return redirect('create-bin-for-raw-material')
+    return redirect('create-bin-for-raw-material', r_id=rack_id)
+
+
+
+
+def get_bins_by_rack(request):
+    rack_id = request.GET.get("rack_id")  # Get rack ID from request
+    bins = bin_for_raw_material.objects.filter(rack_id=rack_id).values("id", "bin_name")  
+
+    return JsonResponse({"bins": list(bins)})
 
 
 
@@ -1107,6 +1144,10 @@ def item_create(request):
     items_to_clone = Item_Creation.objects.all()
     colors = Color.objects.all()
     form = Itemform()
+    racks = rack_for_raw_material.objects.all()
+
+    # if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+    #     rack = request.GET.get('')
 
 
     if request.path == '/itemcreatepopup/':
@@ -1115,12 +1156,14 @@ def item_create(request):
         template_name = 'product/item_create_update.html'
         
     if request.method == 'POST':
+        print(request.POST)
         form = Itemform(request.POST, request.FILES)
         if form.is_valid():
             form_instance = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
-            form_instance.bin.set(form.cleaned_data['bin'])
+            # form_instance.bin.set(form.cleaned_data['bin'])
+            form_instance.bin.set(form.cleaned_data.get('bin', []))
 
             
             if request.path == '/itemcreatepopup/':
@@ -1136,7 +1179,7 @@ def item_create(request):
             return render(request,template_name, {'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'title''items_to_clone':items_to_clone,'page_name':'Create Raw Material'})
     
     
-    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material'})
+    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material','racks':racks})
 
 
 
@@ -1151,9 +1194,9 @@ def item_edit(request,pk):
     packaging_material_all = packaging.objects.all()
     fab_finishes = FabricFinishes.objects.all()
     item_pk = get_object_or_404(Item_Creation ,pk = pk)
-
+    racks = rack_for_raw_material.objects.all()
     form = Itemform(instance=item_pk)
-
+    selected_bins = list(item_pk.bin.values_list("id", flat=True))
     
     queryset = item_color_shade.objects.filter(items = pk).annotate(
         total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
@@ -1172,8 +1215,10 @@ def item_edit(request,pk):
             if form.is_valid() and formset.is_valid():
                 form_instance = form.save(commit=False)  
                 form_instance.c_user = request.user
-                form_instance.bin.set(form.cleaned_data['bin'])
                 form_instance.save()
+
+                selected_bin_ids = request.POST.getlist('bin')
+                form_instance.bin.set(selected_bin_ids)
 
                 for form in formset.deleted_forms: 
                     if form.instance.pk:
@@ -1237,7 +1282,7 @@ def item_edit(request,pk):
              logger.error(f'An exception occured in item edit - {e}')
              return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
         
-    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
+    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material",'racks':racks,'selected_bins': json.dumps(selected_bins)})
 
 
 
@@ -1274,6 +1319,7 @@ def item_list(request):
     
     queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item','Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes','Item_Packing').prefetch_related('shades','shades__godown_shades','shades__godown_shades__godown_name','bin')
     
+
     if g_search != '':
         queryset = queryset.filter(Q(item_name__icontains = g_search)| Q(Item_Color__color_name__icontains = g_search)| Q(Fabric_Group__fab_grp_name__icontains = g_search)| Q(Material_code__icontains = g_search))
         

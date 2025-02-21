@@ -335,11 +335,11 @@ class bin_for_raw_material_form(forms.ModelForm):
 
 class Itemform(UniqueFieldMixin,forms.ModelForm):
 
-    bin = forms.ModelMultipleChoiceField(
-        queryset=bin_for_raw_material.objects.all().order_by(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
-    )
+    # bin = forms.ModelMultipleChoiceField(
+    #     queryset=bin_for_raw_material.objects.all().order_by(),
+    #     widget=forms.CheckboxSelectMultiple,
+    #     required=False
+    # )
     
     class Meta:
         model = Item_Creation

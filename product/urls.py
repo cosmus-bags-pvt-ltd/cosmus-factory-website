@@ -56,10 +56,17 @@ urlpatterns = [
     #color popup
     path('color_popup/',views.color_create_update, name='color-popup'),
 
+    #rack for raw material
+    path('createrackforrawmaterial/',views.create_update_rack_for_raw_material , name= 'create-rack-for-raw-material'),
+    path('updaterackforrawmaterial/<int:r_id>/',views.create_update_rack_for_raw_material , name= 'update-rack-for-raw-material'),
+    path('deleterackforrawmaterial/<int:r_id>/',views.delete_rack_for_raw_material , name= 'delete-rack-for-raw-material'),
+
     #bin for raw material
-    path('createbinforrawmaterial/',views.create_update_bin_for_raw_material , name= 'create-bin-for-raw-material'),
-    path('updatebinforrawmaterial/<int:b_id>/',views.create_update_bin_for_raw_material , name= 'update-bin-for-raw-material'),
+    path('createbinforrawmaterial/<int:r_id>/',views.create_update_bin_for_raw_material , name= 'create-bin-for-raw-material'),
+    path('updatebinforrawmaterial/<int:r_id>/<int:b_id>/',views.create_update_bin_for_raw_material , name= 'update-bin-for-raw-material'),
     path('deletebinforrawmaterial/<int:b_id>/',views.delete_bin_for_raw_material , name= 'delete-bin-for-raw-material'),
+    path("get-bins-by-rack/", views.get_bins_by_rack, name="get-bins-by-rack"),
+
 
     #item_routes
     path('itemedit/<int:pk>',views.item_edit , name= 'item-edit'),

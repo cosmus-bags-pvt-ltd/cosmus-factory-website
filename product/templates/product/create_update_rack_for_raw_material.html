@@ -1,0 +1,17 @@
+{% extends 'product/base.html' %}
+{% load static %}
+
+{% block body %}
+<form action="" method = 'POST'>
+    {% csrf_token %}
+    {{form}}
+    <input type="submit">
+</form>
+
+{% for rack in rack_list %}
+  <p><a href="{% url 'create-bin-for-raw-material' rack.id %}">{{rack.rack_name}}</a>
+  <a href="{% url 'update-rack-for-raw-material' rack.id %}">Edit</a>
+  <a href="{% url 'delete-rack-for-raw-material' rack.id %}">Delete</a>
+  </p>
+{% endfor %}
+{% endblock body %}
