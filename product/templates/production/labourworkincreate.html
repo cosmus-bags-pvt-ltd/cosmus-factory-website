@@ -122,11 +122,11 @@
                         <thead class="name_absolute sticky-top">
                             <tr>
                                 <th>Product Sku</th>
-                                <th>Color</th>
+                                <th class="text-nowrap">Color</th>
                                 <th>Issue QTY</th>
-                                <th class="text-success">Received QTY</th>
-                                <th class="text-danger">Balance QTY</th>
-                                <th class="text-primary">Return QTY <input type="checkbox" class="mx-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>   
+                                <th class="text-success text-nowrap">Received QTY</th>
+                                <th class="text-danger text-nowrap">Balance QTY</th>
+                                <th class="text-primary text-nowrap">Return QTY <input type="checkbox" class="ms-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>   
                             </tr>
                         </thead>
                         <tbody class="mainTableList ">
@@ -297,29 +297,43 @@ document.addEventListener("DOMContentLoaded", function () {
             var balanceQTy = row.querySelector('[name$="-qty_to_compare"]');
             var cuttingQty = parseInt(item.value) || 0;
             var processQty = row.querySelector('[name$= "-total_recieved_qty"]');
+            var issuedQty = row.querySelector('[name$= "-L_work_out_pcs"]')
+            var actualBalance = row.querySelector('[name$="-cur_bal_plus_return_qty"]')
             var balanceValue = parseInt(balanceQTy.value) || 0;
             var processValue = parseInt(processQty.value) || 0;
+            var issueValue = parseInt(issuedQty.value) || 0;
+            var actualBalanceValue = parseInt(actualBalance.value) || 0;
+            var tableIds = document.getElementById('id_l_w_in_products-0-id').value;
 
-            console.log('cuttingQty',cuttingQty)
-            console.log('balanceValue',balanceValue)
-            console.log('processValue',processValue)
-            if (checkBoxLwI.checked) {
-                if (cuttingQty > 0) {
-                    item.value = processValue;
-                    balanceQTy.value = 0;
-                } else {
-                    item.value = balanceValue;
-                    balanceQTy.value = 0;
+            if(tableIds === ''){
+                if(cuttingQty > 0){
+                    if (checkBoxLwI.checked) {
+                        item.value = actualBalanceValue;
+                        balanceQTy.value = 0;
+                    
+                    } else {
+                        item.value = 0;
+                        balanceQTy.value = cuttingQty;
+                    }
+                }else{
+                    if (checkBoxLwI.checked) {
+                        item.value = balanceValue;
+                        balanceQTy.value = 0;
+                    } else {
+                        item.value = 0;
+                        balanceQTy.value = balanceValue;
+                    }
                 }
-            } else {
-            if (cuttingQty > 0) {
-                balanceQTy.value = processValue;
-                item.value = 0;
-            } else {
-                item.value = 0;
-                balanceQTy.value = cuttingQty;
+                
+            }else {
+                if (checkBoxLwI.checked) {
+                    balanceQTy.value = 0;
+                    item.value = issueValue;
+                } else {
+                    item.value = processValue;
+                    balanceQTy.value = balanceValue;
+                }
             }
-        }
                 
         })
         
@@ -398,7 +412,7 @@ document.addEventListener("DOMContentLoaded", function () {
           grNO.readOnly = true;
           grNO.style.outline = 'none';
           grNO.style.border = '1px solid blue';
-          checkbox.style.display = 'none';
+          checkbox.disabled = true;
       }else{
           submitForm.style.display = 'block';
           discription.readOnly = false;
@@ -413,7 +427,7 @@ document.addEventListener("DOMContentLoaded", function () {
           grNO.readOnly = false;
           grNO.style.outline = '1px solid black';
           grNO.style.border = '1px solid black';
-          checkbox.style.display = 'block';
+          checkbox.disabled = false;
           returnValue.forEach(function(element){
             element.readOnly = false;
             element.style.outline = '1px solid black';

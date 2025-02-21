@@ -60,7 +60,7 @@
                         <td colspan="2">Total</td>
                         <td><input type="number" class="productorderrawqty-input text-center" id="TotalLabourWorkOut" value="0"></td>
                         <td><input type="number" class="productorderrawqty-input text-center text-success" id="TotalLabourWorkOutReturn" value="0"></td>
-                        <td><input type="number" class="productorderrawqty-input text-center text-danger" id="TotalLabourWorkOutReturn" value="0"></td>
+                        <td><input type="number" class="productorderrawqty-input text-center text-danger" id="TotalLabourWorkOutBalance" value="0"></td>
                         <td><input type="number" class="productorderrawqty-input ms-2 text-primary" id="TotalLabourWorkOutApprove" value="0"></td>
                     </tr>
                 </tbody>
@@ -102,12 +102,12 @@
             }else{
                 if (checkAll.checked) {
                 
-                elements.value = cuttingValue;
-                balanceQty.value = 0;  // Reset balance to 0
-            } else {
-                elements.value = 0;  // Reset approved_qty to 0
-                balanceQty.value = cuttingValue;  // Restore balance value
-            }
+                    elements.value = cuttingValue;
+                    balanceQty.value = 0;  // Reset balance to 0
+                } else {
+                    elements.value = 0;  // Reset approved_qty to 0
+                    balanceQty.value = cuttingValue;  // Restore balance value
+                }
             }
             
         });
