@@ -2,7 +2,7 @@
 {% load static %}
 {% block body %}
 
-<div class="mt-4">
+<div class="mt-2">
     {% if form.instance.id %}
     <button type="button" class="itemCreate_btn"><a class="text-decoration-none text-white" href="{% url 'item-create' %}">Create</a></button>
     {% endif %}
@@ -274,8 +274,14 @@
           
         </div>
         {% endif %}
-        <label><strong>Select Bins:</strong></label>
-        <p>{{ form.bin }}</p>
+        <div class="d-flex">
+          <label class="me-2">Select Bins :</label>
+            <div>
+              <Span>{{ form.bin }}</Span>
+            </div>
+          
+        </div>
+        
         
       </div>
     </div>
