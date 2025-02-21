@@ -343,13 +343,13 @@ class packaging(models.Model):
         ordering = ['packing_material']
 
 
-class rack_for_raw_material(models.Model):
-    rack_name = models.CharField(max_length=255, unique=True)
 
 class bin_for_raw_material(models.Model):
-    rack = models.ForeignKey(rack_for_raw_material, on_delete=models.PROTECT)
     bin_name = models.CharField(max_length=255, unique=True)
 
+    def __str__(self):
+        return self.bin_name
+    
 
 class Item_Creation(models.Model):
 
@@ -381,6 +381,7 @@ class Item_Creation(models.Model):
     item_shade_image = models.ImageField(upload_to = 'rawmaterial/images', null=True , blank=True)
     created_date = models.DateTimeField(auto_now_add =True)
     modified_date_time = models.DateTimeField(auto_now = True)
+    bin = models.ManyToManyField(bin_for_raw_material)
 
     def Color_Name(self):
         return self.Item_Color.color_name
@@ -400,16 +401,9 @@ class Item_Creation(models.Model):
     def Packaging_Material(self):
         return self.Item_Packing.packing_material
 
-
-
-class ItemBinAssignment(models.Model):
-    item = models.ForeignKey(Item_Creation, on_delete=models.CASCADE)
-    bin = models.ForeignKey(bin_for_raw_material, on_delete=models.CASCADE)
-    class Meta:
-        unique_together = ('item', 'bin')
-
-    def __str__(self):
-        return f"{self.bin.bin_name}"
+    def selected_bins(self):
+        return list(self.bin.values_list('id', flat=True))
+       
 
 
     
@@ -1347,6 +1341,7 @@ class sales_voucher_master_outward_scan(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
@@ -1397,6 +1392,7 @@ class sales_return_voucher_master(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 

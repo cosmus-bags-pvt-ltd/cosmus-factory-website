@@ -42,7 +42,7 @@ from xhtml2pdf import pisa
 
 from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
-                    Item_Creation, ItemBinAssignment, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
+                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
                     Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info, StockItem,
                     SubCategory, Unit_Name_Create, account_credit_debit_master_table, bin_for_raw_material, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
@@ -56,7 +56,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
-                    purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, rack_for_raw_material,
+                    purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
                     raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
                     shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
@@ -64,7 +64,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
                     CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormsetupdate, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesmaninfoForm, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, cutting_room_form,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesmaninfoForm, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, bin_for_raw_material_form, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -85,7 +85,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,ItemBinAssignmentForm)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update)
     
 
 
@@ -1013,20 +1013,40 @@ def product2subcategoryajax(request):
     
 
 
-def item_bin_ajax(request):
-    rack_id = request.GET.get('rack_id')
-    if rack_id:
-        bins = bin_for_raw_material.objects.filter(rack=rack_id).values("id", "bin_name")
-        return JsonResponse({"status": "success", "bins": list(bins)})
-    return JsonResponse({"status": "error", "message": "No bins found"}, status=404)
 
 
-from .forms import ItemBinAssignmentForm
+@login_required(login_url='login')
+def create_update_bin_for_raw_material(request, b_id=None):
+    try:
+        bin_list = bin_for_raw_material.objects.all()
+        bin_instance = get_object_or_404(bin_for_raw_material, id=b_id) if b_id else None
+        form = bin_for_raw_material_form(request.POST or None, instance=bin_instance)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Bin details saved successfully!")
+                return redirect('create-bin-for-raw-material')
+            else:
+                messages.error(request, "Please correct the errors below.")
+
+    except bin_for_raw_material.DoesNotExist:
+        messages.error(request, "The bin record does not exist.")
+        return redirect('create-bin-for-raw-material')
+
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred: {str(e)}")
+        print(f"Error in create_update_bin_for_raw_material: {str(e)}")
+
+    return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list})
+
+
+
+
 
 @login_required(login_url='login')
 def item_create(request):
 
-    title = 'Item Create'
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
     unit_name = Unit_Name_Create.objects.all()
@@ -1035,86 +1055,73 @@ def item_create(request):
     items_to_clone = Item_Creation.objects.all()
     colors = Color.objects.all()
     form = Itemform()
-    bin_form = ItemBinAssignmentForm()
+
 
     if request.path == '/itemcreatepopup/':
         template_name = 'product/item_create_popup.html'
-
     else:
         template_name = 'product/item_create_update.html'
-    
+        
     if request.method == 'POST':
         form = Itemform(request.POST, request.FILES)
-        bin_form = ItemBinAssignmentForm(request.POST)
         if form.is_valid():
             form_instance = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
+            form_instance.bin.set(form.cleaned_data['bin'])
 
-            selected_bins = request.POST.getlist("bins")  # Get selected bin IDs
             
-            for bin_id in selected_bins:
-                bin_obj = bin_for_raw_material.objects.get(id=bin_id)  # Fetch bin object
-                ItemBinAssignment.objects.create(item=form_instance, bin=bin_obj)
-
             if request.path == '/itemcreatepopup/':
-                return HttpResponse('item created', status = 200)
-             
+                return HttpResponse('item created', status = 200) 
             else:
                 logger.info("Item Successfully Created")
                 messages.success(request,'Item has been created')
-                return redirect(reverse('item-list', args=[form_instance.id]))
+                return redirect(reverse('item-edit', args=[form_instance.id]))
     
         else:
             logger.error(f"item form not valid{form.errors}")
             messages.error(request, f"item form not valid{form.errors}")
-           
-            return render(request,template_name, {'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'title':title,'form':form,'items_to_clone':items_to_clone,'page_name':'Create Raw Material'})
+            return render(request,template_name, {'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'title''items_to_clone':items_to_clone,'page_name':'Create Raw Material'})
     
     
-    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'title':title,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create Raw Material','bin_form':bin_form})
+    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material'})
 
 
 
 
 @login_required(login_url='login')
-def item_edit(request, pk): 
-    title = 'Item update'
+def item_edit(request,pk): 
+    
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
     unit_name = Unit_Name_Create.objects.all()
     colors = Color.objects.all()
     packaging_material_all = packaging.objects.all()
     fab_finishes = FabricFinishes.objects.all()
-    item_pk = get_object_or_404(Item_Creation, pk=pk)
+    item_pk = get_object_or_404(Item_Creation ,pk = pk)
 
     form = Itemform(instance=item_pk)
-    bin_form = ItemBinAssignmentForm(item=item_pk)  # Pass item to bin form
 
-    queryset = item_color_shade.objects.filter(items=pk).annotate(
+    
+    queryset = item_color_shade.objects.filter(items = pk).annotate(
         total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
-        total_value=Sum(F('opening_shade_godown_quantity__opening_quantity') * F('opening_shade_godown_quantity__opening_rate'), 
+        total_value=Sum(F('opening_shade_godown_quantity__opening_quantity') * F('opening_shade_godown_quantity__opening_rate'),
         output_field=DecimalField(max_digits=10, decimal_places=2)))
 
-    formset = ShadeFormSet(instance=item_pk, queryset=queryset)
+    formset = ShadeFormSet(instance= item_pk, queryset=queryset)
 
+    
+    
     if request.method == 'POST':
-        form = Itemform(request.POST, request.FILES, instance=item_pk)
-        bin_form = ItemBinAssignmentForm(request.POST, item=item_pk)  # Bind form with POST data
-        formset = ShadeFormSet(request.POST, request.FILES, instance=item_pk)
-        formset.forms = [form for form in formset if form.has_changed()]
-
+        form = Itemform(request.POST, request.FILES , instance = item_pk)
+        formset = ShadeFormSet(request.POST , request.FILES, instance = item_pk)
+        formset.forms = [form for form in formset if form.has_changed()] 
         try:
-            if form.is_valid() and bin_form.is_valid() and formset.is_valid():
+            if form.is_valid() and formset.is_valid():
                 form_instance = form.save(commit=False)  
                 form_instance.c_user = request.user
+                form_instance.bin.set(form.cleaned_data['bin'])
                 form_instance.save()
-
-                
-                selected_bins = bin_form.cleaned_data["bins"]
-                ItemBinAssignment.objects.filter(item=item_pk).delete()
-                for bin_obj in selected_bins:
-                    ItemBinAssignment.objects.create(item=item_pk, bin=bin_obj)
 
                 for form in formset.deleted_forms: 
                     if form.instance.pk:
@@ -1126,40 +1133,61 @@ def item_edit(request, pk):
                             form_instance = form.save(commit=False)
                             form_instance.c_user = request.user
                             form_instance.save()
+
                         else:  
+                            
                             if not form.cleaned_data.get('DELETE'):
                                 shade_form_instance = form.save(commit=False) 
                                 shade_form_instance.c_user = request.user
-                                shade_form_instance.save()
+                                shade_form_instance.save() 
 
-                messages.success(request, 'Item updated successfully')
+                                form_prefix_number = form.prefix[-1] 
+                                opening_godown_quantity = request.POST.get(f'shades-{form_prefix_number}-openingValue') 
+
+                                if opening_godown_quantity != '':
+                                    opening_godown_quantity_dict = json.loads(opening_godown_quantity)
+                                    opening_godown_qty_data = opening_godown_quantity_dict.get('newData')
+                                    
+                                    
+                                    item_godown_formset_data = {}
+                                    for key , value in opening_godown_qty_data.items():
+                                        form_set_id = key.split('_')[-1]
+
+                                        new_data_get = opening_godown_qty_data.get(key)
+                                        
+                                        item_godown_formset_data[f'opening_shade_godown_quantity_set-TOTAL_FORMS'] = str(len(opening_godown_qty_data))
+                                        item_godown_formset_data[f'opening_shade_godown_quantity_set-INITIAL_FORMS'] =  str(0)
+                                        item_godown_formset_data[f'opening_shade_godown_quantity_set-MIN_NUM_FORMS'] =  str(0)
+                                        item_godown_formset_data[f'opening_shade_godown_quantity_set-MAX_NUM_FORMS'] =  str(1000)
+                                        item_godown_formset_data[f'opening_shade_godown_quantity_set-{form_set_id}-opening_godown_id'] = new_data_get.get('godownData')
+                                        item_godown_formset_data[f'opening_shade_godown_quantity_set-{form_set_id}-opening_quantity'] = new_data_get.get('qtyData')
+                                        item_godown_formset_data[f'opening_shade_godown_quantity_set-{form_set_id}-opening_rate'] = new_data_get.get('rateData')
+                                    
+                                    
+                                    new_godown_opening_formsets = OpeningShadeFormSetupdate(item_godown_formset_data, prefix='opening_shade_godown_quantity_set')
+
+                                    for form in new_godown_opening_formsets:
+                                        if form.is_valid():
+                                            form_instance = form.save(commit = False)
+                                            form_instance.opening_purchase_voucher_godown_item = shade_form_instance
+                            
+                                            form_instance.save()
+                                    
+                messages.success(request,'Item updated successfully')
                 return redirect('item-list')
-
+            
         except ProtectedError as e:
-            messages.error(request, f"Cannot delete item_color_shade due to protected foreign keys: {e}")
+            messages.error(request,f"Cannot delete item_color_shade due to protected foreign keys: {e}")
             logger.error(f"Cannot delete item_color_shade due to protected foreign keys: {e}")
+            print(f"Cannot delete item_color_shade due to protected foreign keys: {e}")
 
         except Exception as e:
-            logger.error(f'An exception occurred in item edit - {e}')
-            messages.error(request, f"Error updating item: {e}")
+             logger.error(f'An exception occured in item edit - {e}')
+             return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
+        
+    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
 
-    return render(
-        request,
-        'product/item_create_update.html',
-        {
-            'gsts': gsts,
-            'fab_grp': fab_grp,
-            'unit_name': unit_name,
-            'colors': colors,
-            'title': title,
-            'packaging_material_all': packaging_material_all,
-            'fab_finishes': fab_finishes,
-            'form': form,
-            'formset': formset,
-            'bin_form': bin_form,
-            "page_name": "Edit Raw Material"
-        }
-    )
+
 
 
 
@@ -1171,14 +1199,16 @@ def item_clone_ajax(request):
     if selected_item_name_value:
         selected_item = get_object_or_404(Item_Creation, pk=selected_item_name_value)
 
-        response_data = {'fabric_group':{'fab_g_key':selected_item.Fabric_Group.id,'fab_g_value':selected_item.Fabric_Group.fab_grp_name},
-                         'color':{'color_key':selected_item.Item_Color.id,'color_value':selected_item.Item_Color.color_name}, 
-                         'material_code':selected_item.Material_code,'packing':{'packing_key':selected_item.Item_Packing.id ,'packing_value':selected_item.Item_Packing.packing_material},
-                        'unit_name':{'unit_name_key':selected_item.unit_name_item.id,'unit_name_value':selected_item.unit_name_item.unit_name},
-                        'panha':selected_item.Panha,'fab_non_fab':selected_item.Fabric_nonfabric,
-                        'fab_finishes':{'fab_finishes_key':selected_item.Item_Fabric_Finishes.id,'fab_finishes_value':selected_item.Item_Fabric_Finishes.fabric_finish},
-                        'gst':{'gst_key':selected_item.Item_Creation_GST.id,'gst_value':selected_item.Item_Creation_GST.gst_percentage},
-                        'hsn_code':selected_item.HSN_Code,'status':selected_item.status, 'unit_name_units':selected_item.unit_name_item.unit_value}
+        response_data = {'fabric_group':{
+            'fab_g_key':selected_item.Fabric_Group.id,
+            'fab_g_value':selected_item.Fabric_Group.fab_grp_name},
+            'color':{'color_key':selected_item.Item_Color.id,'color_value':selected_item.Item_Color.color_name}, 
+            'material_code':selected_item.Material_code,'packing':{'packing_key':selected_item.Item_Packing.id ,'packing_value':selected_item.Item_Packing.packing_material},
+            'unit_name':{'unit_name_key':selected_item.unit_name_item.id,'unit_name_value':selected_item.unit_name_item.unit_name},
+            'panha':selected_item.Panha,'fab_non_fab':selected_item.Fabric_nonfabric,
+            'fab_finishes':{'fab_finishes_key':selected_item.Item_Fabric_Finishes.id,'fab_finishes_value':selected_item.Item_Fabric_Finishes.fabric_finish},
+            'gst':{'gst_key':selected_item.Item_Creation_GST.id,'gst_value':selected_item.Item_Creation_GST.gst_percentage},
+            'hsn_code':selected_item.HSN_Code,'status':selected_item.status, 'unit_name_units':selected_item.unit_name_item.unit_value}
        
     return JsonResponse({'response_data':response_data})
 
@@ -1189,31 +1219,19 @@ def item_clone_ajax(request):
 def item_list(request):
     
     g_search = request.GET.get('item_search','')
-
     
-    
-    queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item',
-                                                    'Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes',
-                                                    'Item_Packing').prefetch_related('shades',
-                                                    'shades__godown_shades','shades__godown_shades__godown_name')
-
+    queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item','Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes','Item_Packing').prefetch_related('shades','shades__godown_shades','shades__godown_shades__godown_name','bin')
     
     if g_search != '':
-        queryset = queryset.filter(Q(item_name__icontains=g_search)|
-                                                Q(Item_Color__color_name__icontains=g_search)|
-                                                Q(Fabric_Group__fab_grp_name__icontains=g_search)|
-                                                Q(Material_code__icontains=g_search))
+        queryset = queryset.filter(Q(item_name__icontains = g_search)| Q(Item_Color__color_name__icontains = g_search)| Q(Fabric_Group__fab_grp_name__icontains = g_search)| Q(Material_code__icontains = g_search))
         
     sort_name = request.GET.get('sort_name')
-
 
     if sort_name == "item_name_sort_asc" :
         queryset = Item_Creation.objects.order_by('item_name')
     
-
     elif sort_name == "item_name_sort_dsc" :
         queryset = Item_Creation.objects.order_by('-item_name')
-
 
     elif sort_name == "fabgrp_sort_asc" :
         queryset = Item_Creation.objects.order_by('Fabric_Group__fab_grp_name')
@@ -1239,7 +1257,7 @@ def item_list(request):
         if exact_desc != '' and exact_desc is not None:
             queryset = Item_Creation.objects.filter(item_name__exact=exact_desc)
 
-    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials List"})
+    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials"})
     
 
 
@@ -10065,7 +10083,7 @@ from django.utils import timezone
 @login_required(login_url='login')
 def scan_product_list(request,pk,v_type):
 
-    instance_entries_all = None
+    instance_entries_all = []
     instance_entries = []
 
     if v_type == "purchase":

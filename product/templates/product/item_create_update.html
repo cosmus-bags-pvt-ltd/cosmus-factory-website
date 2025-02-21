@@ -275,9 +275,7 @@
         </div>
         {% endif %}
         <label><strong>Select Bins:</strong></label>
-            {% for checkbox in bin_form.bins %}
-                <p>{{ checkbox.tag }} {{ checkbox.choice_label }}</p>
-            {% endfor %}
+        <p>{{ form.bin }}</p>
         
       </div>
     </div>

@@ -56,10 +56,13 @@ urlpatterns = [
     #color popup
     path('color_popup/',views.color_create_update, name='color-popup'),
 
+    #bin for raw material
+    path('createbinforrawmaterial/',views.create_update_bin_for_raw_material , name= 'create-bin-for-raw-material'),
+    path('updatebinforrawmaterial/<int:b_id>/',views.create_update_bin_for_raw_material , name= 'update-bin-for-raw-material'),
+    
     #item_routes
     path('itemedit/<int:pk>',views.item_edit , name= 'item-edit'),
     path('itemcreate/',views.item_create , name= 'item-create'),
-    path('item_bin_ajax/',views.item_bin_ajax , name= 'item_bin_ajax'),
     path('itemlist/',views.item_list ,name= 'item-list'),
     path('itemdelete/<int:pk>',views.item_delete , name= 'item-delete'),
 
