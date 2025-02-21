@@ -1042,6 +1042,21 @@ def create_update_bin_for_raw_material(request, b_id=None):
 
 
 
+@login_required(login_url='login')
+def delete_bin_for_raw_material(request,b_id):
+    try:
+        bin_instance = get_object_or_404(bin_for_raw_material, id=b_id)
+        bin_instance.delete()
+        messages.success(request, "Bin deleted successfully!")
+    except bin_for_raw_material.DoesNotExist:
+        messages.error(request, "The bin does not exist.")
+    except Exception as e:
+        messages.error(request, f"An error occurred while deleting the bin: {str(e)}")
+        print(f"Error in delete_bin_for_raw_material: {str(e)}")
+
+    return redirect('create-bin-for-raw-material')
+
+
 
 
 @login_required(login_url='login')

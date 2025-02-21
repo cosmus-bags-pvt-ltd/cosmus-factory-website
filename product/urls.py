@@ -59,7 +59,8 @@ urlpatterns = [
     #bin for raw material
     path('createbinforrawmaterial/',views.create_update_bin_for_raw_material , name= 'create-bin-for-raw-material'),
     path('updatebinforrawmaterial/<int:b_id>/',views.create_update_bin_for_raw_material , name= 'update-bin-for-raw-material'),
-    
+    path('deletebinforrawmaterial/<int:b_id>/',views.delete_bin_for_raw_material , name= 'delete-bin-for-raw-material'),
+
     #item_routes
     path('itemedit/<int:pk>',views.item_edit , name= 'item-edit'),
     path('itemcreate/',views.item_create , name= 'item-create'),
