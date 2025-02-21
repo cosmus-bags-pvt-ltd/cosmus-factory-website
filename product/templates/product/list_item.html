@@ -60,6 +60,7 @@ the input field will be pre-filled with that value when the page is loaded. -->
               <th>Unit Name</th>
               <th>Units</th>
               <th>Panha</th>
+              <th>Bins</th>
               <th>Edit</th>
               <th>Delete</th>
             </tr>
@@ -113,6 +114,13 @@ the input field will be pre-filled with that value when the page is loaded. -->
               <td style="width: 5%;">{{item.Unit_Name}}</td>
               <td>{{item.Units}}</td>
               <td>{{item.Panha}}</td>
+              <td>
+                {% for bin in item.bin.all %}
+                    <span class="">{{ bin.bin_name }}<br></span>
+                {% empty %}
+                    <span class="text-muted">No bins assigned</span>
+                {% endfor %}
+            </td>
               <td><a class="editItem" href="{% url 'item-edit' item.id %}"><span><i class="fa-solid fa-pen-to-square"></i></span></a></td>
               <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ item.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
             </tr>

@@ -66,22 +66,14 @@ class Product2SubCategory(models.Model):
     Product_id = models.ForeignKey('Product', on_delete = models.PROTECT, related_name='product_cats')
     SubCategory_id = models.ForeignKey(SubCategory, on_delete = models.PROTECT, related_name='subcategories')
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     class Meta:
         unique_together = [['Product_id','SubCategory_id']]
     
     def __str__(self):  
         return f'{self.SubCategory_id.product_sub_category_name} --- {self.Product_id.Product_Name}'
     
+
+
 
 class Color(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
@@ -92,7 +84,8 @@ class Color(models.Model):
 
     def __str__(self):
         return self.color_name
-    
+
+
     
 class gst(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
@@ -101,8 +94,11 @@ class gst(models.Model):
         ordering = ["gst_percentage"]
 
 
+
 class Salesman_info(models.Model):
     salesman_name = models.CharField(max_length=252)
+
+
 
 class Product(models.Model):
     BRAND_CHOICES = [
@@ -348,6 +344,13 @@ class packaging(models.Model):
 
 
 
+class bin_for_raw_material(models.Model):
+    bin_name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.bin_name
+    
+
 class Item_Creation(models.Model):
 
     STATUS =  [
@@ -378,9 +381,8 @@ class Item_Creation(models.Model):
     item_shade_image = models.ImageField(upload_to = 'rawmaterial/images', null=True , blank=True)
     created_date = models.DateTimeField(auto_now_add =True)
     modified_date_time = models.DateTimeField(auto_now = True)
-    
+    bin = models.ManyToManyField(bin_for_raw_material)
 
-    
     def Color_Name(self):
         return self.Item_Color.color_name
 
@@ -399,8 +401,11 @@ class Item_Creation(models.Model):
     def Packaging_Material(self):
         return self.Item_Packing.packing_material
 
-    def __str__(self):
-        return f"{self.item_name}"
+    def selected_bins(self):
+        return list(self.bin.values_list('id', flat=True))
+       
+
+
     
 #This
 class item_color_shade(models.Model):
@@ -419,6 +424,7 @@ class item_color_shade(models.Model):
 
     def __str__(self):
         return self.item_shade_name
+
 
 
 
@@ -1335,6 +1341,7 @@ class sales_voucher_master_outward_scan(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
@@ -1385,6 +1392,7 @@ class sales_return_voucher_master(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 

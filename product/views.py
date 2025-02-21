@@ -44,7 +44,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
                     Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
                     Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info, StockItem,
-                    SubCategory, Unit_Name_Create, account_credit_debit_master_table, cutting_room, factory_employee,
+                    SubCategory, Unit_Name_Create, account_credit_debit_master_table, bin_for_raw_material, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
                     finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,
                     gst, item_color_shade, item_godown_quantity_through_table,
@@ -64,7 +64,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
                     CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormsetupdate, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesmaninfoForm, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, cutting_room_form,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesmaninfoForm, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, bin_for_raw_material_form, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -1015,11 +1015,38 @@ def product2subcategoryajax(request):
 
 
 
+@login_required(login_url='login')
+def create_update_bin_for_raw_material(request, b_id=None):
+    try:
+        bin_list = bin_for_raw_material.objects.all()
+        bin_instance = get_object_or_404(bin_for_raw_material, id=b_id) if b_id else None
+        form = bin_for_raw_material_form(request.POST or None, instance=bin_instance)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Bin details saved successfully!")
+                return redirect('create-bin-for-raw-material')
+            else:
+                messages.error(request, "Please correct the errors below.")
+
+    except bin_for_raw_material.DoesNotExist:
+        messages.error(request, "The bin record does not exist.")
+        return redirect('create-bin-for-raw-material')
+
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred: {str(e)}")
+        print(f"Error in create_update_bin_for_raw_material: {str(e)}")
+
+    return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list})
+
+
+
+
 
 @login_required(login_url='login')
 def item_create(request):
 
-    title = 'Item Create'
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
     unit_name = Unit_Name_Create.objects.all()
@@ -1028,20 +1055,22 @@ def item_create(request):
     items_to_clone = Item_Creation.objects.all()
     colors = Color.objects.all()
     form = Itemform()
-    
+
 
     if request.path == '/itemcreatepopup/':
         template_name = 'product/item_create_popup.html'
-
     else:
         template_name = 'product/item_create_update.html'
-    
+        
     if request.method == 'POST':
         form = Itemform(request.POST, request.FILES)
         if form.is_valid():
             form_instance = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
+            form_instance.bin.set(form.cleaned_data['bin'])
+
+            
             if request.path == '/itemcreatepopup/':
                 return HttpResponse('item created', status = 200) 
             else:
@@ -1052,118 +1081,17 @@ def item_create(request):
         else:
             logger.error(f"item form not valid{form.errors}")
             messages.error(request, f"item form not valid{form.errors}")
-           
-            return render(request,template_name, {'gsts':gsts,
-                                                                      'fab_grp':fab_grp,
-                                                                      'unit_name':unit_name,
-                                                                      'colors':colors,
-                                                                      'packaging_material_all':packaging_material_all,
-                                                                      'fab_finishes':fab_finishes,
-                                                                      'title':title,'form':form,'items_to_clone':items_to_clone
-                                                                      ,'page_name':'Create Raw Material'})
+            return render(request,template_name, {'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'title''items_to_clone':items_to_clone,'page_name':'Create Raw Material'})
     
     
-    return render(request,template_name,{'gsts':gsts,
-                                                                 'fab_grp':fab_grp,
-                                                                 'unit_name':unit_name,
-                                                                 'colors':colors,
-                                                                 'title':title,
-                                                                 'packaging_material_all':packaging_material_all,
-                                                                    'fab_finishes':fab_finishes,
-                                                                 'form':form,'items_to_clone':items_to_clone,
-                                                                 'page_name':'Create Raw Material'})
+    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material'})
 
-
-
-
-
-
-    
-
-@login_required(login_url='login')
-def item_clone_ajax(request):
-    selected_item_name_value = int(request.GET.get('itemValue'))
-    
-    if selected_item_name_value:
-        selected_item = get_object_or_404(Item_Creation, pk=selected_item_name_value)
-
-        response_data = {'fabric_group':{'fab_g_key':selected_item.Fabric_Group.id,'fab_g_value':selected_item.Fabric_Group.fab_grp_name},
-                         'color':{'color_key':selected_item.Item_Color.id,'color_value':selected_item.Item_Color.color_name}, 
-                         'material_code':selected_item.Material_code,'packing':{'packing_key':selected_item.Item_Packing.id ,'packing_value':selected_item.Item_Packing.packing_material},
-                        'unit_name':{'unit_name_key':selected_item.unit_name_item.id,'unit_name_value':selected_item.unit_name_item.unit_name},
-                        'panha':selected_item.Panha,'fab_non_fab':selected_item.Fabric_nonfabric,
-                        'fab_finishes':{'fab_finishes_key':selected_item.Item_Fabric_Finishes.id,'fab_finishes_value':selected_item.Item_Fabric_Finishes.fabric_finish},
-                        'gst':{'gst_key':selected_item.Item_Creation_GST.id,'gst_value':selected_item.Item_Creation_GST.gst_percentage},
-                        'hsn_code':selected_item.HSN_Code,'status':selected_item.status, 'unit_name_units':selected_item.unit_name_item.unit_value}
-       
-    return JsonResponse({'response_data':response_data})
-
-
-
-
-@login_required(login_url='login')
-def item_list(request):
-    
-    g_search = request.GET.get('item_search','')
-
-    
-    
-    queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item',
-                                                    'Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes',
-                                                    'Item_Packing').prefetch_related('shades',
-                                                    'shades__godown_shades','shades__godown_shades__godown_name')
-
-    
-    if g_search != '':
-        queryset = queryset.filter(Q(item_name__icontains=g_search)|
-                                                Q(Item_Color__color_name__icontains=g_search)|
-                                                Q(Fabric_Group__fab_grp_name__icontains=g_search)|
-                                                Q(Material_code__icontains=g_search))
-        
-    sort_name = request.GET.get('sort_name')
-
-
-    if sort_name == "item_name_sort_asc" :
-        queryset = Item_Creation.objects.order_by('item_name')
-    
-
-    elif sort_name == "item_name_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('-item_name')
-
-
-    elif sort_name == "fabgrp_sort_asc" :
-        queryset = Item_Creation.objects.order_by('Fabric_Group__fab_grp_name')
-
-
-    elif sort_name == "fabgrp_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('-Fabric_Group__fab_grp_name')
-
-    elif sort_name == "item_color_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('Item_Color__color_name')
-    
-    elif sort_name == "item_color_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('-Item_Color__color_name')
-
-    any_desc = request.GET.get('any_desc')
-    exact_desc = request.GET.get('exact_desc')
-
-    if any_desc:
-        if any_desc != '' and any_desc is not None:
-            queryset = Item_Creation.objects.filter(item_name__icontains=any_desc)
-        
-    if exact_desc:
-        if exact_desc != '' and exact_desc is not None:
-            queryset = Item_Creation.objects.filter(item_name__exact=exact_desc)
-
-    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials List"})
-    
 
 
 
 @login_required(login_url='login')
 def item_edit(request,pk): 
     
-    title = 'Item update'
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
     unit_name = Unit_Name_Create.objects.all()
@@ -1175,9 +1103,10 @@ def item_edit(request,pk):
     form = Itemform(instance=item_pk)
 
     
-    queryset = item_color_shade.objects.filter(items = pk).annotate(total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
-                                                                     total_value=Sum(F('opening_shade_godown_quantity__opening_quantity') * F('opening_shade_godown_quantity__opening_rate'), 
-                                                                                output_field=DecimalField(max_digits=10, decimal_places=2)))
+    queryset = item_color_shade.objects.filter(items = pk).annotate(
+        total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
+        total_value=Sum(F('opening_shade_godown_quantity__opening_quantity') * F('opening_shade_godown_quantity__opening_rate'),
+        output_field=DecimalField(max_digits=10, decimal_places=2)))
 
     formset = ShadeFormSet(instance= item_pk, queryset=queryset)
 
@@ -1191,8 +1120,8 @@ def item_edit(request,pk):
             if form.is_valid() and formset.is_valid():
                 form_instance = form.save(commit=False)  
                 form_instance.c_user = request.user
+                form_instance.bin.set(form.cleaned_data['bin'])
                 form_instance.save()
-
 
                 for form in formset.deleted_forms: 
                     if form.instance.pk:
@@ -1248,35 +1177,88 @@ def item_edit(request,pk):
                 return redirect('item-list')
             
         except ProtectedError as e:
-            
             messages.error(request,f"Cannot delete item_color_shade due to protected foreign keys: {e}")
             logger.error(f"Cannot delete item_color_shade due to protected foreign keys: {e}")
             print(f"Cannot delete item_color_shade due to protected foreign keys: {e}")
 
         except Exception as e:
              logger.error(f'An exception occured in item edit - {e}')
-             return render(request,'product/item_create_update.html',{'gsts':gsts,
-                                                                 'fab_grp':fab_grp,
-                                                                 'unit_name':unit_name,
-                                                                 'colors':colors,
-                                                                 'title':title,
-                                                                 'packaging_material_all':packaging_material_all,
-                                                                 'fab_finishes':fab_finishes,
-                                                                 'form':form,
-                                                                 'formset': formset,
-                                                                 "page_name":"Edit Raw Material"})
+             return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
         
-    return render(request,'product/item_create_update.html',{'gsts':gsts,
-                                                                 'fab_grp':fab_grp,
-                                                                 'unit_name':unit_name,
-                                                                 'colors':colors,
-                                                                 'title':title,
-                                                                 'packaging_material_all':packaging_material_all,
-                                                                 'fab_finishes':fab_finishes,
-                                                                 'form':form,
-                                                                 'formset': formset,
-                                                                 "page_name":"Edit Raw Material"})
+    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
 
+
+
+
+
+
+@login_required(login_url='login')
+def item_clone_ajax(request):
+    selected_item_name_value = int(request.GET.get('itemValue'))
+    
+    if selected_item_name_value:
+        selected_item = get_object_or_404(Item_Creation, pk=selected_item_name_value)
+
+        response_data = {'fabric_group':{
+            'fab_g_key':selected_item.Fabric_Group.id,
+            'fab_g_value':selected_item.Fabric_Group.fab_grp_name},
+            'color':{'color_key':selected_item.Item_Color.id,'color_value':selected_item.Item_Color.color_name}, 
+            'material_code':selected_item.Material_code,'packing':{'packing_key':selected_item.Item_Packing.id ,'packing_value':selected_item.Item_Packing.packing_material},
+            'unit_name':{'unit_name_key':selected_item.unit_name_item.id,'unit_name_value':selected_item.unit_name_item.unit_name},
+            'panha':selected_item.Panha,'fab_non_fab':selected_item.Fabric_nonfabric,
+            'fab_finishes':{'fab_finishes_key':selected_item.Item_Fabric_Finishes.id,'fab_finishes_value':selected_item.Item_Fabric_Finishes.fabric_finish},
+            'gst':{'gst_key':selected_item.Item_Creation_GST.id,'gst_value':selected_item.Item_Creation_GST.gst_percentage},
+            'hsn_code':selected_item.HSN_Code,'status':selected_item.status, 'unit_name_units':selected_item.unit_name_item.unit_value}
+       
+    return JsonResponse({'response_data':response_data})
+
+
+
+
+@login_required(login_url='login')
+def item_list(request):
+    
+    g_search = request.GET.get('item_search','')
+    
+    queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item','Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes','Item_Packing').prefetch_related('shades','shades__godown_shades','shades__godown_shades__godown_name','bin')
+    
+    if g_search != '':
+        queryset = queryset.filter(Q(item_name__icontains = g_search)| Q(Item_Color__color_name__icontains = g_search)| Q(Fabric_Group__fab_grp_name__icontains = g_search)| Q(Material_code__icontains = g_search))
+        
+    sort_name = request.GET.get('sort_name')
+
+    if sort_name == "item_name_sort_asc" :
+        queryset = Item_Creation.objects.order_by('item_name')
+    
+    elif sort_name == "item_name_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('-item_name')
+
+    elif sort_name == "fabgrp_sort_asc" :
+        queryset = Item_Creation.objects.order_by('Fabric_Group__fab_grp_name')
+
+
+    elif sort_name == "fabgrp_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('-Fabric_Group__fab_grp_name')
+
+    elif sort_name == "item_color_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('Item_Color__color_name')
+    
+    elif sort_name == "item_color_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('-Item_Color__color_name')
+
+    any_desc = request.GET.get('any_desc')
+    exact_desc = request.GET.get('exact_desc')
+
+    if any_desc:
+        if any_desc != '' and any_desc is not None:
+            queryset = Item_Creation.objects.filter(item_name__icontains=any_desc)
+        
+    if exact_desc:
+        if exact_desc != '' and exact_desc is not None:
+            queryset = Item_Creation.objects.filter(item_name__exact=exact_desc)
+
+    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials"})
+    
 
 
 
@@ -9858,6 +9840,7 @@ def product_transfer_to_warehouse_ajax(request):
 
 
 def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
+
     last_selected_bin_id = request.session.get('last_selected_bin_id')
     if last_selected_bin_id:
         del request.session['last_selected_bin_id']
@@ -10100,7 +10083,7 @@ from django.utils import timezone
 @login_required(login_url='login')
 def scan_product_list(request,pk,v_type):
 
-    instance_entries_all = None
+    instance_entries_all = []
     instance_entries = []
 
     if v_type == "purchase":
@@ -10159,6 +10142,11 @@ def scan_product_list(request,pk,v_type):
 
     current_date = timezone.now()
     for entry in instance_entries:
+        created_date = entry['created_date']
+        age_in_days = (current_date - created_date).days
+        entry['age_in_days'] = age_in_days
+
+    for entry in instance_entries_all:
         created_date = entry['created_date']
         age_in_days = (current_date - created_date).days
         entry['age_in_days'] = age_in_days
@@ -10240,17 +10228,22 @@ def warehouse_stock(request):
 
 @login_required(login_url='login')
 def scan_single_product_list(request,sku):
-    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values('product__Product__Product_Refrence_ID',
-            'product__PProduct_image',
-            'product__Product__Model_Name',
-            'product__PProduct_color__color_name',
-            'product__PProduct_SKU',
-            'unique_serial_no',
-            'created_date',
-            'bin_number__rack_finished_name__zone_finished_name__zone_name',
-            'bin_number__rack_finished_name__rack_name',
-            'bin_number__bin_name'
-            )
+    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values(
+        'related_purchase_item__product_purchase_master__purchase_number' or None,
+        'related_purchase_item__product_purchase_master__id' or None,
+        'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no' or None,
+        'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id' or None,
+        'product__Product__Product_Refrence_ID',
+        'product__PProduct_image',
+        'product__Product__Model_Name',
+        'product__PProduct_color__color_name',
+        'product__PProduct_SKU',
+        'unique_serial_no',
+        'created_date',
+        'bin_number__rack_finished_name__zone_finished_name__zone_name',
+        'bin_number__rack_finished_name__rack_name',
+        'bin_number__bin_name'
+        )
     
     current_date = timezone.now()
     for entry in instance_entries:
@@ -13947,7 +13940,7 @@ def picklist_product_ajax(request):
         standardized_purchase = []
 
         for item in products_purchase:
-            reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=item['product_name__PProduct_SKU']).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+            reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=item['product_name__PProduct_SKU'],picklist_master_instance__status="Pending").aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
             standardized_purchase.append({
                 'product_sku': item['product_name__PProduct_SKU'],
@@ -13978,7 +13971,7 @@ def picklist_product_ajax(request):
 
         for item in products_transfer:
             reserved_qty = Picklist_products_list.objects.filter(
-                product__PProduct_SKU=item['product__PProduct_SKU']
+                product__PProduct_SKU=item['product__PProduct_SKU'],picklist_master_instance__status="Pending"
             ).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
             standardized_transfer.append({
@@ -14001,7 +13994,7 @@ def picklist_product_ajax(request):
             product_sku = item['product_sku']
 
             # Fetch reserved quantity
-            reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+            reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku,picklist_master_instance__status="Pending").aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
             # Fetch bin data
             product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product__PProduct_SKU=product_sku).order_by('created_date')
@@ -14112,10 +14105,6 @@ def bin_quantity_ajax(request):
     except Exception as e:
         logger.error(f"Error in bin_quantity_ajax: {str(e)}", exc_info=True)
         return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
-
-
-
-
 
 
 @login_required(login_url='login')
@@ -14388,35 +14377,37 @@ def outward_picklist_no_ajax(request):
 
         picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
 
-        picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance').exclude(picklist_master_instance__status = 'close')
+        picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance')
         
         try:
             dict_to_send = {}
 
 
             for i in picklist_data:
-                sku = i.product.PProduct_SKU
-                id = i.picklist_master_instance.id
-                
-                if picklistNo not in dict_to_send:
-                    dict_to_send[picklistNo] = []
-
-                
-                check_sku = next((j for j in dict_to_send[picklistNo] if j['sku'] == sku), None)
-
-                if check_sku:
-                    check_sku['qty'] += i.product_quantity  # Add quantity if SKU exists
-                else:
+                if i.picklist_master_instance.status == 'Pending':
+                    sku = i.product.PProduct_SKU
+                    id = i.picklist_master_instance.id
                     
-                    dict_to_send[picklistNo].append({
-                        'sku': sku,
-                        'model_name': i.product.Product.Model_Name,
-                        'color': i.product.PProduct_color.color_name,
-                        'qty': i.product_quantity,
-                        'id':i.id
-                    })
+                    if picklistNo not in dict_to_send:
+                        dict_to_send[picklistNo] = []
 
-            print('dict_to_send = ', dict_to_send)
+                    
+                    check_sku = next((j for j in dict_to_send[picklistNo] if j['sku'] == sku), None)
+
+                    if check_sku:
+                        check_sku['qty'] += i.product_quantity  # Add quantity if SKU exists
+                    else:
+                        
+                        dict_to_send[picklistNo].append({
+                            'sku': sku,
+                            'model_name': i.product.Product.Model_Name,
+                            'color': i.product.PProduct_color.color_name,
+                            'qty': i.product_quantity,
+                            'id':i.id
+                        })
+                else:
+                    message.error(request,"can't use this picklist")
+                
 
             return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklistNo":picklistNo, "picklisQty": picklist_qty['total_qty'],'id':id}, status=200)
 
@@ -15061,18 +15052,20 @@ def sales_voucher_view_sort_with_partyname(request,id):
 def ref_no_search_ajax(request):
     try:
         ref_no_typed = request.GET.get('productnamevalue')
-
+        print(ref_no_typed)
         if not ref_no_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
         
         logger.info(f"Search initiated by {request.user}: {ref_no_typed}")
 
         try:
-            reference_no = PProduct_Creation.objects.filter(Product__Product_Refrence_ID__icontains = ref_no_typed).values('Product__Product_Refrence_ID','Product__id')
+            reference_no = PProduct_Creation.objects.filter(Q(Product__Product_Refrence_ID__icontains = ref_no_typed) | Q(Product__Model_Name__icontains = ref_no_typed)).values('Product__Product_Refrence_ID','Product__id','Product__Model_Name')
 
             if reference_no.exists():
 
-                reference_no_dict = {product['Product__id']: [product.get('Product__Product_Refrence_ID', '')] for product in reference_no}
+                reference_no_dict = {product['Product__id']: [product.get('Product__Model_Name', ''),product.get('Product__Product_Refrence_ID', '')] for product in reference_no}
+
+                print('reference_no_dict = ',reference_no_dict)
 
                 logger.info(f"Search results for {ref_no_typed}: {reference_no_dict}")
 

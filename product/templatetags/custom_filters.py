@@ -39,5 +39,6 @@ def minus(value, arg):
         return value - arg
     except TypeError:
         return 0
+        
 
 

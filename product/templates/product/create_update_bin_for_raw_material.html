@@ -1,0 +1,15 @@
+{% extends 'product/base.html' %}
+{% load static %}
+
+{% block body %}
+<form action="" method = 'POST'>
+    {% csrf_token %}
+    {{form}}
+    <input type="submit">
+</form>
+
+{% for bin in bin_list %}
+  <p>{{bin}}</p>
+  <a href="{% url 'update-bin-for-raw-material' bin.id %}">Edit</a>
+{% endfor %}
+{% endblock body %}
