@@ -5855,7 +5855,6 @@ def purchaseordercuttingmastercancelajax(request):
             logger.error(f'Database integrity error - {ie}')
             return JsonResponse({'status': 'Database integrity error occurred.'}, status=500)
         
-
         except Exception as e:
             logger.error(f'Instance not found -{e}')
             messages.error(request, f'Error with labour workout: {e}')
@@ -6435,6 +6434,9 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
     if request.method == 'POST':
         labour_workout_child_i = request.POST.get('labour_workout_child_instance_id')
+        # finalReceivedQty = int(request.POST.get('finalReturnQty'))
+        # finalReturnQty = int(request.POST.get('finalReturnQty'))
+
         if labour_workout_child_i:
             labour_workout_child_instance = labour_workout_childs.objects.get(id=labour_workout_child_i)
 
@@ -6444,15 +6446,14 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         try:
             with transaction.atomic():
                 if master_form.is_valid() and product_to_item_formset.is_valid():
+                    print(product_to_item_formset.cleaned_data)
                     parent_form = master_form.save(commit = False)
                     parent_form.labour_voucher_number = labour_workout_child_instance
 
-                    
-                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + parent_form.total_return_pcs
 
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
 
-                    labour_workout_child_instance.save()
+                    
 
                     parent_form.save()
 
@@ -6461,6 +6462,11 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                         if form.is_valid():
                             product_to_item_form = form.save(commit= False)
                             product_to_item_form.labour_workin_instance = parent_form
+
+                            labour_workin_qty_diff = product_to_item_formset.total_recieved_qty - product_to_item_formset.return_pcs
+                            print(labour_workin_qty_diff)
+
+                            labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + labour_workin_qty_diff
 
                             product_to_item_form.pending_for_approval = product_to_item_form.return_pcs
                             
@@ -6480,7 +6486,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                             print(qty_to_change)
 
                             l_w_o_instance.labour_w_in_pending = l_w_o_instance.labour_w_in_pending - qty_to_change
-
+                            labour_workout_child_instance.save()
                             l_w_o_instance.save()
                             product_to_item_form.save()
                     
@@ -6507,9 +6513,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
 
 
-
-
-from django.db.models import F, Case, When, IntegerField
 @login_required(login_url='login')
 def labourworkinlistall(request):
 
