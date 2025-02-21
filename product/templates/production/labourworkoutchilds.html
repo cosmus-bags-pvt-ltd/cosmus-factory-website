@@ -53,8 +53,8 @@
                         <th>Challan No</th>
                         <th>Date</th>
                         <th>labour name</th>
-                        <th>Processed Pcs</th>
-                        <th>Balance Pcs</th>
+                        <th class="text-success">Processed Pcs</th>
+                        <th class="text-danger">Balance Pcs</th>
                         <th>View</th>
                         <th>Download</th>
                         <th>Delete</th>
@@ -65,11 +65,11 @@
                     {% for record in labour_workout_child_instances %}
                     <tr>
                         <td>{{forloop.counter}}</td>
-                        <td>{{record.challan_no}}</td>
+                        <td class="text-center ">{{record.challan_no}}</td>
                         <td>{{record.created_date}}</td>
                         <td>{{record.labour_name.name}}</td>
-                        <td>{{record.total_process_pcs}}</td>
-                        <td>{{record.total_balance_pcs}}</td>
+                        <td class="text-center text-success">{{record.total_process_pcs}}</td>
+                        <td class="text-center text-danger">{{record.total_balance_pcs}}</td>
                         <td><button class="border-0 bg-transparent view-btn "><a href="{% url 'labour-workout-single-view' record.id %}"><i class="fa-solid fa-eye px-1"></i></a></button></td>
                         <td><a href="{% url 'excel-download-production' 'labour_workout' record.id %}"><i class="fa-regular fa-file-excel ms-3 fs-6"></i></a></td>
                         <td><button class="border-0 bg-transparent delete-btn" data-item-id="" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa-solid fa-trash text-danger px-2"></i></button></td>

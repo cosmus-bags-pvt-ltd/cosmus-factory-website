@@ -54,10 +54,10 @@
                             <th>Challan No</th>
                             <th>Vendor Name</th>
                             <th>Issued Qty</th>
-                            <th>Recieved Qty</th>
-                            <th>Balance Qty</th>
-                            <th>Approved QTY</th>
-                            <th>Pending Approval</th>
+                            <th class="text-success">Recieved Qty</th>
+                            <th class="text-danger">Balance Qty</th>
+                            <th class="text-success">Approved QTY</th>
+                            <th class="text-danger">Pending Approval</th>
                             <th>Create</th>
                         </tr>
                     </thead>
@@ -70,11 +70,11 @@
                             <td>{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces}}</td>
                             <td>{{instance.challan_no}}</td>
                             <td>{{instance.labour_name.name}}</td>
-                            <td>{{instance.total_process_pcs}}</td>
-                            <td>{{instance.labour_workin_pcs}}</td>
-                            <td>{{instance.labour_workin_pending_pcs}}</td>
-                            <td>{{instance.total_approved_qty|default_if_none:0}}</td>
-                            <td>{{instance.total_pending_approved_qty|default_if_none:0}}</td>
+                            <td class="text-center">{{instance.total_process_pcs}}</td>
+                            <td class="text-center text-success">{{instance.labour_workin_pcs}}</td>
+                            <td class="text-center text-danger">{{instance.labour_workin_pending_pcs}}</td>
+                            <td class="text-center text-success">{{instance.total_approved_qty|default_if_none:0}}</td>
+                            <td class="text-center text-danger">{{instance.total_pending_approved_qty|default_if_none:0}}</td>
                             <td><button class="border-0 bg-transparent addNewBtn"><a href="{% url 'labour-workin-list-create' instance.id %}"><i class="fa-solid fa-circle-plus px-2"></i></a></button></td>
                         </tr>
                         {% endfor %}

@@ -38,9 +38,9 @@
               <th>Date</th>
               <th>Cutting VCh No</th>
               <th>Cutting Name</th>
-              <th>Processed QTY</th>
-              <th>Cutting Apr QTY</th>
-              <th>Balance Qty for Cutting</th>
+              <th class="text-success">Processed QTY</th>
+              <th class="text-primary">Cutting Apr QTY</th>
+              <th class="text-danger">Balance Qty for Cutting</th>
               <th>View</th>
               <th class="text-danger">Approval Status</th>
               <th>Approve log</th>
@@ -55,17 +55,17 @@
               <td class="text-nowrap">{{cutting_order.created_date}}</td>
               <td class="cuttingOderId">{{cutting_order.raw_material_cutting_id}}</td>
               <td class="text-nowrap">{{cutting_order.factory_employee_id.factory_emp_name}}</td>
-              <td class="processedQty">{{cutting_order.processed_qty}}</td>
-              <td class="approvedQty">{{cutting_order.approved_qty}}</td>
+              <td class="processedQty text-center text-success">{{cutting_order.processed_qty}}</td>
+              <td class="approvedQty text-center text-primary">{{cutting_order.approved_qty}}</td>
 
-              <td>{{cutting_order.balance_qty}}</td>
+              <td class="text-center text-danger">{{cutting_order.balance_qty}}</td>
               
               <td><span class="border-0 bg-transparent viewBtn"><a href="{% url 'purchase-order-cutting-update' p_o_pk prod_ref_no cutting_order.raw_material_cutting_id %}"><i class="fa-solid fa-eye px-2 fs-6"></i></a></span></td>
               <td><button  class="border-0 bg-transparent btnValue" onclick="approvedQty(this)"><a class="approved-btn" ><i class="fa-regular fa-thumbs-up px-2 fs-5"></i></a></button><br><span class="text-danger fw-bold">Bal = </span><span class="text-danger balanceValue fw-bold"></span></td>
 
               <td><button type="button" data-id="{{ cutting_order.processed_qty }}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"  class="border-0 bg-transparent " onclick="cuttingPkValue(this)"><i class="fa-solid fa-person-circle-check px-3 fs-5"></i></button></td>
 
-              <td> <a href="{% url 'excel-download-production' 'purchase_order_cutting' cutting_order.raw_material_cutting_id %}"><i class="fa-regular fa-file-excel px-3 fs-5"></i></a></td>
+              <td><a href="{% url 'excel-download-production' 'purchase_order_cutting' cutting_order.raw_material_cutting_id %}"><img src="../../../static/images/icons8-excel-file-48.png" class="" width="20px"></a></td>
 
               <td><button class="border-0 bg-transparent delete-btn" data-item-id="" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa-solid fa-xmark text-danger px-3 fs-5"></i></button></td>
               <input type="hidden" class="cuttingCancelled" value= "{{cutting_order.cutting_cancelled}}">

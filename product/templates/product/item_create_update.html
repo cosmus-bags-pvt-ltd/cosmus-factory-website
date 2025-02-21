@@ -2,7 +2,7 @@
 {% load static %}
 {% block body %}
 
-<div class="mt-4">
+<div class="mt-2">
     {% if form.instance.id %}
     <button type="button" class="itemCreate_btn"><a class="text-decoration-none text-white" href="{% url 'item-create' %}">Create</a></button>
     {% endif %}
@@ -274,24 +274,26 @@
           
         </div>
         {% endif %}
+        <div class="d-flex">
+          <label class="me-2">Select Bins :</label>
+            <div>
+              <Span>{{ form.bin }}</Span>
+            </div>
+          
+        </div>
+        
         
       </div>
     </div>
-      
-  
+
    
     <button type="submit" class="newProductCreateBtn mt-3" name="save" value="Save" id="submitButtonItemCreate">Submit</button>
   </form>
 
-
-
-
-
-  
-  
-    
-
 </div>
+
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

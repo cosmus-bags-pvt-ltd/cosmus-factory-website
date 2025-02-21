@@ -1,11 +1,11 @@
 
-from hashlib import blake2b
-from urllib import request
+from email import message
 from django.db import models
 from django.conf import settings
-from django.forms import CharField, ValidationError
+from django.forms import ValidationError
 from multiselectfield import MultiSelectField
 from django.core.validators import MinValueValidator, MaxValueValidator, MinLengthValidator, MaxLengthValidator
+from numpy import delete
 
 from core.models import Company
 
@@ -66,22 +66,14 @@ class Product2SubCategory(models.Model):
     Product_id = models.ForeignKey('Product', on_delete = models.PROTECT, related_name='product_cats')
     SubCategory_id = models.ForeignKey(SubCategory, on_delete = models.PROTECT, related_name='subcategories')
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     class Meta:
         unique_together = [['Product_id','SubCategory_id']]
     
     def __str__(self):  
         return f'{self.SubCategory_id.product_sub_category_name} --- {self.Product_id.Product_Name}'
     
+
+
 
 class Color(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
@@ -92,13 +84,20 @@ class Color(models.Model):
 
     def __str__(self):
         return self.color_name
-    
+
+
     
 class gst(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
     gst_percentage = models.IntegerField(unique=True)
     class Meta:
         ordering = ["gst_percentage"]
+
+
+
+class Salesman_info(models.Model):
+    salesman_name = models.CharField(max_length=252)
+
 
 
 class Product(models.Model):
@@ -345,6 +344,13 @@ class packaging(models.Model):
 
 
 
+class bin_for_raw_material(models.Model):
+    bin_name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.bin_name
+    
+
 class Item_Creation(models.Model):
 
     STATUS =  [
@@ -375,9 +381,8 @@ class Item_Creation(models.Model):
     item_shade_image = models.ImageField(upload_to = 'rawmaterial/images', null=True , blank=True)
     created_date = models.DateTimeField(auto_now_add =True)
     modified_date_time = models.DateTimeField(auto_now = True)
-    
+    bin = models.ManyToManyField(bin_for_raw_material)
 
-    
     def Color_Name(self):
         return self.Item_Color.color_name
 
@@ -396,8 +401,11 @@ class Item_Creation(models.Model):
     def Packaging_Material(self):
         return self.Item_Packing.packing_material
 
-    def __str__(self):
-        return f"{self.item_name}"
+    def selected_bins(self):
+        return list(self.bin.values_list('id', flat=True))
+       
+
+
     
 #This
 class item_color_shade(models.Model):
@@ -416,6 +424,7 @@ class item_color_shade(models.Model):
 
     def __str__(self):
         return self.item_shade_name
+
 
 
 
@@ -1077,10 +1086,9 @@ class Product_bin_quantity_through_table(models.Model):
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
 
-# when you deduct qty product_quantity add the same qty in picklist_qty once the form is submitted delete the qty from picklist_qty
-# also show qty from product_quantity - picklist_qty so that actual qty will be shown at any time
-# also run a cron job using celery to empty all the data from picklist_qty and add to product_quantity after 10 min 
-# handle from front end and deduct from bin on submit 
+    def __str__(self):
+        return f"{self.product.Product.Model_Name} -- {self.product.PProduct_color.color_name}"
+
 class product_purchase_voucher_master(models.Model):
 
     ACTIONS = [
@@ -1155,21 +1163,29 @@ class finishedgoodsbinallocation(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     source_type = models.CharField(max_length=20, choices=[('purchase', 'purchase'), ('transfer', 'transfer')])
-    # outward = models.BooleanField(default=False)
+    outward_done = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        parent_bin_size = self.bin_number.product_size_in_bin
-        current_bin_count = finishedgoodsbinallocation.objects.filter(bin_number=self.bin_number).count()
+        if 'update_fields' in kwargs and kwargs['update_fields'] == ['outward_done']:
+            super().save(*args, **kwargs)
+            return
+        
 
-        if current_bin_count >= parent_bin_size:
-            raise ValueError(f"The bin {self.bin_number.bin_name} is full. Cannot allocate more items.")
+        if not self.pk:
+            parent_bin_size = self.bin_number.product_size_in_bin
 
-        super().save(*args, ** kwargs)
+            current_bin_count = finishedgoodsbinallocation.objects.filter(bin_number=self.bin_number).count()
 
-    def __str__(self):
-        return self.related_purchase_item.product_purchase_master.purchase_number
+            if current_bin_count >= parent_bin_size:
+                raise ValueError(f"The bin {self.bin_number.bin_name} is full. Cannot allocate more items.")
+            
+            super().save(*args, ** kwargs)
+
+
+
+
 
 
 class sales_voucher_master_finish_Goods(models.Model):
@@ -1223,10 +1239,43 @@ class purchase_order_for_puchase_voucher_rm(models.Model):
 
 
 class Picklist_voucher_master(models.Model):
+    STATUS =  [
+        ("Pending","Pending"),
+        ("Recieving","Recieving"),
+        ("close","close"),
+        ]
+    
     picklist_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT)
+    ledgerTypes = models.ForeignKey(ledgerTypes, on_delete=models.PROTECT)
+    status = models.CharField(max_length = 50, choices= STATUS, default='Pending')
+    total_qty = models.BigIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    narration = models.CharField(max_length=255,null=True,blank=True)
+
+    def update_status(self):
+        
+        total_products = self.picklist_products_list.aggregate(total=models.Sum('product_quantity'))['total'] or 0
+        processed_products = Picklist_process_in_outward.objects.filter(picklist=self).aggregate(total=models.Sum('balance_qty'))['total'] or 0
+
+        if processed_products == 0:
+            self.status = "Closed"
+        else:
+            self.status = "Receiving"
+
+        self.save()
+
+
+    def delete(self,*args, **kwargs):
+        if self.status == "Pending":
+            Picklist_products_list.objects.filter(picklist_master_instance=self).delete()
+            super().delete(*args, **kwargs)
+        else:
+            message.error('Only closed picklists can be deleted.')
+            raise ValueError("Only closed picklists can be deleted.")
+
+
 
 
 class Picklist_products_list(models.Model):
@@ -1234,9 +1283,11 @@ class Picklist_products_list(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
-    # use_all_qty = models.BooleanField(default=False)
+    # recieve_qty = models.IntegerField(default=0 , null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
 
 
 
@@ -1250,10 +1301,22 @@ class outward_product_master(models.Model):
 
 class outward_products(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT,related_name='outward_product')
+    outward_picklist_no = models.CharField(max_length=25)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
-    unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
+    unique_serial_no = models.CharField(max_length=25, blank=False, null=False)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     quantity = models.IntegerField(default = 1)
+
+    class Meta:
+        unique_together = [['outward_no', 'unique_serial_no']]
+
+
+class Picklist_process_in_outward(models.Model):
+    outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
+    picklist = models.ForeignKey(Picklist_voucher_master, on_delete=models.PROTECT)
+    balance_qty = models.IntegerField(default=0, null=True, blank=True)
+
+
 
 
 class sales_voucher_master_outward_scan(models.Model):
@@ -1263,12 +1326,16 @@ class sales_voucher_master_outward_scan(models.Model):
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    salesman = models.ForeignKey(Salesman_info,on_delete=models.PROTECT)
     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
+
+
 
 
 class sales_voucher_outward_scan(models.Model):
@@ -1279,3 +1346,61 @@ class sales_voucher_outward_scan(models.Model):
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
+
+class sales_return_inward(models.Model):
+    sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.PROTECT)
+    sales_return_no = models.CharField(max_length = 100)
+    ledger_type = models.CharField(max_length = 20, default = 'sales return')
+    party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
+    selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add = True)
+    modified_date_time = models.DateTimeField(auto_now = True)
+
+
+class sales_return_product(models.Model):
+    sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete = models.PROTECT)
+    product = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    unique_serial_no = models.CharField(max_length=25, unique=True, blank=False, null=False)
+    bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
+    scan_qty = models.IntegerField(default=1)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+
+
+class sales_return_voucher_master(models.Model):
+    sales_voucher_master = models.ForeignKey(sales_voucher_master_outward_scan,on_delete=models.PROTECT)
+    sales_return_inward_instance = models.ForeignKey(sales_return_inward,on_delete = models.PROTECT)
+    company_gst = models.CharField(max_length = 100)
+    ledger_type = models.CharField(max_length = 20, default = 'sales')
+    party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
+    selected_warehouse = models.ForeignKey(Finished_goods_warehouse, on_delete=models.PROTECT,null=True, blank=True)
+    salesman = models.ForeignKey(Salesman_info,on_delete=models.PROTECT)
+    fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
+    narration = models.CharField(null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add = True)
+    modified_date_time = models.DateTimeField(auto_now = True)
+
+
+class sales_return_voucher(models.Model):
+    sales_return_master = models.ForeignKey(sales_return_voucher_master,on_delete=models.CASCADE)
+    product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    quantity = models.IntegerField()
+    trade_disct = models.IntegerField()
+    spl_disct = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+
+
+
+
+
+
+
+

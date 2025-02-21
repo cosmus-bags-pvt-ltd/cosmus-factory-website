@@ -4,7 +4,9 @@ from django.db.models.signals import pre_delete , post_save,pre_save
 from django.dispatch import receiver
 from django.forms import ValidationError
 from django.core.exceptions import ValidationError , ObjectDoesNotExist
-from .models import (Finished_goods_transfer_records, Ledger, PProduct_Creation, Product, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table, RawStockTrasferRecords,
+
+
+from .models import (Finished_goods_transfer_records, Ledger, PProduct_Creation, Picklist_process_in_outward, Picklist_voucher_master, Product, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table, RawStockTrasferRecords,
                       account_credit_debit_master_table, finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,  item_purchase_voucher_master, 
                       item_godown_quantity_through_table,Item_Creation,item_color_shade, labour_workout_master, 
                       opening_shade_godown_quantity, product_2_item_through_table, product_godown_quantity_through_table, product_purchase_voucher_items, purchase_order, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_raw_material_cutting,
@@ -623,3 +625,12 @@ def sales_voucher_stock_minus(sender, instance, created, **kwargs):
         warehouse_qty_value.save()
     else:
         pass
+
+
+@receiver(post_save, sender=Picklist_process_in_outward)
+def update_picklist_status(sender, instance, **kwargs):
+    
+    picklist = instance.picklist
+    
+    picklist.update_status()
+    

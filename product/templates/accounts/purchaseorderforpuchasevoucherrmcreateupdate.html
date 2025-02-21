@@ -330,7 +330,7 @@
 
        // Function to handle the AJAX request and UI updates
         function handleSelection(purchaseValue,itemName, item_value) {
-
+        
         if (item_value !== undefined) {
         var selectedValue = searchedItemNameDict[item_value];
         var namevalueCheck = selectedValue.match(/[a-zA-Z\s().0-9]+/g).join('');
@@ -341,7 +341,7 @@
             
         $(`input[name^="item_name_${purchaseValue}"]`).val(newnameValue);
         $(`input[name^="purchase_order_for_puchase_voucher_rm_set-${purchaseValue}-item_name"]`).val(item_value);
-
+        $(`input[name^="purchase_order_for_puchase_voucher_rm_set-${purchaseValue}-quantity"]`).focus();
         $.ajax({
             url: '/purchasevouchercreate/',
             method: 'GET',

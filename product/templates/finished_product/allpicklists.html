@@ -1,5 +1,6 @@
 {% extends 'product/base.html' %}
 {% load static %}
+{% load custom_filters %}
 {% block body %}
 
 <div class="row">
@@ -21,9 +22,13 @@
                 <th>No</th>
                 <th>Date</th>
                 <th>PikList No</th>
-                <th>Quantity</th>
+                <th class="table-primary">Quantity</th>
+                <th class="table-success">Scan Qty</th>
+                <th class="table-danger">Balance</th>
                 <th>Status</th>
-                <th>View</th>
+                <th>Channel</th>
+                <th>Narration</th>
+                <th>Edit/View</th>
                 <th>Delete</th>
                 <th>Print</th>
             </tr>
@@ -35,13 +40,28 @@
             <tr>
                 <td>{{forloop.counter}}</td>
                 <td>{{ picklist.created_date}}</td>
-                <td><a href="{% url 'picklist-view' picklist.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #bd50e9; text-decoration: none;">{{ picklist.picklist_no }}</a></td>
-                <td>{{ picklist.total_quantity }}</td>
-                <td></td>
-                <td><a href="{% url 'create-update-picklist' picklist.id %}"><i class="fa-solid fa-eye px-2"></i></a></td>
-                <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ picklist.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
-                <td><a href="{% url 'download-picklist-pdf' picklist.id %}">PDF</a>
-                  <a href="{% url 'download-picklist-excel' picklist.id %}" >Excel</a></td>
+                <td class="text-center"><a href="{% url 'picklist-view' picklist.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #bd50e9; text-decoration: none;">{{ picklist.picklist_no }}</a></td>
+                <td class="text-center"><span class="text-primary">{{ picklist.total_qty }}</span></td>
+                <td class="text-center"><span class="text-success">{{ picklist.total_qty|minus:picklist.scanned_qty }}</span></td>
+                <td class="text-center"><span class="text-danger">{{ picklist.scanned_qty |default_if_none:''}}</span></td>
+                <td {% if picklist.status == "Pending" %} style="color: red; font-weight: bold;" 
+                    {% elif picklist.status == "Receiving" %} style="color: green; font-weight: bold;" 
+                    {% elif picklist.status == "Closed" %} style="color: gray; font-weight: bold;" 
+                    {% endif %}>
+                    {{ picklist.status }}
+                </td>
+                <td>{{ picklist.ledgerTypes.type_name }}</td>
+                <td>{{ picklist.narration }}</td>
+                <td>
+                  {% if picklist.status == "Closed" %}
+                  <a href="{% url 'create-update-picklist' picklist.id %}"><i class="fa-solid fa-eye px-2"></i></a>
+                  {% else %}
+                  <a href="{% url 'create-update-picklist' picklist.id %}"><i class="fa-solid fa-pen-to-square px-2"></i></a>
+                  {% endif %}
+                </td>
+                  <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ picklist.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
+                <td><a href="{% url 'download-picklist-pdf' picklist.id %}"><img src="../../../static/images/icons8-pdf-40.png" width="25px" class="me-2"></a>
+                  <a href="{% url 'download-picklist-excel' picklist.id %}" ><img src="../../../static/images/icons8-excel-file-48.png" width="25px"></a></td>
              </tr>
       
             {% endfor %}

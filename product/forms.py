@@ -1,9 +1,11 @@
+from dataclasses import fields
 from email.policy import default
+from pyexpat import model
 from django import forms
 from django.shortcuts import get_object_or_404
 
 from core.models import Company
-from .models import AccountSubGroup, Color, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, sales_voucher_master_outward_scan, sales_voucher_outward_scan,shade_godown_items, shade_godown_items_temporary_table
+from .models import AccountSubGroup, Color, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, bin_for_raw_material, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, sales_voucher_master_outward_scan, sales_voucher_outward_scan,shade_godown_items, shade_godown_items_temporary_table
 from django.forms.models import inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.forms import BaseModelFormSet, modelformset_factory, BaseInlineFormSet 
@@ -315,34 +317,42 @@ class ColorForm(UniqueFieldMixin,forms.ModelForm):
 
         return data
     """
-            
+
+class bin_for_raw_material_form(forms.ModelForm):
+    class Meta:
+        model = bin_for_raw_material
+        fields = ['bin_name']
+
+
+
 
 
 class Itemform(UniqueFieldMixin,forms.ModelForm):
+
+    bin = forms.ModelMultipleChoiceField(
+        queryset=bin_for_raw_material.objects.all().order_by(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
     
     class Meta:
         model = Item_Creation
         fields = ['item_name','Material_code','Item_Color','Item_Packing',
                  'unit_name_item','Units','Panha', 'Fabric_nonfabric','Item_Fabric_Finishes','Fabric_Group',
-                 'Item_Creation_GST','HSN_Code','status','item_shade_image']
-        
+                 'Item_Creation_GST','HSN_Code','status','item_shade_image','bin']
+
+
     def clean_item_name(self):
         return self.clean_unique_field('item_name',Item_Creation)
     
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        
         last_item = Item_Creation.objects.order_by('pk').last()
-        
-
-        
+    
         if last_item:
             self.fields['Material_code'].initial = last_item.pk + 1
-
         else:
-            
             self.fields['Material_code'].initial = 1
 
 """ 
@@ -352,8 +362,10 @@ explaination on rendering data in - notes_forms_form_api.txt
 
 
 
+
 ShadeFormSet = inlineformset_factory(Item_Creation, item_color_shade, fields=('item_name_rank', 'item_shade_name', 'item_color_image'), extra=1)
 OpeningShadeFormSetupdate = inlineformset_factory(item_color_shade, opening_shade_godown_quantity, fields=('opening_godown_id', 'opening_quantity', 'opening_rate'), extra=1)
+
 
 
 
@@ -365,6 +377,10 @@ class ItemFabricGroup(UniqueFieldMixin,forms.ModelForm):
     def clean_fab_grp_name(self):
         return self.clean_unique_field('fab_grp_name',Fabric_Group_Model)
 
+
+
+
+
 class UnitName(UniqueFieldMixin,forms.ModelForm):
     class Meta:
         model = Unit_Name_Create
@@ -373,6 +389,9 @@ class UnitName(UniqueFieldMixin,forms.ModelForm):
 
     def clean_unit_name(self):
         return self.clean_unique_field('unit_name',Unit_Name_Create)
+
+
+
 
 class account_sub_grp_form(UniqueFieldMixin,forms.ModelForm):
     class Meta:
@@ -389,12 +408,15 @@ class StockItemForm(CompanyBaseForm):
         fields = ['acc_sub_grp','stock_item_name','company'] 
 
 
+class SalesmaninfoForm(forms.ModelForm):
+    class Meta:
+        model = Salesman_info
+        fields = ['salesman_name']
 
 
 class ledger_types_form(forms.ModelForm):
     class Meta:
         model = ledgerTypes
-
         fields = ['type_name']
 
 
@@ -1251,7 +1273,7 @@ salesvoucherupdateformset = inlineformset_factory(sales_voucher_master_finish_Go
 class Picklistvouchermasterform(forms.ModelForm):
     class Meta:
         model = Picklist_voucher_master
-        fields = ['picklist_no']
+        fields = ['picklist_no','ledgerTypes','narration']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1301,7 +1323,7 @@ class Outwardproductmasterform(forms.ModelForm):
 class OutwardProductForm(forms.ModelForm):
     class Meta:
         model = outward_products
-        fields = ['product', 'unique_serial_no', 'bin_number', 'quantity']
+        fields = ['outward_picklist_no','product', 'unique_serial_no', 'bin_number', 'quantity']
 
 OutwardProductcreateFormSet = inlineformset_factory(outward_product_master,outward_products,form = OutwardProductForm,extra=1, can_delete=True)
 
@@ -1309,11 +1331,20 @@ OutwardProductupdateFormSet = inlineformset_factory(outward_product_master,outwa
 
 
 
+class PicklistProcessInOutwardForm(forms.ModelForm):
+    class Meta:
+        model = Picklist_process_in_outward
+        fields = ['picklist', 'balance_qty']
+
+
+PicklistProcessInOutwardFormset = inlineformset_factory(outward_product_master, Picklist_process_in_outward,form=PicklistProcessInOutwardForm, extra=1, can_delete=True)
+
+PicklistProcessInOutwardFormsetupdate = inlineformset_factory(outward_product_master, Picklist_process_in_outward,form=PicklistProcessInOutwardForm, extra=0, can_delete=True)
 
 class Salesvouchermasteroutwardscanform(forms.ModelForm):
     class Meta:
         model = sales_voucher_master_outward_scan
-        fields = ['sale_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_warehouse']
+        fields = ['sale_no','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_warehouse','salesman']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1321,10 +1352,12 @@ class Salesvouchermasteroutwardscanform(forms.ModelForm):
         last_item = sales_voucher_master_outward_scan.objects.order_by('id').last()
 
         if last_item:
-
+            
             self.fields['sale_no'].initial = last_item.id + 1
         else:
             self.fields['sale_no'].initial = 1
+
+
 
 
 class SalesvoucheroutwardscanForm(forms.ModelForm):
@@ -1333,3 +1366,39 @@ class SalesvoucheroutwardscanForm(forms.ModelForm):
         fields = ['product_name','quantity','trade_disct','spl_disct']
 
 salesvoucherfromscanupdateformset = inlineformset_factory(sales_voucher_master_outward_scan,sales_voucher_outward_scan,form = SalesvoucheroutwardscanForm,extra=0, can_delete=True)
+
+
+class salesreturninwardmasterform(forms.ModelForm):
+    class Meta:
+        model = sales_return_inward
+        fields = ['sales_voucher_master','sales_return_no','party_name','selected_warehouse']
+
+
+class sales_return_product_form(forms.ModelForm):
+    class Meta:
+        model = sales_return_product
+        fields = ['product','unique_serial_no','bin_number','scan_qty']
+
+sales_return_product_formset = inlineformset_factory(sales_return_inward,sales_return_product,form = sales_return_product_form,extra=1, can_delete=True)
+sales_return_product_formset_update = inlineformset_factory(sales_return_inward,sales_return_product,form = sales_return_product_form,extra=0, can_delete=True)
+
+
+
+
+class sales_return_voucher_master_form(forms.ModelForm):
+    class Meta:
+        model = sales_return_voucher_master
+        fields = ['sales_voucher_master','sales_return_inward_instance','company_gst','ledger_type','party_name','fright_transport','gross_total','cash_disct','grand_total','selected_warehouse','salesman']
+
+
+
+class sales_return_voucher_form(forms.ModelForm):
+    class Meta:
+        model = sales_return_voucher
+        fields = ['product_name','quantity','trade_disct','spl_disct']
+
+sales_return_voucher_formset_create = inlineformset_factory(sales_return_voucher_master, sales_return_voucher, form = sales_return_voucher_form,extra=1, can_delete=True)
+
+sales_return_voucher_formset_update = inlineformset_factory(sales_return_voucher_master, sales_return_voucher, form = sales_return_voucher_form,extra=0, can_delete=True)
+
+

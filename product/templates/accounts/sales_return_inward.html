@@ -1,0 +1,750 @@
+{% extends 'product/base.html' %} 
+{% load static %} 
+
+{% block body %}
+<form class="mt-3" action="" method="POST" id="salesInwardForm">
+    {% csrf_token %}
+    
+    <div class="d-flex mb-3">
+      <div class="d-flex mb-1">
+        <input type="hidden" id="productSaleDate" value="">
+      </div>
+      <span id="purchaseError" class="error-messages"></span>
+      <div class="d-flex">
+        <label for="id_sales_return_no" class="fw-bold me-1">Sales Return No :</label>
+        <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{master_form.instance.sales_return_no}}" maxlength="255" required>
+      </div>
+
+      <span id="SupplierError" class="error-messages"></span>
+      <div class="d-flex ms-2">
+        <label for="id_sales_voucher_master" class="fw-bold me-1">Sales No :</label>
+        {% if master_form.instance.id %}
+        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="{{master_form.instance.sales_voucher_master.id}}">
+        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="{{master_form.instance.sales_voucher_master.sale_no}}" maxlength="255" required>
+        {% elif not master_form.instance.id %}
+        <input type="hidden" class="purchase-vNo me-1" name="sales_voucher_master" id="id_sales_voucher_master" value="" >
+        <input type="text" class="purchase-vNo me-1" name="sales_voucher_master_name" id="id_sales_voucher_master_name" value="" maxlength="255" required>
+        {% endif %}
+      </div>
+      <div class="d-flex ms-2">
+        <label for="id_ledger_type" class="fw-bold me-1">ledger Type :</label>
+        <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales return' readonly>
+      </div>
+      <div class="ms-2">
+        <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
+        <input type="hidden" class="purchase-amount" name="selected_warehouse" id="id_selected_warehouse" value="{{master_form.instance.selected_warehouse.id}}">
+        <input type="text" class="purchase-amount" name="selected_warehouse_name" required id="id_selected_warehouse_Name" value="{{master_form.instance.selected_warehouse.warehouse_name_finished}}" readonly>
+        
+      </div>
+      <span id="purchaseError" class="error-messages"></span>
+      <div class="d-flex ms-2">
+        <label for="id_party_name" class="fw-bold me-3">Party A/C Name :</label>
+        <input type="hidden" class="item-selects" name="party_name"  id="id_party_name" value="{{master_form.instance.party_name.id}}">
+        <input type="text" class="item-selects" name="party_name_value" required id="id_party_name_value" value="{{master_form.instance.party_name.name}}" readonly>
+      </div>
+    
+    </div>
+  
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="mb-2">
+                <label for="inwordSerialNo" class="fw-bold me-2">Scan :</label>
+                <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
+                <label for="id_bin_Name" class="fw-bold ms-2 me-3">Bin :</label>
+                <select  class="item-selects ms-3" name="product_bin" id="id_bin_Name"></select>
+            </div>
+            <div class="d-flex ">
+                <div class="mb-2">
+                    <label for="id_manualSerialNo" class="fw-bold">M-Scan :</label>
+                    <input type="text" name="manual_serial_number" class="item-selects" id="id_manualSerialNo">
+                </div>
+                <div class="ms-5 mt-2">
+                    <span style="cursor: pointer;"  class="newProductCreateBtn" id="salesReturnBin" role="button" tabindex="0">Submit</span>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6" id="salesReturnList">
+            <span id="responseMessage" class="ms-1 mb-1 fw-bold"></span>
+            <table class="table table-striped table-hover table-bordered" id="stockTransferInstanceTable">
+                <thead class="name_absolute">
+                    <tr>
+                        <th>Name</th>
+                        <th>SKU</th>
+                        <th>Color</th>
+                        <th>IMG</th>
+                    </tr>
+                </thead>
+                <tbody class="mainTableList" >
+                    <tr>
+                        <td><input name="product_name" type="text" class="productShadeCutting_input bg-transparent border-0" id="id_product" value="" readonly></td>
+                        <td><input name="product_sku" type="number" class="productorder_input"  id="id_product_sku" value="" readonly></td>
+                        <td><input name="product_color" type="text" class="productorder_input"  id="id_product_color" value="" readonly></td>
+                        <td>
+                            <img id="productImgPreview" name="product_img" src="" alt="img" style="width: 25px; object-fit:contain;">
+                       </td> 
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="mt-2">
+        <div class="stock_responsive">
+            <table class="table table-striped table-hover table-bordered table-primary" id="salesReturnoutwardTable">
+                <thead class="name_absolute sticky-top">
+                    <tr>
+                        <th>No</th>
+                        <th>Ref No</th>
+                        <th>Model Name</th>
+                        <th>Color</th>
+                        <th>SKU</th>
+                        <th>Image</th>
+                        <th>Serial No</th>
+                        <th>Bin NO</th>
+                        <th>Scan Qty</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="mainTableList">
+                    {{ formset.management_form }}
+                    {% for form in formset %}
+                    {{form.id}}
+                        {% if form.instance.id %}
+                        <tr>
+                            <td>
+                                <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="{{form.instance.product.Product.Product_Refrence_ID}}" readonly>
+                            </td>
+                            <td>  
+                                <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{form.instance.product.Product.Model_Name}}" readonly> 
+                            </td>
+                            <td>
+                                <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{form.instance.product.PProduct_color.color_name}}" class="purchase-input"  readonly>
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{{form.instance.product.PProduct_SKU}}" class="purchase-amount" readonly>
+                            </td>
+                            <td>
+                                <img src="{{ form.instance.product.PProduct_image.url }}" id="product_img_{{forloop.counter0}}"  style="width: 25px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" value="{{ form.instance.unique_serial_no }}" readonly>
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" value="{{form.instance.bin_number.bin_name}}" readonly>
+                                <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" value="{{ form.instance.bin_number.id }}" readonly>
+                            </td>
+                            <td>
+                                <input type="number" name="{{form.prefix}}-scan_qty" id="id_{{form.prefix}}-scan_qty" class="purchase-input" value="{{ form.instance.scan_qty }}" readonly>
+                            </td>
+                            <td>
+                                <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
+                            </td>  
+                        </tr>
+                        {% elif not form.instance.id %}
+                        <tr>
+                            <td>
+                                <input type="hidden" name="{{form.prefix}}-outward_picklist_no" id="id_{{form.prefix}}-outward_picklist_no" value="">
+                                <input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly>
+                            </td>
+                            <td>  
+                                <input type="text" name="{{form.prefix}}-product_name_value" id="id_{{form.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="" readonly> 
+                            </td>
+                            <td>
+                                <input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="" class="purchase-input" readonly>
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="" class="purchase-amount" readonly>
+                            </td>
+                            <td>
+                                <img src="" id="product_img_{{forloop.counter0}}"  style="width: 30px; height: 30px; cursor: pointer;" alt="product"  onclick="showLargeImage(this.src)">
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-unique_serial_no" maxlength="25" id="id_{{form.prefix}}-unique_serial_no" class="purchase-amount" readonly>
+                            </td>
+                            <td>
+                                <input type="text" name="{{form.prefix}}-bin_no" id="id_{{form.prefix}}-bin_no" class="purchase-amount" readonly>
+                                <input type="hidden" name="{{form.prefix}}-bin_number" id="id_{{form.prefix}}-bin_number" class="purchase-amount" readonly>
+                            </td>
+                            <td>
+                                <input type="number" name="{{form.prefix}}-scan_qty" value="" id="id_{{form.prefix}}-scan_qty" class="purchase-input" readonly>
+                            </td>
+                            <td>
+                                <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" ></i></span>
+                            </td>  
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>   
+            </table>
+        </div>
+        <button type="button" class="ms-3 newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Generate</button>
+    </div>
+</form>
+    <div class="mt-2">
+        <div>
+            <label class="fw-bold">Outward No :</label><span></span>
+            <label class="fw-bold">Total Qty :</label><span class="">Pcs</span>
+        </div>
+        <table class="table table-striped table-hover table-bordered table-warning" id="sales_retrun_outwardTable">
+            <thead class="name_absolute">
+                <tr>
+                    <th>No</th>
+                    <th>Img</th>
+                    <th>Ref No</th>
+                    <th>Model Name</th>
+                    <th>Color</th>
+                    <th>Sku</th>
+                    <th>Serial No</th>
+                    <th>Bin No</th>
+                    <th>Qty</th>
+                </tr>
+            </thead>
+            <tbody class="mainTableList" >
+                
+                    
+                    {% if master_form.instance.id %}
+                    {% for data in list_to_sent_for_outward_data %}
+                    <tr>
+                        
+                      <td>{{forloop.counter}}</td>
+                      <td><img src="{{ data.PProduct_image }}" alt=""></td>
+                      <td>{{data.Product_Refrence_ID}}</td>
+                      <td>{{data.Model_Name}}</td>
+                      <td>{{data.PProduct_color}}</td>
+                      <td>{{data.PProduct_SKU}}</td>
+                      <td>{{data.unique_serial_no}}</td>
+                      <td>{{data.Bin_Name}}</td>
+                      <td>{{data.Quantity}}</td>
+                    </tr>
+                    {% endfor %}                   
+                    {% endif %}
+            
+            </tbody>
+            
+        </table>
+    </div>
+
+
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content bg-success-subtle text-success-emphasis">
+            <div class="modal-header">
+                <h5 class="modal-title">Sales Return inward Confirmation</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               "Are you sure you want to Generate Sales Return Inward ?" 
+               <p>"Once you Submit you <span class="fw-bold text-danger">Can't Edit or increase QTY</span>"</p>
+            </div>
+            <div class="modal-footer bg-success-subtle text-success-emphasis">
+              <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
+            
+            </div>
+          </div>
+        </div>
+      </div>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+       const inwardSearch = document.getElementById('inwordSerialNo');
+       const manualSearch = document.getElementById('id_manualSerialNo');
+       const salesReturnTable = document.getElementById('salesReturnList');
+       const responseMessage = $('#responseMessage');
+       const selectBin = document.getElementById('id_bin_Name')
+  
+       inwardSearch.focus();
+
+       inwardSearch.addEventListener('input', function () {
+           inwardSearch.style.color = 'white';
+             responseMessage.html(''); 
+           if (inwardSearch.value) {
+            salesReturnTable.style.display = "block";
+               manualSearch.value = ''; 
+            }
+        });
+
+       manualSearch.addEventListener('input', function () {
+           
+           responseMessage.html(''); 
+           if (manualSearch.value) {
+            salesReturnTable.style.display = "block";
+               inwardSearch.value = ''; 
+
+              
+           }
+      
+       });
+
+   });
+   document.body.appendChild(document.getElementById('staticBackdrop'));
+   $(document).ready(function(){
+    $('#modalSubmitButton').on('click',function(){
+            $('#salesInwardForm').submit();
+       })
+
+        $('#id_sales_voucher_master_name').on('blur',function(){
+            var salesId = $('#id_sales_return_product_set-0-id').val();
+            console.log('salesId',salesId)
+            if(salesId === ''){
+                var saleNo = $(this).val();
+                if(saleNo !== ''){
+                    $.ajax({
+                    url: '/otwarddataforsalereturnajax/',
+                    type: 'GET',
+                    data: { 
+                        'saleNo':saleNo,
+                    },
+                    success: function(response){
+                        let counter = 1;
+                        var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
+                        salesOutward.empty(); // Clear previous data
+                        $('#inwordSerialNo').focus();
+                        $("#id_sales_voucher_master").val(response.list_to_send_for_sales_voucher_data[0].sale_id)
+                        $("#id_party_name").val(response.list_to_send_for_sales_voucher_data[0].party_name)
+                        $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
+                        $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
+                        $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
+                
+                        response.list_to_sent.forEach(item => {
+                            var newRow = $(`
+                                <tr>
+                                    <td><span class="">${counter}</span></td>
+                                    <td><img src=${item.PProduct_image} alt="img" width="25px"></td>
+                                    <td><span class="modelName">${item.Product_Refrence_ID || "N/A"}</span></td>
+                                    <td><span class="modelName">${item.Model_Name || "N/A"}</span></td>
+                                    <td><span class="color">${item.PProduct_color || "N/A"}</span></td>
+                                    <td><span class="sku">${item.PProduct_SKU || "N/A"}</span></td>
+                                    <td><span class="balanceqty text-center">${item.unique_serial_no || "N/A"}</span></td> 
+                                    <td><span class="balanceqty text-center">${item.Bin_Name || "N/A"}</span></td> 
+                                    <td><span class="qty text-center">${item.Quantity || 0}</span></td>
+                                </tr>
+                            `);
+                            salesOutward.append(newRow);
+                            counter++;
+                        });
+                        },
+                        error:function(error){
+                        console.log(error)
+                    }
+                    }) 
+                }else{
+                    $(this).focus()
+                }
+            }
+            
+            
+        })
+
+        let debounceTimeout;
+
+        $('#inwordSerialNo').on('input', function () {
+            clearTimeout(debounceTimeout);
+
+            const manual_serial = $('#id_manualSerialNo');
+            manual_serial.val('');
+            
+            const responseMessage = $('#responseMessage');
+            responseMessage.html(''); 
+
+            const inputField = $(this);
+
+            debounceTimeout = setTimeout(async function () {
+                let inputUrl = inputField.val();
+                let serialNo = '';
+
+                if (inputUrl.includes('=')) {
+                    serialNo = inputUrl.split('=').pop();
+                    inputField.val(serialNo);
+                    inputField.css('color', 'black');
+                }
+
+                if (serialNo) {
+                    try {
+                        const response = await sendSerialNumber(serialNo);
+                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                    } catch (error) {
+                    //    const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                    //    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    }
+                }
+            }, 500); 
+        });
+
+        // Handle input in id_manualSerialNo
+        $('#id_manualSerialNo').on('input', function () {
+            $('#inwordSerialNo').val('');
+            const responseMessage = $('#responseMessage');
+            responseMessage.html('');
+
+        });
+
+        // Handle click on the normal button
+        $('#id_manualSerialNo').on('keydown', async function (event) {
+            if(event.key === 'Enter'){
+                event.preventDefault();
+                const manualSerialNo = $('#id_manualSerialNo').val();
+                const responseMessage = $('#responseMessage'); // Response message container
+                if (manualSerialNo) {
+                    try {
+                        const response = await sendSerialNumber(manualSerialNo);
+                        
+                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
+                        
+                    } catch (error) {
+                        // const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
+                        // $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                        $('#id_manualSerialNo').val('');
+                        $('#id_product').val('');
+                        $('#id_product_sku').val('');
+                        $('#id_product_color').val(''); 
+                        $('#productImgPreview').attr('src', '');
+
+                    }
+                } else {
+                    $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
+                    $('#id_manualSerialNo').val('');
+                    $('#id_product').val('');
+                    $('#id_product_sku').val('');
+                    $('#id_product_color').val('');
+                    $('#productImgPreview').attr('src', '');
+
+                }   
+            }
+        });
+
+        // Function to send serial number to the backend
+        async function sendSerialNumber(serialNo) {
+
+            var saleNo = $('#id_sales_voucher_master_name').val()
+            let isDuplicate = false;
+                
+            $('#salesReturnoutwardTable .mainTableList tr').each(function () {
+                const row = $(this);
+                if (row.css('display') === 'none') return;
+                const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+                
+                if (serialValue && serialValue === serialNo) {
+                    $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                    isDuplicate = true;
+                    return false;
+                } 
+            });
+
+            if (isDuplicate) return;
+            try {
+                const response = await $.ajax({
+                    url: '/processserialnoforreturnsalesajax/',
+                    type: 'GET',
+                    data: { 
+                        serialNo: serialNo,
+                        saleNo: saleNo
+                    },
+                });
+            
+                $('#id_product').val(response.model_name);
+                $('#id_product_sku').val(response.product_sku);
+                $('#id_product_color').val(response.product_color);
+                $('#productImgPreview').attr('src', response.product_image);
+
+                const binSelect = $('#id_bin_Name');  
+                binSelect.empty(); 
+
+                response.bin_to_dict.forEach(bin => {
+                    binSelect.append(new Option(`${bin.bin_name} - ${bin.bin_size} - ${bin.products_in_bin}`, bin.bin_id));
+                });
+
+                return response;
+            } catch (error) {
+                console.error('Error:', error);
+                return null; 
+            }
+        }
+
+        $('#salesReturnBin').on('click',function(){
+                var serialno;
+                var binNo = $('#id_bin_Name').val();
+                var productSku = $('#id_product_sku').val();
+                var scanSerialNo = $('#inwordSerialNo').val();
+                var manualSerialNo = $('#id_manualSerialNo').val();
+                
+                if(scanSerialNo !== '' && manualSerialNo === ''){
+                    serialno = scanSerialNo;
+                }else if(scanSerialNo === '' && manualSerialNo !== ''){
+                    serialno = manualSerialNo; 
+                }else{
+                    alert("Please Enter a valid serial no")
+                }
+
+                let isDuplicate = false;
+                let rowToPopulate = null;
+
+                $('#salesReturnoutwardTable .mainTableList tr').each(function () {
+                    const row = $(this);
+                    if (row.css('display') === 'none') return;
+                    const serialValue = row.find('[name$="-unique_serial_no"]').val()?.trim();
+                    
+                    if (serialValue && serialValue === serialno) {
+                        $('#responseMessage').html('<span class="text-danger">Duplicate Serial Number.</span>');
+                        isDuplicate = true;
+                        return false;
+                    }
+
+                    if (!isDuplicate && row.find('[name$="-product_name_value"]').val()?.trim() === "") {
+                        rowToPopulate = row;
+                        return false;
+                    }
+                });
+        
+                if (isDuplicate) return;
+
+                $.ajax({
+                    url: '/returnproductwithbinajax/',
+                    type: 'GET',
+                    data: { 
+                        productSku: productSku,
+                        binNo: binNo,
+                        serialno:serialno,
+                    },
+                    success:function(response){
+                        console.log(response)
+                        $('#id_manualSerialNo').val('');
+                        $('#inwordSerialNo').val('');
+                        $('#id_bin_Name').val('');
+                        $('#responseMessage').html('');   
+                        $('#id_manualSerialNo').val('');
+                        $('#id_product').val('');
+                        $('#id_product_sku').val('');
+                        $('#id_product_color').val('');           
+                        $('#productImgPreview').attr('src', '');
+
+                        if (rowToPopulate) {
+                            populateRow(rowToPopulate, response );
+                        } else {
+                            addNewRow();
+                            const newRow = $('#salesReturnoutwardTable .mainTableList tr').last();
+                            populateRow(newRow, response);
+                        }
+                    },
+                    error:function(xhr, status, error){
+                        let errorMessage = 'An error occurred';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.error) {
+                                errorMessage = response.error;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
+                        }
+                        // Display the error message
+                        $('#responseMessage').html(`<span class="text-danger">${errorMessage}</span>`);
+                    }
+                    
+                })
+            })
+
+        function isTableEmpty() {
+            return $('#salesReturnoutwardTable .mainTableList  tr').toArray().every(row => isRowEmpty($(row)));
+        }
+
+        function populateRow(row, response) {
+        
+            row.find('[name$="-product_RefNo"]').val(response.reference_no);
+            row.find('[name$="-product_name_value"]').val(response.model_name);
+            row.find('[name^="product_color_"]').val(response.product_color);
+            row.find('[name$="-product"]').val(response.product_sku);
+            row.find('[name$="-unique_serial_no"]').val(response.serialno);
+            row.find('[name$="-bin_number"]').val(response.bin_id);
+            row.find('[name$="-bin_no"]').val(response.bin_name)
+            row.find('[name$="-scan_qty"]').val(1);
+            row.find('[id^="product_img_"]').attr("src", response.product_image);
+        }
+    
+        function isRowEmpty(row) {
+            return row.find('td :input').filter(function () {
+                return $(this).val().trim() !== "";
+            }).length === 0;
+        }
+
+        function addNewRow() {
+            const tableBody = document.querySelector('#salesReturnoutwardTable .mainTableList ');
+
+            tableBody.querySelectorAll('tr').forEach(row => {
+                if (window.getComputedStyle(row).display !== 'none') {
+                    lastVisibleRow = row;
+                }
+            });
+
+            const formCountInput = document.getElementById("id_sales_return_product_set-TOTAL_FORMS");
+            const formCount = parseInt(formCountInput.value);
+            const formIndex = formCount;
+            const lastRow = lastVisibleRow.cloneNode(true);
+            lastRow.querySelectorAll("input select").forEach(function (e) {
+                e.value = "";
+            });
+
+            const rowElement = lastRow.querySelector('.rowNo[name^="rowNo_"]');
+            rowElement.id = `rowNo_${formIndex}`;
+            rowElement.name = `rowNo_${formIndex}`;
+            rowElement.value = formIndex + 1;
+            rowElement.style.border = "none";
+
+
+            const inputSelectElement = lastRow.querySelector('input[name$="-product_RefNo"]');
+            inputSelectElement.id = `id_sales_return_product_set-${formIndex}-product_RefNo`;
+            inputSelectElement.name = `sales_return_product_set-${formIndex}-product_RefNo`;
+            inputSelectElement.value = "";
+
+            const inputElement = lastRow.querySelector('input[name$="-product_name_value"]');
+            inputElement.id = `id_sales_return_product_set-${formIndex}-product_name_value`;
+            inputElement.name = `sales_return_product_set-${formIndex}-product_name_value`;
+            inputElement.value = "";
+
+            const colorInputElement = lastRow.querySelector('.purchase-input[name^="product_color"]');
+            colorInputElement.id = `product_color_${formIndex}`;
+            colorInputElement.name = `product_color_${formIndex}`;
+            colorInputElement.value = "";
+
+            const skuInputElement = lastRow.querySelector('.purchase-amount[name$="-product"]');
+            skuInputElement.id = `id_sales_return_product_set-${formIndex}-product`;
+            skuInputElement.name = `sales_return_product_set-${formIndex}-product`;
+            skuInputElement.value = "";
+
+            const imgElement = lastRow.querySelector('[id^="product_img_"]');
+            imgElement.id = `product_img_${formIndex}`;
+            imgElement.src = "";
+
+            const serialNoElement = lastRow.querySelector('input[name$="-unique_serial_no"]');
+            serialNoElement.id = `id_sales_return_product_set-${formIndex}-unique_serial_no`;
+            serialNoElement.name = `sales_return_product_set-${formIndex}-unique_serial_no`;
+            serialNoElement.value = '';
+
+            const binNameElement = lastRow.querySelector('input[name$="-bin_number"]');
+            binNameElement.id = `sales_return_product_set-${formIndex}-bin_number`;
+            binNameElement.name = `sales_return_product_set-${formIndex}-bin_number`;
+            binNameElement.value = '';
+
+            const binNoElement = lastRow.querySelector('input[name$="-bin_no"]');
+            binNoElement.id = `id_sales_return_product_set-${formIndex}-bin_no`;
+            binNoElement.name = `sales_return_product_set-${formIndex}-bin_no`;
+            binNoElement.value = '';
+
+            const qunatityInputElement = lastRow.querySelector('[name$="-scan_qty"]');
+            qunatityInputElement.id = `id_sales_return_product_set-${formIndex}-scan_qty`;
+            qunatityInputElement.name = `sales_return_product_set-${formIndex}-scan_qty`; 
+            qunatityInputElement.value="";
+
+            const deleteInputElement = lastRow.querySelector('[name$="-DELETE"]');
+            deleteInputElement.id = `id_sales_return_product_set-${formIndex}-DELETE`;
+            deleteInputElement.name = `sales_return_product_set-${formIndex}-DELETE`; 
+            deleteInputElement.value="false";
+
+
+            formCountInput.value = formCount + 1;
+            tableBody.appendChild(lastRow);
+            deleteRowData();
+        
+        }
+        function getVisibleRows() {
+            return document.querySelectorAll('#salesReturnoutwardTable .mainTableList tr:not([style*="display: none"])');;
+        }
+
+        function deleteRowData(){
+            document.querySelectorAll('.delete-btn').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const rows =  getVisibleRows();
+                
+                    if (rows.length > 1) {
+                        const row = this.closest('tr');
+            
+                        if (row) {
+                            const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+                
+                            if (checkRow) {
+                                checkRow.checked = true; 
+                                checkRow.value = 'true'; 
+                                row.style.display = 'none';
+                                
+                            } else {
+                                console.error("Checkbox for deletion not found in this row");
+                            }
+                        }
+                    } else {
+                        alert('Cannot delete this row; at least one row must remain.');
+                    }
+                });
+            }); 
+        }
+
+        $(document).on('keydown', '#id_sales_return_no', function(event) {
+            if (event.key === 'Tab') {
+                if ($(this).val().trim() === '') {
+                    event.preventDefault();
+                    $(this).focus();
+                } else {
+                    $('#sales_voucher_master_name').focus();
+                }
+            }
+        });
+
+        $(document).on('keydown', '#inwordSerialNo', function(event) {
+            if (event.key === 'Tab') {
+                if ($(this).val().trim() === '') {
+                    event.preventDefault();
+                    $('#id_manualSerialNo').focus();
+                } else {
+                    $('#id_bin_Name').focus();
+                }
+            }
+        });
+
+        $(document).on('keydown', '#id_manualSerialNo', function(event) {
+            if (event.key === 'Enter' || event.key === 'Tab' ) {
+                if ($(this).val() === '') {
+                    event.preventDefault();
+                    $(this).focus();
+                } else {
+                    event.preventDefault();
+                    $('#id_bin_Name').focus();
+                }
+            }
+        });
+
+        $(document).on('keydown', '#id_bin_Name', function(event) {
+            if (event.key === 'Tab') {
+                if ($(this).val() === '') {
+                    event.preventDefault();
+                    $(this).focus();
+                } else {
+                    event.preventDefault();
+                    $('#salesReturnBin').focus();
+                }
+            }
+        });
+        $(document).on('keydown', '#salesReturnBin', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent the default action
+                $(this).click(); // Trigger the click event
+            }
+        });
+        deleteRowData()
+   })
+
+   document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('id_sales_return_no').focus();
+   
+   })
+
+   
+   
+   
+
+
+</script>
+{% endblock body %}

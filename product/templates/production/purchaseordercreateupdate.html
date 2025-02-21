@@ -18,8 +18,8 @@
                 <label for="id_product_reference_number" class="me-1">Ref No :</label>
                 <div class="custom-dropdown-container-ref">
                     <input type="hidden" name="product_reference_number" id="id_product_reference_number" value="{% if form.instance.id %}{{form.instance.product_reference_number.id}}{% endif %}" readonly> 
-                      <input type="number" name="product_reference_number_input" id="id_product_reference_number_input" class="purchase-itemName refernceName"  placeholder="Refrance No" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product_reference_number.Product_Refrence_ID}}{% endif %}"> 
-                      <div name="select_Refrance_No" class="purchase-itemName  s-suggestion-container reference_input" id="select_Refrance_No" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
+                      <input type="text" name="product_reference_number_input" id="id_product_reference_number_input" class="stock-Input refernceName"  placeholder="Refrance No" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product_reference_number.Product_Refrence_ID}}{% endif %}"> 
+                      <div name="select_Refrance_No" class="stock-Input  s-suggestion-container reference_input" id="select_Refrance_No" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
 
                        </div>
                 </div>
@@ -307,8 +307,8 @@
         const submitButton = document.getElementById("id_submit_2");
         const submitbtn_1 = document.getElementById('id_submit_1')
         const form = document.getElementById('productForm');
-        var purchaseNo = document.getElementById('id_purchase_order_number');
-        var refNo = document.getElementById('id_product_reference_number_input');
+        const purchaseNo = document.getElementById('id_purchase_order_number');
+        const refNo = document.getElementById('id_product_reference_number_input');
         const partyName = document.getElementById('id_ledger_party_name_input');
         const dates = document.getElementById('id_target_date');
         const totalQty = document.getElementById('id_number_of_pieces');
@@ -493,7 +493,8 @@ $(document).ready(function(){
                 data: { 'productnamevalue': productnamevalue },
                 success: function (response) {
             
-                    var searchedProductreference = response.reference_no; 
+                    var searchedProductreference = response.reference_no;
+                    console.log('searchedProductreference',searchedProductreference) 
                     var searchedProductParty = response.party_name; 
 
                     if(searchedProductParty === undefined){
@@ -549,6 +550,7 @@ $(document).ready(function(){
             const productRefId = String(value[0] || ''); 
             
             const highlightedText = productRefId.replace(regex, '<span class="highlight">$1</span>');
+        
 
                     
             suggestionsContainer.append(`
@@ -573,7 +575,7 @@ $(document).ready(function(){
                 console.log('refId',refId)
                 console.log('referenceNameCheck',referenceNameCheck)
                 if(refId !== undefined){
-               
+                    const refranceid = 
                    $(inputSelector).val(referenceNameCheck);
                     $(hiddenInputSelector).val(refId)
                 }
@@ -647,6 +649,8 @@ $(document).ready(function(){
 
 
     })
+
+    
  
 </script>
 {% endblock %}

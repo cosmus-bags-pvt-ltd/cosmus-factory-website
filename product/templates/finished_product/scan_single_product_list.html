@@ -13,15 +13,17 @@
         <thead class="name_absolute sticky-top">
             <tr>
                 <th>No</th>
+                <th>Inward date</th>
                 <th>voucher</th>
-                <th>Image</th>
+                <th>Img</th>
+                <th>Serial No</th>
                 <th>Ref No</th>
                 <th>Model Name</th>
                 <th>Color</th>
-                <th>Product SKU</th>
-                <th>Product Serial No</th>
-                <th>Inward date</th>
-                <th>Quantity</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Invt age</th>
+                <th><span class="me-3">Zone</span> <span class="ms-5 me-2">Rack</span><span class="ms-5">Bin</span></th>
             </tr>
         </thead>
         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -29,20 +31,28 @@
             {% for entry in instance_entries %}
             <tr>
                 <td>{{forloop.counter}}</td>
-                {% if entry.related_purchase_item %}
-                <td>puchase/{{entry.related_purchase_item.product_purchase_master.purchase_number}}</td>
+                <td>{{ entry.created_date }}</td>
+                {% if entry.related_purchase_item__product_purchase_master__id %}
+                <td><a href="{% url 'product-purchase-voucher-update' entry.related_purchase_item__product_purchase_master__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff8410; text-decoration: none;">{{ entry.related_purchase_item__product_purchase_master__purchase_number}}</a></td>
                 {% else %}
-                <td>transfer/{{entry.related_transfer_record.Finished_goods_Stock_TransferMasterinstance.voucher_no}}</td> 
+                <td><a href="{% url 'warehouse-product-transfer-update' entry.related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff8410; text-decoration: none;">{{ entry.related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no}}</a></td>   
                 {% endif %}
-                <td><img id="productImgPreview" name="product_img" src="{{entry.product.PProduct_image.url}}" alt="Product" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
-                <td class="refNo">{{entry.product.Product.Product_Refrence_ID}}</td>
-                <td>{{entry.product.Product.Model_Name}}</td>
-                <td>{{entry.product.PProduct_color.color_name}}</td>
-                <td>{{entry.product.PProduct_SKU}}</td>
-                <td>{{entry.unique_serial_no}}</td>
-                <td>{{entry.created_date}}</td>
-                <td class="text-center">1</td>
                 
+                <td>
+                    {% if entry.product__PProduct_image %}
+                        <img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ entry.product__PProduct_image }}" alt="img" style="width:25px; object-fit: contain;" onclick="showLargeImage(this.src)">
+                    {% else %}
+                        <span>No Image Available</span>
+                    {% endif %}
+                </td>
+                <td>{{ entry.unique_serial_no }}</td>
+                <td class="refNo">{{ entry.product__Product__Product_Refrence_ID }}</td>
+                <td>{{ entry.product__Product__Model_Name }}</td>
+                <td>{{ entry.product__PProduct_color__color_name }}</td>
+                <td>{{ entry.product__PProduct_SKU }}</td>
+                <td class="text-center">1</td>
+                <td>{{entry.age_in_days}} days</td>
+                <td><span class="fw-bold me-2">{{ entry.bin_number__rack_finished_name__zone_finished_name__zone_name }}</span><span class="ms-3 text-success fw-bold">{{ entry.bin_number__rack_finished_name__rack_name }}</span><span class="ms-4 text-danger fw-bold">{{ entry.bin_number__bin_name }}</span></td>
              </tr>
             {% endfor %}
       

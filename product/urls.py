@@ -56,6 +56,11 @@ urlpatterns = [
     #color popup
     path('color_popup/',views.color_create_update, name='color-popup'),
 
+    #bin for raw material
+    path('createbinforrawmaterial/',views.create_update_bin_for_raw_material , name= 'create-bin-for-raw-material'),
+    path('updatebinforrawmaterial/<int:b_id>/',views.create_update_bin_for_raw_material , name= 'update-bin-for-raw-material'),
+    path('deletebinforrawmaterial/<int:b_id>/',views.delete_bin_for_raw_material , name= 'delete-bin-for-raw-material'),
+
     #item_routes
     path('itemedit/<int:pk>',views.item_edit , name= 'item-edit'),
     path('itemcreate/',views.item_create , name= 'item-create'),
@@ -152,6 +157,8 @@ urlpatterns = [
     path('salesvouchercreateupdateforwarehouse/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
     path('salesvouchercreateupdateforwarehouse/<int:s_id>/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
     path('salesvoucherlistwarehouse/', views.salesvoucherlistwarehouse, name = 'sales-voucher-list-warehouse'),
+    path('salesvoucherviewsortwithsalesman/<int:id>/', views.sales_voucher_view_sort_with_salesman, name='sales-voucher-view-sort-with-salesman'),
+    path('salesvoucherviewsortwithpartyname/<int:id>/', views.sales_voucher_view_sort_with_partyname, name='sales-voucher-view-sort-with-partyname'),
     path('salesscanproductdynamicajax/', views.sales_scan_product_dynamic_ajax, name = 'sales-scan-product-dynamic-ajax'),
 
     #picklist
@@ -220,6 +227,11 @@ urlpatterns = [
     path('factory_emp_create/',views.factory_employee_create_update_list, name = 'factory-emp-create'),
     path('factory_emp_update/<int:pk>',views.factory_employee_create_update_list, name = 'factory-emp-update'),
     path('factory_emp_delete/<int:pk>',views.factoryempdelete, name = 'factory-emp-delete'),
+
+    #salesman
+    path('salesmancreate/',views.salesman_create_update, name = 'salesman-create'),
+    path('salesmanupdate/<int:e_id>/',views.salesman_create_update, name = 'salesman-update'),
+    path('deletesalesman/<int:e_id>/',views.delete_salesman, name = 'delete-salesman'),
 
     # cutting Room 
     path('cutting_room_create/',views.cutting_room_create_update_list, name = 'cutting_room-create'),
@@ -293,6 +305,8 @@ urlpatterns = [
     path('scanproductqtylist/', views.scan_product_qty_list, name = 'scan-product-qty-list'),
     path('scanproductlist/<int:pk>/<str:v_type>/', views.scan_product_list, name = 'scan-product-list'),
     path('warehousestock/', views.warehouse_stock, name = 'warehouse-stock'),
+    path('productwisesalesreport/<int:sku>/', views.product_wise_sales_report, name = 'product-wise-sales-report'),
+    path('productwisesalesreturnreport/<int:sku>/', views.product_wise_sales_return_report, name = 'product-wise-sales-return-report'),
     path('scansingleproductlist/<int:sku>/', views.scan_single_product_list, name = 'scan-single-product-list'),
     path('modelnamewisepurchasetransferreport/<int:sku>/', views.model_name_wise_purchase_transfer_report, name = 'model-name-wise-purchase-transfer-report'),
     path('modelnamewisepurchasetransfersalesreport/<int:sku>/', views.model_name_wise_purchase_transfer_sales_report, name = 'model-name-wise-purchase-transfer-sales-report'),
@@ -319,7 +333,7 @@ urlpatterns = [
     path('allfinishedgoodsstockreport/', views.allfinishedgoodsstockreport, name = 'all-finished-goods-stock-report'),
     path('finishedgoodsmodelwisereport/<int:ref_id>', views.finished_goods_model_wise_report, name = 'finished-goods-model-wise-report'),
     path('qcapprovedmodelwisereport/<int:ref_id>', views.qc_approved_model_wise_report, name = 'qc_approved-goods-model-wise-report'),
-    path('lwipendingreport', views.lwi_pending_report, name = 'lwi-pending-report'),
+
 
 
     path('labourworkinapprovalsplit/<int:ref_id>', views.labour_workin_approval_split, name= 'labour-workin-approval-split'),
@@ -333,15 +347,15 @@ urlpatterns = [
     path('deletesigleentries/<int:e_id>/<str:voucher_type>/', views.delete_sigle_entries, name="delete-sigle-entries"),
 
     path('addzoneinwarehouse/<int:id>/', views.add_zone_in_warehouse, name="add-zone-in-warehouse"),
-    path('editzoneinwarehouse/<int:zone_id>/', views.edit_zone_in_warehouse, name="edit-zone-in-warehouse"),
+    path('editzoneinwarehouse/<int:id>/<int:zone_id>/', views.add_zone_in_warehouse, name="edit-zone-in-warehouse"),
     path('deletezoneinwarehouse/<int:zone_id>/', views.delete_zone_in_warehouse, name="delete-zone-in-warehouse"),
 
     path('addrackinzone/<int:zone_id>/', views.add_rack_in_zone, name="add-rack-in-zone"),
-    path('editrackinzone/<int:rack_id>/', views.edit_rack_in_zone, name="edit-rack-in-zone"),
+    path('editrackinzone/<int:zone_id>/<int:rack_id>/', views.add_rack_in_zone, name="edit-rack-in-zone"),
     path('deleterackinzone/<int:rack_id>/', views.delete_rack_in_zone, name="delete-rack-in-zone"),
 
     path('addbininrack/<int:rack_id>/',views.add_bin_in_rack, name="add-bin-in-rack"),
-    path('editbininrack/<int:bin_id>/',views.edit_bin_in_rack, name="edit-bin-in-rack"),
+    path('editbininrack/<int:rack_id>/<int:bin_id>/',views.add_bin_in_rack, name="edit-bin-in-rack"),
     path('deletebininrack/<int:bin_id>/',views.delete_bin_in_rack, name="delete-bin-in-rack"),
     
     path('warehousenavigator/',views.warehouse_navigator, name="warehouse-navigator"),
@@ -376,11 +390,17 @@ urlpatterns = [
 
     
     path('outwardscanproductcreate/', views.outward_scan_product_create, name='outward-scan-product-create'),
+    path('outwardscanproductupdate/<int:o_id>/', views.outward_scan_product_create, name='outward-scan-product-update'),
     path('outwardscanproductlist/', views.outward_scan_product_list, name='outward-scan-product-list'),
     path('outwardscanserialnoprocess/', views.outward_scan_serial_no_process, name='outward-scan-serial-no-process'),
     path('outwardpicklistnoajax/', views.outward_picklist_no_ajax, name='outward-picklist-no-ajax'),
       
-
-
-]   
-
+    path('salereturnlist/', views.sale_return_list, name='sale-return-list'),
+    path('salesreturninwardtobin/', views.sales_return_inward_to_bin, name='sales-return-inward-to-bin'),
+    path('salesreturninwardtobinview/<int:r_id>/', views.sales_return_inward_to_bin, name='sales-return-inward-to-bin-view'),
+    path('otwarddataforsalereturnajax/', views.otward_data_for_sale_return_ajax, name='otward-data-for-sale-return-ajax'),
+    path('processserialnoforreturnsalesajax/', views.process_serial_no_for_return_sales_ajax, name='process-serial-no-for-return-sales-ajax'),
+    path('returnproductwithbinajax/', views.return_product_with_bin_ajax, name='return-product-with-bin-ajax'),
+    path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/<int:sv_id>/<str:action>', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
+    path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
+]

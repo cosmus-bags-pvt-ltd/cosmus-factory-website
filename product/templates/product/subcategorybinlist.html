@@ -34,16 +34,15 @@
         
             
         {% for subcategory in subcategories %}
-            <tr>
-                <td>{{forloop.counter}}</td>
-                <td>{{ subcategory.sub_catergory_id.product_category_name }}</td>
-                
-                <td>{{ subcategory.rack_finished_name.zone_finished_name.zone_name }}</td>
-                <td>{{ subcategory.rack_finished_name.rack_name }}</td>
-                <td>{{ subcategory.bin_name }}</td>
-                <td>{{ subcategory.product_size_in_bin }}</td>
-                <td><a href="{% url 'update-bin-to-subcategory' subcategory.sub_catergory_id.id subcategory.rack_finished_name.id subcategory.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>  
-            </tr>
+        <tr>
+          <td>{{forloop.counter}}</td>
+          <td>{{ subcategory.sub_catergory_id__product_category_name }}</td>
+          <td>{{ subcategory.rack_finished_name__zone_finished_name__zone_name }}</td>
+          <td>{{ subcategory.rack_finished_name__rack_name }}</td>
+          <td>{{ subcategory.bin_name }}</td>
+          <td>{{ subcategory.product_size_in_bin }}</td>
+          <td><a href="{% url 'update-bin-to-subcategory' subcategory.sub_catergory_id__id subcategory.rack_finished_name__id subcategory.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
+        </tr>
         {% endfor %}
                 
         

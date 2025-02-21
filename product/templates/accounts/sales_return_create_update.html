@@ -1,0 +1,639 @@
+{% extends 'product/base.html' %} 
+{% load static %}
+
+{% block body %}
+
+<div>
+    <form class="mt-3" action="" method="POST" id="salesReturnForm">
+      {% csrf_token %}
+
+        <div class="d-flex mb-2">
+          
+            <div class="d-flex">
+                <label for="id_sales_return_no" class="fw-bold me-2">Sales Return No :</label>
+                {% if master_form.instance.id %}
+                    <input type="hidden" class="purchase-vNo" name="sales_return_inward_instance" id="id_sales_return_inward_instance" value="{{ master_form.instance.sales_return_inward_instance.id }}">
+                    <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{ master_form.instance.sales_return_inward_instance.sales_return_no }}" maxlength="255" readonly>
+                {% elif not master_form.instance.id %}
+                    <input type="hidden" class="purchase-vNo" name="sales_return_inward_instance" id="id_sales_return_inward_instance" value="{{ master_form_data.id }}">
+                    <input type="text" class="purchase-vNo" name="sales_return_no" id="id_sales_return_no" value="{{ master_form_data.sales_return_no }}" maxlength="255" readonly>
+                {% endif %}
+            </div>
+            <div class="d-flex ms-3">
+                <label for="id_sale_no" class="fw-bold me-2">Sales No :</label>
+                {% if master_form.instance.pk %}
+                    <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{ master_form.instance.sales_voucher_master.id }}">
+                    <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form.instance.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
+                {% elif not master_form.instance.id %}
+                    <input type="hidden" class="purchase-vNo me-2" name="sales_voucher_master" id="id_sales_voucher_master" value="{{ master_form_data.sales_voucher_master.id }}">
+                    <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no" value="{{ master_form_data.sales_voucher_master.sale_no }}" maxlength="255" required readonly>
+                {% endif %}
+            </div>
+        
+            <div class="d-flex ms-3">
+            <label for="id_company_gst" class="fw-bold me-2">GST No :</label>
+            <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238" maxlength="50" readonly>
+            </div>
+
+            <div class="d-flex ms-3">
+                <label for="id_ledger_type" class="fw-bold me-2">ledger Type :</label>
+            {% if master_form.instance.pk %}
+            <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form.instance.sales_return_inward_instance.ledger_type}}" maxlength="50" default='Sales Return' readonly>
+            {% elif not master_form.instance.id %}
+        
+            <input type="text" class="purchase-amount" name="ledger_type" id="id_ledger_type" value="{{master_form_data.ledger_type}}" maxlength="50" default='Sales Return' readonly>
+            {% endif %}
+            
+            </div>
+      </div>
+      <div class="mb-2 d-flex">
+        <div class="">
+            <label for="id_selected_warehouse" class="fw-bold me-2">Warehouse :</label>
+            {% if master_form.instance.pk %}
+            <input type="hidden" class="purchase-itemName " name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form.instance.sales_voucher_master.selected_warehouse.id}}"> 
+            <input class="purchase-itemName text-black" name="selected_warehouse_name" required id="id_selected_warehouse_name" value="{{master_form.instance.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly >
+            {% elif not master_form.instance.id %}
+            <input type="hidden" class="purchase-itemName " name="selected_warehouse" required id="id_selected_warehouse" value="{{master_form_data.sales_voucher_master.selected_warehouse.id}}"> 
+            <input class="purchase-itemName text-black" name="selected_warehouse_name" required id="id_selected_warehouse_name" value="{{master_form_data.sales_voucher_master.selected_warehouse.warehouse_name_finished}}" readonly > 
+            {% endif %}
+                   
+        </div>
+        <div class="ms-2">
+            <label for="id_salesman" class="fw-bold me-2">SalseMan :</label>
+            {% if master_form.instance.pk %}
+                <input type="hidden" class="" name="salesman"  id="id_salesman" value="{{master_form_data.sales_voucher_master.salesman.id}}" readonly>
+                <input class="item-selects text-black" name="salesmanname" required id="id_salesmanname" value="{{master_form.instance.salesman.salesman_name}}" readonly>
+            {% elif not master_form.instance.id %}
+                <input type="hidden" class="" name="salesman"  id="id_salesman" value="{{master_form_data.sales_voucher_master.salesman.id}}" readonly>
+                <input type="text" class="item-selects" name="salesmanname" required id="id_salesmanname" value="{{master_form_data.sales_voucher_master.salesman.salesman_name}}" readonly>
+            {% endif %}
+          </div>
+
+        <div class="d-flex ms-2">
+            <label for="id_party_name" class="fw-bold me-2">Party Name :</label>
+            {% if master_form.instance.pk %}
+            <input type="hidden" class="" name="party_name"  id="id_party_name" value="{{master_form.instance.sales_voucher_master.party_name.id}}" readonly>
+            <input type="text" class="item-select text-black" name="party_name_value" required id="id_party_name_value" value="{{master_form.instance.sales_voucher_master.party_name.name}}" readonly>
+            {% elif not master_form.instance.id %}
+            <input type="hidden" class="" name="party_name"  id="id_party_name" value="{{master_form_data.sales_voucher_master.party_name.id}}" readonly>
+            <input type="text" class="item-select text-black" name="party_name_value" required id="id_party_name_value" value="{{master_form_data.party_name.name}}" readonly>
+            {% endif %}
+          
+    
+        </div>
+        <div class="d-flex ms-2">
+            <label for="id_GST_number" class="fw-bold me-2">Party GST No :</label>
+          {% if master_form.instance.pk %}
+         
+          <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form.instance.sales_voucher_master.party_name.Gst_no }}" maxlength="15" readonly required>
+          {% elif not master_form.instance.id %}
+          <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number" value="{{ master_form_data.party_name.Gst_no }}" maxlength="15" readonly required>
+          {% endif %}
+          
+        </div>
+      </div>
+    
+
+  <table class="table table-striped table-hover table-responsive" id="salesreturnTable">
+    <thead class="name_absolute">
+      <tr>
+        <th>NO</th>
+        <th>Model Names</th>
+        <th>Color</th>
+        <th>SKU No</th>
+        <th>QTY</th>
+        <th>MRP</th>
+        <th>Customer Price/units</th>
+        <th>Treade Discount</th>
+        <th>Spl Dlr Discount</th>
+        <th>Taxable Value</th>
+        <th>Gst</th>
+        <th>CGST</th>
+        <th>SGST/IGST</th>
+        <th>NRP Including GST</th>
+        <!-- <th>Delete</th> -->
+      </tr>
+    </thead>
+    <tbody class="mainTableList" id="salesbody">
+      {{ formset.management_form }}
+      {% for forms in formset %}
+      {{ forms.id }}
+      {% if forms.instance.id %}
+          <tr>
+            <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
+            <td> 
+                <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
+                <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" readonly > 
+              
+            </td>
+            <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input" readonly></td>
+
+            <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
+
+
+            <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'1' }}" readonly></td>
+
+            <td><input type="number" id="id_{{forms.prefix}}-mrp" class="purchase-input sales-mrp" name="{{forms.prefix}}-mrp" value="{{forms.instance.product_name.Product.Product_MRP}}" readonly></td>
+
+            <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.instance.product_name.Product.Product_SalePrice_CustomerPrice}}" readonly></td>
+
+
+            <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" readonly></td>
+
+
+            <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" readonly></td>
+            <td>
+              <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
+          </td>
+          <td>
+              
+              <input type="number" id="id_{{forms.prefix}}-gst" class="purchase-mark purchase-gst" name="{{forms.prefix}}-gst" value="{{ forms.instance.product_name.Product.Product_GST.gst_percentage }}" readonly >
+          </td>
+          <td>
+              <input type="number" id="id_{{forms.prefix}}-cgst" class="purchase-input purchase-cgst" name="{{forms.prefix}}-cgst" value=""readonly >
+          </td>
+          <td>
+              <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
+          </td>
+          <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
+          <!-- <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>   -->
+        </tr>
+        {% elif not forms.instance.id %}
+        <tr>
+          <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
+          <td> 
+              <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{{forms.initial.product}}" > 
+              <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{forms.initial.product_name}}" readonly > 
+            
+          </td>
+          <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.initial.color}}" class="purchase-input" readonly></td>
+
+          <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.initial.product}}" class="purchase-amount" readonly></td>
+
+
+          <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'1' }}" readonly></td>
+
+          <td><input type="number" id="id_{{forms.prefix}}-mrp" class="purchase-input sales-mrp" name="{{forms.prefix}}-mrp" value="{{forms.initial.mrp}}" readonly></td>
+
+          <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.initial.customer_price}}" readonly></td>
+
+
+          <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.initial.trade_disct | default_if_none:'' }}" ></td>
+
+
+          <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.initial.spl_disct | default_if_none:'' }}" ></td>
+          <td>
+            <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.initial.amount | default_if_none:''}}" readonly>
+        </td>
+        <td>
+            
+            <input type="number" id="id_{{forms.prefix}}-gst" class="purchase-mark purchase-gst" name="{{forms.prefix}}-gst" value="{{ forms.initial.gst }}" readonly >
+        </td>
+        <td>
+            <input type="number" id="id_{{forms.prefix}}-cgst" class="purchase-input purchase-cgst" name="{{forms.prefix}}-cgst" value=""readonly >
+        </td>
+        <td>
+            <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
+        </td>
+        <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
+        <!-- <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>   -->
+      </tr>
+
+    {% endif %}
+      {% endfor %}
+    </tbody>
+    <tbody>
+      <tr>
+          <td class="text-center fw-bold" ><span>Total</span></td>
+          <td colspan="3"></td>
+          <td> <input type="number" class="purchase-input" style="border: 1px solid red;" name="grand_quantity" id ="id_grand_quantity" value="" maxlength="50" step=".01" readonly></td>
+          <td colspan="4"></td>
+          <td><input type="number" class="purchase-amount" style="border: 1px solid red;"  name="grand_taxableAmount" id ="id_grand_taxableAmount" value="" maxlength="50" step=".01" readonly ></td>
+          <td></td>
+          <td><input type="number" class="purchase-input" style="border: 1px solid red;" name="grand_cgst" id ="id_grand_cgst" value="" maxlength="50" step=".01" readonly></td>
+          <td><input type="number" class="purchase-input" style="border: 1px solid red; " name="grand_Sgst" id ="id_grand_sgst" value="" maxlength="50" step=".01" readonly > </td>
+          <td> <input type="number" class="purchase-amount" style="border: 1px solid red;" name="grand_amount" id ="id_grand_amount" value="" maxlength="50" step=".01" readonly></td>
+      </tr>
+  </tbody>
+  </table>
+
+  
+  <div class="row">
+    <div class="col-lg-8">
+        <div class="row">
+          <div class="col-lg-10">
+            <label class="fw-bold text-dark">Tax Summary :</label>
+            <table class="table table-striped table-hover table-bordered table-responsive" id="taxSummary">
+              <thead class="name_absolute">
+                <tr>
+                  <th>Taxable Value</th>
+                  <th colspan="2">CGST</th>
+                  <th colspan="2">SGST/IGST</th>
+                  <th></th>
+                </tr>
+              <tr>
+                <th></th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th>TOTAL AMT</th>
+              </tr>
+              </thead>
+              <tbody class="mainTableList">
+                <tr>
+              
+                </tr>
+                <tr class="Total">
+                 
+                </tr>
+              </tbody>
+  
+            </table>
+          </div>
+         
+        </div>
+       
+    </div>
+  <div class="col-lg-4" id="saleTotal">
+    <div class="mb-2 ms-5">
+        <div class="ms- mb-2">
+            <label  class="purchase-lable fw-bold">Gross total</label>
+            <span class="purchase-span">
+                <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
+            </span>           
+        </div>
+
+        <div class=" mb-2">
+          {% if master_form.instance.pk %}
+          <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form.instance.sales_voucher_master.cash_disct}}" maxlength="50" step=".01" readonly>% </label>
+          
+          {% elif not master_form.instance.id %}
+          <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form_data.sales_voucher_master.cash_disct}}" maxlength="50" step=".01">% </label>
+          
+          {% endif %}  
+          <span class="purchase-span">
+            <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="cash_disct_value" id ="id_cash_disct_value" value="" maxlength="50" step=".01" readonly >
+        </span>  
+        </div>
+
+        <div class=" mb-2">
+            <label class="purchase-lable fw-bold">Fright & Transport</label>
+            {% if master_form.instance.pk %}
+            <span class="purchase-span">
+                <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+            </span>
+            {% elif not master_form.instance.id %}
+            <span class="purchase-span">
+              <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form_data.sales_voucher_master.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
+          </span>
+            {% endif %}
+        </div>
+        <div class=" mb-2">
+            <input type="hidden" id="temp_grand_total" value="">
+            <label class="purchase-lable fw-bold">Round Of </label>
+            <span class="purchase-span">
+                <input type="number" class="purchaseTableLabel-roundOf purchase-amounts" name="round_off" id ="id_round_off" value="" maxlength="50" step=".01" readonly required>
+            </span> 
+        </div>
+    
+        <div class=" mb-2">
+            <label class="purchase-lable fw-bold">Net Payable Amount</label>
+            <span class="purchase-span"><input type="number" class="purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
+        </div>
+    </div>
+  </div>
+</div>
+
+<button type="button" class="ms-5 newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
+
+</div>
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-success-subtle text-success-emphasis">
+        <div class="modal-header">
+            <h5 class="modal-title">Sales Return Confirmation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+           "Are you sure you want to Generate Sales Return ?" 
+           <p>"Once you Submit you <span class="fw-bold text-danger">Can't Edit or increase QTY</span>"</p>
+        </div>
+        <div class="modal-footer bg-success-subtle text-success-emphasis">
+          <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+    document.body.appendChild(document.getElementById('staticBackdrop'));
+    $(document).ready(function(){
+  
+    $('#modalSubmitButton').on('click',function(){
+            $('#salesReturnForm').submit();
+       })
+        var formsSale = $('#id_sale_return_forms-0-id').val();
+        var submitForm = $('#parentFormClick');
+        if(formsSale === ''){
+            submitForm.show()
+        }else{
+            submitForm.hide();
+        }
+
+    })
+    // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
+    function getGstNo() {
+        let partyGstValue = document.getElementById('id_GST_number').value;
+        let comapnyGst = document.getElementById('id_company_gst').value;
+
+            comapnyGst = comapnyGst.toString();
+            partyGstValue = partyGstValue.toString();
+
+        const newCompanyGst = comapnyGst.slice(0,2);
+        const newPartyGst = partyGstValue.slice(0,2);
+        return newCompanyGst === newPartyGst;
+    }
+
+    function bindRowListeners(row) {
+        const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
+        const salePriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');;
+        const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
+        const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
+        
+        if (quantityInput) {
+                quantityInput.addEventListener('input', calculateTotalAmount);
+        }
+        if (salePriceInput) {
+            salePriceInput.addEventListener('input', calculateTotalAmount);
+        }
+        if (saletreadInput) {
+            saletreadInput.addEventListener('input', calculateTotalAmount);
+        }
+        if (saleSplInput) {
+            saleSplInput.addEventListener('input', calculateTotalAmount);
+            saleSplInput.addEventListener('input',calculateTaxSummary);
+        }
+    }
+
+    function calculateTotalAmount() {
+        let total = 0; 
+        let totalQty = 0;
+        let newGst =0;
+        let newCgst = 0;
+        let totalCgst =0;
+        let newSgst = 0;
+        let totalSgst =0;
+        let grandTotal = 0;
+        let grandTotalAmount = 0;
+        let newTotalAmount;
+        // Iterate through each row
+        const rows = Array.from(document.querySelectorAll('#salesbody tr'))
+        .filter(row => row.style.display !== 'none');
+    
+        rows.forEach(function(row) {
+            // Find the quantity, rate, and amount input fields for the current row
+            const quantityInput = row.querySelector('.sales-qunatity[name^="sale_return_forms-"][name$="-quantity"]');
+            const customPriceInput = row.querySelector('.sales_price[name^="sale_return_forms-"][name$="-sale_price"]');
+            const saletreadInput = row.querySelector('.sales-trade_disct[name^="sale_return_forms-"][name$="-trade_disct"]');
+            const saleSplInput = row.querySelector('.sales-spl_disct[name^="sale_return_forms-"][name$="-spl_disct"]');
+            const amountInput = row.querySelector('.total-amount[name^="sale_return_forms-"][name$="-amount"]');
+            const gstValue = row.querySelector('.purchase-gst[name^="sale_return_forms-"][name$="-gst"]');
+            const cgstValue= row.querySelector('.purchase-cgst[name^="sale_return_forms-"][name$="-cgst"]');
+            const sgstValue= row.querySelector('.purchase-sgst[name^="sale_return_forms-"][name$="-sgst"]');
+            const totalAmountInput = row.querySelector('.purchase-total[name^="sale_return_forms-"][name$="-total_amount"]');
+        
+            // Get the values of quantity and rate
+            const quantity = parseFloat(quantityInput.value);
+            const rate = parseFloat(customPriceInput.value);
+            const tradeamount = parseFloat(saletreadInput.value)
+            const splAmount = parseFloat(saleSplInput.value);
+            const gst = parseFloat(gstValue.value);
+            
+            // Calculate the amount for the current row
+            const amount = quantity * rate;
+            const tradeDisc = amount * tradeamount/100;
+            const newAmount = amount - tradeDisc;
+
+            const splDisc = newAmount * splAmount/100;
+            const addsplAmount = newAmount -splDisc;
+    
+            totalQty  += quantity;
+
+            // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst
+            if(getGstNo()){ 
+
+                newTotalAmount = addsplAmount / (1 + gst / 100);
+                const totalGst = addsplAmount - newTotalAmount;
+            
+                newCgst = totalGst / 2;
+                newSgst = totalGst / 2;
+                
+                cgstValue.value = isNaN(newCgst) ? '' : newCgst.toFixed(2);
+                sgstValue.value = isNaN(newSgst) ? '' : newSgst.toFixed(2);
+
+                totalCgst +=  newCgst;
+                totalSgst +=  newSgst;
+        
+                total += newTotalAmount; 
+                grandTotal = newTotalAmount + newCgst + newSgst;
+    
+            }else{
+                cgstValue.value = ''
+                newTotalAmount =  addsplAmount / (1 + gst / 100);
+                const totalIgst = addsplAmount - newTotalAmount;
+        
+                sgstValue.value = isNaN(totalIgst) ? '' : totalIgst.toFixed(2);
+                totalSgst += totalIgst;
+                total +=  newTotalAmount;  
+                grandTotal = newTotalAmount + totalIgst ;
+            
+            }
+
+            amountInput.value = isNaN(newTotalAmount) ? '' : newTotalAmount.toFixed(2);
+            totalAmountInput.value = isNaN(grandTotal) ? '' : grandTotal.toFixed(2); 
+            grandTotalAmount += grandTotal; 
+        
+        }); 
+  
+        document.getElementById('id_grand_taxableAmount').value = isNaN(total) ? '' :total.toFixed(2);
+        document.getElementById('id_grand_quantity').value = isNaN(totalQty) ? '' :totalQty.toFixed(2);
+        document.getElementById('id_grand_cgst').value = isNaN(totalCgst) ? '' :totalCgst.toFixed(2);
+        document.getElementById('id_grand_sgst').value = isNaN(totalSgst) ? '' : totalSgst.toFixed(2);
+        document.getElementById('id_grand_amount').value =isNaN(grandTotalAmount) ? '' : grandTotalAmount.toFixed(2);   
+        calculateOtherTotal()   
+    }
+
+
+    function calculateOtherTotal(grandTotal) {
+        const grandTotals = parseFloat(document.getElementById('id_grand_amount').value);
+        let  grossTotal = grandTotals;      
+    
+        // Set the calculated gross total value to the gross total input field
+        document.getElementById('id_gross_total').value =isNaN(grossTotal) ? '' : grossTotal.toFixed(2);
+
+        const cashDiscount = parseInt(document.getElementById('id_cash_disct').value);
+    
+        const taxablevalue = parseFloat(document.getElementById('id_grand_taxableAmount').value);
+
+        let cashdisc = taxablevalue * cashDiscount / 100;
+
+        document.getElementById('id_cash_disct_value').value = isNaN(cashdisc)? '': cashdisc.toFixed(2);
+        const frightTransport = parseFloat(document.getElementById('id_fright_transport').value);
+
+        let finalTotal = grossTotal - cashdisc + frightTransport;
+
+        document.getElementById('temp_grand_total').value =isNaN(finalTotal) ? '' : finalTotal.toFixed(2);
+
+        
+        let finalTotals = Math.round(finalTotal)
+        let roundOff = finalTotals - finalTotal;
+
+        document.getElementById('id_round_off').value =isNaN(roundOff) ? '' : roundOff.toFixed(2);
+        document.getElementById('id_grand_total').value = isNaN(finalTotals) ? '' : finalTotals.toFixed(2);
+    }
+  
+    document.getElementById('id_fright_transport').addEventListener('input', calculateOtherTotal);
+    document.getElementById('id_round_off').addEventListener('input', calculateOtherTotal);
+    document.getElementById('id_cash_disct').addEventListener('input', calculateOtherTotal);
+ 
+    function calculateTaxSummary(){
+        const row = document.querySelectorAll('#salesbody tr')
+        const taxSummary = {}; 
+        const isGstMatching = getGstNo();
+
+        row.forEach(row => {
+        if (row.style.display === 'none') return; // Skip hidden rows
+            const taxableValue = parseFloat(row.querySelector('[name$="-amount"]').value) || 0;
+            const gstRate = parseFloat(row.querySelector('[name$="-gst"]').value) || 0;
+    
+            if (!taxSummary[gstRate]) {
+            
+                taxSummary[gstRate] = {
+                taxableValue: 0,
+                cgst: 0,
+                sgst: 0
+                };
+            }
+            taxSummary[gstRate].taxableValue += taxableValue;
+
+            if (isGstMatching) {
+                // GST numbers match: split equally into CGST and SGST
+                taxSummary[gstRate].cgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for CGST
+                taxSummary[gstRate].sgst += (taxableValue * (gstRate / 2)) / 100; // Half GST rate for SGST
+            } else {
+                // GST numbers do not match: treat all as SGST (or IGST)
+                taxSummary[gstRate].cgst += 0; // No CGST
+                taxSummary[gstRate].sgst += (taxableValue * gstRate) / 100; // Full GST as SGST
+            }
+        
+        })
+
+        const taxSummaryBody = document.querySelector('#taxSummary .mainTableList');
+        taxSummaryBody.innerHTML = ''; // Clear previous summary
+        let totalAmount = 0; // To calculate total amount
+        let totalTaxAmount = 0;
+        let totalcgstAmount = 0;
+        let totalsgstAmount = 0;
+
+
+        Object.keys(taxSummary).forEach(rate => {
+            const { taxableValue, cgst, sgst } = taxSummary[rate];
+            const total = taxableValue + cgst + sgst; // Total amount for this GST rate
+            totalAmount += total;
+            totalTaxAmount +=taxableValue;
+            totalcgstAmount += cgst;
+            totalsgstAmount += sgst;
+            let row;
+            if (isGstMatching) {
+            // GST numbers match: show both CGST and SGST rates
+            row = `
+                <tr>
+                <td>${taxableValue.toFixed(2)}</td>
+                <td>${rate / 2}%</td>
+                <td>${cgst.toFixed(2)}</td>
+                <td>${rate / 2}%</td>
+                <td>${sgst.toFixed(2)}</td>
+                <td>${total.toFixed(2)}</td>
+                </tr>
+            `;
+            } else {
+            // GST numbers do not match: show only SGST/IGST
+            row = `
+                <tr>
+                <td>${taxableValue.toFixed(2)}</td>
+                <td class="">0%</td>
+                <td  class="">0.00</td>
+                <td>${rate}%</td>
+                <td>${sgst.toFixed(2)}</td>
+                <td>${total.toFixed(2)}</td>
+                </tr>
+            `;
+            }
+
+            taxSummaryBody.insertAdjacentHTML('beforeend', row);
+        });
+
+        const totalRow = `
+        <tr class="Total">
+            <td class=" fw-bold">${totalTaxAmount.toFixed(2)}</td>
+            <td></td>
+            <td class=" fw-bold">${totalcgstAmount.toFixed(2)}</td>
+            <td></td>
+            <td class="fw-bold">${totalsgstAmount.toFixed(2)}</td>
+            <td class="fw-bold">${totalAmount.toFixed(2)}</td>
+        </tr>
+        `;
+        taxSummaryBody.insertAdjacentHTML('beforeend', totalRow);
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        calculateTaxSummary()
+        document.querySelectorAll('[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
+            input.addEventListener('input', function(){
+                calculateTotalAmount();
+                calculateOtherTotal();
+
+            });
+        });
+        document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
+            input.addEventListener('input', function(){
+                calculateTaxSummary();
+            
+            });
+        });
+
+        const table = document.getElementById("salesreturnTable");
+        const salesTotal = document.getElementById('saleTotal');
+
+    // Prevent Enter key from submitting the form inside table inputs
+    table.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.tagName === "INPUT") {
+            event.preventDefault(); // Prevent form submission
+
+        }
+    });
+    salesTotal.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && event.target.tagName === "INPUT") {
+            event.preventDefault(); // Prevent form submission
+            console.log(`Enter key prevented on input: ${event.target.id}`);
+
+        }
+    });
+    
+    })
+
+
+    calculateTaxSummary()
+    calculateTotalAmount();
+    calculateOtherTotal();
+
+
+
+</script>
+
+{% endblock body %}
+

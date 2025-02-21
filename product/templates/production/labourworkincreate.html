@@ -122,11 +122,11 @@
                         <thead class="name_absolute sticky-top">
                             <tr>
                                 <th>Product Sku</th>
-                                <th>Color</th>
+                                <th class="text-nowrap">Color</th>
                                 <th>Issue QTY</th>
-                                <th>Received QTY</th>
-                                <th>Balance QTY</th>
-                                <th>Return QTY <input type="checkbox" class="mx-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>   
+                                <th class="text-success text-nowrap">Received QTY</th>
+                                <th class="text-danger text-nowrap">Balance QTY</th>
+                                <th class="text-primary text-nowrap">Return QTY <input type="checkbox" class="ms-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>   
                             </tr>
                         </thead>
                         <tbody class="mainTableList ">
@@ -138,41 +138,39 @@
                             {% if not form.instance.id %}
                             <tr>
                                 <td><input type="text"class="productinput" name="{{form.prefix}}-product_sku" value="{{form.initial.product_sku}}" maxlength="100" id="id_{{form.prefix}}-product_sku"readonly></td>
-                                <td><input type="text" class="productinput" name="{{form.prefix}}-product_color" value="{{form.initial.product_color}}" maxlength="100" id="id_{{form.prefix}}-product_color" readonly></td>
+                                <td><input type="text" class="itemNewQty" name="{{form.prefix}}-product_color" value="{{form.initial.product_color}}" maxlength="100" id="id_{{form.prefix}}-product_color" readonly></td>
                                 <td><input type="number" class="productorderrawqty-input text-center" name="{{form.prefix}}-L_work_out_pcs" value="{{form.initial.L_work_out_pcs}}" id="id_{{form.prefix}}-L_work_out_pcs" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input text-center" name="{{form.prefix}}-total_recieved_qty" value="{{form.initial.total_recieved_qty}}" id="id_{{form.prefix}}-total_recieved_qty" readonly>
+                                <td><input type="number" class="productorderrawqty-input text-center text-success" name="{{form.prefix}}-total_recieved_qty" value="{{form.initial.total_recieved_qty}}" id="id_{{form.prefix}}-total_recieved_qty" readonly>
                                      <input type="hidden" class="productorderrawqty-input" name="{{form.prefix}}-pending_to_return_pcs" value="{{form.initial.pending_to_return_pcs}}" id="id_{{form.prefix}}-pending_to_return_pcs" readonly>
                                 </td>
-                                <td><input type="number"  class="productorderrawqty-input text-center" name="{{form.prefix}}-qty_to_compare" value="{{form.initial.qty_to_compare}}" id="id_{{form.prefix}}-qty_to_compare" readonly></td>
-                                <td><input type="number" class="productorderqty-input" name="{{form.prefix}}-return_pcs" value="{{form.initial.return_pcs}}" id="id_{{form.prefix}}-return_pcs"></td>
+                                <td><input type="number"  class="productorderrawqty-input text-center text-danger" name="{{form.prefix}}-qty_to_compare" value="{{form.initial.qty_to_compare}}" id="id_{{form.prefix}}-qty_to_compare" readonly></td>
+                                <td><input type="number" class="productorderqty-input text-primary" name="{{form.prefix}}-return_pcs" value="{{form.initial.return_pcs}}" id="id_{{form.prefix}}-return_pcs"></td>
                                 <input type="hidden" class="productorderrawqty-input" name="{{form.prefix}}-cur_bal_plus_return_qty" value="{{form.initial.cur_bal_plus_return_qty}}" id="id_{{form.prefix}}-cur_bal_plus_return_qty" readonly>   
                             </tr>
                             {% elif form.instance.id %}
                             <tr>
-                                <td><input type="text"class="productinput" name="{{form.prefix}}-product_sku" value="{{form.instance.product_sku}}" maxlength="100" id="id_{{form.prefix}}-product_sku" readonly></td>
+                                <td><input type="text"class="itemNewQty" name="{{form.prefix}}-product_sku" value="{{form.instance.product_sku}}" maxlength="100" id="id_{{form.prefix}}-product_sku" readonly></td>
                                 <td><input type="text" class="productinput" name="{{form.prefix}}-product_color" value="{{form.instance.product_color}}" maxlength="100" id="id_{{form.prefix}}-product_color" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input text-center" name="{{form.prefix}}-L_work_out_pcs" value="{{form.instance.L_work_out_pcs}}" id="id_{{form.prefix}}-L_work_out_pcs" readonly></td>
-                                <td><input type="number" class="productorderrawqty-input text-center" name="{{form.prefix}}-total_recieved_qty" value="{{form.initial.total_recieved_qty}}" id="id_{{form.prefix}}-total_recieved_qty" readonly>
+                                <td><input type="number" class="productorderrawqty-input text-center " name="{{form.prefix}}-L_work_out_pcs" value="{{form.instance.L_work_out_pcs}}" id="id_{{form.prefix}}-L_work_out_pcs" readonly></td>
+                                <td><input type="number" class="productorderrawqty-input text-center text-success" name="{{form.prefix}}-total_recieved_qty" value="{{form.initial.total_recieved_qty}}" id="id_{{form.prefix}}-total_recieved_qty" readonly>
                                     <input type="hidden" class="productorderrawqty-input" name="{{form.prefix}}-pending_to_return_pcs" value="{{form.instance.pending_to_return_pcs}}" id="id_{{form.prefix}}-pending_to_return_pcs"readonly>
                                 </td>
-                                <td><input type="number"  class="productorderrawqty-input text-center" name="{{form.prefix}}-qty_to_compare" value="{{form.initial.qty_to_compare}}" id="id_{{form.prefix}}-qty_to_compare"readonly></td>
-                                <td><input type="number" class="productorderqty-input" name="{{form.prefix}}-return_pcs" value="{{form.instance.return_pcs}}" id="id_{{form.prefix}}-return_pcs" ></td>
+                                <td><input type="number"  class="productorderrawqty-input text-center text-danger" name="{{form.prefix}}-qty_to_compare" value="{{form.initial.qty_to_compare}}" id="id_{{form.prefix}}-qty_to_compare"readonly></td>
+                                <td><input type="number" class="productorderqty-input text-primary" name="{{form.prefix}}-return_pcs" value="{{form.instance.return_pcs}}" id="id_{{form.prefix}}-return_pcs" ></td>
                                 <input type="hidden" class="productorderrawqty-input" name="{{form.prefix}}-cur_bal_plus_return_qty" value="{{form.initial.cur_bal_plus_return_qty}}" id="id_{{form.prefix}}-cur_bal_plus_return_qty" readonly>   
         
                             </tr>
                             {% endif %}
                             {% endfor %}
-                            <tr class="mainTableList text-center fw-bold">
-                                <td colspan="2">Total</td>
-                                <td><span  id="tIssueQty"></span></td>
-                                <td><span  id="tReceivedQty"></span></td>
-                                <td><span  id="tBalanceQty"></span></td>
-                                <td><span id="tReturnQty"></span></td>
+                            <tr class="mainTableList fw-bold">
+                                <td colspan="2" class="text-end">Total =</td>
+                                <td><input type="number" class="productorderrawqty-input text-center" id="tIssueQty"  value=""></td>
+                                <td><input type="number" class="productorderrawqty-input text-center text-success" name="finalReceivedQty" id="tReceivedQty" value=""></td>
+                                <td><input type="number" class="productorderrawqty-input text-center text-danger" id="tBalanceQty" value=""></td>
+                                <td><input type="number" class="productorderrawqty-input ms-2 text-primary" name="finalReturnQty" id="tReturnQty" value=""></td>
                             </tr>
                         </tbody>
-                        <tbdoy>
-                            
-                        </tbdoy>
+                        
                     </table>
                 </div>
             </div>
@@ -230,18 +228,18 @@
                         <tbody class="mainTableList text-center">
                             {% for x in labour_workin_all %}
                             <tr>
-                                <td>{{x.create_date}}</td>
+                                <td>{{x.created_date}}</td>
                                 <td>{{x.voucher_number}}</td>
-                                <td><span class="returnpcs">{{x.total_return_pcs}}</span></td>
-                                <td><span class="approvepcs">{{x.total_approved_quantity}}</span></td>
+                                <td><span class="returnpcs ">{{x.total_return_pcs}}</span></td>
+                                <td><span class="approvepcs ">{{x.total_approved_quantity}}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>
                         <tbody class="mainTable text-center">
                             <tr class="fw-bold">
-                                <td colspan="2">Total :</td>
-                                <td><span id="totalRetrun" class="text-primary "></span></td>
-                                <td><span id="totalapprove" class="text-success"></span></td>
+                                <td colspan="2">Total : <span id="TotalValue"></span></td>
+                                <td><span id="totalRetrun" class="text-success"></span></td>
+                                <td><span id="totalapprove" class="text-primary"></span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -287,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var forms = document.getElementById('labourWorkInForm')
     var return_qty = document.querySelectorAll('[name$="-return_pcs"]')
     var checkBoxLwI = document.getElementById('id_labourWorkInCheckbox')
-    var checkBoxLwI = document.getElementById('id_labourWorkInCheckbox')
+    
 
     checkBoxLwI.addEventListener('change',changeLabourInValue)
 
@@ -299,26 +297,43 @@ document.addEventListener("DOMContentLoaded", function () {
             var balanceQTy = row.querySelector('[name$="-qty_to_compare"]');
             var cuttingQty = parseInt(item.value) || 0;
             var processQty = row.querySelector('[name$= "-total_recieved_qty"]');
+            var issuedQty = row.querySelector('[name$= "-L_work_out_pcs"]')
+            var actualBalance = row.querySelector('[name$="-cur_bal_plus_return_qty"]')
             var balanceValue = parseInt(balanceQTy.value) || 0;
             var processValue = parseInt(processQty.value) || 0;
+            var issueValue = parseInt(issuedQty.value) || 0;
+            var actualBalanceValue = parseInt(actualBalance.value) || 0;
+            var tableIds = document.getElementById('id_l_w_in_products-0-id').value;
 
-            if (checkBoxLwI.checked) {
-                if (cuttingQty > 0) {
-                    item.value = processValue;
-                    balanceQTy.value = 0;
-                } else {
-                    item.value = balanceValue;
-                    balanceQTy.value = 0;
+            if(tableIds === ''){
+                if(cuttingQty > 0){
+                    if (checkBoxLwI.checked) {
+                        item.value = actualBalanceValue;
+                        balanceQTy.value = 0;
+                    
+                    } else {
+                        item.value = 0;
+                        balanceQTy.value = cuttingQty;
+                    }
+                }else{
+                    if (checkBoxLwI.checked) {
+                        item.value = balanceValue;
+                        balanceQTy.value = 0;
+                    } else {
+                        item.value = 0;
+                        balanceQTy.value = balanceValue;
+                    }
                 }
-            } else {
-            if (cuttingQty > 0) {
-                balanceQTy.value = processValue;
-                item.value = 0;
-            } else {
-                item.value = 0;
-                balanceQTy.value = cuttingQty;
+                
+            }else {
+                if (checkBoxLwI.checked) {
+                    balanceQTy.value = 0;
+                    item.value = issueValue;
+                } else {
+                    item.value = processValue;
+                    balanceQTy.value = balanceValue;
+                }
             }
-        }
                 
         })
         
@@ -375,6 +390,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var otherCharges = document.getElementById('id_other_charges');
       var returnValue = document.querySelectorAll('[name$="-return_pcs"]');
       var grNO = document.getElementById('id_voucher_number');
+      var checkbox = document.getElementById('id_labourWorkInCheckbox')
       if(approveValue === 'True'){
         
         returnValue.forEach(function(element){
@@ -396,6 +412,7 @@ document.addEventListener("DOMContentLoaded", function () {
           grNO.readOnly = true;
           grNO.style.outline = 'none';
           grNO.style.border = '1px solid blue';
+          checkbox.disabled = true;
       }else{
           submitForm.style.display = 'block';
           discription.readOnly = false;
@@ -410,6 +427,7 @@ document.addEventListener("DOMContentLoaded", function () {
           grNO.readOnly = false;
           grNO.style.outline = '1px solid black';
           grNO.style.border = '1px solid black';
+          checkbox.disabled = false;
           returnValue.forEach(function(element){
             element.readOnly = false;
             element.style.outline = '1px solid black';
@@ -425,12 +443,14 @@ document.addEventListener("DOMContentLoaded", function () {
     var balancepc= 0;
     var issueValue = 0;
     var receivedValue = 0;
-    console.log('labourId',labourId)
+   
     if(labourId != ''){
         var totalReturn = document.querySelectorAll('[name$="-return_pcs"]');
+        
         var refNo = document.getElementById('id_voucher_number');
         refNo.readOnly = true;
         refNo.style.outline = 'none';
+       
         totalReturn.forEach(function(element){
             var returnValue = parseInt(element.value) || 0;
             var row = element.closest('tr'); 
@@ -453,7 +473,7 @@ document.addEventListener("DOMContentLoaded", function () {
             balancepc += balanceQtyValue;
             issueValue +=IssueQty;
             receivedValue += ReceivedQty
-            console.log("total",total)
+            
         })
 
     }else{
@@ -487,10 +507,11 @@ document.addEventListener("DOMContentLoaded", function () {
     
     document.getElementById('id_total_return_pcs').value = total;
     document.getElementById('id_total_balance_pcs').value = balancepc;
-    document.getElementById('tReturnQty').textContent = total;
-    document.getElementById('tBalanceQty').textContent =balancepc;
-    document.getElementById('tIssueQty').textContent = issueValue;
-    document.getElementById('tReceivedQty').textContent = receivedValue;
+    document.getElementById('tReturnQty').value = total;
+    document.getElementById('tBalanceQty').value =balancepc;
+    document.getElementById('tIssueQty').value = issueValue;
+    document.getElementById('TotalValue').textContent=issueValue;
+    document.getElementById('tReceivedQty').value = receivedValue;
 
   }
 

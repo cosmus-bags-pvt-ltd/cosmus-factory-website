@@ -15,36 +15,31 @@
         </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex">
-          <label for="id_outward_no" class="ms-2 me-2">Outward No:</label>
-          
-          {% if master_form.instance %}
-          <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{{master_form.instance.outward_no.outward_no}}" maxlength="255" required>
-          {% elif not master_form.instance %}
-          <input type="text" class="purchase-vNo" name="" id="id_outward_no" value="{{outward_number}}" maxlength="255" readonly>
-          {% endif %}
-          
-          
-        </div>
+          <label for="id_outward_no" class="fw-bold ms-2 me-2">Outward No :</label>
 
+          <input type="text" class="purchase-vNo" name="outward_no" id="id_outward_no" value="{% if master_form.instance and master_form.instance.outward_no %}{{ master_form.instance.outward_no.outward_no }}{% elif outward_number %}{{ outward_number }}{% endif %}" maxlength="255" readonly>
+
+        </div>
+        
         <span id="SupplierError" class="error-messages"></span>
 
         <div class="d-flex ms-3">
-          <label for="id_sales_no" class="me-2">Sales No :</label>
-          {% if master_form.instance %}
+          <label for="id_sale_no" class="fw-bold me-2">Sales No :</label>
+          {% if master_form.instance.id %}
           <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
-            value="{{master_form.instance.sale_no}}" maxlength="255" required>
-            {% elif not master_form.instance %}
+            value="{{master_form.instance.sale_no}}" maxlength="255" required readonly>
+            {% elif not master_form.instance.id %}
             <input type="text" class="purchase-vNo me-2" name="sale_no" id="id_sale_no"
-            value="{{master_form.sale_no.initial }}" maxlength="255" required>
+            value="{{ master_form.sale_no.initial }}" maxlength="255" required>
             {% endif %}
         </div>
         <div class="d-flex ms-3">
-          <label for="id_company_gst" class="ms-1 me-1">Company GST No :</label>
+          <label for="id_company_gst" class="fw-bold ms-1 me-1">GST No :</label>
           <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
             maxlength="50" readonly>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_ledger_type" class="me-1">ledger Type :</label>
+          <label for="id_ledger_type" class="fw-bold me-1">ledger Type :</label>
           <input type="text" class="purchase-vNo" name="ledger_type" id="id_ledger_type"
             value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
             placeholder="Sales" readonly>
@@ -52,7 +47,7 @@
       </div>
       <div class="mb-3 d-flex">
         <div class="">
-          <label for="id_selected_warehouse" class="me-2">Warehouse :</label>
+          <label for="id_selected_warehouse" class="fw-bold">Warehouse :</label>
           <select class="purchase-itemName text-black" name="selected_warehouse" required id="id_selected_warehouse">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.selected_warehouse.id}}">
@@ -66,9 +61,23 @@
           </select>
           
         </div>
+        <div class="ms-3">
+          <label for="id_salesman" class="fw-bold">SalseMan :</label>
+          <select class="item-selects text-black" name="salesman" required id="id_salesman">
+            {% if master_form.instance.id %}
+            <option value="{{master_form.instance.salesman.id}}">
+              {{master_form.instance.salesman.salesman_name}}</option>
+            {% else %}
+            <option value="" selected disabled>Select SalesMan name</option>
+            {% for x in salesman_list %}
+            <option value="{{x.id}}">{{x.salesman_name}}</option>
+            {% endfor %}
+            {% endif %}
+          </select>
+        </div>
         <span id="purchaseError" class="error-messages"></span>
         <div class="d-flex ms-3">
-          <label for="id_party_name" class="me-3">Party A/C Name:</label>
+          <label for="id_party_name" class="fw-bold me-1">Party Name :</label>
           <select class="item-select text-black" name="party_name" required id="id_party_name">
             {% if master_form.instance.id %}
             <option value="{{master_form.instance.party_name.id}}">
@@ -80,10 +89,10 @@
             {% endfor %}
             {% endif %}
           </select>
-          <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+          <button  type="button" id="ledgerpurchase" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
         </div>
         <div class="d-flex ms-3">
-          <label for="id_GST_number" class="me-2">Party GST No :</label>
+          <label for="id_GST_number" class="fw-bold me-1">Party GST No :</label>
           <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
             value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
             readonly required>
@@ -110,7 +119,7 @@
         <th>CGST</th>
         <th>SGST/IGST</th>
         <th>NRP Including GST</th>
-        <th>Delete</th>
+        <!-- <th>Delete</th> -->
       </tr>
     </thead>
     <tbody class="mainTableList" id="salesbody">
@@ -125,7 +134,7 @@
                 <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{% if forms.instance.id %}{{forms.instance.product_name.Product.Model_Name}} {% endif %}" readonly > 
               
             </td>
-            <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+            <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_color}}" class="purchase-input"  readonly></td>
 
             <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
 
@@ -137,10 +146,10 @@
             <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.instance.product_name.Product.Product_SalePrice_CustomerPrice}}" readonly></td>
 
 
-            <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" ></td>
+            <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}"readonly></td>
 
 
-            <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" ></td>
+            <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" readonly ></td>
             <td>
               <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
           </td>
@@ -155,7 +164,7 @@
               <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
           </td>
           <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
-          <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
+          <!-- <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>   -->
         </tr>
         {% elif not forms.instance.id %}
         <tr>
@@ -165,7 +174,7 @@
               <input type="text" name="{{forms.prefix}}-product_name_value" id="id_{{forms.prefix}}-product_name_Value" class="productpurchaseInvoice search-input"  placeholder="Product Name" value="{{forms.initial.product_name}}" readonly > 
             
           </td>
-          <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.initial.color}}" class="purchase-input" style="margin-left: 10px;" readonly></td>
+          <td><input type="text" name="product_color_{{forloop.counter0}}" id="product_color_{{forloop.counter0}}" value="{{forms.initial.color}}" class="purchase-input"  readonly></td>
 
           <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.initial.product}}" class="purchase-amount" readonly></td>
 
@@ -177,12 +186,12 @@
           <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.initial.customer_price}}" readonly></td>
 
 
-          <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" ></td>
+          <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.initial.trade_disct | default_if_none:'' }}" ></td>
 
 
-          <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" ></td>
+          <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.initial.spl_disct | default_if_none:'' }}" ></td>
           <td>
-            <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
+            <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.initial.amount | default_if_none:''}}" readonly>
         </td>
         <td>
             
@@ -195,7 +204,7 @@
             <input type="number" id="id_{{forms.prefix}}-sgst" class="purchase-input purchase-sgst" name="{{forms.prefix}}-sgst" value=""readonly >
         </td>
         <td><input type="number" id="{{forms.prefix}}-total_amount" class="purchase-amount purchase-total" name="{{forms.prefix}}-total_amount" value="" readonly></td>
-        <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>  
+        <!-- <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="godown_deleteId px-2" style="display: none;"  name="{{forms.prefix}}-DELETE" id="id_{{forms.prefix}}-DELETE" value="" ></i></span></td>   -->
       </tr>
 
     {% endif %}
@@ -289,167 +298,187 @@
     </div>
   </div>
 </div>
-<button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
+<button type="button" class="ms-5 newProductCreateBtn" id="parentFormClick" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
 
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-success-subtle text-success-emphasis">
+      <div class="modal-header">
+          <h5 class="modal-title">Sales Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         "Are you sure you want to Submit Sales ?" 
+         <p>"Once you Submit you <span class="fw-bold text-danger">Can't Edit or increase QTY</span>"</p>
+      </div>
+      <div class="modal-footer bg-success-subtle text-success-emphasis">
+        <button type="button" class="filterButton" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="newProductCreateBtn" id="modalSubmitButton">Yes</button>
+      
+      </div>
+    </div>
+  </div>
+</div>
 
 </div>
 
 <script>
-  var popUpNewWindow = null;
-function openPurchasePartyPopup(button){
- openNewPopup(button, '{% url "ledger-popup-create" %}');
-}
+    var popUpNewWindow = null;
+    function openPurchasePartyPopup(button){
+      openNewPopup(button, '{% url "ledger-popup-create" %}');
+    }
 
-function openNewPopup(button, url){
- if (popUpNewWindow === null || popUpNewWindow.closed) {
-     newPopUpwindow(button, url);
- } else {
+    function openNewPopup(button, url){
+      if (popUpNewWindow === null || popUpNewWindow.closed) {
+          newPopUpwindow(button, url);
+      } else {
 
-     popUpNewWindow.focus();
- }
-}
+          popUpNewWindow.focus();
+      }
+    }
 
-function newPopUpwindow(button, path){
- // Specify minimum height and width
-var minWidth = 1150; // minimum width
-var minHeight = 800; // minimum height
+  function newPopUpwindow(button, path){
+    var minWidth = 1150; 
+    var minHeight = 800;
 
-$('body').addClass('popup-open');
-$('body').append('<div class="popup-overlay"></div>');
+    $('body').addClass('popup-open');
+    $('body').append('<div class="popup-overlay"></div>');
 
-// Open new page with specified dimensions
-popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
- // Ensure only one event listener is attached
+    popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
 
- window.addEventListener('message', function(event){
-     if (event.data.message === 'close') {
-             $('body').removeClass('popup-open');
-             $('.popup-overlay').remove();
-             popUpNewWindow.close();
-             
-          }
-        });
+    window.addEventListener('message', function(event){
+      if (event.data.message === 'close') {
+        $('body').removeClass('popup-open');
+        $('.popup-overlay').remove();
+        popUpNewWindow.close();
+              
+      }
+    });
 
+    window.addEventListener('click', function(event) {
+      handleOutsideClick(event);
+    });
+  }
 
- // Listen for messages from the popup window
- window.addEventListener('click', function(event) {
- handleOutsideClick(event);
-});
-}
-function handleOutsideClick(event) {
-var popUpRect = document.querySelector('body').getBoundingClientRect();
-var clickX = event.clientX;
-var clickY = event.clientY;
+  function handleOutsideClick(event) {
+    var popUpRect = document.querySelector('body').getBoundingClientRect();
+    var clickX = event.clientX;
+    var clickY = event.clientY;
 
-// Check if the click is outside the popup window
-if (
- clickX > popUpRect.left || clickX <= popUpRect.right ||
- clickY > popUpRect.top || clickY <= popUpRect.bottom
-) {
+    // Check if the click is outside the popup window
+    if (clickX > popUpRect.left || clickX <= popUpRect.right || clickY > popUpRect.top || clickY <= popUpRect.bottom) {
 
- popUpNewWindow.focus();
- 
-}
+      popUpNewWindow.focus();
+    
+    }
 
-}
+  }
 
-window.addEventListener('message', function(event) {
- const data = event.data;
- console.log(data.ledger_labour);
- if (data.ledger_labour) {
-     populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
- }
-});
-
-function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
- const dropdown = $(dropdownSelector);
- dropdown.empty();
- dropdown.append('<option value="">' + defaultText + '</option>');
-
- items.forEach(item => {
-     dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
- });
-}
-
-// This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
-function getGstNo() {
- let partyGstValue = document.getElementById('id_GST_number').value;
- let comapnyGst = document.getElementById('id_company_gst').value;
-
-     comapnyGst = comapnyGst.toString();
-     partyGstValue = partyGstValue.toString();
-
- const newCompanyGst = comapnyGst.slice(0,2);
- const newPartyGst = partyGstValue.slice(0,2);
- return newCompanyGst === newPartyGst;
-}
-
-
-
-$(document).ready(function(){
-var formsSale = $('#id_sales_voucher_outward_scan_set-0-id').val();
- if(formsSale === ''){
-   $('#id_sales_no').on('focusout',function(){
-         var sales_no = $(this).val();
-         var purchase = $("#id_sales_no");
-         var errorElement = $('#purchaseError'); // The error message element
-         var submitForm = $('#parentFormClick');
-         $.ajax({
-             url: '/uniquevalidcheckajax/',
-             method: 'GET',
-             data: {
-                 'sales_no': sales_no,
-                 
-             },
-             success: function (data) {
-                 if(data.validation_flag === true){
-                    purchase.css('border', '1px solid red');
-                     errorElement.text('*Sales number already exists');
-                     errorElement.show();
-                     submitForm.prop('disabled', true);
-                    
-                 }else {
-                     
-                     purchase.css('border', '1px solid black');
-                     errorElement.text('');
-                     errorElement.hide();
-                     submitForm.prop('disabled', false);
-                 }
-                
-             },
-             error: function (error) {   
-                 console.log(error);
-             }
-
-         })
-     })
- }
-
-$(document).on('change', 'select[name^="party_name"]', function () {
-
- const selected_party_name = $(this).val()
- const int_selected_party_name = parseInt(selected_party_name)
-
- $.ajax({
-     url: '/purchasevouchercreate/',
-     method: 'GET',
-     data: {
-         'selected_party_name': selected_party_name,
-     },
-     success: function (response) {
-         const party_gst_no_response = response.party_gst_no
-         const gst_no_input = document.getElementById('id_GST_number')
-         gst_no_input.value = party_gst_no_response
-         getGstNo()
-         calculateTotalAmount()
+  window.addEventListener('message', function(event) {
+    const data = event.data;
    
-     },
-     error: function (xhr, errmsg, err) {
-         console.log('Error sending value to the backend');
-     }
- })
-})
-})
+    if (data.ledger_labour) {
+        populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
+    }
+  });
+
+  function populateDropdownLedger(items, dropdownSelector, valueKey, defaultText) {
+    const dropdown = $(dropdownSelector);
+    dropdown.empty();
+    dropdown.append('<option value="">' + defaultText + '</option>');
+
+    items.forEach(item => {
+        dropdown.append('<option value="' + item.id + '">' + item[valueKey] + '</option>');
+    });
+  }
+
+  // This function use for comparing the company gst with party gst no and calculate the cgst,sgst and igst 
+  function getGstNo() {
+    let partyGstValue = document.getElementById('id_GST_number').value;
+    let comapnyGst = document.getElementById('id_company_gst').value;
+
+        comapnyGst = comapnyGst.toString();
+        partyGstValue = partyGstValue.toString();
+
+    const newCompanyGst = comapnyGst.slice(0,2);
+    const newPartyGst = partyGstValue.slice(0,2);
+    return newCompanyGst === newPartyGst;
+  }
+
+
+  document.body.appendChild(document.getElementById('staticBackdrop'));
+  $(document).ready(function(){
+    $('#modalSubmitButton').on('click',function(){
+        $('#salesForm').submit();
+   })
+    var formsSale = $('#id_sales_voucher_outward_scan_set-0-id').val();
+    if(formsSale === ''){
+      $('#id_sale_no').on('focusout',function(){
+            var sales_no = $(this).val();
+            var purchase = $("#id_sale_no");
+            var errorElement = $('#purchaseError'); // The error message element
+            var submitForm = $('#parentFormClick');
+            $.ajax({
+                url: '/uniquevalidcheckajax/',
+                method: 'GET',
+                data: {
+                    'sales_no': sales_no,
+                    
+                },
+                success: function (data) {
+                    if(data.validation_flag === true){
+                        purchase.css('border', '1px solid red');
+                        errorElement.text('*Sales number already exists');
+                        errorElement.show();
+                        submitForm.prop('disabled', true);
+                        
+                    }else {
+                        
+                        purchase.css('border', '1px solid black');
+                        errorElement.text('');
+                        errorElement.hide();
+                        submitForm.prop('disabled', false);
+                    }
+                    
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
+
+            })
+        })
+
+    }else{
+      $('#parentFormClick').hide();
+      $('#id_cash_disct').attr('readonly',true);
+      $('#ledgerpurchase').hide()
+    }
+
+    $(document).on('change', 'select[name^="party_name"]', function () {
+
+    const selected_party_name = $(this).val()
+    const int_selected_party_name = parseInt(selected_party_name)
+
+    $.ajax({
+        url: '/purchasevouchercreate/',
+        method: 'GET',
+        data: {
+            'selected_party_name': selected_party_name,
+        },
+        success: function (response) {
+            const party_gst_no_response = response.party_gst_no
+            const gst_no_input = document.getElementById('id_GST_number')
+            gst_no_input.value = party_gst_no_response
+            getGstNo()
+            calculateTotalAmount()
+      
+        },
+        error: function (xhr, errmsg, err) {
+            console.log('Error sending value to the backend');
+        }
+    })
+    })
+  })
 </script>
 <script>
 
@@ -477,50 +506,50 @@ $(document).on('change', 'select[name^="party_name"]', function () {
 
 
 
- function getVisibleRows() {
- // Select all rows that are not hidden (excluding those with display: none)
- const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
- return visibleRows;
-}
-function deleteRowData(){
- // Add click event listener to all delete buttons
- document.querySelectorAll('.delete-btn').forEach(function (button) {
- button.addEventListener('click', function () {
-     // Find all rows in the table
-     const rows =  getVisibleRows();
-     console.log(rows)
-     // Check if more than one row exists
-     if (rows.length > 1) {
-         // Find the row containing the clicked delete button
-         const row = this.closest('tr');
+//  function getVisibleRows() {
+//  // Select all rows that are not hidden (excluding those with display: none)
+//  const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
+//  return visibleRows;
+// }
+// function deleteRowData(){
+//  // Add click event listener to all delete buttons
+//  document.querySelectorAll('.delete-btn').forEach(function (button) {
+//  button.addEventListener('click', function () {
+//      // Find all rows in the table
+//      const rows =  getVisibleRows();
+//      console.log(rows)
+//      // Check if more than one row exists
+//      if (rows.length > 1) {
+//          // Find the row containing the clicked delete button
+//          const row = this.closest('tr');
 
-         if (row) {
-             // Find the checkbox for deletion in the row
-             const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
+//          if (row) {
+//              // Find the checkbox for deletion in the row
+//              const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
 
-             if (checkRow) {
-                 checkRow.checked = true; // Mark as checked
-                 checkRow.value = 'true'; // Set the value to 'true'
+//              if (checkRow) {
+//                  checkRow.checked = true; // Mark as checked
+//                  checkRow.value = 'true'; // Set the value to 'true'
 
-                 // Optionally hide the row visually
-                 row.style.display = 'none';
+//                  // Optionally hide the row visually
+//                  row.style.display = 'none';
 
-                 // Call functions to recalculate totals or perform other updates
-                 calculateTotalAmount();
-                 calculateOtherTotal();
-                 inputCheck();
+//                  // Call functions to recalculate totals or perform other updates
+//                  calculateTotalAmount();
+//                  calculateOtherTotal();
+//                  inputCheck();
                  
-             } else {
-                 console.error("Checkbox for deletion not found in this row");
-             }
-         }
-     } else {
-         // If only one row remains, alert the user
-         alert('Cannot delete this row; at least one row must remain.');
-     }
- });
-});
-};
+//              } else {
+//                  console.error("Checkbox for deletion not found in this row");
+//              }
+//          }
+//      } else {
+//          // If only one row remains, alert the user
+//          alert('Cannot delete this row; at least one row must remain.');
+//      }
+//  });
+// });
+// };
 
 function calculateTotalAmount() {
      let total = 0; 
@@ -772,7 +801,7 @@ function calculateTotalAmount() {
    });
    
    window.onload = function() {
-            document.getElementById("id_sales_no").focus();
+            document.getElementById("id_sale_no").focus();
         };
    inputCheck()
  })
@@ -782,7 +811,7 @@ function inputCheck(){
 
   const qtyValues = document.querySelectorAll('[name$="-quantity"]')
   var tableRows = document.querySelectorAll('#salesTable .mainTableList tr');
-  const saleNo = document.getElementById('id_sales_no');
+  const saleNo = document.getElementById('id_sale_no');
   const warhouseNo = document.getElementById('id_selected_warehouse');
   const partyName = document.getElementById('id_party_name');
   const cashdic = document.getElementById('id_cash_disct');
@@ -924,7 +953,7 @@ function inputCheck(){
 calculateTaxSummary()
  calculateTotalAmount();
  calculateOtherTotal();
- deleteRowData();
+//  deleteRowData();
 inputCheck()
 
 </script>

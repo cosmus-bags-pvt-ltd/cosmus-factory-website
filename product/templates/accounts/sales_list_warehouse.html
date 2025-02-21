@@ -1,95 +1,80 @@
 {% extends 'product/base.html' %} 
 {% load static %} 
 {% block body %}
-  
-  <div class="mt-2">  
-         
-          <div class="mt-2 table-responsives">
-            <table  class="table table-striped table-hover table-bordered" style="width:100%;">
-              <thead>
-                <tr>
-                  <th >No</th>
-                  <th >Date</th>
-                  <th >Party A/c Name</th>
-                  <th >Voucher Type</th>
-                  <th >Sales No</th>
-                  <th >Debit Amount</th>
-                  <th >Credit Amount</th>
-                  <th >Edit</th>
-                  <th >Delete</th>
-                 
-                </tr>
-              </thead>
-              
-              <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
-                {% for sale in sales_list %}
-              <tr>
-                <td>{{forloop.counter}}</td>
-                <td>{{sale.created_date}}</td>
-                <td>{{sale.party_name.name}}</td>
-                <td>{{sale.ledger_type}}</td>
-                <td>{{sale.sales_no}}</td>
-                <td>{{sale.grand_total}}</td>
-                <td>{{sale.grand_total}}</td>
-                <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-                <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td> 
-              </tr>
-              {% endfor %}
-             
-              </tbody>
-              
-            </table>
-          </div>  
-         
-        </div>
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body" id="modal-body-text">
-                Are you sure you want to delete the Sales is?
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
-                <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
-              </div>
-            </div>
-          </div>
-        </div>
+<div class="mt-2">
 
+  <div class="mt-2 table-responsives">
+    <table class="table table-striped table-hover table-bordered" style="width:100%;" id="salseTable">
+      <thead class="name_absolute sticky-top">
+        <tr>
+          <th>No</th>
+          <th>Date</th>
+          <th>Outward No</th>
+          <th>SalesMan</th>
+          <th>Voucher Type</th>
+          <th>Sale/Sale Return No</th>
+          <th>Party A/c Name</th>
+          <th>Total Qty</th>
+          <th>Debit</th>
+          <th>Credit</th>
+          <th>View</th>
+          <th>Print</th>
+
+        </tr>
+      </thead>
+
+      <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+        {% for sale in final_list %}
+        {% if sale.ledger_type == 'sales' %}
+        <tr class="table-success">
+          <td class="rowno"></td>
+          <td>{{sale.created_date}}</td>
+          <td class="text-center"><a href="{% url 'outward-scan-product-update' sale.outward_no__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff8f10; text-decoration: none;">{{sale.outward_no__outward_no}}</a></td>
+          <td><a href="{% url 'sales-voucher-view-sort-with-salesman' sale.salesman__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #3cacf7; text-decoration: none;">{{sale.salesman__salesman_name}}</a></td>
+          <td>{{sale.ledger_type}}</td>
+          <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff10cb; text-decoration: none;">{{sale.sale_no}}</a></td>
+          <td><a href="{% url 'sales-voucher-view-sort-with-partyname' sale.party_name__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f55050; text-decoration: none;">{{sale.party_name__name}}</a></td>
+          <td class="text-center">{{sale.total_qty}}</td>
+          <td class="text-center fw-bold">{{sale.grand_total}}</td>
+          <td class="text-center">0</td>
+          <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+          <td></td>
+        </tr>
+        {% else %}
+        <tr class="table-danger">
+          <td class="rowno"></td>
+          <td>{{sale.created_date}}</td>
+          <td></td>
+          <td><a href="{% url 'sales-voucher-view-sort-with-salesman' sale.salesman__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white"style="background-color: #3cacf7; text-decoration: none;">{{sale.salesman__salesman_name}}</a></td>
+          <td>{{sale.ledger_type}}</td>
+          <td class="text-center"><a href="{% url 'sales-return-voucher-create-update' sale.sales_voucher_master__id sale.sales_return_inward_instance__id sale.id 'view' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff10cb; text-decoration: none;">{{sale.sales_return_inward_instance__sales_return_no }}</a></td>
+          <td><a href="{% url 'sales-voucher-view-sort-with-partyname' sale.party_name__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f55050; text-decoration: none;">{{sale.party_name__name}}</a></td>
+          <td class="text-center">{{sale.total_qty}}</td>
+          <td class="text-center">0</td>
+          <td class="text-center fw-bold">{{sale.grand_total}}</td>
+          <td><a href="{% url 'sales-return-voucher-create-update' sale.sales_voucher_master__id sale.sales_return_inward_instance__id sale.id 'view' %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+          <td></td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+</div>
+          
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      var tbody = document.querySelectorAll('#salseTable .mainTableList tr');
+      var rows = 0
+      tbody.forEach(function(row){
+        var rowno = row.querySelector('.rowno');
+        rowno.textContent = rows + 1;
+        rows++
+      })
     
-    <script>
-      function addButtonRedirect(){
-        window.location.href= "/salesvouchercreateupdate/"
-      }
-
-      document.body.appendChild(document.getElementById('exampleModal'));
-
-  $(document).ready(function () {
-   
-    $('.delete-btn').click(function () {
-      var itemId = $(this).data('item-id');
-      var name = $(this).closest('tr').find('td').eq(2).text();
-      var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
-      $('#modal-body-text').html('Are you sure you want to delete the party name is ' + coloredName + '?');
-      $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
-      $('#exampleModal').modal('show');
-
-
     });
-
-    // Confirm delete button click event
-    $('#confirmDeleteButton').click(function () {
-      var itemId = $(this).data('item-id');
-  
-      // Redirect to delete view
-      window.location.href = '/salesvoucherdelete/' + itemId;
-    });
-  });
-
-    </script>
+</script>
 
 {% endblock body %}

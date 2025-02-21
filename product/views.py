@@ -6,8 +6,9 @@ from io import BytesIO
 from itertools import chain
 from operator import attrgetter, itemgetter
 import os
+from sys import prefix
 import uuid
-from django.conf import settings
+from django.conf import Settings, settings
 from django.core.exceptions import ValidationError , ObjectDoesNotExist
 import json
 from django.contrib.auth.decorators import login_required
@@ -20,12 +21,13 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 import logging
 import urllib.parse
 from django.contrib import messages
+# from networkx import difference
 from openpyxl.utils import get_column_letter
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Protection
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.forms import inlineformset_factory, modelformset_factory
-from django.http import HttpResponse, HttpResponseServerError, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse
 from django.views.decorators.cache import cache_control
 from django.db.models.functions import Coalesce
 import pandas as pd
@@ -40,29 +42,29 @@ from xhtml2pdf import pisa
 
 from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
-                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_products_list, Picklist_voucher_master, Product,
-                    Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, StockItem,
-                    SubCategory, Unit_Name_Create, account_credit_debit_master_table, cutting_room, factory_employee,
+                    Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
+                    Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info, StockItem,
+                    SubCategory, Unit_Name_Create, account_credit_debit_master_table, bin_for_raw_material, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
                     finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,
                     gst, item_color_shade, item_godown_quantity_through_table,
                     item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item,
                     labour_workin_approval_report, labour_workout_childs, labour_workout_cutting_items,
-                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master,
+                    labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products,
                     packaging, product_2_item_through_table, product_godown_quantity_through_table, 
                     product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
                     purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
-                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
+                    raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
                     shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
 
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
-                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, Salesvouchermasteroutwardscanform, cutting_room_form,
+                    CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormsetupdate, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesmaninfoForm, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, bin_for_raw_material_form, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -75,7 +77,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, sales_return_voucher_form, sales_return_voucher_master_form, salesreturninwardmasterform,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -83,7 +85,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update)
     
 
 
@@ -478,41 +480,44 @@ def pproduct_list(request):
     product_search = request.GET.get('product_search','')
     
     if product_search != '':
-        queryset = Product.objects.filter(Q(Product_Name__icontains=product_search)|
-                                            Q(Model_Name__icontains=product_search)|
-                                            Q(Product_Refrence_ID__icontains=product_search)|
-                                            Q(productdetails__PProduct_SKU__icontains=product_search)).distinct()
+        queryset = Product.objects.filter(
+            Q(Product_Name__icontains=product_search)|
+            Q(Model_Name__icontains=product_search)|
+            Q(Product_Refrence_ID__icontains=product_search)|
+            Q(productdetails__PProduct_SKU__icontains=product_search)
+            ).distinct()
     
     
-    paginator = Paginator(queryset, 10)  
+    # paginator = Paginator(queryset, 10)  
     
     
-    page_number = request.GET.get('page')
+    # page_number = request.GET.get('page')
     
-    try:
-        products = paginator.page(page_number)
-    except PageNotAnInteger:
+    # try:
+    #     products = paginator.page(page_number)
+    # except PageNotAnInteger:
         
-        products = paginator.page(1)
-    except EmptyPage:
+    #     products = paginator.page(1)
+    # except EmptyPage:
         
-        products = paginator.page(paginator.num_pages)
+    #     products = paginator.page(paginator.num_pages)
 
     
-    index = products.number - 1
-    max_index = len(paginator.page_range)
-    start_index = index - 2 if index >= 2 else 0
-    end_index = index + 3 if index <= max_index - 3 else max_index
-    page_range = list(paginator.page_range)[start_index:end_index]
+    # index = products.number - 1
+    # max_index = len(paginator.page_range)
+    # start_index = index - 2 if index >= 2 else 0
+    # end_index = index + 3 if index <= max_index - 3 else max_index
+    # page_range = list(paginator.page_range)[start_index:end_index]
 
     context = {
-        'products': products,
-        'page_range': page_range,
+        'products': queryset,
+        # 'page_range': page_range,
         'product_search':product_search,
         'page_name':'Product List'
     }
 
     return render(request,'product/pproduct_list.html',context=context)
+
 
 
 @login_required(login_url='login')
@@ -524,6 +529,7 @@ def pproduct_delete(request, pk):
     except IntegrityError as e:
         messages.error(request,f'Cannot delete {product.Product_Name} because it is referenced by other objects.')
     return redirect('pproductlist')
+
 
 
 
@@ -552,6 +558,8 @@ def add_product_images(request, pk):
             return render(request, 'product/add_product_images.html', {'formset': formset, 'product': product})
 
     return render(request, 'product/add_product_images.html', {'formset': formset, 'product': product})
+
+
 
 
 @login_required(login_url='login')
@@ -605,16 +613,22 @@ def definemaincategoryproduct(request,pk=None):
 
     
     form = product_main_category_form(instance=instance)
+    
     if request.method == 'POST':
+
         form = product_main_category_form(request.POST, instance= instance)
+
         if form.is_valid():
             form_instance  = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
+
             if message == 'created':
                 messages.success(request,'Main Category created sucessfully')
+
             if message == 'updated':
                 messages.success(request,'Main Category updated sucessfully')
+
             return redirect('define-main-category-product')
         else:
             return render(request,'product/definemaincategoryproduct.html',{'form':form,'main_cats':queryset,
@@ -640,82 +654,45 @@ def definemaincategoryproductdelete(request,pk):
 
 @login_required(login_url='login')
 def definesubcategoryproduct(request, pk=None):
+
     if pk:
         instance = SubCategory.objects.get(pk=pk)
-        title = 'Update'
-        message = 'updated'
+        form = product_sub_category_form(request.POST or None, instance = instance)
         page_name = 'Edit Sub Category'
     else:
         instance = None
-        title = 'Create'
-        message = 'created'
-        page_name = 'Create Sub Category'
+        form = product_sub_category_form()
+        page_name = 'Add Sub Category'
 
     main_categories = MainCategory.objects.all()
-    sub_category = SubCategory.objects.all()
-
-    sub_category_and_bin_formset = modelformset_factory(finished_product_warehouse_bin,
-    form=subcat_and_bin_form,formset=FinishedProductWarehouseBinFormSet, extra=0, can_delete=False)
-
-    bin_queryset = finished_product_warehouse_bin.objects.all()
-    
-    formset = sub_category_and_bin_formset(queryset = bin_queryset, form_kwargs={'sub_cat_instance': instance}) 
-   
-    form = product_sub_category_form(instance = instance)
+    # sub_category = SubCategory.objects.all().select_related('product_main_category')
 
     if request.method == 'POST':
         print(request.POST)
         try:
             form = product_sub_category_form(request.POST, instance = instance)
-            
-            formset = sub_category_and_bin_formset(request.POST, form_kwargs={'sub_cat_instance': instance})
-            
-            if form.is_valid() and formset.is_valid():
+
+            if form.is_valid():
                 
                 form_instance = form.save(commit=False)
+
                 form_instance.c_user = request.user
+
                 form_instance.save()
-                print(formset.cleaned_data)
-                for form in formset:
-                    
-                    if form.cleaned_data.get('check_if_added_all') != False:
-                        
-                        if form.cleaned_data.get('check_if_added') == True:
-                            formset_instance = form.save(commit=False)
-                            formset_instance.sub_catergory_id = form_instance
-                            formset_instance.save()
 
-                        elif form.cleaned_data.get('check_if_added') == False :
-                            formset_instance = form.save(commit=False)
-                            formset_instance.sub_catergory_id = None
-                            formset_instance.save()
-
-                if message == 'created':
-                    messages.success(request,'Sub-Category created sucessfully')
-
-                if message == 'updated':
-                    messages.success(request,'Sub-Category updated sucessfully')
-            
                 return redirect('define-sub-category-product')
-            
-            else:
-                print(formset.non_form_errors())
-                print(form.errors)
-                logger.error(formset.non_form_errors)
-
-                
-        
         except Exception as e:
-            print(formset.non_form_errors())
             print(e)
             messages.error(request,f'An Exception occoured - {e}')
 
-    return render(request,'product/definesubcategoryproduct.html',{'main_categories':main_categories, 
-                        'sub_category':sub_category,'form':form,'title':title,'page_name':page_name,'formset':formset})
+    return render(request,'product/definesubcategoryproduct.html',{'main_categories':main_categories, 'form':form,'page_name':page_name,})
 
 
 
 
+
+
+@login_required(login_url='login')
 def assign_bin_to_product_ajax(request):
     formset = None
     rack_id = None
@@ -723,19 +700,22 @@ def assign_bin_to_product_ajax(request):
     main_categories = MainCategory.objects.all()
     zones = finished_goods_warehouse_zone.objects.all()
 
-    # Retrieve data from request
+
 
     main_category = request.POST.get('mainProduct')
     product_main_category_id = request.POST.get('product_main_category')
     zone_id = request.POST.get('zone')
     rack_id = request.POST.get('rack')
 
+    
+
     racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id).exclude(pk=rack_id)
+
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         
         zonename = request.GET.get('mainZone')
-        rack_id = request.GET.get('rack')
+        # rack_id = request.GET.get('rack')
 
         if zonename:
             racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zonename)
@@ -743,7 +723,7 @@ def assign_bin_to_product_ajax(request):
             return JsonResponse({'racks_data': racks_data})
 
     if rack_id:
-        bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name=rack_id)
+        bin_queryset = finished_product_warehouse_bin.objects.filter(rack_finished_name=rack_id).select_related('rack_finished_name','sub_catergory_id')
         formset = sub_category_and_bin_formset(queryset=bin_queryset,form_kwargs={'sub_cat_instance': main_category})
         # print(formset)
 
@@ -770,7 +750,9 @@ def assign_bin_to_product_ajax(request):
 
 
 def save_bin_to_subcategory(request,sub_id):
+
     print("in savebintosubcategory")
+    
     if sub_id:
         instance = MainCategory.objects.get(pk=sub_id)
         title = 'Update'
@@ -912,31 +894,25 @@ def update_bin_to_subcategory(request,sub_id,r_id,bin_id=None):
 
 
 def subcategory_bin_list(request):
-    # subcategories = SubCategory.objects.prefetch_related('sub_categories').all()
-    subcategories = finished_product_warehouse_bin.objects.filter(sub_catergory_id__isnull = False)
+    
+    subcategories = finished_product_warehouse_bin.objects.filter(sub_catergory_id__isnull=False).select_related( 
+            'rack_finished_name',
+            'rack_finished_name__zone_finished_name',
+            'rack_finished_name__zone_finished_name__warehouse_finished_name',
+            'sub_catergory_id'
+        ).values(
+            'id',
+            'bin_name',
+            'rack_finished_name__rack_name', 
+            'rack_finished_name__id',
+            'rack_finished_name__zone_finished_name__zone_name',
+            'rack_finished_name__zone_finished_name__warehouse_finished_name__warehouse_name_finished',
+            'sub_catergory_id__product_category_name',
+            'product_size_in_bin',
+            'sub_catergory_id__id'
+        )
 
     return render(request, 'product/subcategorybinlist.html',{'subcategories': subcategories})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1039,11 +1015,53 @@ def product2subcategoryajax(request):
 
 
 
+@login_required(login_url='login')
+def create_update_bin_for_raw_material(request, b_id=None):
+    try:
+        bin_list = bin_for_raw_material.objects.all()
+        bin_instance = get_object_or_404(bin_for_raw_material, id=b_id) if b_id else None
+        form = bin_for_raw_material_form(request.POST or None, instance=bin_instance)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Bin details saved successfully!")
+                return redirect('create-bin-for-raw-material')
+            else:
+                messages.error(request, "Please correct the errors below.")
+
+    except bin_for_raw_material.DoesNotExist:
+        messages.error(request, "The bin record does not exist.")
+        return redirect('create-bin-for-raw-material')
+
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred: {str(e)}")
+        print(f"Error in create_update_bin_for_raw_material: {str(e)}")
+
+    return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list})
+
+
+
+@login_required(login_url='login')
+def delete_bin_for_raw_material(request,b_id):
+    try:
+        bin_instance = get_object_or_404(bin_for_raw_material, id=b_id)
+        bin_instance.delete()
+        messages.success(request, "Bin deleted successfully!")
+    except bin_for_raw_material.DoesNotExist:
+        messages.error(request, "The bin does not exist.")
+    except Exception as e:
+        messages.error(request, f"An error occurred while deleting the bin: {str(e)}")
+        print(f"Error in delete_bin_for_raw_material: {str(e)}")
+
+    return redirect('create-bin-for-raw-material')
+
+
+
 
 @login_required(login_url='login')
 def item_create(request):
 
-    title = 'Item Create'
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
     unit_name = Unit_Name_Create.objects.all()
@@ -1052,20 +1070,22 @@ def item_create(request):
     items_to_clone = Item_Creation.objects.all()
     colors = Color.objects.all()
     form = Itemform()
-    
+
 
     if request.path == '/itemcreatepopup/':
         template_name = 'product/item_create_popup.html'
-
     else:
         template_name = 'product/item_create_update.html'
-    
+        
     if request.method == 'POST':
         form = Itemform(request.POST, request.FILES)
         if form.is_valid():
             form_instance = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
+            form_instance.bin.set(form.cleaned_data['bin'])
+
+            
             if request.path == '/itemcreatepopup/':
                 return HttpResponse('item created', status = 200) 
             else:
@@ -1076,118 +1096,17 @@ def item_create(request):
         else:
             logger.error(f"item form not valid{form.errors}")
             messages.error(request, f"item form not valid{form.errors}")
-           
-            return render(request,template_name, {'gsts':gsts,
-                                                                      'fab_grp':fab_grp,
-                                                                      'unit_name':unit_name,
-                                                                      'colors':colors,
-                                                                      'packaging_material_all':packaging_material_all,
-                                                                      'fab_finishes':fab_finishes,
-                                                                      'title':title,'form':form,'items_to_clone':items_to_clone
-                                                                      ,'page_name':'Create Raw Material'})
+            return render(request,template_name, {'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'title''items_to_clone':items_to_clone,'page_name':'Create Raw Material'})
     
     
-    return render(request,template_name,{'gsts':gsts,
-                                                                 'fab_grp':fab_grp,
-                                                                 'unit_name':unit_name,
-                                                                 'colors':colors,
-                                                                 'title':title,
-                                                                 'packaging_material_all':packaging_material_all,
-                                                                    'fab_finishes':fab_finishes,
-                                                                 'form':form,'items_to_clone':items_to_clone,
-                                                                 'page_name':'Create Raw Material'})
+    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material'})
 
-
-
-
-
-
-    
-
-@login_required(login_url='login')
-def item_clone_ajax(request):
-    selected_item_name_value = int(request.GET.get('itemValue'))
-    
-    if selected_item_name_value:
-        selected_item = get_object_or_404(Item_Creation, pk=selected_item_name_value)
-
-        response_data = {'fabric_group':{'fab_g_key':selected_item.Fabric_Group.id,'fab_g_value':selected_item.Fabric_Group.fab_grp_name},
-                         'color':{'color_key':selected_item.Item_Color.id,'color_value':selected_item.Item_Color.color_name}, 
-                         'material_code':selected_item.Material_code,'packing':{'packing_key':selected_item.Item_Packing.id ,'packing_value':selected_item.Item_Packing.packing_material},
-                        'unit_name':{'unit_name_key':selected_item.unit_name_item.id,'unit_name_value':selected_item.unit_name_item.unit_name},
-                        'panha':selected_item.Panha,'fab_non_fab':selected_item.Fabric_nonfabric,
-                        'fab_finishes':{'fab_finishes_key':selected_item.Item_Fabric_Finishes.id,'fab_finishes_value':selected_item.Item_Fabric_Finishes.fabric_finish},
-                        'gst':{'gst_key':selected_item.Item_Creation_GST.id,'gst_value':selected_item.Item_Creation_GST.gst_percentage},
-                        'hsn_code':selected_item.HSN_Code,'status':selected_item.status, 'unit_name_units':selected_item.unit_name_item.unit_value}
-       
-    return JsonResponse({'response_data':response_data})
-
-
-
-
-@login_required(login_url='login')
-def item_list(request):
-    
-    g_search = request.GET.get('item_search','')
-
-    
-    
-    queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item',
-                                                    'Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes',
-                                                    'Item_Packing').prefetch_related('shades',
-                                                    'shades__godown_shades','shades__godown_shades__godown_name')
-
-    
-    if g_search != '':
-        queryset = queryset.filter(Q(item_name__icontains=g_search)|
-                                                Q(Item_Color__color_name__icontains=g_search)|
-                                                Q(Fabric_Group__fab_grp_name__icontains=g_search)|
-                                                Q(Material_code__icontains=g_search))
-        
-    sort_name = request.GET.get('sort_name')
-
-
-    if sort_name == "item_name_sort_asc" :
-        queryset = Item_Creation.objects.order_by('item_name')
-    
-
-    elif sort_name == "item_name_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('-item_name')
-
-
-    elif sort_name == "fabgrp_sort_asc" :
-        queryset = Item_Creation.objects.order_by('Fabric_Group__fab_grp_name')
-
-
-    elif sort_name == "fabgrp_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('-Fabric_Group__fab_grp_name')
-
-    elif sort_name == "item_color_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('Item_Color__color_name')
-    
-    elif sort_name == "item_color_sort_dsc" :
-        queryset = Item_Creation.objects.order_by('-Item_Color__color_name')
-
-    any_desc = request.GET.get('any_desc')
-    exact_desc = request.GET.get('exact_desc')
-
-    if any_desc:
-        if any_desc != '' and any_desc is not None:
-            queryset = Item_Creation.objects.filter(item_name__icontains=any_desc)
-        
-    if exact_desc:
-        if exact_desc != '' and exact_desc is not None:
-            queryset = Item_Creation.objects.filter(item_name__exact=exact_desc)
-
-    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials List"})
-    
 
 
 
 @login_required(login_url='login')
 def item_edit(request,pk): 
     
-    title = 'Item update'
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
     unit_name = Unit_Name_Create.objects.all()
@@ -1199,9 +1118,10 @@ def item_edit(request,pk):
     form = Itemform(instance=item_pk)
 
     
-    queryset = item_color_shade.objects.filter(items = pk).annotate(total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
-                                                                     total_value=Sum(F('opening_shade_godown_quantity__opening_quantity') * F('opening_shade_godown_quantity__opening_rate'), 
-                                                                                output_field=DecimalField(max_digits=10, decimal_places=2)))
+    queryset = item_color_shade.objects.filter(items = pk).annotate(
+        total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
+        total_value=Sum(F('opening_shade_godown_quantity__opening_quantity') * F('opening_shade_godown_quantity__opening_rate'),
+        output_field=DecimalField(max_digits=10, decimal_places=2)))
 
     formset = ShadeFormSet(instance= item_pk, queryset=queryset)
 
@@ -1215,8 +1135,8 @@ def item_edit(request,pk):
             if form.is_valid() and formset.is_valid():
                 form_instance = form.save(commit=False)  
                 form_instance.c_user = request.user
+                form_instance.bin.set(form.cleaned_data['bin'])
                 form_instance.save()
-
 
                 for form in formset.deleted_forms: 
                     if form.instance.pk:
@@ -1272,35 +1192,88 @@ def item_edit(request,pk):
                 return redirect('item-list')
             
         except ProtectedError as e:
-            
             messages.error(request,f"Cannot delete item_color_shade due to protected foreign keys: {e}")
             logger.error(f"Cannot delete item_color_shade due to protected foreign keys: {e}")
             print(f"Cannot delete item_color_shade due to protected foreign keys: {e}")
 
         except Exception as e:
              logger.error(f'An exception occured in item edit - {e}')
-             return render(request,'product/item_create_update.html',{'gsts':gsts,
-                                                                 'fab_grp':fab_grp,
-                                                                 'unit_name':unit_name,
-                                                                 'colors':colors,
-                                                                 'title':title,
-                                                                 'packaging_material_all':packaging_material_all,
-                                                                 'fab_finishes':fab_finishes,
-                                                                 'form':form,
-                                                                 'formset': formset,
-                                                                 "page_name":"Edit Raw Material"})
+             return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
         
-    return render(request,'product/item_create_update.html',{'gsts':gsts,
-                                                                 'fab_grp':fab_grp,
-                                                                 'unit_name':unit_name,
-                                                                 'colors':colors,
-                                                                 'title':title,
-                                                                 'packaging_material_all':packaging_material_all,
-                                                                 'fab_finishes':fab_finishes,
-                                                                 'form':form,
-                                                                 'formset': formset,
-                                                                 "page_name":"Edit Raw Material"})
+    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
 
+
+
+
+
+
+@login_required(login_url='login')
+def item_clone_ajax(request):
+    selected_item_name_value = int(request.GET.get('itemValue'))
+    
+    if selected_item_name_value:
+        selected_item = get_object_or_404(Item_Creation, pk=selected_item_name_value)
+
+        response_data = {'fabric_group':{
+            'fab_g_key':selected_item.Fabric_Group.id,
+            'fab_g_value':selected_item.Fabric_Group.fab_grp_name},
+            'color':{'color_key':selected_item.Item_Color.id,'color_value':selected_item.Item_Color.color_name}, 
+            'material_code':selected_item.Material_code,'packing':{'packing_key':selected_item.Item_Packing.id ,'packing_value':selected_item.Item_Packing.packing_material},
+            'unit_name':{'unit_name_key':selected_item.unit_name_item.id,'unit_name_value':selected_item.unit_name_item.unit_name},
+            'panha':selected_item.Panha,'fab_non_fab':selected_item.Fabric_nonfabric,
+            'fab_finishes':{'fab_finishes_key':selected_item.Item_Fabric_Finishes.id,'fab_finishes_value':selected_item.Item_Fabric_Finishes.fabric_finish},
+            'gst':{'gst_key':selected_item.Item_Creation_GST.id,'gst_value':selected_item.Item_Creation_GST.gst_percentage},
+            'hsn_code':selected_item.HSN_Code,'status':selected_item.status, 'unit_name_units':selected_item.unit_name_item.unit_value}
+       
+    return JsonResponse({'response_data':response_data})
+
+
+
+
+@login_required(login_url='login')
+def item_list(request):
+    
+    g_search = request.GET.get('item_search','')
+    
+    queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item','Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes','Item_Packing').prefetch_related('shades','shades__godown_shades','shades__godown_shades__godown_name','bin')
+    
+    if g_search != '':
+        queryset = queryset.filter(Q(item_name__icontains = g_search)| Q(Item_Color__color_name__icontains = g_search)| Q(Fabric_Group__fab_grp_name__icontains = g_search)| Q(Material_code__icontains = g_search))
+        
+    sort_name = request.GET.get('sort_name')
+
+    if sort_name == "item_name_sort_asc" :
+        queryset = Item_Creation.objects.order_by('item_name')
+    
+    elif sort_name == "item_name_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('-item_name')
+
+    elif sort_name == "fabgrp_sort_asc" :
+        queryset = Item_Creation.objects.order_by('Fabric_Group__fab_grp_name')
+
+
+    elif sort_name == "fabgrp_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('-Fabric_Group__fab_grp_name')
+
+    elif sort_name == "item_color_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('Item_Color__color_name')
+    
+    elif sort_name == "item_color_sort_dsc" :
+        queryset = Item_Creation.objects.order_by('-Item_Color__color_name')
+
+    any_desc = request.GET.get('any_desc')
+    exact_desc = request.GET.get('exact_desc')
+
+    if any_desc:
+        if any_desc != '' and any_desc is not None:
+            queryset = Item_Creation.objects.filter(item_name__icontains=any_desc)
+        
+    if exact_desc:
+        if exact_desc != '' and exact_desc is not None:
+            queryset = Item_Creation.objects.filter(item_name__exact=exact_desc)
+
+    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials"})
+    
 
 
 
@@ -2153,12 +2126,6 @@ def godownlist(request):
     godowns_raw = Godown_raw_material.objects.all()
     godowns_finished = Godown_finished_goods.objects.all()
     warehouses = Finished_goods_warehouse.objects.all()
-    
-    
-    
-        
-    
-    
     
 
     return render(request,'misc/godown_list.html',{'godowns_raw':godowns_raw, 
@@ -5611,6 +5578,12 @@ def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
 
         else:
             
+            
+            
+
+            
+            
+
 
             return render(request,'production/purchase_order_cutting.html',{'form':form,'labour_all':labour_all,'purchase_order_cutting_form':purchase_order_cutting_form,'p_o_pk':p_o_pk,
                                                                     'purchase_order_to_product_formset_form':purchase_order_to_product_formset_form,
@@ -6334,7 +6307,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                 if labour_work_out_id:
                     labour_workout_child_instance = labour_workout_childs.objects.get(id = labour_work_out_id)
 
-                    labour_workin_all_qd = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty')).values('voucher_number','total_return_pcs','total_approved_quantity') 
+                    labour_workin_all_qd = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty')).values('voucher_number','total_return_pcs','total_approved_quantity','created_date')
                     labour_workin_all = list(labour_workin_all_qd) 
 
                     labour_workout_child_instance_id = labour_workout_child_instance.id
@@ -6473,8 +6446,10 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     parent_form = master_form.save(commit = False)
                     parent_form.labour_voucher_number = labour_workout_child_instance
 
-                    
-                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + parent_form.total_return_pcs
+                    labour_workin_qty_diff = labour_workout_child_instance.finalReceivedQty - labour_workout_child_instance.finalReturnQty
+                    print(labour_workin_qty_diff)
+
+                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + labour_workin_qty_diff
 
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
 
@@ -6529,6 +6504,11 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
     
     return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,
                     'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all})
+
+
+
+
+
 
 from django.db.models import F, Case, When, IntegerField
 @login_required(login_url='login')
@@ -9348,9 +9328,6 @@ def factory_employee_create_update_list(request ,pk=None):
     if request.user.is_superuser:
         factory_employees = factory_employee.objects.all()
         cutting_rooms =  cutting_room.objects.all()
-    
-        
-        
 
     if pk:
         title = 'Update'
@@ -9372,6 +9349,44 @@ def factory_employee_create_update_list(request ,pk=None):
             messages.error(request,f'Error with form submission {form.errors}')
 
     return render(request,'production/factory_emp_create_update_list.html', {'form':form,'factory_employees':factory_employees,'title':title,'cutting_rooms':cutting_rooms,'page_name':page_name})
+
+
+
+
+@login_required(login_url='login')
+def salesman_create_update(request,e_id=None):
+    salesman_list = Salesman_info.objects.all()
+
+    if e_id:
+        salesman_instance = Salesman_info.objects.get(id = e_id)
+        form = SalesmaninfoForm(instance=salesman_instance)
+    else:
+        salesman_instance = None
+        form = SalesmaninfoForm()
+
+    if request.method == 'POST':
+        form = SalesmaninfoForm(request.POST or None, instance=salesman_instance)
+        if form.is_valid():
+            salesman = form.save()
+            messages.success(request, f"{salesman.salesman_name} added successfully")
+            return redirect('salesman-create')
+        else:
+            print(form.errors)
+    return render(request,'production/salesman_create_update.html',{'form':form,'salesman_list':salesman_list})
+
+
+
+
+@login_required(login_url='login')
+def delete_salesman(request,e_id):
+    try:
+        instance = get_object_or_404(Salesman_info,pk=e_id)
+        instance.delete()
+        messages.success(request,f'salesman {instance.salesman_name} was deleted')
+
+    except IntegrityError as e:
+        messages.error(request,f'Cannot delete {instance.salesman_name} because it is referenced by other objects.')
+    return redirect('salesman-create')
 
 
 
@@ -9757,8 +9772,6 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 @login_required(login_url='login')
 def product_transfer_to_warehouse_list(request):
     warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('voucher_no')
-
-
     return render(request,'finished_product/product_transfer_to_warehouse_list.html',{'warehouse_product_transfer_list':warehouse_product_transfer_list})
 
 
@@ -9843,7 +9856,11 @@ def product_transfer_to_warehouse_ajax(request):
 
 
 def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
-        
+
+    last_selected_bin_id = request.session.get('last_selected_bin_id')
+    if last_selected_bin_id:
+        del request.session['last_selected_bin_id']
+    
     try:
         if voucher_type == 'transfer':
             # print("in transfer")
@@ -9859,7 +9876,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
             completed_formset = stock_transfer_instance_formset_only_for_update(queryset = completed_qs, instance=stock_transfer_instance)
 
-            entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no = purchase_number)
+            entries = finishedgoodsbinallocation.objects.filter(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no = purchase_number).select_related('related_transfer_record','related_transfer_record__Finished_goods_Stock_TransferMasterinstance','product','bin_number').order_by('created_date')
 
             
             # print(entries)
@@ -9878,7 +9895,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
             completed_formset = product_purchase_voucher_items_instance_formset_only_for_update(queryset=completed_qs, instance=product_purchase_voucher_items_instance)
 
-            entries = finishedgoodsbinallocation.objects.filter(related_purchase_item__product_purchase_master__purchase_number = purchase_number)
+            entries = finishedgoodsbinallocation.objects.filter(related_purchase_item__product_purchase_master__purchase_number = purchase_number).select_related('related_purchase_item','related_purchase_item__product_purchase_master','product','bin_number').order_by('created_date')
             # print(entries)
 
     except Exception as e:
@@ -9915,6 +9932,8 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         product_instance = get_object_or_404(PProduct_Creation, pk=scanned_sku)
 
                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
+
+                                        request.session['last_selected_bin_id'] = bin_instance.id
 
                                         bin_instance.products_in_bin += 1
                                         bin_instance.save()
@@ -9959,6 +9978,8 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                         product_instance = get_object_or_404(PProduct_Creation,pk=scanned_sku)
 
                                         bin_instance = get_object_or_404(finished_product_warehouse_bin,pk=selected_product_bin)
+
+                                        request.session['last_selected_bin_id'] = bin_instance.id
 
                                         bin_instance.products_in_bin += 1
                                         bin_instance.save()
@@ -10025,6 +10046,9 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
 
 
+
+
+@login_required(login_url='login')
 def delete_sigle_entries(request, e_id, voucher_type):
     try:
         delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
@@ -10054,117 +10078,200 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 
 
-
+@login_required(login_url='login')
 def scan_product_qty_list(request):
-    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0)
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0)
+
+    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name').values('id','product_purchase_master__ledger_type','product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image','quantity_total','qc_recieved_qty','diffrence_qty')
+
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0).select_related( 'Finished_goods_Stock_TransferMasterinstance', 'product').values('id','Finished_goods_Stock_TransferMasterinstance','product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image','product_quantity_transfer','qc_recieved_qty','diffrence_qty')
+
     merged_queryset = chain(product_purchase_voucher, stock_transfer_voucher)
+
     merged_list = list(merged_queryset)
 
-    return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list})
+    return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list,'MEDIA_URL': settings.MEDIA_URL})
 
 
 
 
 
-
+from django.utils import timezone
+@login_required(login_url='login')
 def scan_product_list(request,pk,v_type):
-    
+
+    instance_entries_all = []
+    instance_entries = []
+
     if v_type == "purchase":
 
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk)
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_purchase_item = pk).select_related('related_purchase_item','product','bin_number').values(
+            'related_purchase_item__product_purchase_master__id',
+            'related_purchase_item__product_purchase_master__purchase_number',
+            'related_purchase_item__product_purchase_master__ledger_type',
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date',
+            'bin_number__rack_finished_name__zone_finished_name__zone_name',
+            'bin_number__rack_finished_name__rack_name',
+            'bin_number__bin_name'
+            )
 
     elif v_type == "transfer":
-        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk)
 
-    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries})
+        instance_entries = finishedgoodsbinallocation.objects.filter(related_transfer_record = pk).select_related('related_transfer_record','product','bin_number').values(
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id',
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no',
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date',
+            'bin_number__rack_finished_name__zone_finished_name__zone_name',
+            'bin_number__rack_finished_name__rack_name',
+            'bin_number__bin_name'
+            )
+    else:
+        instance_entries_all = finishedgoodsbinallocation.objects.all().select_related('related_transfer_record','product','bin_number').values(
+            'related_purchase_item__product_purchase_master__id',
+            'related_purchase_item__product_purchase_master__purchase_number',
+            'related_purchase_item__product_purchase_master__ledger_type',
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id',
+            'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no',
+            'product__Product__Product_Refrence_ID',
+            'product__PProduct_image',
+            'product__Product__Model_Name',
+            'product__PProduct_color__color_name',
+            'product__PProduct_SKU',
+            'unique_serial_no',
+            'created_date',
+            'bin_number__rack_finished_name__zone_finished_name__zone_name',
+            'bin_number__rack_finished_name__rack_name',
+            'bin_number__bin_name'
+            ).annotate(total_qty = Sum('related_purchase_item__qc_recieved_qty'),total_qty_tr = Sum('related_transfer_record__qc_recieved_qty')).order_by('-created_date')
+
+
+    current_date = timezone.now()
+    for entry in instance_entries:
+        created_date = entry['created_date']
+        age_in_days = (current_date - created_date).days
+        entry['age_in_days'] = age_in_days
+
+    for entry in instance_entries_all:
+        created_date = entry['created_date']
+        age_in_days = (current_date - created_date).days
+        entry['age_in_days'] = age_in_days
+
+
+    return render(request,'finished_product/scan_product_list.html',{'instance_entries':instance_entries,'MEDIA_URL':settings.MEDIA_URL,'instance_entries_all':instance_entries_all})
 
 
 
 
 
+
+@login_required(login_url='login')
 def warehouse_stock(request):
 
-    purchase_sales_quantity_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
+    purchase_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
+
+    purchase_sales_return_quantity_subquery = sales_return_voucher.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_retutn_quantity=Sum('quantity')).values('sales_retutn_quantity')
     
-    product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty')))
+    product_purchase_voucher = (product_purchase_voucher_items.objects.all().values('product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image').annotate(total_quantity=Sum('quantity_total'),total_sale=Subquery(purchase_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'),total_sales_return = Subquery(purchase_sales_return_quantity_subquery)))
 
+    transfer_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
 
-    transfer_sales_quantity_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
+    transfer_sales_return_quantity_subquery = sales_return_voucher.objects.filter(product_name__PProduct_SKU=OuterRef('product__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_retutn_quantity=Sum('quantity')).values('sales_retutn_quantity')
 
-
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'))
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(transnfer_cancelled_records = False).values('product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image').annotate(total_quantity=Sum('product_quantity_transfer'),total_sale=Subquery(transfer_sales_quantity_subquery),total_inward=Sum('qc_recieved_qty'),total_balance = Sum('diffrence_qty'),total_sales_return = Subquery(transfer_sales_return_quantity_subquery))
 
     
-    merged_list = []
 
-    for x in product_purchase_voucher:
-        purchase_sku = x['product_name__PProduct_SKU']
-        total = 0
-        for y in stock_transfer_voucher:
-            if purchase_sku == y['product__PProduct_SKU']:
-                total = x['total_quantity'] + y['total_quantity']
-                
-                dict_to_append = {
-                    'ref_id':x['product_name__Product__Product_Refrence_ID'],
-                    'model_name':x['product_name__Product__Model_Name'],
-                    'color':x['product_name__PProduct_color__color_name'],
-                    'product_sku': purchase_sku,
-                    'total':total,
-                    'total_sale':x['total_sale'] or 0,
-                    'total_inward':(x['total_inward'] or 0) + (y['total_inward'] or 0),
-                    'total_balance':(x['total_balance'] or 0) + (y['total_balance'] or 0),
-                    'inward_minus_sales': ((x['total_inward'] or 0) + (y['total_inward'] or 0)) - (x['total_sale'] or 0)
-                }
-                merged_list.append(dict_to_append)
-                break
-
-
-    for x in product_purchase_voucher:
-        if not any(d['product_sku'] == x['product_name__PProduct_SKU'] for d in merged_list):     
-            dict_to_append = {
-                    'ref_id':x['product_name__Product__Product_Refrence_ID'],
-                    'model_name':x['product_name__Product__Model_Name'],
-                    'color':x['product_name__PProduct_color__color_name'],
-                    'product_sku': x['product_name__PProduct_SKU'],
-                    'total':x['total_quantity'] or 0,
-                    'total_sale':x['total_sale'] or 0,
-                    'total_inward':x['total_inward'] or 0,
-                    'total_balance':x['total_balance'] or 0,
-                    'inward_minus_sales': (x['total_inward'] if x['total_inward'] else 0) -  (x['total_sale'] if x['total_sale'] else 0)
-                }
-            merged_list.append(dict_to_append)
-
+    product_dict = {
+        x['product_name__PProduct_SKU']: {
+            'ref_id': x['product_name__Product__Product_Refrence_ID'],
+            'model_name': x['product_name__Product__Model_Name'],
+            'color': x['product_name__PProduct_color__color_name'],
+            'product_sku': x['product_name__PProduct_SKU'],
+            'total_quantity': x.get('total_quantity', 0) or 0,
+            'total_sale': x.get('total_sale', 0) or 0,
+            'total_inward': x.get('total_inward', 0) or 0,
+            'total_balance': x.get('total_balance', 0) or 0,
+            'total_sale_return': x.get('total_sales_return', 0) or 0,
+            'img': x['product_name__PProduct_image'],
+            'total': x.get('total_quantity', 0) or 0,
+        }
+        for x in product_purchase_voucher
+    }
 
     for y in stock_transfer_voucher:
-        if not any(d['product_sku'] == y['product__PProduct_SKU'] for d in merged_list):     
-            dict_to_append = {
-                    'ref_id':y['product__Product__Product_Refrence_ID'],
-                    'model_name':y['product__Product__Model_Name'],
-                    'color':y['product__PProduct_color__color_name'],
-                    'product_sku': y['product__PProduct_SKU'],
-                    'total':y['total_quantity'] or 0,
-                    'total_sale': y['total_sale'] if y['total_sale'] else 0,
-                    'total_inward':y['total_inward'] if y['total_inward'] else 0,
-                    'total_balance':y['total_balance'],
-                    'inward_minus_sales': (y['total_inward'] if y['total_inward'] else 0) -  (y['total_sale'] if y['total_sale'] else 0)
-                }
-            merged_list.append(dict_to_append)
+        sku = y['product__PProduct_SKU']
+        if sku in product_dict:
+            
+            product_dict[sku]['total_quantity'] += y.get('total_quantity', 0) or 0
+            product_dict[sku]['total_inward'] += y.get('total_inward', 0) or 0
+            product_dict[sku]['total_balance'] += y.get('total_balance', 0) or 0
+            product_dict[sku]['total'] += y.get('total_quantity', 0) or 0
+        else:
+            # Add new SKU from stock transfer
+            product_dict[sku] = {
+                'ref_id': y['product__Product__Product_Refrence_ID'],
+                'model_name': y['product__Product__Model_Name'],
+                'color': y['product__PProduct_color__color_name'],
+                'product_sku': sku,
+                'total_quantity': y.get('total_quantity', 0) or 0,
+                'total_sale': y.get('total_sale', 0) or 0,
+                'total_inward': y.get('total_inward', 0) or 0,
+                'total_balance': y.get('total_balance', 0) or 0,
+                'total_sale_return': y.get('total_sales_return', 0) or 0,
+                'img': y['product__PProduct_image'],
+                'total': y.get('total_quantity', 0) or 0,
+            }
+
+    merged_list = []
+    for data in product_dict.values():
+        data['inward_minus_sales'] = (data['total_inward'] + data['total_sale_return']) - data['total_sale']
+        merged_list.append(data)
 
 
-    print('merged_list -- ', merged_list)
-
-    return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list})
+    return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list,'MEDIA_URL': settings.MEDIA_URL})
 
 
-
+@login_required(login_url='login')
 def scan_single_product_list(request,sku):
-    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku)
-    return render(request,'finished_product/scan_single_product_list.html',{'instance_entries':instance_entries})
+    instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values(
+        'related_purchase_item__product_purchase_master__purchase_number' or None,
+        'related_purchase_item__product_purchase_master__id' or None,
+        'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no' or None,
+        'related_transfer_record__Finished_goods_Stock_TransferMasterinstance__id' or None,
+        'product__Product__Product_Refrence_ID',
+        'product__PProduct_image',
+        'product__Product__Model_Name',
+        'product__PProduct_color__color_name',
+        'product__PProduct_SKU',
+        'unique_serial_no',
+        'created_date',
+        'bin_number__rack_finished_name__zone_finished_name__zone_name',
+        'bin_number__rack_finished_name__rack_name',
+        'bin_number__bin_name'
+        )
+    
+    current_date = timezone.now()
+    for entry in instance_entries:
+        created_date = entry['created_date']
+        age_in_days = (current_date - created_date).days
+        entry['age_in_days'] = age_in_days
+
+    return render(request,'finished_product/scan_single_product_list.html',{'instance_entries':instance_entries,'MEDIA_URL':settings.MEDIA_URL})
 
 
 
-
+@login_required(login_url='login')
 def model_name_wise_purchase_transfer_sales_report(request,sku):
     purchase_instance = product_purchase_voucher_items.objects.filter(product_name__PProduct_SKU = sku)
 
@@ -10252,14 +10359,58 @@ def model_name_wise_purchase_transfer_sales_report(request,sku):
 
 
 
+@login_required(login_url='login')
+def product_wise_sales_report(request,sku):
+    sales_voucher_queryset = sales_voucher_outward_scan.objects.filter(product_name = sku).select_related(
+        'sales_voucher_master'
+        ).values(
+            'created_date',
+            'product_name__PProduct_image',
+            'sales_voucher_master__sale_no',
+            'sales_voucher_master__outward_no__outward_no',
+            'sales_voucher_master__salesman__salesman_name',
+            'sales_voucher_master__party_name__name',
+            'product_name__Product__Product_Refrence_ID',
+            'product_name__Product__Model_Name',
+            'product_name__PProduct_color__color_name',
+            'product_name__PProduct_SKU',
+            'quantity',
+            'sales_voucher_master__ledger_type', 
+        )
+    return render(request,'finished_product/product_wise_sales_report.html',{'MEDIA_URL':settings.MEDIA_URL,'sales_voucher_queryset':sales_voucher_queryset})
+
+
+
+@login_required(login_url='login')
+def product_wise_sales_return_report(request,sku):
+    sales_voucher_queryset = sales_return_voucher.objects.filter(product_name = sku).select_related(
+        'sales_return_master'
+        ).values(
+            'created_date',
+            'product_name__PProduct_image',
+            'sales_return_master__sales_voucher_master__sale_no',
+            'sales_return_master__salesman__salesman_name',
+            'sales_return_master__party_name__name',
+            'product_name__Product__Product_Refrence_ID',
+            'product_name__Product__Model_Name',
+            'product_name__PProduct_color__color_name',
+            'product_name__PProduct_SKU',
+            'quantity',
+            'sales_return_master__ledger_type', 
+        )
+    return render(request,'finished_product/product_wise_sales_return_report.html',{'MEDIA_URL':settings.MEDIA_URL,'sales_voucher_queryset':sales_voucher_queryset})
+
+
+
 
 
 def model_name_wise_purchase_transfer_report(request,sku):
 
-    purchase_instance = product_purchase_voucher_items.objects.filter(product_name__PProduct_SKU = sku)
+    purchase_instance = product_purchase_voucher_items.objects.filter(product_name__PProduct_SKU = sku).select_related('product_purchase_master','product_name')
 
     transfer_instance = Finished_goods_transfer_records.objects.filter(product__PProduct_SKU = sku)    
 
+    product_data = PProduct_Creation.objects.filter(PProduct_SKU = sku).select_related('Product').values('Product__Product_Refrence_ID','Product__Model_Name','PProduct_color__color_name','PProduct_image')
 
     merge_list = []
 
@@ -10267,7 +10418,6 @@ def model_name_wise_purchase_transfer_report(request,sku):
 
         model_name = item.product_name.Product.Model_Name
         ref_no = item.product_name.Product.Product_Refrence_ID
-
 
         dict_to_append = {
             'instance_id':item.product_purchase_master.id,
@@ -10280,7 +10430,7 @@ def model_name_wise_purchase_transfer_report(request,sku):
             'pro_sku':item.product_name.PProduct_SKU,
             'total_qty':item.quantity_total,
         }
-        print(dict_to_append)
+        
         merge_list.append(dict_to_append)
 
     
@@ -10305,98 +10455,92 @@ def model_name_wise_purchase_transfer_report(request,sku):
 
     list_to_send = sorted(merge_list, key = itemgetter('date'))
 
-
-
-    return render(request,'finished_product/modelnamewisepurchasetransferreport.html',{'purchase_instance':purchase_instance,'list_to_send':list_to_send,'model_name':model_name,'ref_no':ref_no})
+    return render(request,'finished_product/modelnamewisepurchasetransferreport.html',{'purchase_instance':purchase_instance,'list_to_send':list_to_send,'product_data':product_data,'MEDIA_URL': settings.MEDIA_URL})
 
 
 
 
 def process_serial_no(request):
     print("in scan def")
+    
     if request.method == 'POST':
         serial_no = request.POST.get('serialNo')
         print(serial_no)
-        if serial_no:  
+
+        if serial_no:
             try:
+                # Check if serial number is already processed
                 if finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).exists():
                     return JsonResponse({'message': 'This Serial Number has already been processed.'}, status=400)
-            
+
             except IntegrityError:
                 return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
 
-
             try:
+                # Call external API
                 url = f'https://www.cosmusbags.com/cosmus/qrcode.php?wc={serial_no}'
-                
                 response_post = requests.get(url)
-                response_data =  response_post.json()
+                response_data = response_post.json()
                 print(response_data)
+
                 if response_data.get('response_code') == 200 and response_data.get('response_desc') == 'success':
                     product_scanned_sku = response_data['sku']
 
+                    # Fetch product details
                     product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_scanned_sku)
                     model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
                     product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
                     product_sku = product_instance.PProduct_SKU
-                    product_color = product_instance.PProduct_color.color_name if  product_instance.PProduct_color else None
+                    product_color = product_instance.PProduct_color.color_name if product_instance.PProduct_color else None
                     product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
-                    
+
+                    # Get product main categories
                     product_main_cats = product_instance.Product.product_cats.all()
                     main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
 
-                    # print(main_cats_all)
-                    # product_sub_cats = product_instance.Product.product_cats.all()
-                    # sub_cats_all = [x.SubCategory_id for x in product_sub_cats]
-
-                    
+                    # Retrieve last selected bin from session
+                    last_selected_bin_id = request.session.get('last_selected_bin_id')
 
                     bins_related_to_product = []
-                    for records in main_cats_all:
-                        product_suggested_bins = finished_product_warehouse_bin.objects.filter(sub_catergory_id = records)
-                        bins_related_to_product.append(product_suggested_bins)
+
+                    # Fetch all bins related to the product
+                    for bin_obj in finished_product_warehouse_bin.objects.filter(sub_catergory_id__in=main_cats_all):
+                        product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False).count()
+
+                        bins_related_to_product.append({
+                            'bin_id': bin_obj.id,
+                            'bin_name': bin_obj.bin_name,
+                            'bin_size': bin_obj.product_size_in_bin,
+                            'products_in_bin': product_count
+                        })
                     
+                    print('last_selected_bin_id == ',last_selected_bin_id)
+                    # Sort bins: Show last selected bin first
+                    if last_selected_bin_id:
+                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id)
 
-
-                    flatterned_bins_related_to_product_list = list(chain.from_iterable(bins_related_to_product))
-                    # print('flatterned_bins_related_to_product_list -- ', flatterned_bins_related_to_product_list)
-
-                    bin_to_dict = []
-                    
-                    for qs in flatterned_bins_related_to_product_list:
-                        products_in_bin = finishedgoodsbinallocation.objects.filter(bin_number=qs).count()
-
-                        dict_to_append = {
-                            'bin_id' : qs.id,
-                            'bin_name' : qs.bin_name,
-                            'bin_size' :qs.product_size_in_bin,
-                            'products_in_bin':products_in_bin}
-                        
-                        if any(d['bin_name'] == qs.bin_name for d in bin_to_dict):
-                            continue
-                        else:
-                            bin_to_dict.append(dict_to_append)
-
-                    print('bin_to_dict ---- ' , bin_to_dict)
-
-                    
-                    
-                    return JsonResponse({ 'model_name':model_name,'product_name':product_name, 'product_sku': product_sku,
-                                    'bin_to_dict':bin_to_dict,
-                                    'product_color' : product_color,'product_image':product_image,'message': f'Serial No {serial_no} processed successfully.'})
+                    return JsonResponse({
+                        'model_name': model_name,
+                        'product_name': product_name,
+                        'product_sku': product_sku,
+                        'bin_to_dict': bins_related_to_product,
+                        'product_color': product_color,
+                        'product_image': product_image,
+                        'message': f'Serial No {serial_no} processed successfully.'
+                    })
 
                 else:
                     return JsonResponse({'message': 'Invalid response from external API.'}, status=400)
 
-            except ObjectDoesNotExist :
-                return JsonResponse({'message': 'Product SKU does not Exist.'}, status=404)
+            except ObjectDoesNotExist:
+                return JsonResponse({'message': 'Product SKU does not exist.'}, status=404)
 
             except requests.RequestException:
                 return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
-            
+
             except Exception:
                 return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
-             
+
         else:
             return JsonResponse({'message': 'Invalid Serial No.'}, status=400)
 
@@ -10407,52 +10551,38 @@ def process_serial_no(request):
 
 
 
+def add_zone_in_warehouse(request,id,zone_id=None):
 
-def add_zone_in_warehouse(request,id):
+    zones = finished_goods_warehouse_zone.objects.filter(warehouse_finished_name = id).select_related("warehouse_finished_name")
+
     warehouse_id = get_object_or_404(Finished_goods_warehouse, id=id)
-    warehouse_name = warehouse_id.warehouse_name_finished
-    warehouses = Finished_goods_warehouse.objects.filter(warehouse_name_finished = warehouse_name).prefetch_related('warehouses__zones__racks').all()
 
-    # print(warehouses)
+    warehouses = Finished_goods_warehouse.objects.filter(id = warehouse_id.id).prefetch_related(
+    'warehouses',
+    'warehouses__zones',
+    'warehouses__zones__racks'
+    )
 
-    # for warehouse in warehouses:
-    #     for zone in warehouse.warehouses.all():
-    #         print(zone.zone_name)
-
+    if zone_id:
+        zone_instanace = finished_goods_warehouse_zone.objects.get(pk = zone_id)
+        form = finished_goods_warehouse_zone_form(request.POST or None, instance=zone_instanace)
+        page_name = 'Edit Zone'
+    else:
+        zone_instanace = None
+        form = finished_goods_warehouse_zone_form(request.POST or None, instance=zone_instanace)
+        page_name = 'Add Zone'
+        
     if request.method == "POST":
-        form = finished_goods_warehouse_zone_form(request.POST)
-
+        form = finished_goods_warehouse_zone_form(request.POST, instance=zone_instanace)
         if form.is_valid():
             zone = form.save(commit=False)
             zone.warehouse_finished_name = warehouse_id
             zone.save()
 
-    form = finished_goods_warehouse_zone_form()
-    zones = finished_goods_warehouse_zone.objects.filter(warehouse_finished_name = warehouse_id)
-
-    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'zones':zones,'warehouse_name':warehouse_name,'warehouses':warehouses})
-
-
-
-
-def edit_zone_in_warehouse(request,zone_id):
-    zone = finished_goods_warehouse_zone.objects.get(id = zone_id)
-
-    warehouse_id = finished_goods_warehouse_zone.objects.get(id = zone_id).warehouse_finished_name
-
-    warehouse_name = warehouse_id.warehouse_name_finished
-
-    zones = finished_goods_warehouse_zone.objects.filter(warehouse_finished_name = warehouse_id)
-
-    if request.method == "POST":
-        form = finished_goods_warehouse_zone_form(request.POST,instance=zone)
-        if form.is_valid():
-            form.save()
-            return redirect('add-zone-in-warehouse',id=warehouse_id.id)
-    form = finished_goods_warehouse_zone_form(instance=zone)
-
-    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'zones':zones,'warehouse_name':warehouse_name})
-
+            return redirect(reverse('add-zone-in-warehouse', args=[id]))
+    
+    
+    return render(request,'finished_product/add_zone_in_warehouse.html',{'form':form,'warehouse_id':warehouse_id,'warehouses':warehouses,'zones':zones,'page_name':page_name})
 
 
 
@@ -10467,13 +10597,25 @@ def delete_zone_in_warehouse(request,zone_id):
 
 
 
-def add_rack_in_zone(request,zone_id):
-    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id)
+def add_rack_in_zone(request,zone_id,rack_id=None):
+
+    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id).select_related("zone_finished_name")
+
     zone = finished_goods_warehouse_zone.objects.get(id = zone_id)
-    zone_name = zone.zone_name
+
+    if rack_id:
+        rack_instance = finished_goods_warehouse_racks.objects.get(pk=rack_id)
+        page_name = 'Edit Rack'
+        form = finished_goods_warehouse_racks_form(request.POST or None, instance=rack_instance)
+    else:
+        rack_instance = None
+        page_name = 'Add Rack'
+        form = finished_goods_warehouse_racks_form()
+
 
     if request.method == "POST":
-        form = finished_goods_warehouse_racks_form(request.POST)
+
+        form = finished_goods_warehouse_racks_form(request.POST or None, instance=rack_instance)
 
         if form.is_valid():
             rack = form.save(commit=False)
@@ -10481,33 +10623,8 @@ def add_rack_in_zone(request,zone_id):
             rack.save()
 
             return redirect('add-rack-in-zone', zone_id=zone_id)
-    form = finished_goods_warehouse_racks_form()
-    return render(request,"finished_product/add_rack_in_zone.html",{'form':form,'racks':racks,'zone_name':zone_name})
-
-
-
-
-
-
-
-def edit_rack_in_zone(request,rack_id):
-    rack_instance = finished_goods_warehouse_racks.objects.get(id=rack_id)
-    rack_zone = finished_goods_warehouse_racks.objects.get(id = rack_id).zone_finished_name
-    zone_name = rack_zone.zone_name
-    racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=rack_zone)
-    if request.method == 'POST':
-        form = finished_goods_warehouse_racks_form(request.POST,instance=rack_instance)
-        if form.is_valid():
-            form.save()
-            
-            return redirect('add-rack-in-zone', zone_id=rack_zone.id)
-
-    form = finished_goods_warehouse_racks_form(instance=rack_instance)
-    return render(request,"finished_product/add_rack_in_zone.html",{'form':form,'racks':racks,'zone_name':zone_name})
-
-
-
-
+    
+    return render(request,"finished_product/add_rack_in_zone.html",{'form':form,'racks':racks,'zone':zone,'page_name':page_name})
 
 
 
@@ -10521,41 +10638,32 @@ def delete_rack_in_zone(request,rack_id):
 
 
 
-def add_bin_in_rack(request,rack_id):
-    bins = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id)
-    rack = finished_goods_warehouse_racks.objects.get(id=rack_id)
-    rack_name = rack.rack_name
+def add_bin_in_rack(request,rack_id,bin_id=None):
+
+    bins = finished_product_warehouse_bin.objects.filter(rack_finished_name = rack_id).select_related("rack_finished_name")
+
+    rack = get_object_or_404(finished_goods_warehouse_racks,id=rack_id)
+
+    if bin_id:
+        bin_instance = finished_product_warehouse_bin.objects.get(id=bin_id)
+        page_name = "Edit Bin"
+        form = finished_product_warehouse_bin_form(request.POST or None, instance = bin_instance)
+    else:
+        bin_instance = None
+        page_name = "Add Bin"
+        form = finished_product_warehouse_bin_form()
 
     if request.method == "POST":
-        form = finished_product_warehouse_bin_form(request.POST)
+        form = finished_product_warehouse_bin_form(request.POST or None, instance = bin_instance)
 
         if form.is_valid():
             bin = form.save(commit=False)
             bin.rack_finished_name = rack
             bin.save()
             return redirect('add-bin-in-rack', rack_id=rack_id)
-    form = finished_product_warehouse_bin_form()
-    return render(request,"finished_product/add_bin_in_rack.html",{'form':form,'bins':bins,'rack_name':rack_name})
+    
+    return render(request,"finished_product/add_bin_in_rack.html",{'form':form,'bins':bins,'rack':rack,'page_name':page_name})
 
-
-
-
-
-
-
-def edit_bin_in_rack(request,bin_id):
-    bin_instance = finished_product_warehouse_bin.objects.get(id=bin_id)
-    bin_rack = finished_product_warehouse_bin.objects.get(id=bin_id).rack_finished_name
-    rack_name = bin_rack.rack_name
-    bins = finished_product_warehouse_bin.objects.filter(rack_finished_name = bin_rack)
-
-    if request.method == "POST":
-        form = finished_product_warehouse_bin_form(request.POST,instance=bin_instance)
-        if form.is_valid():
-            form.save()
-            return redirect("add-bin-in-rack" ,rack_id = bin_rack.id)
-    form = finished_product_warehouse_bin_form(instance=bin_instance)
-    return render(request,"finished_product/add_bin_in_rack.html",{'form':form,'bins':bins,'rack_name':rack_name})
 
 
 
@@ -10567,11 +10675,13 @@ def delete_bin_in_rack(request,bin_id):
 
 
 
+
+
+
+
 def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
     party_names = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Creditors')
     selected_item_id = request.GET.get('selectedItemId')
-
-    
 
     if p_id:
 
@@ -12943,6 +13053,11 @@ def UniqueValidCheckAjax(request):
         searched_value = request.GET.get('sales_no').strip()
         model_name = sales_voucher_master_finish_Goods
         col_name = 'sales_no'
+
+    elif 'sales_no' in searched_from:
+        searched_value = request.GET.get('sales_no').strip()
+        model_name = sales_voucher_master_outward_scan
+        col_name = 'sales_no'
     
     else:
         model_name = None
@@ -13457,18 +13572,6 @@ def allfinishedgoodsstockreport(request):
 
 
 
-
-
-def lwi_pending_report(request,ref_id):
-
-    return render(request,'reports/lwipendingreport.html')
-
-
-
-
-
-
-
 @login_required(login_url='login')
 def qc_approved_model_wise_report(request,ref_id):
     
@@ -13708,7 +13811,7 @@ def raw_material_excel_upload(request):
         
 
 
-
+@login_required(login_url='login')
 def finished_goods_model_wise_report(request,ref_id):
     
     if ref_id:
@@ -13742,6 +13845,7 @@ def finished_goods_model_wise_report(request,ref_id):
     return render(request, 'reports/finishedgoodsmodelwisereport.html',{'data_list':initial_sorted_data , 'product_instance':product_instance})
 
 
+@login_required(login_url='login')
 def lwo_and_lwi_report_vendor_wise(request):
 
     vendor_name = request.POST.get("vendor_name")
@@ -13781,6 +13885,8 @@ def lwo_and_lwi_report_vendor_wise(request):
     return render(request,'reports/lwo_and_lwi_report_vendor_wise.html',{'queryset':queryset,'vendor_name':vendor_name})
 
 
+
+@login_required(login_url='login')
 def finished_goods_sorting_list(request):
     
     finished_goods_purchase_voucher_instances = product_purchase_voucher_master.objects.all().annotate(
@@ -13788,15 +13894,14 @@ def finished_goods_sorting_list(request):
         total_qc_qty=Sum('product_purchase_voucher_items__qc_recieved_qty'),
         total_diff_qty = Sum('product_purchase_voucher_items__diffrence_qty'),
         total_boxex_qty = Sum('product_purchase_voucher_items__product_name__Product__Product_QtyPerBox')
-        )
-    
+        ).select_related('finished_godowns', 'party_name')
 
     finished_goods_transfer_m_instances = Finished_goods_Stock_TransferMaster.objects.filter(transnfer_cancelled=False).annotate(
     total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer'), 
     total_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),
     total_diff_qty=Sum('finished_goods_transfer_records__diffrence_qty'),
     total_boxex_qty=Sum('finished_goods_transfer_records__product__Product__Product_QtyPerBox')
-    )
+    ).select_related('source_warehouse', 'destination_warehouse')
    
     
 
@@ -13809,6 +13914,8 @@ def finished_goods_sorting_list(request):
 
 
 
+
+@login_required(login_url='login')
 def warehouse_navigator(request):
     warehouses = Finished_goods_warehouse.objects.prefetch_related('warehouses__zones__racks').all()
     return render(request,'finished_product/warehouse_navigator.html',{'warehouses':warehouses})
@@ -13817,36 +13924,51 @@ def warehouse_navigator(request):
 
 
 
+
+
+
+
+@login_required(login_url='login')
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
-        
 
         if not product_name_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
-        
+
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
-    
 
-        products_purchase = product_purchase_voucher_items.objects.filter(Q(product_name__PProduct_SKU__icontains=product_name_typed) |Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |Q(product_name__Product__Model_Name__icontains=product_name_typed),qc_recieved_qty__gt=0).values('product_name__PProduct_SKU',
-        'product_name__PProduct_color__color_name',
-        'product_name__Product__Model_Name',
-        'qc_recieved_qty',
-        'product_name__Product__Product_Refrence_ID',
-        'product_name__PProduct_image',)
+        # Fetch products from purchases
+        products_purchase = product_purchase_voucher_items.objects.filter(
+            Q(product_name__PProduct_SKU__icontains=product_name_typed) |
+            Q(product_name__PProduct_color__color_name__icontains=product_name_typed) |
+            Q(product_name__Product__Model_Name__icontains=product_name_typed),
+            qc_recieved_qty__gt=0
+        ).values(
+            'product_name__PProduct_SKU',
+            'product_name__PProduct_color__color_name',
+            'product_name__Product__Model_Name',
+            'qc_recieved_qty',
+            'product_name__Product__Product_Refrence_ID',
+            'product_name__PProduct_image',
+        )
 
-        standardized_purchase = [
-            {
+        standardized_purchase = []
+
+        for item in products_purchase:
+            reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=item['product_name__PProduct_SKU'],picklist_master_instance__status="Pending").aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+
+            standardized_purchase.append({
                 'product_sku': item['product_name__PProduct_SKU'],
                 'product_color': item['product_name__PProduct_color__color_name'],
                 'product_model': item['product_name__Product__Model_Name'],
-                'qc_received_qty': item['qc_recieved_qty'],
-                'product_ref_id':item['product_name__Product__Product_Refrence_ID'],
-                'product_image':item['product_name__PProduct_image'],
-            }
-            for item in products_purchase
-        ]
+                'qc_received_qty': item['qc_recieved_qty'] - reserved_qty,
+                'product_ref_id': item['product_name__Product__Product_Refrence_ID'],
+                'product_image': item['product_name__PProduct_image'],
+            })
+            
 
+        # Fetch products from transfers
         products_transfer = Finished_goods_transfer_records.objects.filter(
             Q(product__PProduct_SKU__icontains=product_name_typed) |
             Q(product__PProduct_color__color_name__icontains=product_name_typed) |
@@ -13861,117 +13983,176 @@ def picklist_product_ajax(request):
             'product__PProduct_image',
         )
 
-        standardized_transfer = [
-            {
+        standardized_transfer = []
+
+        for item in products_transfer:
+            reserved_qty = Picklist_products_list.objects.filter(
+                product__PProduct_SKU=item['product__PProduct_SKU'],picklist_master_instance__status="Pending"
+            ).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+
+            standardized_transfer.append({
                 'product_sku': item['product__PProduct_SKU'],
                 'product_color': item['product__PProduct_color__color_name'],
                 'product_model': item['product__Product__Model_Name'],
-                'qc_received_qty': item['qc_recieved_qty'],
-                'product_ref_id':item['product__Product__Product_Refrence_ID'],
-                'product_image':item['product__PProduct_image'],
-            }
-            for item in products_transfer
-        ]
+                'qc_received_qty': item['qc_recieved_qty'] - reserved_qty,
+                'product_ref_id': item['product__Product__Product_Refrence_ID'],
+                'product_image': item['product__PProduct_image'],
+            })
 
         merged_products = chain(standardized_purchase, standardized_transfer)
-        
+
         final_data = {}
 
-        for item in merged_products:
+        # Retrieve session-stored bin data
+        temp_bins = request.session.get('temp_bins', {})
 
+        for item in merged_products:
             product_sku = item['product_sku']
 
-            reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
+            # Fetch reserved quantity
+            reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=product_sku,picklist_master_instance__status="Pending").aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
-            product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product = product_sku).order_by('-updated_date')
+            # Fetch bin data
+            product_bin_queryset = Product_bin_quantity_through_table.objects.filter(product__PProduct_SKU=product_sku).order_by('created_date')
 
-            formatted_bins_list = [{i.bin.id : [i.bin.bin_name , i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0]
+            formatted_bins_list = [
+                {i.bin.id: [i.bin.bin_name, i.product_quantity]} for i in product_bin_queryset if i.product_quantity > 0
+            ]
+
+            bin_id_list = [i.bin.id for i in product_bin_queryset]
+
+            # Check if the SKU-bin combination exists in the session
+            formatted_bins_list_duplicate = [
+                {i.bin.id: [i.bin.bin_name, i.product_quantity, i.product.PProduct_SKU]} for i in product_bin_queryset if i.product_quantity > 0
+            ]
+
+            for i in formatted_bins_list_duplicate:
+                for bin_id, bin_data in i.items():
+                    key = f"{bin_data[2]}_{bin_id}"
+                    if key in temp_bins:
+                        bin_data[1] = int(temp_bins[key]['balance_qty'])
+
+            formatted_bins_list = [
+                {bin_id: [bin_data[0], bin_data[1]]} for i in formatted_bins_list_duplicate for bin_id, bin_data in i.items() if bin_data[1] > 0
+            ]
 
             if product_sku in final_data:
                 final_data[product_sku][2] += item['qc_received_qty']
-                
             else:
                 final_data[product_sku] = [
                     item['product_model'],
                     item['product_color'],
                     item['qc_received_qty'],
-                    formatted_bins_list, 
+                    formatted_bins_list,
                     reserved_qty,
                     item['product_ref_id'],
                     item['product_image']
                 ]
 
+        logger.info(f"Final Product Data: {final_data}")
 
         return JsonResponse({'products': final_data}, status=200)
 
     except Exception as e:
-        logger.error(f"Error in picklist_product_ajax: {str(e)}")
+        logger.error(f"Error in picklist_product_ajax: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
 
 
 
 
-
+@login_required(login_url='login')
 def bin_quantity_ajax(request):
-    """
-    Handles adding/updating bin quantity in the Product_bin_quantity_through_table table.
-    Ensures real-time stock updates and prevents negative bin quantities.
-    """
-    logger.info('bin quantity function called')
+    logger.info('Temp bin quantity function called using sessions')
 
     try:
+        # Fetch and validate request parameters
         sku = request.GET.get('sku')
         binName = request.GET.get('binName')
+        binQty = request.GET.get('binQty')
         productQty = request.GET.get('productQty')
-        
+
         if not sku or not binName:
-            return JsonResponse({"error": "Missing required parameters"}, status=400)
+            return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
 
         try:
+            binQty = int(binQty) if binQty and binQty.isdigit() else 0
             productQty = int(productQty) if productQty and productQty.isdigit() else 0
         except ValueError:
-            return JsonResponse({"error": "Invalid quantity values"}, status=400)
+            return JsonResponse({"status": "error", "message": "Invalid quantity values"}, status=400)
 
-        bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
-        bin_objects.product_quantity = bin_objects.product_quantity - productQty
-        bin_objects.save()
+        # Initialize session storage if not present
+        if 'temp_bins' not in request.session:
+            request.session['temp_bins'] = {}
 
-        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_quantity}")
+        temp_bins = request.session['temp_bins']
+
+        # Create a unique key for SKU and binName
+        key = f"{sku}_{binName}"
+
+        if key in temp_bins:
+            previous_qty = temp_bins[key]['product_qty']
+            temp_bins[key]['product_qty'] = productQty
+            temp_bins[key]['bin_qty'] = binQty
+
+            # Corrected balance calculation
+            temp_bins[key]['balance_qty'] = max(0, binQty - productQty)
+
+            logger.info(f"Updated existing record in session: SKU={sku}, Bin={binName}, New Product Qty={productQty}, New Balance Qty={temp_bins[key]['balance_qty']}")
+        else:
+            temp_bins[key] = {
+                "sku": sku,
+                "bin_name": binName,
+                "bin_qty": binQty,
+                "product_qty": productQty,
+                "balance_qty": max(0, binQty - productQty),
+            }
+            logger.info(f"Created new record in session: SKU={sku}, Bin={binName}, Bin Qty={binQty}, Product Qty={productQty}, Balance Qty={temp_bins[key]['balance_qty']}")
+
+        # Save the updated session
+        request.session.modified = True
+
+        return JsonResponse({
+            "status": "success",
+            "bin_qty": temp_bins[key]['bin_qty'],
+            "product_qty": temp_bins[key]['product_qty'],
+            "balance_qty": temp_bins[key]['balance_qty']
+        }, status=200)
 
     except Exception as e:
-        logger.error(f"Error in bin_quantity_ajax: {str(e)}")
-        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+        logger.error(f"Error in bin_quantity_ajax: {str(e)}", exc_info=True)
+        return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
 
 
-
-
-
-
-
-def create_update_picklist(request,p_id=None):
-
+@login_required(login_url='login')
+def create_update_picklist(request, p_id=None):
+    
+    if 'temp_bins' in request.session:
+        del request.session['temp_bins']
+        request.session.modified = True
+    
     if p_id:
-        voucher_instance = Picklist_voucher_master.objects.get(id=p_id)
-        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
-        formset = picklistcreateformsetupdate(request.POST or None,instance=voucher_instance)
+        voucher_instance = get_object_or_404(Picklist_voucher_master, id=p_id)
+        master_form = Picklistvouchermasterform(request.POST or None, instance=voucher_instance)
+        formset = picklistcreateformsetupdate(request.POST or None, instance=voucher_instance)
+        types = None
     else:
         voucher_instance = None
-        master_form  = Picklistvouchermasterform()
+        master_form = Picklistvouchermasterform()
         formset = picklistcreateformset()
-        # temp_product_bin_for_picklist.objects.all().delete()
-    
+        types = ledgerTypes.objects.all()
+
     if request.method == "POST":
-        print(request.POST)
-        master_form  = Picklistvouchermasterform(request.POST or None,instance=voucher_instance)
-        formset = picklistcreateformset(request.POST or None,instance=voucher_instance)
+        logger.info(f"Received POST data: {request.POST}")
+        
+        master_form = Picklistvouchermasterform(request.POST, instance=voucher_instance)
+        formset = picklistcreateformsetupdate(request.POST, instance=voucher_instance) if p_id else picklistcreateformset(request.POST)
 
         if not master_form.is_valid():
-            print("Form Errors:", master_form.errors)
+            logger.error(f"Master Form Errors: {master_form.errors}")
 
-        if not formset.is_valid():
-            for form in formset:
-                if not form.is_valid():
-                    print("Form Errors:", form.errors)
+        for form in formset:
+            if not form.is_valid():
+                logger.error(f"Form Errors: {form.errors}")
 
         if master_form.is_valid() and formset.is_valid():
             try:
@@ -13980,59 +14161,108 @@ def create_update_picklist(request,p_id=None):
                     master_form_instance.c_user = request.user
                     master_form_instance.save()
 
-
+                    
+                    # Handle deleted forms (Restoring bin quantity)
                     for form in formset.deleted_forms:
                         if form.instance.pk:
+                            sku = form.instance.product
+                            binName = form.instance.bin_number
+                            productQty = form.instance.product_quantity
+
+                            bin_object, _ = Product_bin_quantity_through_table.objects.get_or_create(product=sku, bin=binName)
+                            bin_object.product_quantity += productQty  # Restore the quantity
+                            bin_object.save()
+
                             form.instance.delete()
 
+                    # Handle new or updated forms (Deducting bin quantity)
+                    formset.forms = [form for form in formset.forms if form.has_changed()]
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
                             form_instance.picklist_master_instance = master_form_instance
-                            form_instance.save()
+
+                            sku = form_instance.product.PProduct_SKU
+                            bin_id = form_instance.bin_number
+                            qty = form_instance.product_quantity
+
+                            bin_qty_object, _ = Product_bin_quantity_through_table.objects.get_or_create(product=sku, bin=bin_id)
+                            if bin_qty_object.product_quantity >= qty:
+                                bin_qty_object.product_quantity -= qty
+                                bin_qty_object.save()
+                                form_instance.save()
+                            else:
+                                logger.warning(f"Insufficient stock for SKU={sku}, Bin={bin_id}. Required={qty}, Available={bin_qty_object.product_quantity}")
+                                return JsonResponse({"status": "error", "message": "Insufficient stock"}, status=400)
+
+                    total_qty = master_form_instance.picklist_products_list.aggregate(total=Sum('product_quantity'))['total'] or 0
+                    master_form_instance.total_qty = total_qty
+                    master_form_instance.save()
+
                     return redirect('all-picklists-list')
-                
+
             except Exception as e:
-                print(e)
-    return render(request,'finished_product/createupdatepicklist.html',{'master_form':master_form,'formset':formset})
+                logger.error(f"Error while processing picklist: {str(e)}", exc_info=True)
+                return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
+
+    return render(request, 'finished_product/createupdatepicklist.html', {'master_form': master_form, 'formset': formset,'types':types})
 
 
 
+@login_required(login_url='login')
 def delete_form_quantity_revert(request):
     """
-    Handles adding/updating bin quantity in the Product_bin_quantity_through_table table.
-    Ensures real-time stock updates and prevents negative bin quantities.
+    Handles reverting bin quantity when a product is deleted from the picklist.
+    Updates session-based bin data to ensure real-time stock updates.
     """
     logger.info('delete_form_quantity_revert function called')
 
     try:
         sku = request.GET.get('skus')
-        binName = request.GET.get('binName')
-        productQty = request.GET.get('productQty')
+        bin_id = request.GET.get('binName')
+        product_qty = request.GET.get('productQty')
 
-        if not sku or not binName:
+        if not sku or not bin_id:
             return JsonResponse({"error": "Missing required parameters"}, status=400)
 
         try:
-            productQty = int(productQty) if productQty and productQty.isdigit() else 0
+            product_qty = int(product_qty) if product_qty and product_qty.isdigit() else 0
         except ValueError:
-            return JsonResponse({"error": "Invalid quantity values"}, status=400)
+            return JsonResponse({"error": "Invalid quantity value"}, status=400)
 
-        bin_objects, created = Product_bin_quantity_through_table.objects.get_or_create(product=sku,bin=binName)
-        bin_objects.product_quantity = bin_objects.product_quantity + productQty
-        bin_objects.save()
+        # Retrieve or initialize session-stored bin data
+        temp_bins = request.session.get('temp_bins', {})
 
-        logger.info(f"Updated bin data: SKU={sku}, Bin={binName}, Bin Qty={bin_objects.product_quantity}")
+        key = f"{sku}_{bin_id}"
 
+        if key in temp_bins:
+            temp_bins[key]['balance_qty'] += product_qty
+        else:
+            temp_bins[key] = {'balance_qty': product_qty}
+
+        # Save updated bin data back to the session
+        request.session['temp_bins'] = temp_bins
+        request.session.modified = True
+
+        logger.info(f"Updated session bin data: SKU={sku}, Bin={bin_id}, Bin Qty={temp_bins[key]['balance_qty']}")
+
+        return JsonResponse({"success": "Bin quantity updated successfully"}, status=200)
 
     except Exception as e:
-        logger.error(f"Error in delete_form_quantity_revert: {str(e)}")
+        logger.error(f"Error in delete_form_quantity_revert: {str(e)}", exc_info=True)
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
 
+
+@login_required(login_url='login')
 def deletepicklist(request,pl_id):
     picklist = Picklist_voucher_master.objects.get(pk=pl_id)
+
+    if picklist.status != "Pending":
+        messages.error(request, "Only Pending picklists can be deleted.")
+        return redirect("all-picklists-list")
+    
     picklist_product_instance = Picklist_products_list.objects.filter(picklist_master_instance = pl_id)
     for instance in picklist_product_instance:
         bin_qty_object = Product_bin_quantity_through_table.objects.get(bin=instance.bin_number, product=instance.product)
@@ -14043,15 +14273,15 @@ def deletepicklist(request,pl_id):
 
 
 
-
+@login_required(login_url='login')
 def all_picklists_list(request):
-    all_picklists = Picklist_voucher_master.objects.prefetch_related('picklist_products_list__product').annotate(total_quantity=Sum('picklist_products_list__product_quantity'))
+    all_picklists = Picklist_voucher_master.objects.all().annotate(scanned_qty=Sum("picklist_process_in_outward__balance_qty"))
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
 
 
 
 
-
+@login_required(login_url='login')
 def picklist_view(request,pl_id):
     picklist_number=get_object_or_404(Picklist_voucher_master,pk=pl_id)
     picklist_data = Picklist_products_list.objects.filter(picklist_master_instance=pl_id)
@@ -14060,7 +14290,7 @@ def picklist_view(request,pl_id):
 
 
 
-
+@login_required(login_url='login')
 def download_picklist_pdf(request,pl_id):
  # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14104,10 +14334,7 @@ def download_picklist_pdf(request,pl_id):
 
 
 
-
-
-
-
+@login_required(login_url='login')
 def download_picklist_excel(request,pl_id):
     # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14157,32 +14384,100 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
-
-
-
+@login_required(login_url='login')
 def outward_picklist_no_ajax(request):
+
     picklistNo = request.GET.get('picklistNo')
+
     try:
+
         picklist_qty = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).aggregate(total_qty=Sum('product_quantity'))
 
-        return JsonResponse({"status": "success", "picklistNo": picklistNo, "picklisQty":picklist_qty['total_qty']}, status=200)
+        picklist_data = Picklist_products_list.objects.filter(picklist_master_instance__picklist_no=picklistNo).select_related('product', 'picklist_master_instance')
+        
+        try:
+            dict_to_send = {}
 
+
+            for i in picklist_data:
+                if i.picklist_master_instance.status == 'Pending':
+                    sku = i.product.PProduct_SKU
+                    id = i.picklist_master_instance.id
+                    
+                    if picklistNo not in dict_to_send:
+                        dict_to_send[picklistNo] = []
+
+                    
+                    check_sku = next((j for j in dict_to_send[picklistNo] if j['sku'] == sku), None)
+
+                    if check_sku:
+                        check_sku['qty'] += i.product_quantity  # Add quantity if SKU exists
+                    else:
+                        
+                        dict_to_send[picklistNo].append({
+                            'sku': sku,
+                            'model_name': i.product.Product.Model_Name,
+                            'color': i.product.PProduct_color.color_name,
+                            'qty': i.product_quantity,
+                            'id':i.id
+                        })
+                else:
+                    message.error(request,"can't use this picklist")
+                
+
+            return JsonResponse({"status": "success", "picklistDict": dict_to_send, "picklistNo":picklistNo, "picklisQty": picklist_qty['total_qty'],'id':id}, status=200)
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({"status": "error", 'message':'Picklist close'}, status=400)
+            
     except Exception as e:
-        return JsonResponse({"error": "An error occurred while processing the request."}, status=500) 
+        return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
 
 
+@login_required(login_url='login')
+def outward_scan_serial_no_process(request):
+    print("in scan def")
+    try:
+        serialNo = request.GET.get('serialNo')
+        picklistNo = request.GET.get('pickNo')
+        outwardNo = request.GET.get('outwardNo')
 
+        print('serialNo = ',serialNo)
 
+        if not serialNo:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
 
+        
+        check_if_exist = outward_products.objects.filter(outward_no__outward_no = outwardNo, unique_serial_no=serialNo).exists()
 
+        if check_if_exist:
+            return JsonResponse({'error': 'Serial No already exists'}, status=400)
+        
 
+        filtered_product = finishedgoodsbinallocation.objects.get(unique_serial_no = serialNo, outward_done = False)
 
+        list_to_send = []
 
+        product_image_url = request.build_absolute_uri(filtered_product.product.PProduct_image.url)
 
+        list_to_send.append(
+        [filtered_product.product.Product.Product_Refrence_ID,
+        filtered_product.product.PProduct_SKU,
+        filtered_product.product.Product.Model_Name,
+        filtered_product.product.PProduct_color.color_name,
+        filtered_product.unique_serial_no,
+        filtered_product.bin_number.bin_name,
+        1,
+        product_image_url,
+        filtered_product.bin_number.id,
+        picklistNo])
 
-
-
-
+        print('list_to_send = ',list_to_send)
+        return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
+        
+    except Exception as e:
+        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
 
 
 from decimal import Decimal
@@ -14192,26 +14487,67 @@ def decimal_to_float(obj):
     raise TypeError("Type not serializable")
 
 
-
-
-
 from urllib.parse import urlencode
+@login_required(login_url='login')
 def outward_scan_product_create(request,o_id=None):
-
+    
     if o_id:
         outward_instance = get_object_or_404(outward_product_master,pk=o_id)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormsetupdate(request.POST or None,instance=outward_instance)
+
+        picklist_data_queryset = Picklist_process_in_outward.objects.filter(outward_no=o_id).prefetch_related(
+            'picklist__picklist_products_list__product'
+        )
+
+
+        dict_to_send = {}
+
+        for data in picklist_data_queryset:
+            picklist_id = data.picklist.picklist_no
+
+            if picklist_id not in dict_to_send:
+                dict_to_send[picklist_id] = []
+
+            for product_list in data.picklist.picklist_products_list.all():
+                product_sku = product_list.product.PProduct_SKU
+                qty = product_list.product_quantity
+                model_name = product_list.product.Product.Model_Name
+                color = product_list.product.PProduct_color.color_name
+
+                found = False
+                for item in dict_to_send[picklist_id]:
+                    if item['sku'] == product_sku:
+                        item['qty'] += qty
+                        found = True
+                        break
+                
+
+                if not found:
+                    dict_to_send[picklist_id].append({
+                        'sku': product_sku,
+                        'model_name': model_name,
+                        'color': color,
+                        'qty': qty
+                    })
+
+        print('dict_to_send = ', dict_to_send)
+
     else:
         outward_instance = None
         master_form = Outwardproductmasterform()
+        picklist_formset = PicklistProcessInOutwardFormset()
         formset = OutwardProductcreateFormSet()
+        dict_to_send = ''
     
 
     if request.method == 'POST':
         # print(request.POST)
         master_form = Outwardproductmasterform(request.POST or None,instance=outward_instance)
         formset = OutwardProductupdateFormSet(request.POST or None,instance=outward_instance)
+        picklist_formset = PicklistProcessInOutwardFormsetupdate(request.POST or None, instance=outward_instance)
+
 
         if not master_form.is_valid():
             print("Form Errors:", master_form.errors)
@@ -14235,19 +14571,107 @@ def outward_scan_product_create(request,o_id=None):
                             form.instance.delete()
                     
                     
-
+                    formset.forms = [form for form in formset if form.has_changed()]
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
+
                             form_instance.outward_no = master_form_instance
+
+                            serial_no = form_instance.unique_serial_no
+                            
+                            try:
+                                inward_instance = finishedgoodsbinallocation.objects.get(unique_serial_no=serial_no)
+                                # print(f"Found inward_instance: {inward_instance}")
+
+                                # Update outward_done safely
+                                inward_instance.outward_done = True
+                                inward_instance.save(update_fields=['outward_done'])  # Skips bin validation
+
+                                # print(f" Updated outward_done for: {serial_no}")
+
+                            except finishedgoodsbinallocation.DoesNotExist:
+                                print(f"Error: No record found with unique_serial_no = {serial_no}")
+
+                            except Exception as e:
+                                print(f"Unexpected error: {e}")
+
                             form_instance.save()
 
 
+                    if not picklist_formset.is_valid():
+                        for form in picklist_formset:
+                            if not form.is_valid():
+                                print("Picklist Form Errors:", form.errors)
+
+
+                    if picklist_formset.is_valid():
+
+                        formset.forms = [form for form in formset if form.has_changed()]
+
+                        for form in picklist_formset:
+                            picklist_form_instance = form.save(commit=False)
+                            picklist_form_instance.outward_no = master_form_instance
+                            picklist_form_instance.save()
+
+
+                sales_voucher = sales_voucher_master_outward_scan.objects.filter(outward_no=master_form_instance).first()
+
+                if sales_voucher:
+                    products = {}
+
+                    post_data = request.POST.dict()
+
+                    total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
+
+                    # Initialize the products dictionary with the outward number as the key
+                    products[master_form_instance.outward_no] = []
+
+                    for i in range(total_forms):
+                        # Get form data
+                        product = post_data.get(f'outward_product-{i}-product')
+                        quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
+                        delete_flag = post_data.get(f'outward_product-{i}-DELETE', False)  # Check if the form is marked for deletion
+
+                        if delete_flag:  # If the product is marked for deletion, skip it
+                            print(f"Product {product} is marked for deletion, skipping.")
+                            continue  # Skip this product and don't count in quantity
+
+                        print(f"Processing product: {product}, Quantity: {quantity}")
+
+                        # Look for the product in the existing list
+                        found = False
+                        for p in products[master_form_instance.outward_no]:
+                            if p['product'] == product:
+                                # If found, just update the quantity
+                                p['quantity'] += quantity
+                                found = True
+                                break
+
+                        if not found:
+                            # If not found, fetch product details and append to the list
+                            product_info = PProduct_Creation.objects.get(PProduct_SKU=product)
+                            products[master_form_instance.outward_no].append({
+                                'product_ref': post_data.get(f'outward_product-{i}-product_RefNo'),
+                                'product_name': post_data.get(f'outward_product-{i}-product_name_value'),
+                                'product': product,
+                                'color': post_data.get(f'product_color_{i}'),
+                                'quantity': quantity,
+                                'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                'gst': product_info.Product.Product_GST.gst_percentage
+                            })
+
+                    # Store the updated products data in the session
+                    request.session['products_data'] = products
+
+                    return redirect(f'/salesvouchercreateupdateforwarehouse/{sales_voucher.id}/')  # Redirect to edit page
+                
+                else:
                     products = {}
 
                     post_data = request.POST.dict()
                     
-
                     total_forms = int(post_data.get('outward_product-TOTAL_FORMS', 0))
 
                     products[master_form_instance.outward_no] = []
@@ -14255,8 +14679,14 @@ def outward_scan_product_create(request,o_id=None):
                     for i in range(total_forms):
                         product = post_data.get(f'outward_product-{i}-product')
                         quantity = int(post_data.get(f'outward_product-{i}-quantity', 0))
+                        delete_flag = post_data.get(f'outward_product-{i}-DELETE', False)  # Check if the form is marked for deletion
 
-                        print(product)
+                        if delete_flag:  # If the product is marked for deletion, skip it
+                            print(f"Product {product} is marked for deletion, skipping.")
+                            continue  # Skip this product and don't count in quantity
+
+                        print(f"Processing product: {product}, Quantity: {quantity}")
+                        
 
                         found = False
                         for p in products[master_form_instance.outward_no]:
@@ -14286,36 +14716,131 @@ def outward_scan_product_create(request,o_id=None):
             except Exception as e:
                 print(e)
     
-    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset})
+    return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset ,'dict_to_send':dict_to_send})
 
 
-
-
+@login_required(login_url='login')
 def outward_scan_product_list(request):
-    outward_list = outward_product_master.objects.all()
-    # .annotate(total_qty=Sum('outward_product__quantity'))
+
+    sale_qty_subqeury = sales_voucher_master_outward_scan.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_sale_qty=Sum('sales_voucher_outward_scan__quantity')).values('total_sale_qty')
+    
+    picklist_qty_subqeury = Picklist_process_in_outward.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_qty = Sum('picklist__picklist_products_list__product_quantity')).values('total_qty')
+
+    outward_list = outward_product_master.objects.all().annotate(
+        total_qty=Sum('outward_product__quantity'),
+        picklist_total_qty=Subquery(picklist_qty_subqeury),
+        remaining_qty=F('picklist_total_qty') - F('total_qty'),
+        sale_total_qty=Subquery(sale_qty_subqeury))
+    
+
     return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
 
 
-
-
-
+@login_required(login_url='login')
 def sales_voucher_create_update_for_warehouse(request, s_id=None):
     print("in sale")
     party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
+
     warehouse_names = Finished_goods_warehouse.objects.all()
     
+    salesman_list = Salesman_info.objects.all()
+
     if s_id:
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
         master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
-        formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
         page_name = 'Edit Sales Invoice'
         warehouse_id = voucher_instance.selected_warehouse.id
-        outward_number = None
+        outward_number = voucher_instance.outward_no.outward_no
         print('warehouse_id', warehouse_id)
+
+        products = request.session.get('products_data', None)
+
+        if products:
+            for key, val in products.items():
+                outward_number = key
+                print('outward_number = ', outward_number)
+                product_list2 = val
+                break
+            
+            
+            # print('product_list2 = ', product_list2)
+
+            sales_product_info = sales_voucher_outward_scan.objects.filter(sales_voucher_master = s_id).values('product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','trade_disct','spl_disct')
+
+            # print('sales_product_info = ', sales_product_info)
+            sales_product_info_list = list(sales_product_info)
+
+            merged_product_list = []
+
+            for product in product_list2:
+                sku = product['product']
+                matched = False
+                
+                for sales_product in sales_product_info_list:
+                    if sku == str(sales_product['product_name__PProduct_SKU']):
+                        # Merge the data and add to the list
+                        merged_product_list.append({
+                            'product_ref': product['product_ref'],
+                            'product_name': product['product_name'],
+                            'product': product['product'],
+                            'color': product['color'],
+                            'quantity': product['quantity'],
+                            'mrp': product['mrp'],
+                            'customer_price': product['customer_price'],
+                            'gst': product['gst'],
+                            'trade_disct': sales_product['trade_disct'],
+                            'spl_disct': sales_product['spl_disct'],
+                        })
+                        matched = True
+                        break
+                
+                # If no match found, still append the product with the existing info (no trade_disct or spl_disct)
+                if not matched:
+                    merged_product_list.append({
+                        'product_ref': product['product_ref'],
+                        'product_name': product['product_name'],
+                        'product': product['product'],
+                        'color': product['color'],
+                        'quantity': product['quantity'],
+                        'mrp': product['mrp'],
+                        'customer_price': product['customer_price'],
+                        'gst': product['gst'],
+                        'trade_disct': '',
+                        'spl_disct': '',
+                    })
+
+            # Debug: Print the merged list
+            print('merged_product_list = ', merged_product_list)
+
+
+            salesvoucherfromscanupdateformset = inlineformset_factory(
+            sales_voucher_master_outward_scan, 
+            sales_voucher_outward_scan, 
+            form=SalesvoucheroutwardscanForm, 
+            extra=len(merged_product_list),  # Adds extra forms based on the new product list
+            can_delete=True
+            )
+
+            formset = salesvoucherfromscanupdateformset(
+            request.POST or None, 
+            initial=merged_product_list, 
+            )
+
+        else:
+            merged_product_list = []
+            salesvoucherfromscanupdateformset = inlineformset_factory(
+            sales_voucher_master_outward_scan, 
+            sales_voucher_outward_scan, 
+            form=SalesvoucheroutwardscanForm, 
+            extra=0,  # Adds extra forms based on the new product list
+            can_delete=True
+            )
+            formset = salesvoucherfromscanupdateformset(request.POST or None, instance=voucher_instance)
+        
+
     else:
         voucher_instance = None
-
+        
         page_name = 'Create Sales Invoice'
 
         products = request.session.get('products_data', None)
@@ -14323,6 +14848,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         if products:
             for key, val in products.items():
                 outward_number = key
+                print('outward_number = ', outward_number)
                 product_list2 = val
                 break
 
@@ -14334,8 +14860,23 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
     if request.method == "POST":
         
-        master_form = Salesvouchermasteroutwardscanform(request.POST, instance=voucher_instance)
-        formset = salesvoucherfromscancreateformset(request.POST, instance=voucher_instance)
+        master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
+
+        if s_id:
+            formset = salesvoucherfromscanupdateformset(request.POST, instance=voucher_instance)
+
+            old_instances = sales_voucher_outward_scan.objects.filter(sales_voucher_master=voucher_instance)
+
+            for old_instance in old_instances:
+            
+                warehouse_instance = Product_warehouse_quantity_through_table.objects.get(warehouse=old_instance.sales_voucher_master.selected_warehouse,product=old_instance.product_name)
+
+                warehouse_instance.quantity += old_instance.quantity 
+                warehouse_instance.save()
+
+            old_instances.delete()
+        else:
+            formset = salesvoucherfromscancreateformset(request.POST or None )
 
 
         if not master_form.is_valid():
@@ -14352,13 +14893,21 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
                 with transaction.atomic():
                     master_form_instance = master_form.save(commit=False)
 
-                    o_id = outward_product_master.objects.get(outward_no = outward_number)
-
-                    master_form_instance.outward_no = o_id
+                    if outward_number:
+                        try:
+                            o_id = outward_product_master.objects.get(outward_no=outward_number)
+                            master_form_instance.outward_no = o_id
+                        except outward_product_master.DoesNotExist:
+                            print(f"Error: Outward No {outward_number} not found.")
 
                     master_form_instance.save()
 
                     selected_warehouse = master_form_instance.selected_warehouse
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
 
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
@@ -14371,7 +14920,8 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
                             print('product_name from function = ', product_name)
 
-                    del request.session['products_data']
+                    if 'products_data' in request.session:
+                        del request.session['products_data']
 
                     return redirect('sales-voucher-list-warehouse')
 
@@ -14384,71 +14934,154 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         'page_name': page_name,
         'party_name': party_name,
         'warehouse_names': warehouse_names,
-        'outward_number':outward_number
+        'outward_number':outward_number,
+        'salesman_list':salesman_list
     })
-
 
 
 @login_required(login_url='login')
 def salesvoucherlistwarehouse(request):
-    sales_list = sales_voucher_master_outward_scan.objects.all()
-    return render(request,'accounts/sales_list_warehouse.html',{'sales_list':sales_list})
+
+    if 'products_data' in request.session:
+        del request.session['products_data']
+
+    sales_list = sales_voucher_master_outward_scan.objects.all().select_related(
+        'outward_no',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).prefetch_related('sales_voucher_outward_scan').values(
+            'id',
+            'created_date',
+            'outward_no__id',
+            'outward_no__outward_no',
+            'salesman__salesman_name',
+            'salesman__id',
+            'ledger_type',
+            'sale_no',
+            'party_name__name',
+            'party_name__id',
+            'sales_voucher_outward_scan__quantity',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+
+    sales_return = sales_return_voucher_master.objects.all().select_related(
+        'sales_voucher_master',
+        'sales_return_inward_instance',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).prefetch_related('sales_return_voucher').values(
+            'id',
+            'sales_voucher_master__id',
+            'sales_return_inward_instance__id',
+            'created_date',
+            'salesman__salesman_name',
+            'salesman__id',
+            'ledger_type',
+            'sales_return_inward_instance__sales_return_no',
+            'grand_total',
+            'party_name__name','party_name__id',
+            'sales_return_voucher__quantity'
+            ).annotate(total_qty = Sum('sales_return_voucher__quantity'))
+
+    final_list = sorted(
+        chain(sales_list, sales_return), key=lambda x: x['created_date']
+    )
+
+    return render(request,'accounts/sales_list_warehouse.html',{'final_list':final_list})
 
 
+@login_required(login_url='login')
+def sales_voucher_view_sort_with_salesman(request,id):
 
+    sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(salesman__id = id).select_related(
+        'outward_no',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sale_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
 
-def outward_scan_serial_no_process(request):
-    print("in scan def")
-    try:
-        serialNo = request.GET.get('serialNo')
+    sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(salesman__id = id).select_related(
+        'sales_voucher_master',
+        'sales_return_inward_instance',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sales_return_inward_instance__sales_return_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_return_voucher__quantity'))
+    
+
+    final_list = sorted(chain(sales_vouchers_queryset, sales_return_vouchers_queryset), key=lambda x: x['created_date'])
         
-        if not serialNo:
-                return JsonResponse({'error': 'Please enter a search term.'}, status=400)
-
-            
-        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_Refrence_ID','bin_number__bin_name','product__PProduct_image','bin_number'))
+    return render(request,'accounts/sales_voucher_view_sort_with_salesman.html',{'final_list':final_list,})
 
 
-        if filtered_product:
-            list_to_send = []
+@login_required(login_url='login')
+def sales_voucher_view_sort_with_partyname(request,id):
 
-            for query in filtered_product:
-                ref_no = query.get('product__Product__Product_Refrence_ID')
-                p_sku = query.get('product__PProduct_SKU')
-                serial_no = query.get('unique_serial_no')
-                product_model_name = query.get('product__Product__Model_Name')
-                img = query.get('product__PProduct_image')
-                color = query.get('product__PProduct_color__color_name')
-                bin = query.get('bin_number__bin_name')
-                bin_id = query.get('bin_number')
-                qty = 1
+    sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(party_name__id = id).select_related(
+        'outward_no',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sale_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
 
-                list_to_send.append([ref_no,p_sku,product_model_name,color,serial_no,bin,qty,img,bin_id])
-                
-            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
-            
-        return JsonResponse({'error': 'No items found.'}, status=404)
-        
-    except Exception as e:
-        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
+    sales_return_vouchers_queryset = sales_return_voucher_master.objects.filter(party_name__id = id).select_related(
+        'sales_voucher_master',
+        'sales_return_inward_instance',
+        'party_name',
+        'selected_warehouse',
+        'salesman'
+        ).values(
+            'created_date',
+            'sales_return_inward_instance__sales_return_no',
+            'ledger_type',
+            'party_name__name',
+            'grand_total'
+            ).annotate(total_qty = Sum('sales_return_voucher__quantity'))
+
+    final_list = sorted(chain(sales_vouchers_queryset, sales_return_vouchers_queryset), key=lambda x: x['created_date'])
+
+    return render(request,'accounts/sales_voucher_view_sort_with_partyname.html',{'final_list':final_list,}) 
 
 
 
+@login_required(login_url='login')
 def ref_no_search_ajax(request):
     try:
         ref_no_typed = request.GET.get('productnamevalue')
-
+        print(ref_no_typed)
         if not ref_no_typed:
             return JsonResponse({'error': 'Please enter a search term.'}, status=400)
         
         logger.info(f"Search initiated by {request.user}: {ref_no_typed}")
 
         try:
-            reference_no = PProduct_Creation.objects.filter(Product__Product_Refrence_ID__icontains = ref_no_typed).values('Product__Product_Refrence_ID','Product__id')
+            reference_no = PProduct_Creation.objects.filter(Q(Product__Product_Refrence_ID__icontains = ref_no_typed) | Q(Product__Model_Name__icontains = ref_no_typed)).values('Product__Product_Refrence_ID','Product__id','Product__Model_Name')
 
             if reference_no.exists():
 
-                reference_no_dict = {product['Product__id']: [product.get('Product__Product_Refrence_ID', '')] for product in reference_no}
+                reference_no_dict = {product['Product__id']: [product.get('Product__Model_Name', ''),product.get('Product__Product_Refrence_ID', '')] for product in reference_no}
+
+                print('reference_no_dict = ',reference_no_dict)
 
                 logger.info(f"Search results for {ref_no_typed}: {reference_no_dict}")
 
@@ -14464,9 +15097,7 @@ def ref_no_search_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-
-
-
+@login_required(login_url='login')
 def party_name_search_ajax(request):
     try:
         party_name_typed = request.GET.get('productnamevalue')
@@ -14496,3 +15127,517 @@ def party_name_search_ajax(request):
     except Exception as e:
         logger.error(f"Error in party_name_search_ajax: {str(e)}")
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+@login_required(login_url='login')
+def otward_data_for_sale_return_ajax(request):
+    try:
+        sale_no = request.GET.get('saleNo')
+
+        print('sale_no = ', sale_no)
+
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no','party_name__name'
+        )
+
+        list_to_sent_for_outward_data = [] 
+
+        for data in outward_queryset:
+            list_to_sent_for_outward_data.append({
+                'PProduct_SKU': data['outward_no__outward_product__product__PProduct_SKU'],
+                'PProduct_image': data['outward_no__outward_product__product__PProduct_image'],
+                'Product_Refrence_ID': data['outward_no__outward_product__product__Product__Product_Refrence_ID'],
+                'PProduct_color': data['outward_no__outward_product__product__PProduct_color__color_name'],
+                'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
+                'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
+                'Quantity': data['outward_no__outward_product__quantity'],
+                'unique_serial_no': data['outward_no__outward_product__unique_serial_no']
+            })
+
+        list_to_send_for_sales_voucher_data = []
+
+        try:
+            sales_voucher = sales_voucher_master_outward_scan.objects.get(sale_no=sale_no)
+
+            list_to_send_for_sales_voucher_data.append({
+                'sale_id':sales_voucher.id,
+                'party_name': sales_voucher.party_name.id,
+                'party_name_value':sales_voucher.party_name.name,
+                'warehouse': sales_voucher.selected_warehouse.id,
+                'warehouse_value': sales_voucher.selected_warehouse.warehouse_name_finished,
+            })
+
+        except ObjectDoesNotExist:
+            print(f"Sales voucher with sale_no {sale_no} not found.")
+
+        return JsonResponse({'list_to_sent': list_to_sent_for_outward_data , 'list_to_send_for_sales_voucher_data':list_to_send_for_sales_voucher_data}, status=200)
+
+    except Exception as e:
+        logger.error(f"Error in otward_data_for_sale_return_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+@login_required(login_url='login')
+def process_serial_no_for_return_sales_ajax(request):
+    try:
+        serial_no = request.GET.get('serialNo')
+        sale_no = request.GET.get('saleNo')
+
+        try:
+            outward_no = get_object_or_404(sales_voucher_master_outward_scan,sale_no=sale_no)
+            check_if_exist = outward_products.objects.get(outward_no=outward_no.outward_no, unique_serial_no = serial_no)
+            
+            if check_if_exist:
+                
+                product_scanned_sku = check_if_exist.product.PProduct_SKU
+
+                product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_scanned_sku)
+
+                model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
+                product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
+                product_sku = product_instance.PProduct_SKU
+                product_color = product_instance.PProduct_color.color_name if product_instance.PProduct_color else None
+                product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
+
+                product_main_cats = product_instance.Product.product_cats.all()
+
+                main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
+
+                session_bin_data = request.session.get('bin_data', {})
+
+                bins_related_to_product = []
+
+
+                for bin_obj in finished_product_warehouse_bin.objects.filter(sub_catergory_id__in=main_cats_all):
+
+                    product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False).count()
+
+                    temp_session_qty = session_bin_data.get(str(bin_obj.id), 0)
+                    total_count = product_count + temp_session_qty
+                    
+                    find_product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False, product = product_sku).count()
+
+                    bins_related_to_product.append({
+                            'bin_id': bin_obj.id,
+                            'bin_name': bin_obj.bin_name,
+                            'bin_size': bin_obj.product_size_in_bin,
+                            'products_in_bin': total_count,
+                            'find_product_count': find_product_count
+                        })
+
+                    
+
+                    bins_related_to_product = sorted(bins_related_to_product, key=lambda x : x['find_product_count'], reverse=True)
+
+                    print(find_product_count)
+                return JsonResponse({
+                        'model_name': model_name,
+                        'product_name': product_name,
+                        'product_sku': product_sku,
+                        'bin_to_dict': bins_related_to_product,
+                        'product_color': product_color,
+                        'product_image': product_image,
+                        'message': f'Serial No {serial_no} processed successfully.'},status=200)
+            else:
+                message.error(f"This Serial no {sale_no} does not exist in sales voucher")
+        except ObjectDoesNotExist as e:
+            print('This Serial no does not exist in sales voucher')
+            logger.error(f"This Serial no {sale_no} does not exist in sales voucher: {str(e)}")
+            
+
+    except Exception as e:
+        logger.error(f"Error in process_serial_no_for_return_sales_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+@login_required(login_url='login')
+def return_product_with_bin_ajax(request):
+    try:
+        product_sku = request.GET.get('productSku')
+        bin_no = request.GET.get('binNo')
+        serial_no = request.GET.get('serialno')
+
+        bin_obj = get_object_or_404(finished_product_warehouse_bin, pk=bin_no)
+        product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_sku)
+
+        session_bin_data = request.session.get('bin_data', {})
+
+        bin_capacity = bin_obj.product_size_in_bin
+        product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_no, outward_done=False).count()
+
+        temp_assigned = session_bin_data.get(str(bin_no), 0)
+        total_count = product_count + temp_assigned
+
+        if total_count + 1 > bin_capacity:
+            return JsonResponse({'error': f"Cannot add to bin '{bin_obj.bin_name}'. Bin capacity exceeded!"}, status=400)
+
+        session_bin_data[str(bin_no)] = temp_assigned + 1
+        request.session['bin_data'] = session_bin_data
+        request.session.modified = True
+
+        return JsonResponse({
+            'reference_no': product_instance.Product.Product_Refrence_ID or None,
+            'model_name': product_instance.Product.Model_Name or None,
+            'product_name': product_instance.Product.Product_Name or None,
+            'product_sku': product_instance.PProduct_SKU,
+            'product_color': product_instance.PProduct_color.color_name if product_instance.PProduct_color else None,
+            'product_image': product_instance.PProduct_image.url if product_instance.PProduct_image else None,
+            'bin_id': bin_no,
+            'bin_name': bin_obj.bin_name,
+            'serialno': serial_no,
+            'message': f"Product added to bin {bin_obj.bin_name} successfully."
+        }, status=200)
+
+    except Exception as e:
+        logger.error(f"Error in return_product_with_bin_ajax: {str(e)}")
+        return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
+
+
+
+@login_required(login_url='login')
+def sales_return_inward_to_bin(request, r_id=None):
+
+    
+    for key in ['bin_data', 'product_data']:
+        if key in request.session:
+            del request.session[key]
+            request.session.modified = True
+
+    instance_queryset = sales_return_inward.objects.filter(id=r_id).first()
+    master_form = salesreturninwardmasterform(request.POST or None, instance=instance_queryset)
+
+    if instance_queryset:
+        formset = sales_return_product_formset_update(request.POST or None, instance=instance_queryset)
+
+        outward_queryset = sales_voucher_master_outward_scan.objects.filter(
+            sale_no=instance_queryset.sales_voucher_master.sale_no
+        ).values(
+            'outward_no__outward_product__product__PProduct_SKU',
+            'outward_no__outward_product__product__PProduct_image',
+            'outward_no__outward_product__product__Product__Product_Refrence_ID',
+            'outward_no__outward_product__product__PProduct_color__color_name',
+            'outward_no__outward_product__product__Product__Model_Name',
+            'outward_no__outward_product__bin_number__bin_name',
+            'outward_no__outward_product__quantity',
+            'outward_no__outward_product__unique_serial_no',
+        )
+
+        list_to_sent_for_outward_data = [
+            {
+                'PProduct_SKU': data['outward_no__outward_product__product__PProduct_SKU'],
+                'PProduct_image': data['outward_no__outward_product__product__PProduct_image'],
+                'Product_Refrence_ID': data['outward_no__outward_product__product__Product__Product_Refrence_ID'],
+                'PProduct_color': data['outward_no__outward_product__product__PProduct_color__color_name'],
+                'Model_Name': data['outward_no__outward_product__product__Product__Model_Name'],
+                'Bin_Name': data['outward_no__outward_product__bin_number__bin_name'],
+                'Quantity': data['outward_no__outward_product__quantity'],
+                'unique_serial_no': data['outward_no__outward_product__unique_serial_no'],
+            }
+            for data in outward_queryset
+        ]
+
+    else:
+        formset = sales_return_product_formset(request.POST or None)
+        list_to_sent_for_outward_data = None
+
+    
+    if request.method == 'POST':
+        master_form = salesreturninwardmasterform(request.POST or None, instance=instance_queryset)
+        formset = sales_return_product_formset(request.POST or None, instance=instance_queryset)
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    sale_id = master_form_instance.sales_voucher_master.id
+                    sale_return_id = master_form_instance.id
+
+                    
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            form.instance.delete()
+
+                    formset.forms = [form for form in formset.forms if form.has_changed()]
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            form_instance = form.save(commit=False)
+                            form_instance.sales_return_inward_instance = master_form_instance
+                            form_instance.save()
+
+                            bin_no = form_instance.bin_number
+                            serial_no = form_instance.unique_serial_no
+                            product = form_instance.product
+
+                            #update bin in inward
+                            inward_data, created = finishedgoodsbinallocation.objects.get_or_create(unique_serial_no=serial_no)
+
+                            if not created:
+                                finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).update(bin_number=bin_no,outward_done=False)
+
+                            #increase bin qantity in Product_bin_quantity_through_table
+                            bin_qty_increase,created = Product_bin_quantity_through_table.objects.get_or_create(product = product, bin = bin_no)
+
+                            if not created:
+                                bin_qty_increase.product_quantity += 1
+                                bin_qty_increase.save()
+
+
+                    sales_return_master = sales_return_voucher_master.objects.filter(sales_voucher_master=sale_id,sales_return_inward_instance=sale_return_id).exists()
+
+                    if sales_return_master:
+
+                        print("URL FOR UPDATE >>>")
+
+                        sales_return_master = sales_return_voucher_master.objects.get(sales_voucher_master=sale_id,sales_return_inward_instance=sale_return_id)
+                        
+                        sale_return_voucher_id = sales_return_master.id
+
+                        products = {}
+
+                        post_data = request.POST.dict()
+
+                        total_forms = int(post_data.get('sales_return_product_set-TOTAL_FORMS', 0))
+
+                        products[master_form_instance.sales_return_no] = []
+
+                        for i in range(total_forms):
+
+                            product = post_data.get(f'sales_return_product_set-{i}-product')
+                            quantity = int(post_data.get(f'sales_return_product_set-{i}-scan_qty', 0))
+
+                            found = False
+                            for p in products[master_form_instance.sales_return_no]:
+                                if p['product'] == product:
+                                    p['quantity'] += quantity
+                                    found = True
+                                    break
+
+                            if not found:
+
+                                product_info = PProduct_Creation.objects.get(PProduct_SKU = product)
+                                
+                                products[master_form_instance.sales_return_no].append({
+                                'product_ref': post_data.get(f'sales_return_product_set-{i}-product_RefNo'),
+                                'product_name': post_data.get(f'sales_return_product_set-{i}-product_name_value'),
+                                'product': product,
+                                'color': post_data.get(f'product_color_{i}'),
+                                'quantity': quantity,
+                                'mrp': decimal_to_float(product_info.Product.Product_MRP),
+                                'customer_price': decimal_to_float(product_info.Product.Product_SalePrice_CustomerPrice),
+                                'gst': product_info.Product.Product_GST.gst_percentage
+                                })
+                        
+                        request.session['products_data'] = products
+                        
+                        return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id,sale_return_voucher_id,'update_srv']))
+                    else:
+                        print("URL FOR CREATE !!!")
+                        return redirect(reverse('sales-return-voucher-create-update', args=[sale_id, sale_return_id]))
+
+            except Exception as e:
+                print(f"Error: {e}")
+
+    return render(request, 'accounts/sales_return_inward.html', {
+        'master_form': master_form,
+        'formset': formset,
+        'list_to_sent_for_outward_data': list_to_sent_for_outward_data,
+    })
+
+
+
+@login_required(login_url='login')
+def sales_return_voucher_create_update(request,s_id=None, sr_id=None, sv_id=None, action=None):
+
+    master_form_data = get_object_or_404(sales_return_inward, id=sr_id)
+
+    master_form_data_instance = None
+
+    if sv_id:
+        
+        master_form_data_instance = get_object_or_404(sales_return_voucher_master, id=sv_id)
+
+        master_form = sales_return_voucher_master_form(instance = master_form_data_instance)
+
+        if action == 'update_srv':
+
+            session_products = request.session.get('products_data', None)
+
+            if session_products:
+                for key, val in session_products.items():
+                    sale_return_id = key
+                    product_list2 = val
+                    break
+
+                sales_product_info = sales_return_voucher.objects.filter(sales_return_master = sv_id).values('product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','trade_disct','spl_disct')
+
+                sales_product_info_list = list(sales_product_info)
+
+                merged_product_list = []
+
+                for product in product_list2:
+                    sku = product['product']
+                    matched = False
+
+                    for sales_product in sales_product_info_list:
+                        if sku == str(sales_product['product_name__PProduct_SKU']):
+                            merged_product_list.append({
+                                'product_ref': product['product_ref'],
+                                'product_name': product['product_name'],
+                                'product': product['product'],
+                                'color': product['color'],
+                                'quantity': product['quantity'],
+                                'mrp': product['mrp'],
+                                'customer_price': product['customer_price'],
+                                'gst': product['gst'],
+                                'trade_disct': sales_product['trade_disct'],
+                                'spl_disct': sales_product['spl_disct'],
+                            })
+                            matched = True
+                            break
+                    
+                        if not matched:
+                            merged_product_list.append({
+                                'product_ref': product['product_ref'],
+                                'product_name': product['product_name'],
+                                'product': product['product'],
+                                'color': product['color'],
+                                'quantity': product['quantity'],
+                                'mrp': product['mrp'],
+                                'customer_price': product['customer_price'],
+                                'gst': product['gst'],
+                                'trade_disct': sales_product['trade_disct'],
+                                'spl_disct': sales_product['spl_disct'],
+                            })
+
+                sales_return_voucher_formset_create = inlineformset_factory(sales_return_voucher_master, sales_return_voucher,form=sales_return_voucher_form, extra=len(merged_product_list), can_delete=True)
+            
+                formset = sales_return_voucher_formset_create(initial=merged_product_list, prefix="sale_return_forms")
+
+        else:
+
+            sales_return_voucher_formset_view = inlineformset_factory(sales_return_voucher_master, sales_return_voucher,form=sales_return_voucher_form, extra=0, can_delete=True)
+
+            formset = sales_return_voucher_formset_view(instance = master_form_data_instance, prefix="sale_return_forms")
+    else:
+
+        products = sales_return_product.objects.filter(sales_return_inward_instance=sr_id)
+
+        product_list = []
+
+        for data in products:
+            sku = data.product.PProduct_SKU
+            quantity = data.scan_qty
+
+            found = False
+            for item in product_list:
+                if item['product'] == sku:
+                    item['quantity'] += quantity
+                    found = True
+                    break
+
+            if not found:
+                sale_objects = sales_voucher_outward_scan.objects.filter(
+                    sales_voucher_master=s_id, product_name=sku
+                ).first()
+
+                if sale_objects:
+                    product_list.append({
+                        'ref_no': data.product.Product.Product_Refrence_ID,
+                        'product': sku,
+                        'product_name': data.product.Product.Model_Name,
+                        'color': data.product.PProduct_color.color_name,
+                        'quantity': quantity,
+                        'mrp': decimal_to_float(data.product.Product.Product_MRP),
+                        'customer_price': decimal_to_float(data.product.Product.Product_SalePrice_CustomerPrice),
+                        'gst': data.product.Product.Product_GST.gst_percentage,
+                        'trade_disct': sale_objects.trade_disct,
+                        'spl_disct': sale_objects.spl_disct,
+                        'cash_disct': decimal_to_float(sale_objects.sales_voucher_master.cash_disct),
+                    })
+
+        master_form = sales_return_voucher_master_form()
+        
+        sales_return_voucher_formset_create = inlineformset_factory(sales_return_voucher_master, sales_return_voucher,form=sales_return_voucher_form, extra=len(product_list), can_delete=True)
+
+        formset = sales_return_voucher_formset_create(initial=product_list, prefix="sale_return_forms")
+
+    if request.method == 'POST':
+
+        
+
+        print(request.POST)
+
+        master_form = sales_return_voucher_master_form(request.POST or None, instance = master_form_data_instance)
+
+        formset = sales_return_voucher_formset_create(request.POST or None,instance = master_form_data_instance, prefix="sale_return_forms")
+
+        if master_form.is_valid() and formset.is_valid():
+
+            try:
+
+                with transaction.atomic():
+
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    if formset.is_valid():
+
+                        for form in formset.deleted_forms:
+                            if form.instance.pk:
+                                form.instance.delete()
+
+                        selected_warehouse = master_form_instance.sales_voucher_master.selected_warehouse
+
+                        formset.forms = [form for form in formset.forms if form.has_changed()]
+
+                        for form in formset:
+                            instance = form.save(commit=False)
+                            instance.sales_return_master = master_form_instance
+
+                            warehouse = instance.sales_return_master.sales_voucher_master.selected_warehouse
+                            product = instance.product_name
+                            qty = instance.quantity
+
+                            if action == 'update_srv':
+
+                                old_instances = sales_return_voucher.objects.filter(sales_return_master=master_form_data_instance)
+
+                                for old_instance in old_instances:
+
+                                    warehouse_instance = Product_warehouse_quantity_through_table.objects.get(warehouse=old_instance.sales_return_master.sales_voucher_master.selected_warehouse,product=old_instance.product_name)
+
+                                    warehouse_instance.quantity -= old_instance.quantity 
+                                    warehouse_instance.save()
+
+                                    old_instance.delete()
+
+                            instance.save()
+
+                            warehouse_instance_new = Product_warehouse_quantity_through_table.objects.get(warehouse = warehouse,product = product)
+
+                            warehouse_instance_new.quantity += qty
+                            warehouse_instance_new.save()
+
+                        return(redirect('sales-voucher-list-warehouse'))
+                    
+            except Exception as e:
+                print(f"Error saving formset: {e}")
+
+    return render(request, 'accounts/sales_return_create_update.html', {'master_form_data': master_form_data,'formset': formset,'master_form':master_form,})
+
+
+
+@login_required(login_url='login')
+def sale_return_list(request):
+
+    total_sale_qty_subquery = sales_voucher_outward_scan.objects.filter(sales_voucher_master=OuterRef('sales_voucher_master')).values('sales_voucher_master').annotate(total_sale_qty=Sum('quantity')).values('total_sale_qty')
+
+    grand_total_subquery = sales_return_voucher_master.objects.filter(
+    sales_return_inward_instance=OuterRef('pk')).values('grand_total')[:1]
+    
+    queryset = sales_return_inward.objects.annotate(total_qty=Sum('sales_return_product__scan_qty'),total_sale_qty=Subquery(total_sale_qty_subquery),grand_total=Subquery(grand_total_subquery))
+
+    return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
+
+
