@@ -357,6 +357,8 @@ urlpatterns = [
     path('exceldownloadproduction/<str:module_name>/<int:pk>', views.excel_download_production, name ='excel-download-production'),
 
     path('producttoitemajax/', views.product_2_item_ajax, name='product-2-item-ajax'),
+    path('refnosearchajax/', views.ref_no_search_ajax, name='ref_no_search_ajax'),
+    path('partynamesearchajax/', views.party_name_search_ajax, name='party-name-search_ajax'),
 
     # testing
     path('testsession/', views.session_data_test, name='test-session'),

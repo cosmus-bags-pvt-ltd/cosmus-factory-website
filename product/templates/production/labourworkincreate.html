@@ -10,7 +10,7 @@
         
             <span id="labourWorkInError" class="error-messagescuttingCreate"></span>
             <div class="d-flex mb-3">
-                <label for="id_voucher_number" class="item-form">GRN No:</label>
+                <label for="id_voucher_number" class="item-form">GRN No :</label>
 
                 {% if not master_form.instance.id %}
                 <input type="number" class="item-select" name="voucher_number" value="{{master_form.voucher_number.initial}}" required id="id_voucher_number">
@@ -21,7 +21,7 @@
 
             </div>
             <div class="d-flex mb-3">
-                <label for="id_labour_name" class="item-form">Labour Name:</label>
+                <label for="id_labour_name" class="item-form">Labour Name :</label>
 
                 {% if not master_form.instance.id %}
 
@@ -34,7 +34,7 @@
             </div>
 
             <div class="d-flex mb-3">
-                <label for="id_challan_no" class="item-form">Challan no:</label>
+                <label for="id_challan_no" class="item-form">Challan no :</label>
                 {% if not master_form.instance.id %}
 
                 <input type="text" class="item-select" name="challan_no" value="{{master_form.challan_no.initial}}"required id="id_challan_no" readonly style="border: 1px solid blue; outline: none;">
@@ -44,7 +44,7 @@
                 {% endif %}
             </div>
             <div class="d-flex mb-3">
-                <label for="id_purchase_order_no" class="item-form">PO.No:</label>
+                <label for="id_purchase_order_no" class="item-form">PO.No :</label>
 
                 {% if not master_form.instance.id %}
 
@@ -55,7 +55,7 @@
                 {% endif %}
             </div>
             <div class="d-flex mb-3">
-                <label for="id_refrence_number" class="item-form">Refrence No:</label>
+                <label for="id_refrence_number" class="item-form">Ref No :</label>
                 {% if not master_form.instance.id %}
 
 
@@ -68,7 +68,7 @@
 
             </div>
             <div class="d-flex mb-3">
-                <label for="id_model_name" class="item-form">Model Name:</label>
+                <label for="id_model_name" class="item-form">Model Name :</label>
 
         {% if not master_form.instance.id %}
 
@@ -84,7 +84,7 @@
 
 
         
-        <label for="id_total_p_o_qty" class="item-form">Total PO. Qty:</label>
+        <label for="id_total_p_o_qty" class="item-form">Total PO. Qty :</label>
 
 
         {% if not master_form.instance.id %}
@@ -98,7 +98,7 @@
             {% endif %}
         </div>
         <div class="d-flex mb-3">
-            <label for="id_labour_workout_qty" class="item-form">Total Issued Qty:</label>
+            <label for="id_labour_workout_qty" class="item-form">Total Issued Qty :</label>
 
             {% if not master_form.instance.id %}
 
@@ -111,7 +111,7 @@
 
         </div>
     <div class="d-flex mb-3">
-        <label for="id_description" class="item-form">Naration:</label>
+        <label for="id_description" class="item-form">Naration :</label>
     <input type="text" class="item-select" name="description" maxlength="100" value="{{master_form.instance.description | default_if_none:''}}"  id="id_description">
     </div>
         </div>
@@ -180,7 +180,7 @@
             <div class="row">
                 <div class="col-lg-4">
                     <div class="d-flex mb-3">
-                        <label for="id_total_balance_pcs" class="item-form">Pending Pcs:</label>
+                        <label for="id_total_balance_pcs" class="item-form">Pending Pcs :</label>
         
                         {% if not master_form.instance.id %}
                         <input type="text" class="productorder_input" name="total_balance_pcs" value="{{ master_form.total_balance_pcs.initial }}"  required id="id_total_balance_pcs" readonly style="border: 1px solid blue; outline: none;">
@@ -193,7 +193,7 @@
         
                     </div>
                     <div class="d-flex mb-3">
-                        <label for="id_total_return_pcs" class="item-form">Total Return Pcs:</label>
+                        <label for="id_total_return_pcs" class="item-form">T Return Pcs :</label>
                         <input type="number" class="productorder_input" name="total_return_pcs" value="{{master_form.instance.total_return_pcs |default_if_none:''}}" required id="id_total_return_pcs" readonly style="border: 1px solid blue; outline: none;">
                     </div>
                     <div class="d-flex mb-3">
@@ -209,11 +209,11 @@
                         {% endif %}
                     </div>
                     <div class="d-flex mb-3">
-                        <label for="id_other_charges" class="item-form">Other Charges:</label>
+                        <label for="id_other_charges" class="item-form">Other Charges :</label>
                         <input type="number" class="productorder_input" value="{{master_form.instance.other_charges}}" name="other_charges" step="0.01" required id="id_other_charges">
                     </div>
                     <div class="d-flex mb-3">
-                        <label for="id_amount" class="item-form">Amount:</label>
+                        <label for="id_amount" class="item-form">Amount :</label>
                     <input type="number" class = "productorder_input" name="amount" step="0.01" value="{{master_form.instance.amount |default_if_none:''}}" required id="id_amount" readonly style="border: 1px solid blue; outline: none;">
                     </div>
                 </div>

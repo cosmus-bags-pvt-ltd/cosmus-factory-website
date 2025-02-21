@@ -15,40 +15,28 @@
                 <input type="text" name="purchase_order_number" class="purchase-vNo ms-2 me-2" value="{{form.instance.purchase_order_number | default_if_none:''}}" required id="id_purchase_order_number">
             </div>
             <div class="d-flex mb-3 ms-2">
-                <label for="id_product_reference_number" class="">Ref No :</label>
-                <select name="product_reference_number" class="item-selects ms-2 me-2" required id="id_product_reference_number">
-                    {% if form.instance.id %}
-                    <option value="{{form.instance.product_reference_number.id}}">{{form.instance.product_reference_number.Product_Refrence_ID}}</option>
-                    {% for product in products %}
-                    <option value="{{product.id}}">{{product.Product_Refrence_ID}}</option>
-                    {% endfor %}
-                    {% elif not form.instance.id %}
-                    <option value=""></option>
-                    {% for product in products %}
-                    <option value="{{product.id}}">{{product.Product_Refrence_ID}}</option>
-                    {% endfor %}
-                    {% endif %}
-                </select>
+                <label for="id_product_reference_number" class="me-1">Ref No :</label>
+                <div class="custom-dropdown-container-ref">
+                    <input type="hidden" name="product_reference_number" id="id_product_reference_number" value="{% if form.instance.id %}{{form.instance.product_reference_number.id}}{% endif %}" readonly> 
+                      <input type="number" name="product_reference_number_input" id="id_product_reference_number_input" class="purchase-itemName refernceName"  placeholder="Refrance No" autocomplete="off" value="{% if form.instance.id %}{{form.instance.product_reference_number.Product_Refrence_ID}}{% endif %}"> 
+                      <div name="select_Refrance_No" class="purchase-itemName  s-suggestion-container reference_input" id="select_Refrance_No" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
+
+                       </div>
+                </div>
             </div>
             <div class="d-flex mb-3">
-                <label for="id_ledger_party_name" class="">Party Name :</label>
-                <select name="ledger_party_name" class="item-select ms-2" id="id_ledger_party_name">
-                    {% if form.instance.id %}
-                    <option value="{{form.instance.ledger_party_name.id}}">{{form.instance.ledger_party_name.name}}</option>
-                    {% for party_name in ledger_party_names %}
-                    <option value="{{party_name.id}}">{{party_name.name}}</option>
-                    {% endfor %}
-                    {% elif not form.instance.id %}
-                    <option value=""></option>
-                    {% for party_name in ledger_party_names %}
-                    <option value="{{party_name.id}}">{{party_name.name}}</option>
-                    {% endfor %}
-                    {% endif %}
-                </select>
+                <label for="id_ledger_party_name" class="me-1">Party Name :</label>
+                <div class="custom-dropdown-container-ref">
+                    <input type="hidden" name="ledger_party_name" id="id_ledger_party_name" value="{% if form.instance.id %}{{form.instance.ledger_party_name.id}}{% endif %}" readonly> 
+                      <input type="text" name="ledger_party_name_input" id="id_ledger_party_name_input" class="stock-Input refernceName"  placeholder="Party Name" autocomplete="off" value="{% if form.instance.id %}{{form.instance.ledger_party_name.name}}{% endif %}"> 
+                      <div name="select_partyName" class="stock-Input  s-suggestion-container partyName_input" id="select_partyName" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
+
+                       </div>
+                </div>
             </div>
             <div class="d-flex ms-2">
                 <label for="id_target_date" class="">Target date :</label>
-                <input type="date" name="target_date" class="item-select ms-2 me-4" value="{{ form.instance.target_date|date:'Y-m-d' }}" required id="id_target_date">
+                <input type="date" name="target_date" class="purchase-itemName ms-2 me-4" value="{{ form.instance.target_date|date:'Y-m-d' }}" required id="id_target_date">
             </div>
         </div>
         <div class="d-flex mb-2">
@@ -58,7 +46,7 @@
                 <input type="number" name="number_of_pieces" class="purchase-vNo ms-2" value="{{form.instance.number_of_pieces}}" required id="id_number_of_pieces">
             </div>
             <div class="d-flex ms-3">
-                <label for="id_temp_godown_select" class="">Godown Select :</label>
+                <label for="id_temp_godown_select" class="">Godown :</label>
                 <select name="temp_godown_select" class="item-selects ms-2" id="id_temp_godown_select">
                     {% if form.instance.id %}
                     <option value="{{form.instance.temp_godown_select.id}}">{{form.instance.temp_godown_select.godown_name_raw}}</option>
@@ -150,9 +138,11 @@
         </div>
     </div> 
 </div>
+
 <div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
     <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
 </div>
+
 <script>
     document.body.appendChild(document.getElementById('customModal'));
     function showLargeImage(src) {
@@ -172,7 +162,7 @@
     document.body.appendChild(document.getElementById('exampleModal'));
     $(document).ready(function(){
 
-            $('#id_purchase_order_number').on('focusout',function(){
+        $('#id_purchase_order_number').on('focusout',function(){
             var newOrdernumber = $(this).val();
             var new_order = $("#id_purchase_order_number");
             var errorElement = $('#purchaseCreateError'); // The error message element
@@ -229,18 +219,22 @@
              $(document).on('focusout','input[name$="-order_quantity"]',function(){
                 
                 var value = $(this).val();
-             
-                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                if(value){
+                    if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
                     $(this).val('0'); // Set to 0 if empty or invalid
-                } else {
-                    $(this).val(value); // Retain the entered value if valid
+                    } else {
+                        $(this).val(value); // Retain the entered value if valid
+                    }  
                 }
+             
+                
             })
   
         
         $(document).on('focus','.oderedValues' , function (){
              $(this).prop('readonly', false);
         });
+
         $('#productForm').on('submit',function(){
             var buttons = $('#exampleModal');
             var balanceQty =$('#id_balance_quantity').val();
@@ -277,26 +271,28 @@
         if (id != "None" && totalPoQty > 0) {
             const main_form = document.getElementById('productForm-conatiner');
             const submitBtn = document.getElementById('id_submit_1');
-         
             const orderNo = document.getElementById('id_purchase_order_number')
             const productOderQty = document.getElementById('id_number_of_pieces')
             const refrenceId = document.getElementById('id_product_reference_number');
             const godownId = document.getElementById('id_temp_godown_select');
+            const productReference = document.getElementById('id_product_reference_number_input');
+            const productpartyName = document.getElementById('id_ledger_party_name_input');
             main_form.style.display = 'block';
             submitBtn.style.display = 'none';
             orderNo.readOnly = true;;
             productOderQty.readOnly = true;
             refrenceId.disabled = true;
             godownId.disabled = true;
+            productReference.readOnly = true;
+            productpartyName.readOnly = true;
         }
 
      
-
+        document.getElementById('id_purchase_order_number').focus()
         function submitButtonCheck(){
             var deleteForm = document.querySelector('.purchaseOderDelete').value;
-         
             var submitButton = document.getElementById('id_submit_2');
-            if(deleteForm == "True"){
+            if(deleteForm == "True" ){
                  submitButton.style.display = 'none';
             }else{
                 submitButton.style.display = 'block';
@@ -304,26 +300,27 @@
         }
         submitButtonCheck()
     });
-    document.addEventListener("DOMContentLoaded", function () {
-        
-    const table = document.getElementById("productTable");
-    const orderQuantityInputs = table.querySelectorAll(".oderedValues");
-    const submitButton = document.getElementById("id_submit_2");
-    const submitbtn_1 = document.getElementById('id_submit_1')
-    const form = document.getElementById('productForm');
-    const purchaseNo = document.getElementById('id_purchase_order_number');
-    const refNo = document.getElementById('id_product_reference_number');
-    const partyName = document.getElementById('id_ledger_party_name');
-    const dates = document.getElementById('id_target_date');
-    const totalQty = document.getElementById('id_number_of_pieces');
-    const godownName = document.getElementById('id_temp_godown_select')
 
-    purchaseNo.focus()
+    function inputCheck(){
+        const table = document.getElementById("productTable");
+        const orderQuantityInputs = table.querySelectorAll(".oderedValues");
+        const submitButton = document.getElementById("id_submit_2");
+        const submitbtn_1 = document.getElementById('id_submit_1')
+        const form = document.getElementById('productForm');
+        var purchaseNo = document.getElementById('id_purchase_order_number');
+        var refNo = document.getElementById('id_product_reference_number_input');
+        const partyName = document.getElementById('id_ledger_party_name_input');
+        const dates = document.getElementById('id_target_date');
+        const totalQty = document.getElementById('id_number_of_pieces');
+        const godownName = document.getElementById('id_temp_godown_select')
+
+    //purchaseNo.focus()
 
     if(purchaseNo){
         purchaseNo.addEventListener('keydown',function(event){
             if(event.key === "Tab"){
                 event.preventDefault();
+                console.log(purchaseNo.value)
                 if(purchaseNo.value === ''){
                     purchaseNo.focus();
                     return;
@@ -416,105 +413,10 @@
             form.submit(); // Trigger form submission
         }
     });
-});
+    }
+    inputCheck()
 
 </script>
-<!-- <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Function to update the total quantity and manage the input fields
-        function updateTotalQuantity(event) {
-            let totalQuantity = 0;
-            const formCount = parseInt(document.getElementById('id_p_o_to_products-TOTAL_FORMS').value);
-            const totalAllowedQuantity = parseInt(document.getElementById('id_total-quantity').value);
-            const grandQuantityElement = document.getElementById('id_grand_quantity');
-            const quantities = [];
-            // Get the element that triggered the event
-            const currentElement = event ? event.target : null;
-            let currentIndex = -1;
-            // Calculate the total quantity from all form inputs
-            for (let i = 0; i < formCount; i++) {
-                const quantityElement = document.getElementById('id_p_o_to_products-' + i + '-order_quantity');
-                const quantityValue = parseFloat(quantityElement.value);
-            
-                if (!isNaN(quantityValue)) {
-                    totalQuantity += quantityValue;
-                   
-                }
-                quantities.push({ element: quantityElement, value: quantityValue });
-           
-                // Check if this is the current element
-                if (quantityElement === currentElement) {
-                    currentIndex = i;
-                }
-            }
-            grandQuantityElement.value = totalQuantity;
-
-            // Initially, set all input fields to read-only and reset their border color
-            quantities.forEach(function (q) {
-                q.element.readOnly = true;
-                q.element.style.borderColor = ''; // Reset border color
-               
-            });
-            // Check if the total quantity equals the allowed quantity
-            if (totalQuantity === totalAllowedQuantity) {
-                // If the total quantity matches the allowed quantity, only the current input field is editable
-                if (currentIndex !== -1) {
-                    quantities[currentIndex].element.readOnly = false;  
-                }
-            } else if (totalQuantity > totalAllowedQuantity) {
-                // If the total quantity exceeds the allowed quantity, set the current input field's border to red
-                if (currentIndex !== -1) {
-                    quantities[currentIndex].element.style.borderColor = 'red';
-                    quantities[currentIndex].element.value = totalAllowedQuantity;
-                    quantities[currentIndex].element.readOnly = false;
-                }
-            } else{
-                // If total quantity is less than allowed quantity, make all fields editable
-                const newBalance = totalAllowedQuantity - totalQuantity
-                
-                    
-                
-                document.getElementById('id_balance_quantity').value = newBalance;
-                quantities.forEach(function (q) {
-                    q.element.readOnly = false;
-                    q.element.style.borderColor = '';
-                });
-            }
-            if(newBalance == 0){
-                quantities.forEach(function (q) {
-                    const currentIndexValue = q.element.value
-    
-                    if(currentIndexValue == 0){
-                        q.element.readOnly = true;
-                    }else{
-                        q.element.readOnly = false;
-                    }
-                })
-            }
-        }
-
-        const quantityElement = document.querySelectorAll('[name$="-order_quantity"]');
-        quantityElement.forEach(function(element){
-           
-            element.addEventListener('input', updateTotalQuantity);
-            element.addEventListener('click', updateTotalQuantity);
-        })
-       
-        // Initial calculation on page load
-        updateTotalQuantity({ target: null });
-    
-    });
-    
-    window.addEventListener("pageshow", function(event) {
-        if (event.persisted) {
-            document.forms[0].reset();
-        }
-    });
-
-    
-</script> -->
-
-
 <script>
 
     function updateqtyCalculation(){
@@ -561,4 +463,190 @@
     })
 </script>
 
+<script>
+$(document).ready(function(){
+
+    var searchedItemNameDict;
+    var enterPressed = false;
+    var index = 0; // Declare index outside of the event listener
+    var indexbool = true;
+    
+    function fetchSuggestions(inputSelector, url, suggestionsContainerId) {
+        $(document).on('input', inputSelector, function(e) {
+        
+            var productnamevalue = $(this).val().trim();
+            var suggestionsContainer = $(`#${suggestionsContainerId}`);
+            
+            if (productnamevalue === 'None' || productnamevalue === '') {
+                suggestionsContainer.hide().empty();
+                $(this).attr('data-key', '');
+                return;
+            }
+            if(!enterPressed){
+                suggestionsContainer.show();
+            }
+            enterPressed = false;
+            $.ajax({
+                
+                url: url,
+                method: 'GET',
+                data: { 'productnamevalue': productnamevalue },
+                success: function (response) {
+            
+                    var searchedProductreference = response.reference_no; 
+                    var searchedProductParty = response.party_name; 
+
+                    if(searchedProductParty === undefined){
+                        searchedProductNameDic = searchedProductreference;
+                    }else if(searchedProductreference === undefined){
+                        searchedProductNameDic = searchedProductParty;
+                    }
+            
+                    searchinputneworder(searchedProductNameDic ,suggestionsContainer,productnamevalue)
+            
+                },
+                error: function (xhr) {
+                    console.log(xhr.status + ": " + xhr.responseText);
+                    if (xhr.status === 404) {
+                        
+                        suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                    }
+                }
+            })
+        })
+    }
+
+    function searchinputneworder(searchedProductNameDic,suggestionsContainer,productnamevalue){
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+        }
+            
+        const searchQuery = productnamevalue.toLowerCase();
+        const searchTerms = searchQuery.split(/\s+/);
+        const convertStringData = searchTerms.toString();
+    
+        const escapedTerms = searchTerms.map(escapeRegExp);
+
+        const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+
+        const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+
+        const filteredOptions = Object.entries(searchedProductNameDic).filter(
+        ([key, value]) => {
+            const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
+            const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
+        
+            const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+
+            return normalizedKey.includes(normalizedQuery) || normalizedProductName.includes(normalizedQuery);
+        });
+
+        suggestionsContainer.empty();
+    
+        filteredOptions.forEach(([key, value], index) => {
+            
+            const productRefIdName = key;
+            const productRefId = String(value[0] || ''); 
+            
+            const highlightedText = productRefId.replace(regex, '<span class="highlight">$1</span>');
+
+                    
+            suggestionsContainer.append(`
+                <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
+                    ${highlightedText}
+                </div>
+            `);
+            
+        });
+        if(filteredOptions == ''){
+            suggestionsContainer.show();
+            suggestionsContainer.empty();
+            suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+        }
+    }
+   
+    function handleSelection(inputSelector, hiddenInputSelector, suggestionsContainerId) {
+       
+        $(document).on('click',`#${suggestionsContainerId} .itemName-div`, function(e) {
+                var refId = $(this).data('key');
+                var referenceNameCheck = $(this).text().trim();
+                console.log('refId',refId)
+                console.log('referenceNameCheck',referenceNameCheck)
+                if(refId !== undefined){
+               
+                   $(inputSelector).val(referenceNameCheck);
+                    $(hiddenInputSelector).val(refId)
+                }
+            
+                $(this).addClass('selected').siblings().removeClass('selected');
+
+        
+                $(`#${suggestionsContainerId}`).hide();
+                
+            })
+    }
+
+    function handleKeyNavigation(inputSelector,hiddenInputSelector, suggestionsContainerId) {
+        $(document).on('keydown', inputSelector, function(event) {
+            const $inputField = $(this);
+            const $dropdownOptions = $inputField.next(`#${suggestionsContainerId}`);
+            const $options = $dropdownOptions.find('.itemName-div');
+            const optionsCount = $options.length - 1;
+
+            if ($options.length === 0) return;
+            const searchText = $inputField.val().trim();
+            
+            if (searchText === '') {
+                index = 0;
+                return;
+            }
+            const newHeight = $inputField.offset();
+            const windowHeight = $(window).height();
+            const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
+    
+
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                index = event.key === 'ArrowDown' ? Math.min(index + 1, optionsCount) : Math.max(index - 1, 0);
+                $options.removeClass('bg-highlight').eq(index).addClass('bg-highlight');
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const selectedOption = $options.eq(index);
+                
+                if (selectedOption.length) {
+                    const refKey = selectedOption.data('key'); 
+                    const referenceName = selectedOption.text().trim();
+
+                    if (refKey) {
+                        // Assign values correctly
+                        $inputField.val(referenceName).attr('data-key', refKey);
+                        $(hiddenInputSelector).val(refKey);
+                    }
+
+                    enterPressed = true;
+                    $dropdownOptions.hide();
+                }
+            }
+            if (event.key === 'Tab' && enterPressed) {
+            enterPressed = false; // Reset Enter key handling
+            return true; // Allow default Tab behavior
+            }
+        })
+
+    }
+   
+    fetchSuggestions('input[name^="product_reference_number_input"]', '/refnosearchajax/', 'select_Refrance_No');
+    handleSelection('#id_product_reference_number_input', '#id_product_reference_number', 'select_Refrance_No');
+    handleKeyNavigation('input[name^="product_reference_number_input"]','#id_product_reference_number', 'select_Refrance_No');
+
+        // Initialize functions for Party Name
+    fetchSuggestions('input[name^="ledger_party_name_input"]', '/partynamesearchajax/', 'select_partyName');
+    handleSelection('#id_ledger_party_name_input', '#id_ledger_party_name', 'select_partyName');
+    handleKeyNavigation('input[name^="ledger_party_name_input"]','#id_ledger_party_name', 'select_partyName');
+
+
+    })
+ 
+</script>
 {% endblock %}

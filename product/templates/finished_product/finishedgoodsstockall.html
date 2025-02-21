@@ -2,9 +2,9 @@
 {% load static %}
 {% block body %}
 <div class="mt-4 mb-3">
-    <!-- <h2>Warehouse List</h2> -->
+  
     <div class="d-flex ">
-        <label for="id_warehouse_select" class="">Warehouse :</label>
+        <label for="id_warehouse_select" class="fw-bold">Warehouse :</label>
         <select name="warehouse_select" id="id_warehouse_select" class="ms-2 item-select">
             <option value="" selected>Select Warehouse</option>
             {% for x in wareshouse_all %}

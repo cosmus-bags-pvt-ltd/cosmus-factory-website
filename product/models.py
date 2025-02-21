@@ -1064,24 +1064,23 @@ class Product_warehouse_quantity_through_table(models.Model):
     quantity =  models.PositiveBigIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
+
     class Meta:
         unique_together = [['warehouse','product']]
-
-
 
 
 class Product_bin_quantity_through_table(models.Model):
     bin = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
+    picklist_qty = models.BigIntegerField()
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
 
-
-
-
-
-
+# when you deduct qty product_quantity add the same qty in picklist_qty once the form is submitted delete the qty from picklist_qty
+# also show qty from product_quantity - picklist_qty so that actual qty will be shown at any time
+# also run a cron job using celery to empty all the data from picklist_qty and add to product_quantity after 10 min 
+# handle from front end and deduct from bin on submit 
 class product_purchase_voucher_master(models.Model):
 
     ACTIONS = [
@@ -1107,8 +1106,6 @@ class product_purchase_voucher_master(models.Model):
         return self.purchase_number
 
 
-
-
 class product_purchase_voucher_items(models.Model):
     product_purchase_master = models.ForeignKey(product_purchase_voucher_master, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation, on_delete = models.PROTECT)
@@ -1121,7 +1118,6 @@ class product_purchase_voucher_items(models.Model):
     diffrence_qty = models.IntegerField(null=True, blank=True)
     
     
-
 class Finished_goods_Stock_TransferMaster(models.Model):
 
     ACTIONS = [
@@ -1152,8 +1148,6 @@ class Finished_goods_transfer_records(models.Model):
     diffrence_qty = models.IntegerField(null=True, blank=True)
 
     
-
-
 class finishedgoodsbinallocation(models.Model):
     related_purchase_item = models.ForeignKey(product_purchase_voucher_items, on_delete=models.CASCADE, null=True, blank=True)
     related_transfer_record = models.ForeignKey(Finished_goods_transfer_records, on_delete=models.PROTECT, null=True, blank=True)
@@ -1161,10 +1155,9 @@ class finishedgoodsbinallocation(models.Model):
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     bin_number = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     source_type = models.CharField(max_length=20, choices=[('purchase', 'purchase'), ('transfer', 'transfer')])
-    outward = models.BooleanField(default = False)
+    # outward = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-
 
     def save(self, *args, **kwargs):
         parent_bin_size = self.bin_number.product_size_in_bin
@@ -1177,9 +1170,6 @@ class finishedgoodsbinallocation(models.Model):
 
     def __str__(self):
         return self.related_purchase_item.product_purchase_master.purchase_number
-
-
-
 
 
 class sales_voucher_master_finish_Goods(models.Model):
@@ -1249,14 +1239,6 @@ class Picklist_products_list(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
 
-# class temp_product_bin_for_picklist(models.Model):
-#     product_sku = models.CharField(max_length=252)
-#     product_bin = models.CharField(max_length=252)
-#     product_qty = models.IntegerField()
-#     bin_qty = models.IntegerField()
-#     res_qty = models.IntegerField()
-#     utilize_all = models.BooleanField(default=False)
-
 
 class outward_product_master(models.Model):
     outward_no = models.CharField(max_length = 100)
@@ -1277,7 +1259,6 @@ class outward_products(models.Model):
 class sales_voucher_master_outward_scan(models.Model):
     outward_no = models.ForeignKey(outward_product_master, on_delete=models.PROTECT)
     sale_no = models.CharField(max_length = 100)
-    buyer_inv_no = models.CharField(max_length = 100)
     company_gst = models.CharField(max_length = 100)
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)

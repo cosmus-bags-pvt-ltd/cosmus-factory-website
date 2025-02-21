@@ -6,7 +6,7 @@
       <form action="" method="POST" id="cuttingRoomForm">
         {% csrf_token %}
         <div class="d-flex">
-          <label for="id_cutting_room_name" class="item-form me-3">Cutting Room Name:</label>
+          <label for="id_cutting_room_name" class="item-form fw-bold  me-3">Cutting Room :</label>
           <input type="text" class="item-select search-input " value="{{ form.instance.cutting_room_name }}" name="cutting_room_name" maxlength="100" required id="id_cutting_room_name">
         </div>
         <button type="submit" class="create-btn mt-4" name="save" value="Save" id="submitButtonCuttongRoom">Save</button> 

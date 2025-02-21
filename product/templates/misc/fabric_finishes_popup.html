@@ -7,7 +7,7 @@
       {% csrf_token %}
       <h2 class="mb-3 mt-4">Create Fabric Finishes</h2>
       <div class="d-flex">
-        <label for="id_fabric_finish" class="item-form">Fabric Finishes :</label>
+        <label for="id_fabric_finish" class="item-form fw-bold">Fabric Finishes :</label>
         <input type="text" class="item-select" value="{{ form.instance.fabric_finish }}" name="fabric_finish" maxlength="255" required id="id_fabric_finish">
       </div>
   

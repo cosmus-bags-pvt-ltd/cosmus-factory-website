@@ -5,10 +5,10 @@
 <div class="mt-2">
     <label class="fw-bold">Ref No :</label><span class="text-danger ms-2 refId"> {{product_instance.Product_Refrence_ID}}</span>
     <label class="fw-bold ms-3">Model Name :</label><span class="text-danger ms-2">{{product_instance.Model_Name}}</span>
-    <label class="fw-bold ps-3">Images :</label>
+    <label class="fw-bold ps-3">IMG :</label>
         {% for instance in product_instance.productdetails.all %}
         {% if instance.PProduct_image.url is not None %}
-        <img src=" {{instance.PProduct_image.url}}" style="width: 60px; height: 60px; padding:2px; margin: 2px;">
+        <img src=" {{instance.PProduct_image.url}}" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
         {% endif %}
         {% endfor %}
     
@@ -75,6 +75,24 @@
     </table>
 </div>
 
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+    <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+<script>
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
+
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
 <script>
 
 
