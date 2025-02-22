@@ -80,8 +80,21 @@ the input field will be pre-filled with that value when the page is loaded. -->
                   <label class="fw-bold">F Group -</label>
                   <span class="fw-bold text-success ps-1">{{ item.fab_grp }}</span><br>
                   <label class="fw-bold">M Code -</label>
-                  <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span>
+                  <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span><br>
                   
+                  {% for rack_name, data in bins.items %}
+                  {% if data.item_name == item.item_name %}
+                  <strong>{{ rack_name }}</strong> (Item: {{ data.item_name }})<br>
+                  {% for bin in data.bins %}
+                    {{ bin }}<br>
+                  {% endfor %}
+                  {% endif %}
+                  
+              {% endfor %}
+
+
+
+
 
 
                 </div>

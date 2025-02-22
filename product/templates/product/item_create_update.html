@@ -275,6 +275,16 @@
         </div>
         {% endif %}
 
+        {% if form.instance.id %}
+            {% for bin in form.instance.bin.all %}
+                <p>{{ bin.rack.rack_name }}-{{ bin.bin_name }}</p>
+            {% empty %}
+                <p>No bins assigned.</p>
+            {% endfor %}
+        {% else %}
+            <p>Item not yet created.</p>
+        {% endif %}
+
 
         {% for rack in racks %}
           <div class="rack-section">
