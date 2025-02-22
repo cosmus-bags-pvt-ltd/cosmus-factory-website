@@ -1191,9 +1191,9 @@ def item_edit(request,pk):
     if request.method == 'POST':
         form = Itemform(request.POST, request.FILES , instance = item_pk)
         formset = ShadeFormSet(request.POST , request.FILES, instance = item_pk)
-
+        print(request.POST)
         formset.forms = [form for form in formset if form.has_changed()]
-
+        
         try:
             if form.is_valid() and formset.is_valid():
                 form_instance = form.save(commit=False)  
