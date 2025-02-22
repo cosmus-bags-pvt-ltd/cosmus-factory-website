@@ -1079,22 +1079,21 @@ class Product_warehouse_quantity_through_table(models.Model):
     quantity =  models.PositiveBigIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
+
     class Meta:
         unique_together = [['warehouse','product']]
-
-
 
 
 class Product_bin_quantity_through_table(models.Model):
     bin = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
+    picklist_qty = models.BigIntegerField()
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
 
     def __str__(self):
         return f"{self.product.Product.Model_Name} -- {self.product.PProduct_color.color_name}"
-
 
 class product_purchase_voucher_master(models.Model):
 
@@ -1121,8 +1120,6 @@ class product_purchase_voucher_master(models.Model):
         return self.purchase_number
 
 
-
-
 class product_purchase_voucher_items(models.Model):
     product_purchase_master = models.ForeignKey(product_purchase_voucher_master, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation, on_delete = models.PROTECT)
@@ -1135,8 +1132,6 @@ class product_purchase_voucher_items(models.Model):
     diffrence_qty = models.IntegerField(null=True, blank=True)
     
     
-
-
 class Finished_goods_Stock_TransferMaster(models.Model):
 
     ACTIONS = [
@@ -1155,8 +1150,6 @@ class Finished_goods_Stock_TransferMaster(models.Model):
     actions = models.CharField(max_length=20, choices = ACTIONS)
 
 
-
-
 class Finished_goods_transfer_records(models.Model):
     Finished_goods_Stock_TransferMasterinstance = models.ForeignKey(Finished_goods_Stock_TransferMaster, on_delete = models.CASCADE)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
@@ -1169,8 +1162,6 @@ class Finished_goods_transfer_records(models.Model):
     diffrence_qty = models.IntegerField(null=True, blank=True)
 
     
-
-
 class finishedgoodsbinallocation(models.Model):
     related_purchase_item = models.ForeignKey(product_purchase_voucher_items, on_delete=models.CASCADE, null=True, blank=True)
     related_transfer_record = models.ForeignKey(Finished_goods_transfer_records, on_delete=models.PROTECT, null=True, blank=True)
@@ -1181,7 +1172,6 @@ class finishedgoodsbinallocation(models.Model):
     outward_done = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-
 
     def save(self, *args, **kwargs):
         if 'update_fields' in kwargs and kwargs['update_fields'] == ['outward_done']:
