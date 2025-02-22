@@ -80,10 +80,21 @@ the input field will be pre-filled with that value when the page is loaded. -->
                   <label class="fw-bold">F Group -</label>
                   <span class="fw-bold text-success ps-1">{{ item.fab_grp }}</span><br>
                   <label class="fw-bold">M Code -</label>
-                  <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span>
+                  <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span><br>
                   
-
-
+                  {% for rack_name, data in bins.items %}
+                    {% if data.item_name == item.item_name %}
+                        <div class="inline-block mb-2">
+                            <b>{{ rack_name }}</b><br>
+                            {% for bin in data.bins %}
+                                <span class="{% if forloop.counter|divisibleby:2 %}text-danger fw-bold{% else %}text-primary fw-bold{% endif %}">
+                                    {{ bin }}
+                                </span>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                  {% endfor %}
+              
                 </div>
               </td>
               <td class="text-nowrap">{{item.Color_Name}}<span class="colorCheck fw-bold" style="float: right;">{{item.total_quantity | default_if_none:0}}</span></td>

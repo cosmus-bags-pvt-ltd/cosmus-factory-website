@@ -274,6 +274,17 @@
           
         </div>
         {% endif %}
+        <!-- <div>
+          {% if form.instance.id %}
+            {% for bin in form.instance.bin.all %}
+                <span>{{ bin.rack.rack_name }}-{{ bin.bin_name }}</span>
+            {% empty %}
+                <span>No bins assigned.</span>
+            {% endfor %}
+        {% else %}
+            <span>Item not yet created.</span>
+        {% endif %}
+        </div> -->
 
         <div class="mb-3">
           <button type="button" class="edit_btn w-75 mb-3" id="AddButton">

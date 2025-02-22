@@ -1293,8 +1293,21 @@ def item_list(request):
     
     g_search = request.GET.get('item_search','')
     
+    racks = rack_for_raw_material.objects.all()
+
     queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item','Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes','Item_Packing').prefetch_related('shades','shades__godown_shades','shades__godown_shades__godown_name','bin')
     
+    bins = {}
+
+    for item in queryset:
+        for bin in item.bin.all():
+            rack_name = bin.rack.rack_name  # Get rack name
+
+            if rack_name not in bins:
+                bins[rack_name] = {"item_name": item.item_name, "bins": []}  # Store item name and bins list
+
+            if bin.bin_name not in bins[rack_name]["bins"]:
+                bins[rack_name]["bins"].append(bin.bin_name)
 
     if g_search != '':
         queryset = queryset.filter(Q(item_name__icontains = g_search)| Q(Item_Color__color_name__icontains = g_search)| Q(Fabric_Group__fab_grp_name__icontains = g_search)| Q(Material_code__icontains = g_search))
@@ -1331,7 +1344,7 @@ def item_list(request):
         if exact_desc != '' and exact_desc is not None:
             queryset = Item_Creation.objects.filter(item_name__exact=exact_desc)
 
-    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials"})
+    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials","bins": bins,})
     
 
 

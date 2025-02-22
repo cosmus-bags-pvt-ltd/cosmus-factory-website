@@ -1093,6 +1093,8 @@ class Product_bin_quantity_through_table(models.Model):
     def __str__(self):
         return f"{self.product.Product.Model_Name} -- {self.product.PProduct_color.color_name}"
 
+
+
 class product_purchase_voucher_master(models.Model):
 
     ACTIONS = [
@@ -1399,6 +1401,10 @@ class sales_return_voucher(models.Model):
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
+
+
 
 
 
