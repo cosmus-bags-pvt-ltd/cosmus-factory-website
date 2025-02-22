@@ -40,7 +40,7 @@ import requests
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 
-from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
+from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
                     Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
                     Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info, StockItem,
@@ -85,7 +85,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset)
     
 
 
@@ -13868,28 +13868,48 @@ def allrawmaterialstockreport(request):
 
 
 @login_required(login_url='login')
-def allfinishedgoodsstockreport(request):
+def allfinishedgoodsstockreport(request,action=None):
 
-    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(
+    if action == 'All_Record':
+        product_queryset_subquery = labour_work_in_product_to_item.objects.filter(
+            product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
+            total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
+
+
+        product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
+                total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+        
+
+        product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+        product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
+
+
+        product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
+            'godown_colors__quantity'),total_labour_workin_qty = Subquery(
+                product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),total_sales_qty = Subquery(product_sales_queryset_subquery)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+
+    else:
+        product_queryset_subquery = labour_work_in_product_to_item.objects.filter(
         product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
             total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
 
 
-    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
-            total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+        product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
+                total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+        
+
+        product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+        product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
+
+
+        product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
+            'godown_colors__quantity'),total_labour_workin_qty = Subquery(
+                product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),total_sales_qty = Subquery(product_sales_queryset_subquery)).filter(Q(total_qty__gt=0) | Q(total_labour_workin_qty__gt=0) | Q(total_labour_workin_pending_qty__gt=0) | Q(total_labour_workin_approve_qty__gt=0) | Q(total_sales_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
     
-
-    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
-
-
-    product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
-
-
-    product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
-        'godown_colors__quantity'),total_labour_workin_qty = Subquery(
-            product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),total_sales_qty = Subquery(product_sales_queryset_subquery)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
-    
-
     return render(request,'reports/allfinishedgoodsstockreport.html',{'product_queryset':product_queryset})
 
 
@@ -15964,3 +15984,61 @@ def sale_return_list(request):
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
 
 
+
+@login_required(login_url='login')
+def delivery_challan_create_update(request, d_id=None):
+
+    if d_id:
+        d_instance = DeliveryChallanMaster.objects.get(id = d_id)
+        master_form = DeliveryChallanMasterForm(instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(instance = d_instance)
+    else:
+        d_instance = None
+        master_form = DeliveryChallanMasterForm()
+        formset = DeliveryChallanProductsCreateFormset()
+
+    if request.method == 'POST':
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+
+        if master_form.is_valid() and formset.is_valid():
+
+            try:
+
+                with transaction.atomic():
+
+                    if not master_form.is_valid():
+                        print("Form Errors:", master_form.errors)
+                    
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    if not formset.is_valid():
+                        for form in formset:
+                            if not form.is_valid():
+                                print("Form Errors:", form.errors)
+
+                    if formset.is_valid():
+                        for form in formset.deleted_forms:
+                            if form.instance.pk:
+                                form.instance.delete()
+
+                        formset.forms = [form for form in formset.forms if form.has_changed()]
+
+                        for form in formset:
+                            instance = form.save(commit=False)
+                            instance.delivery_challan = master_form_instance
+                            instance.save()
+
+                    return(redirect('delivery-challan-list'))
+                
+            except Exception as e:
+                print(f"Error saving formset: {e}")
+
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset})
+
+
+@login_required(login_url='login')
+def delivery_challan_list(request):
+    delivary_challan_list = DeliveryChallanMaster.objects.all()
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list})
