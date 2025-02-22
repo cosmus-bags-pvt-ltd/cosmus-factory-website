@@ -3,20 +3,22 @@
 {% block body %}
 
 <div class="col-lg-11 mt-2 responsive">
-    <table class="table table-hover table-bordered table-striped">
+    <table class="table table-hover table-bordered table-striped" id="allFinishGoodReportTable">
         <thead class="sticky-top name_absolute">
             <tr>
                 <th>No</th> 
-                <th>Image</th>
-                <th>Reference No</th>
-                <th>Model Name</th> 
+                <th>Img</th>
+                <th>Ref No</th>
+                <th>Mod. Name</th> 
                 <th>Color</th>
                 <th>SKU ID</th>
-                <th>Total Rec As LWI</th> 
-                <th>QC Pend PCs</th>
-                <th>Total QC APP QTY</th>
-                <th>Sales</th>
-                <th>Total Qty</th> 
+                <th>T Rec As LWI =<span class="text-success" id="tRecLwi"></span></th> 
+                <th>QC Pend PCs =<span class="text-danger" id="tQcPendQty"></span></th>
+                <th>T QC APP Qty =<span class="text-primary" id="tQcAppQty"></span></th>
+                <th>Dely. Qty =<span id="tDelyQty"></span></th>
+                <th>Sales =<span id="tSales"></span></th>
+                
+                <th>Total Qty <span id="tQty"></span></th> 
             </tr>
         </thead>
         <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -24,18 +26,19 @@
             <tr class="text-nowrap">
                 <td>{{forloop.counter}}</td>
                 <td>{% if query.PProduct_image.url is not None %}
-                    <img src=" {{query.PProduct_image.url}}" alt="product" style="width: 30px; height: 30px; cursor: pointer;" 
-                    onclick="showLargeImage(this.src)">
-                    {% endif %}</td>
+                    <img src=" {{query.PProduct_image.url}}" alt="Img" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
+                    {% endif %}
+                </td>
                 <td class="refrenceId">{{query.Product.Product_Refrence_ID}}</td>
                 <td>{{query.Product.Model_Name}}</td>
                 <td>{{query.PProduct_color}}</td>
                 <td>{{query.PProduct_SKU}}</td>
-                <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;">{{ query.total_labour_workin_qty | default_if_none:0 }}</a></td>     
-                <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;">{{ query.total_labour_workin_pending_qty | default_if_none:0 }} </a></td>
-                <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</a></td>
-                <td class="toatlQty text-center">{{query.total_sales_qty | default_if_none:0}}</td>
-                <td class="text-center">{{query.total_qty | default_if_none:0}}</td>
+                <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
+                <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
+                <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;"><span class="lwiapprQty">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</span></a></td>
+                <td class="text-center"><span class="delQty">0</span></td>
+                <td class="toatlQty text-center"><span class="salesQty">{{query.total_sales_qty | default_if_none:0}}</span></td>
+                <td class="text-center"><span class="totalQtys">{{query.total_qty | default_if_none:0}}</span></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -45,22 +48,21 @@
 <div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
     <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
 </div>
+
 <script>
     document.body.appendChild(document.getElementById('customModal'));
     function showLargeImage(src) {
-     let modal = document.getElementById("customModal");
-     let modalImg = document.getElementById("modalImg");
+        let modal = document.getElementById("customModal");
+        let modalImg = document.getElementById("modalImg");
 
-     modalImg.src = src;
-     modal.style.display = "flex";
-     modal.style.width = '100%'
-     // Clicking anywhere outside the image will close the modal
-     modal.onclick = function() {
-         modal.style.display = "none";
-     };
+        modalImg.src = src;
+        modal.style.display = "flex";
+        modal.style.width = '100%'
+        // Clicking anywhere outside the image will close the modal
+        modal.onclick = function() {
+            modal.style.display = "none";
+        };
  }
-</script>
-<script>
     function totalValueCheck(){
         var  totalqty = document.querySelectorAll('.toatlQty');
         totalqty.forEach(element => {
@@ -74,7 +76,41 @@
         });
     }
 
-    
+    function calculateAllTotalValue(){
+        let lwiqty = 0;
+        let lwipendingqty = 0;
+        let lwiapproveqty = 0;
+        let salesqty = 0;
+        let totalqty = 0;
+        let delQty = 0;
+
+        const allFinishGoodTable = document.querySelectorAll('#allFinishGoodReportTable .mainTableList tr');
+        
+        allFinishGoodTable.forEach(function(row){
+            const lwiQty = parseInt(row.querySelector('.lwiQty').textContent) || 0;
+            const lwiPendingQty = parseInt(row.querySelector('.lwipendingQty').textContent) || 0;
+            const lwiApproveQty = parseInt(row.querySelector('.lwiapprQty').textContent) || 0;
+            const salesQty = parseInt(row.querySelector('.salesQty').textContent) || 0;
+            const totalQty = parseInt(row.querySelector('.totalQtys').textContent) || 0;
+            const delvQty = parseInt(row.querySelector('.delQty').textContent) || 0;
+
+            lwiqty += lwiQty
+            lwipendingqty += lwiPendingQty;
+            lwiapproveqty += lwiApproveQty;
+            salesqty += salesQty;
+            totalqty += totalQty;
+            delQty += delvQty;
+
+           document.getElementById('tRecLwi').textContent = lwiqty;
+           document.getElementById('tQcPendQty').textContent = lwipendingqty;
+           document.getElementById('tQcAppQty').textContent = lwiapproveqty;
+           document.getElementById('tSales').textContent = salesqty;
+           document.getElementById('tQty').textContent = totalqty;
+           document.getElementById('tDelyQty').textContent = delQty;
+        })
+
+    }
+    calculateAllTotalValue();
     totalValueCheck();
 </script>
 {% endblock %}

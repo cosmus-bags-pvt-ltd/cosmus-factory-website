@@ -1,4 +1,3 @@
-
 from email import message
 from django.db import models
 from django.conf import settings
@@ -344,8 +343,14 @@ class packaging(models.Model):
 
 
 
+class rack_for_raw_material(models.Model):
+    rack_name = models.CharField(max_length=255, unique=True)
+
+
+
 class bin_for_raw_material(models.Model):
-    bin_name = models.CharField(max_length=255, unique=True)
+    rack = models.ForeignKey(rack_for_raw_material, on_delete=models.PROTECT)
+    bin_name = models.CharField(max_length=255,)
 
     def __str__(self):
         return self.bin_name
@@ -401,8 +406,8 @@ class Item_Creation(models.Model):
     def Packaging_Material(self):
         return self.Item_Packing.packing_material
 
-    def selected_bins(self):
-        return list(self.bin.values_list('id', flat=True))
+    # def selected_bins(self):
+    #     return list(self.bin.values_list('id', flat=True))
        
 
 
@@ -1082,12 +1087,13 @@ class Product_bin_quantity_through_table(models.Model):
     bin = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
-    picklist_qty = models.BigIntegerField()
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
 
     def __str__(self):
         return f"{self.product.Product.Model_Name} -- {self.product.PProduct_color.color_name}"
+
+
 
 class product_purchase_voucher_master(models.Model):
 
@@ -1331,7 +1337,7 @@ class sales_voucher_master_outward_scan(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
-    narration = models.CharField(null=True, blank=True)
+    # narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
@@ -1382,7 +1388,7 @@ class sales_return_voucher_master(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
-    narration = models.CharField(null=True, blank=True)
+    # narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
@@ -1395,6 +1401,10 @@ class sales_return_voucher(models.Model):
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
+
+
 
 
 

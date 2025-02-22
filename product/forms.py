@@ -5,7 +5,7 @@ from django import forms
 from django.shortcuts import get_object_or_404
 
 from core.models import Company
-from .models import AccountSubGroup, Color, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, bin_for_raw_material, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, sales_voucher_master_outward_scan, sales_voucher_outward_scan,shade_godown_items, shade_godown_items_temporary_table
+from .models import AccountSubGroup, Color, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, bin_for_raw_material, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, rack_for_raw_material, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, sales_voucher_master_outward_scan, sales_voucher_outward_scan,shade_godown_items, shade_godown_items_temporary_table
 from django.forms.models import inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.forms import BaseModelFormSet, modelformset_factory, BaseInlineFormSet 
@@ -318,6 +318,14 @@ class ColorForm(UniqueFieldMixin,forms.ModelForm):
         return data
     """
 
+
+class rack_for_raw_material_form(forms.ModelForm):
+    class Meta:
+        model = rack_for_raw_material
+        fields = ['rack_name']
+
+
+
 class bin_for_raw_material_form(forms.ModelForm):
     class Meta:
         model = bin_for_raw_material
@@ -325,15 +333,9 @@ class bin_for_raw_material_form(forms.ModelForm):
 
 
 
-
-
 class Itemform(UniqueFieldMixin,forms.ModelForm):
 
-    bin = forms.ModelMultipleChoiceField(
-        queryset=bin_for_raw_material.objects.all().order_by(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
-    )
+    bin = forms.ModelMultipleChoiceField(queryset=bin_for_raw_material.objects.all().order_by(),widget=forms.CheckboxSelectMultiple,required=False)
     
     class Meta:
         model = Item_Creation
@@ -359,9 +361,6 @@ class Itemform(UniqueFieldMixin,forms.ModelForm):
 explaination on rendering data in - notes_forms_form_api.txt
             
 """
-
-
-
 
 ShadeFormSet = inlineformset_factory(Item_Creation, item_color_shade, fields=('item_name_rank', 'item_shade_name', 'item_color_image'), extra=1)
 OpeningShadeFormSetupdate = inlineformset_factory(item_color_shade, opening_shade_godown_quantity, fields=('opening_godown_id', 'opening_quantity', 'opening_rate'), extra=1)

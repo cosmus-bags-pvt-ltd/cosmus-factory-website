@@ -60,7 +60,6 @@ the input field will be pre-filled with that value when the page is loaded. -->
               <th>Unit Name</th>
               <th>Units</th>
               <th>Panha</th>
-              <th>Bins</th>
               <th>Edit</th>
               <th>Delete</th>
             </tr>
@@ -81,7 +80,21 @@ the input field will be pre-filled with that value when the page is loaded. -->
                   <label class="fw-bold">F Group -</label>
                   <span class="fw-bold text-success ps-1">{{ item.fab_grp }}</span><br>
                   <label class="fw-bold">M Code -</label>
-                  <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span>
+                  <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span><br>
+                  
+                  {% for rack_name, data in bins.items %}
+                    {% if data.item_name == item.item_name %}
+                        <div class="inline-block mb-2">
+                            <b>{{ rack_name }}</b><br>
+                            {% for bin in data.bins %}
+                                <span class="{% if forloop.counter|divisibleby:2 %}text-danger fw-bold{% else %}text-primary fw-bold{% endif %}">
+                                    {{ bin }}
+                                </span>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                  {% endfor %}
+              
                 </div>
               </td>
               <td class="text-nowrap">{{item.Color_Name}}<span class="colorCheck fw-bold" style="float: right;">{{item.total_quantity | default_if_none:0}}</span></td>
@@ -114,7 +127,7 @@ the input field will be pre-filled with that value when the page is loaded. -->
               <td style="width: 5%;">{{item.Unit_Name}}</td>
               <td>{{item.Units}}</td>
               <td>{{item.Panha}}</td>
-              <td class="expandable-cell fw-bold">
+              <!-- <td class="expandable-cell fw-bold">
                 {% if item.bin.all %}
                     {% with item.bin.all|first as first_bin %}
                         <span class="half-content">{{ first_bin.bin_name }}</span>
@@ -127,7 +140,7 @@ the input field will be pre-filled with that value when the page is loaded. -->
                 {% else %}
                     <span class="text-muted">No bins</span>
                 {% endif %}
-            </td>
+            </td> -->
               <td><a class="editItem" href="{% url 'item-edit' item.id %}"><span><i class="fa-solid fa-pen-to-square"></i></span></a></td>
               <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ item.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>
             </tr>

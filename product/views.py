@@ -56,7 +56,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
                     purchase_order_raw_material_cutting, 
-                    purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items,
+                    purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, rack_for_raw_material,
                     raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, raw_material_production_total, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_master_outward_scan, sales_voucher_outward_scan,
                     set_prod_item_part_name, shade_godown_items,
                     shade_godown_items_temporary_table,purchase_order_for_raw_material_cutting_items,sales_voucher_finish_Goods,sales_voucher_master_finish_Goods)
@@ -68,7 +68,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
-                    purchase_order_to_product_cutting_form, raw_material_product_estimation_items_form, raw_material_product_estimation_product_2_item_form, 
+                    purchase_order_to_product_cutting_form, rack_for_raw_material_form, raw_material_product_estimation_items_form, raw_material_product_estimation_product_2_item_form, 
                     raw_material_production_estimation_form,raw_material_stock_trasfer_items_formset,
                     FabricFinishes_form, ItemFabricGroup, Itemform, LedgerForm,
                     OpeningShadeFormSetupdate, PProductAddForm, PProductCreateForm, ShadeFormSet,
@@ -1010,29 +1010,84 @@ def product2subcategoryajax(request):
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
             return JsonResponse({'dict_result':dict_result})
-    
 
 
 
 
 @login_required(login_url='login')
-def create_update_bin_for_raw_material(request, b_id=None):
+def create_update_rack_for_raw_material(request, r_id=None):
     try:
-        bin_list = bin_for_raw_material.objects.all()
-        bin_instance = get_object_or_404(bin_for_raw_material, id=b_id) if b_id else None
-        form = bin_for_raw_material_form(request.POST or None, instance=bin_instance)
+        rack_list = rack_for_raw_material.objects.all()
+        rack_instance = get_object_or_404(rack_for_raw_material, id=r_id) if r_id else None
+
+        form = rack_for_raw_material_form(request.POST or None, instance=rack_instance)
 
         if request.method == 'POST':
             if form.is_valid():
                 form.save()
                 messages.success(request, "Bin details saved successfully!")
-                return redirect('create-bin-for-raw-material')
+                return redirect('create-rack-for-raw-material')
+            else:
+                messages.error(request, "Please correct the errors below.")
+
+                
+    except bin_for_raw_material.DoesNotExist:
+        messages.error(request, "The rack record does not exist.")
+        return redirect('create-rack-for-raw-material')
+
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred: {str(e)}")
+        print(f"Error in create_update_rack_for_raw_material: {str(e)}")
+
+
+    return render(request, 'product/create_update_rack_for_raw_material.html', {'form': form,'rack_list': rack_list})
+
+
+
+
+@login_required(login_url='login')
+def delete_rack_for_raw_material(request,r_id):
+    try:
+        rack_instance = get_object_or_404(rack_for_raw_material, id=r_id)
+        
+        rack_instance.delete()
+        messages.success(request, "rack deleted successfully!")
+
+    except rack_for_raw_material.DoesNotExist:
+        messages.error(request, "The rack does not exist.")
+
+    except Exception as e:
+        messages.error(request, f"An error occurred while deleting the rack: {str(e)}")
+        print(f"Error in delete_rack_for_raw_material: {str(e)}")
+
+    return redirect('create-rack-for-raw-material')
+
+
+@login_required(login_url='login')
+def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
+    try:
+        bin_list = bin_for_raw_material.objects.filter(rack = r_id)
+
+        bin_instance = get_object_or_404(bin_for_raw_material, id=b_id) if b_id else None
+
+        form = bin_for_raw_material_form(request.POST or None, instance=bin_instance)
+
+        rack_instance = get_object_or_404(rack_for_raw_material, id=r_id) if r_id else None
+
+        if request.method == 'POST':
+            if form.is_valid():
+                bin_form = form.save(commit=False)
+                bin_form.rack = rack_instance
+                bin_form.save()
+
+                messages.success(request, "Bin details saved successfully!")
+                return redirect('create-bin-for-raw-material', r_id=r_id)
             else:
                 messages.error(request, "Please correct the errors below.")
 
     except bin_for_raw_material.DoesNotExist:
         messages.error(request, "The bin record does not exist.")
-        return redirect('create-bin-for-raw-material')
+        return redirect('create-bin-for-raw-material', r_id=r_id)
 
     except Exception as e:
         messages.error(request, f"An unexpected error occurred: {str(e)}")
@@ -1041,22 +1096,27 @@ def create_update_bin_for_raw_material(request, b_id=None):
     return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list})
 
 
-
 @login_required(login_url='login')
 def delete_bin_for_raw_material(request,b_id):
+
     try:
         bin_instance = get_object_or_404(bin_for_raw_material, id=b_id)
+        rack_id = bin_instance.rack.id
+        if Item_Creation.objects.filter(bin=bin_instance).exists():
+            messages.error(request, "Cannot delete: This bin is assigned to one or more items.")
+            return redirect('create-bin-for-raw-material', r_id=rack_id)
+        
         bin_instance.delete()
         messages.success(request, "Bin deleted successfully!")
+
     except bin_for_raw_material.DoesNotExist:
         messages.error(request, "The bin does not exist.")
+
     except Exception as e:
         messages.error(request, f"An error occurred while deleting the bin: {str(e)}")
         print(f"Error in delete_bin_for_raw_material: {str(e)}")
 
-    return redirect('create-bin-for-raw-material')
-
-
+    return redirect('create-bin-for-raw-material', r_id=rack_id)
 
 
 @login_required(login_url='login')
@@ -1070,6 +1130,7 @@ def item_create(request):
     items_to_clone = Item_Creation.objects.all()
     colors = Color.objects.all()
     form = Itemform()
+    racks = rack_for_raw_material.objects.all()
 
 
     if request.path == '/itemcreatepopup/':
@@ -1078,12 +1139,14 @@ def item_create(request):
         template_name = 'product/item_create_update.html'
         
     if request.method == 'POST':
+        print(request.POST)
         form = Itemform(request.POST, request.FILES)
         if form.is_valid():
             form_instance = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
-            form_instance.bin.set(form.cleaned_data['bin'])
+            
+            form_instance.bin.set(form.cleaned_data.get('bin', []))
 
             
             if request.path == '/itemcreatepopup/':
@@ -1099,9 +1162,7 @@ def item_create(request):
             return render(request,template_name, {'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'title''items_to_clone':items_to_clone,'page_name':'Create Raw Material'})
     
     
-    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material'})
-
-
+    return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material','racks':racks})
 
 
 @login_required(login_url='login')
@@ -1114,9 +1175,9 @@ def item_edit(request,pk):
     packaging_material_all = packaging.objects.all()
     fab_finishes = FabricFinishes.objects.all()
     item_pk = get_object_or_404(Item_Creation ,pk = pk)
+    racks = rack_for_raw_material.objects.all()
 
     form = Itemform(instance=item_pk)
-
     
     queryset = item_color_shade.objects.filter(items = pk).annotate(
         total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
@@ -1130,13 +1191,16 @@ def item_edit(request,pk):
     if request.method == 'POST':
         form = Itemform(request.POST, request.FILES , instance = item_pk)
         formset = ShadeFormSet(request.POST , request.FILES, instance = item_pk)
-        formset.forms = [form for form in formset if form.has_changed()] 
+        print(request.POST)
+        formset.forms = [form for form in formset if form.has_changed()]
+        
         try:
             if form.is_valid() and formset.is_valid():
                 form_instance = form.save(commit=False)  
                 form_instance.c_user = request.user
-                form_instance.bin.set(form.cleaned_data['bin'])
                 form_instance.save()
+
+                form_instance.bin.set(form.cleaned_data.get('bin', []))
 
                 for form in formset.deleted_forms: 
                     if form.instance.pk:
@@ -1200,11 +1264,7 @@ def item_edit(request,pk):
              logger.error(f'An exception occured in item edit - {e}')
              return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
         
-    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
-
-
-
-
+    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material",'racks':racks})
 
 
 @login_required(login_url='login')
@@ -1228,15 +1288,27 @@ def item_clone_ajax(request):
     return JsonResponse({'response_data':response_data})
 
 
-
-
 @login_required(login_url='login')
 def item_list(request):
     
     g_search = request.GET.get('item_search','')
     
+    racks = rack_for_raw_material.objects.all()
+
     queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item','Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes','Item_Packing').prefetch_related('shades','shades__godown_shades','shades__godown_shades__godown_name','bin')
     
+    bins = {}
+
+    for item in queryset:
+        for bin in item.bin.all():
+            rack_name = bin.rack.rack_name  # Get rack name
+
+            if rack_name not in bins:
+                bins[rack_name] = {"item_name": item.item_name, "bins": []}  # Store item name and bins list
+
+            if bin.bin_name not in bins[rack_name]["bins"]:
+                bins[rack_name]["bins"].append(bin.bin_name)
+
     if g_search != '':
         queryset = queryset.filter(Q(item_name__icontains = g_search)| Q(Item_Color__color_name__icontains = g_search)| Q(Fabric_Group__fab_grp_name__icontains = g_search)| Q(Material_code__icontains = g_search))
         
@@ -1272,7 +1344,7 @@ def item_list(request):
         if exact_desc != '' and exact_desc is not None:
             queryset = Item_Creation.objects.filter(item_name__exact=exact_desc)
 
-    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials"})
+    return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials","bins": bins,})
     
 
 
@@ -2333,7 +2405,7 @@ def stockTrasferRaw(request, pk=None):
 @login_required(login_url='login')
 def stockTrasferRawList(request):
 
-    stocktrasferall = RawStockTransferMaster.objects.all()
+    stocktrasferall = RawStockTransferMaster.objects.all().order_by('created_date')
 
     return render(request,'misc/stock_transfer_raw_list.html',{'stocktrasferall':stocktrasferall,'page_name':'Stock Transfer List'})
 
@@ -2916,7 +2988,7 @@ def purchasevouchercreategodownpopupurl(request):
 
 @login_required(login_url='login')
 def purchasevoucherlist(request):
-    purchase_invoice_list = item_purchase_voucher_master.objects.all()
+    purchase_invoice_list = item_purchase_voucher_master.objects.all().order_by('created_date')
     return render(request,'accounts/purchase_invoice_list.html',{'purchase_invoice_list':purchase_invoice_list,'page_name':'Purchase List'})
 
 
@@ -3129,7 +3201,7 @@ def sales_scan_product_dynamic_ajax(request):
 
 @login_required(login_url='login')
 def salesvoucherlist(request):
-    sales_list = sales_voucher_master_finish_Goods.objects.all()
+    sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
     return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
 
 
@@ -5263,14 +5335,11 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
 @login_required(login_url='login')
 def purchase_order_for_raw_material_list(request):
     
-    
     purchase_orders_pending = purchase_order.objects.annotate(raw_material_count=Count('raw_materials')).filter(raw_material_count__lt=1, purchase_order_to_product_saved=True).order_by('created_date')
+
     purchase_orders_completed = purchase_order.objects.annotate(raw_material_count=Count('raw_materials')).filter(raw_material_count__gt=0).order_by('created_date')
 
-
-    return render(request,'production/purchase_order_for_raw_material_list.html',
-                  {'purchase_orders_pending': purchase_orders_pending,
-                   'purchase_orders_completed':purchase_orders_completed,'page_name':'Purchase Order List'})
+    return render(request,'production/purchase_order_for_raw_material_list.html',{'purchase_orders_pending': purchase_orders_pending,'purchase_orders_completed':purchase_orders_completed,'page_name':'Purchase Order List'})
 
 
 
@@ -5599,31 +5668,30 @@ def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
 
 @login_required(login_url='login')
 def purchaseordercuttinglistall(request):
+
     current_date = datetime.date.today
 
-    raw_materials_exists = purchase_order_for_raw_material.objects.filter(purchase_order_id=OuterRef('pk')
-                                                ).values('pk')[:1] 
+    raw_materials_exists = purchase_order_for_raw_material.objects.filter(purchase_order_id=OuterRef('pk')).values('pk')[:1] 
 
-    
     purchase_orders_cutting_pending = (
         purchase_order.objects.annotate(
-            raw_materials_exist=Exists(raw_materials_exists),
-            total_approved_qty_sum=Sum('cutting_pos__approved_qty'),
-        )
-        .filter(
+        raw_materials_exist=Exists(raw_materials_exists),
+        total_approved_qty_sum=Sum('cutting_pos__approved_qty'),
+        ).filter(
             balance_number_of_pieces__gt=0,
             raw_materials_exist=True  
-        )
-        .annotate(
-            total_approved_balance=F('number_of_pieces') - F('total_approved_qty_sum')
-        )
-        .order_by('created_date')
-    )
+        ).annotate(
+            total_approved_balance=F('number_of_pieces') - F('total_approved_qty_sum')).order_by('created_date'))
+
+
 
     purchase_orders_cutting_completed = purchase_order.objects.filter(
-        balance_number_of_pieces=0).annotate(total_processed_qty = Sum('cutting_pos__processed_qty'),
-        total_approved_qty_sum = Sum('cutting_pos__approved_qty')).annotate(total_approved_balance = F(
-        'number_of_pieces') - F('total_approved_qty_sum')).order_by('created_date')
+        balance_number_of_pieces=0).annotate(
+            total_processed_qty = Sum('cutting_pos__processed_qty'),
+            total_approved_qty_sum = Sum('cutting_pos__approved_qty')).annotate(
+                total_approved_balance = F('number_of_pieces') - F('total_approved_qty_sum')).order_by(
+                    'created_date'
+                    )
 
 
     purchase_order_cutting_all = purchase_order_raw_material_cutting.objects.all()
@@ -5645,20 +5713,8 @@ def purchaseordercuttinglistall(request):
 
         voucher_pending_quantity_total += balance
 
-    
 
-
-    print(voucher_pending_quantity)
-
-    # aggregated_total = voucher_pending_quantity.aggregate(total_balance_qty_sum=Sum('total_balance_qty'))
-
-    # print(aggregated_total['total_balance_qty_sum'])
-
-
-    return render(request,'production/purchaseordercuttinglistall.html', {'purchase_orders_cutting_pending':purchase_orders_cutting_pending,
-                                                'purchase_orders_cutting_completed':purchase_orders_cutting_completed,'page_name':'Cutting Order List','current_date':current_date,
-                                                'purchase_order_cutting_all':purchase_order_cutting_all,'vouchers_pending_count':vouchers_pending_count,
-                                                'voucher_pending_quantity_total':voucher_pending_quantity_total})
+    return render(request,'production/purchaseordercuttinglistall.html', {'purchase_orders_cutting_pending':purchase_orders_cutting_pending,'purchase_orders_cutting_completed':purchase_orders_cutting_completed,'page_name':'Cutting Order List','current_date':current_date,'purchase_order_cutting_all':purchase_order_cutting_all,'vouchers_pending_count':vouchers_pending_count,'voucher_pending_quantity_total':voucher_pending_quantity_total})
 
 
 
@@ -5855,6 +5911,7 @@ def purchaseordercuttingmastercancelajax(request):
             logger.error(f'Database integrity error - {ie}')
             return JsonResponse({'status': 'Database integrity error occurred.'}, status=500)
         
+
         except Exception as e:
             logger.error(f'Instance not found -{e}')
             messages.error(request, f'Error with labour workout: {e}')
@@ -6543,13 +6600,13 @@ def labourworkinlistall(request):
         total_labour_workin_pending=Sum('cutting_pos__labourworkouts__labour_workout_childs__labour_workin_pending_pcs'),
         total_approved_qty=Subquery(approved_qty_subquery),
         total_pending_approved_qty=Subquery(pending_approved_qty_subquery)
-    )
+    ).order_by('created_date')
 
     #vendor name wise
-    labour_workout_child_instances_all = labour_workout_childs.objects.all().annotate(total_approved_qty = Sum('labour_work_in_master__l_w_in_products__approved_qty'),total_pending_approved_qty = Sum('labour_work_in_master__l_w_in_products__pending_for_approval'))
+    labour_workout_child_instances_all = labour_workout_childs.objects.all().annotate(total_approved_qty = Sum('labour_work_in_master__l_w_in_products__approved_qty'),total_pending_approved_qty = Sum('labour_work_in_master__l_w_in_products__pending_for_approval')).order_by('created_date')
 
     # labour workin grn no wise
-    labour_workin_child_instances_all = labour_work_in_master.objects.all()
+    labour_workin_child_instances_all = labour_work_in_master.objects.all().order_by('created_date')
 
 
     # Calculate approve pending quantity
@@ -9576,7 +9633,7 @@ def product_purchase_voucher_create_update(request, pk=None):
 @login_required(login_url='login')
 def product_purchase_voucher_list(request):
 
-    product_purchase_voucher_all = product_purchase_voucher_master.objects.all().annotate(check_diff_qty = Sum('product_purchase_voucher_items__qc_recieved_qty'),total_qty = Sum('product_purchase_voucher_items__quantity_total'))
+    product_purchase_voucher_all = product_purchase_voucher_master.objects.all().annotate(check_diff_qty = Sum('product_purchase_voucher_items__qc_recieved_qty'),total_qty = Sum('product_purchase_voucher_items__quantity_total')).order_by('created_date')
 
     return render(request,'finished_product/product_purchase_voucher_list.html',{'product_purchase_voucher_all':product_purchase_voucher_all})
 
@@ -9763,7 +9820,9 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 
 @login_required(login_url='login')
 def product_transfer_to_warehouse_list(request):
-    warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('voucher_no')
+
+    warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('created_date')
+
     return render(request,'finished_product/product_transfer_to_warehouse_list.html',{'warehouse_product_transfer_list':warehouse_product_transfer_list})
 
 
@@ -10073,13 +10132,13 @@ def delete_sigle_entries(request, e_id, voucher_type):
 @login_required(login_url='login')
 def scan_product_qty_list(request):
 
-    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name').values('id','product_purchase_master__ledger_type','product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image','quantity_total','qc_recieved_qty','diffrence_qty')
+    product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name').values('id','product_purchase_master__ledger_type','product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image','quantity_total','qc_recieved_qty','diffrence_qty','created_date')
 
-    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0).select_related( 'Finished_goods_Stock_TransferMasterinstance', 'product').values('id','Finished_goods_Stock_TransferMasterinstance','product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image','product_quantity_transfer','qc_recieved_qty','diffrence_qty')
+    stock_transfer_voucher = Finished_goods_transfer_records.objects.filter(qc_recieved_qty__gt = 0).select_related( 'Finished_goods_Stock_TransferMasterinstance', 'product').values('id','Finished_goods_Stock_TransferMasterinstance','product__PProduct_SKU','product__Product__Product_Refrence_ID','product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_image','product_quantity_transfer','qc_recieved_qty','diffrence_qty','created_date')
 
     merged_queryset = chain(product_purchase_voucher, stock_transfer_voucher)
 
-    merged_list = list(merged_queryset)
+    merged_list = sorted(list(merged_queryset), key=lambda x: x['created_date'])
 
     return render(request,'finished_product/scan_product_qty_list.html',{'merged_list':merged_list,'MEDIA_URL': settings.MEDIA_URL})
 
@@ -10110,7 +10169,7 @@ def scan_product_list(request,pk,v_type):
             'bin_number__rack_finished_name__zone_finished_name__zone_name',
             'bin_number__rack_finished_name__rack_name',
             'bin_number__bin_name'
-            )
+            ).order_by('created_date')
 
     elif v_type == "transfer":
 
@@ -10127,7 +10186,7 @@ def scan_product_list(request,pk,v_type):
             'bin_number__rack_finished_name__zone_finished_name__zone_name',
             'bin_number__rack_finished_name__rack_name',
             'bin_number__bin_name'
-            )
+            ).order_by('created_date')
     else:
         instance_entries_all = finishedgoodsbinallocation.objects.all().select_related('related_transfer_record','product','bin_number').values(
             'related_purchase_item__product_purchase_master__id',
@@ -10145,7 +10204,7 @@ def scan_product_list(request,pk,v_type):
             'bin_number__rack_finished_name__zone_finished_name__zone_name',
             'bin_number__rack_finished_name__rack_name',
             'bin_number__bin_name'
-            ).annotate(total_qty = Sum('related_purchase_item__qc_recieved_qty'),total_qty_tr = Sum('related_transfer_record__qc_recieved_qty')).order_by('-created_date')
+            ).annotate(total_qty = Sum('related_purchase_item__qc_recieved_qty'),total_qty_tr = Sum('related_transfer_record__qc_recieved_qty')).order_by('created_date')
 
 
     current_date = timezone.now()
@@ -10232,6 +10291,8 @@ def warehouse_stock(request):
 
 
     return render(request,'finished_product/warehouse_stock.html',{'merged_list':merged_list,'MEDIA_URL': settings.MEDIA_URL})
+
+
 
 
 @login_required(login_url='login')
@@ -10751,10 +10812,10 @@ def purchase_order_for_puchase_voucher_rm_create_update(request,p_id=None):
 
 def purchase_order_for_puchase_voucher_rm_list(request):
   
-    order_list = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity')).filter(total_qty__gt=0).order_by('po_no')
+    order_list = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity')).filter(total_qty__gt=0).order_by('created_date')
     
 
-    order_list_complete = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity'),total_demo_qty = Sum('purchase_order_for_puchase_voucher_rm__demo_quantity')).filter(total_qty = 0).order_by('po_no')
+    order_list_complete = purchase_order_master_for_puchase_voucher_rm.objects.annotate(total_qty=Sum('purchase_order_for_puchase_voucher_rm__quantity'),total_demo_qty = Sum('purchase_order_for_puchase_voucher_rm__demo_quantity')).filter(total_qty = 0).order_by('created_date')
 
     return render(request,'accounts/purchaseorderforpuchasevoucherrmlist.html',{'order_list':order_list ,'order_list_complete':order_list_complete})
 
@@ -13886,14 +13947,14 @@ def finished_goods_sorting_list(request):
         total_qc_qty=Sum('product_purchase_voucher_items__qc_recieved_qty'),
         total_diff_qty = Sum('product_purchase_voucher_items__diffrence_qty'),
         total_boxex_qty = Sum('product_purchase_voucher_items__product_name__Product__Product_QtyPerBox')
-        ).select_related('finished_godowns', 'party_name')
+        ).select_related('finished_godowns', 'party_name').order_by('created_date')
 
     finished_goods_transfer_m_instances = Finished_goods_Stock_TransferMaster.objects.filter(transnfer_cancelled=False).annotate(
     total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer'), 
     total_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),
     total_diff_qty=Sum('finished_goods_transfer_records__diffrence_qty'),
     total_boxex_qty=Sum('finished_goods_transfer_records__product__Product__Product_QtyPerBox')
-    ).select_related('source_warehouse', 'destination_warehouse')
+    ).select_related('source_warehouse', 'destination_warehouse').order_by('created_date')
    
     
 
@@ -14267,7 +14328,7 @@ def deletepicklist(request,pl_id):
 
 @login_required(login_url='login')
 def all_picklists_list(request):
-    all_picklists = Picklist_voucher_master.objects.all().annotate(scanned_qty=Sum("picklist_process_in_outward__balance_qty"))
+    all_picklists = Picklist_voucher_master.objects.all().annotate(scanned_qty=Sum("picklist_process_in_outward__balance_qty")).order_by('created_date')
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
 
 
@@ -14722,7 +14783,7 @@ def outward_scan_product_list(request):
         total_qty=Sum('outward_product__quantity'),
         picklist_total_qty=Subquery(picklist_qty_subqeury),
         remaining_qty=F('picklist_total_qty') - F('total_qty'),
-        sale_total_qty=Subquery(sale_qty_subqeury))
+        sale_total_qty=Subquery(sale_qty_subqeury)).order_by('created_date')
     
 
     return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
@@ -14956,6 +15017,7 @@ def salesvoucherlistwarehouse(request):
             'sales_voucher_outward_scan__quantity',
             'grand_total'
             ).annotate(total_qty = Sum('sales_voucher_outward_scan__quantity'))
+
 
     sales_return = sales_return_voucher_master.objects.all().select_related(
         'sales_voucher_master',
@@ -15628,8 +15690,6 @@ def sale_return_list(request):
     grand_total_subquery = sales_return_voucher_master.objects.filter(
     sales_return_inward_instance=OuterRef('pk')).values('grand_total')[:1]
     
-    queryset = sales_return_inward.objects.annotate(total_qty=Sum('sales_return_product__scan_qty'),total_sale_qty=Subquery(total_sale_qty_subquery),grand_total=Subquery(grand_total_subquery))
+    queryset = sales_return_inward.objects.annotate(total_qty=Sum('sales_return_product__scan_qty'),total_sale_qty=Subquery(total_sale_qty_subquery),grand_total=Subquery(grand_total_subquery)).order_by('created_date')
 
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
-
-

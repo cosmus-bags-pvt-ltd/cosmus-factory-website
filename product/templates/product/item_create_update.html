@@ -135,7 +135,7 @@
     </div>
 
 
-  </div>
+    </div>
     {% if form.instance.id %}
     <div class="d-flex mb-3">
       <label for="id_Item_shades" class="item-form">Shades :</label>
@@ -274,15 +274,52 @@
           
         </div>
         {% endif %}
-        <div class="d-flex">
-          <label class="me-2">Select Bins :</label>
-            <div>
-              <Span>{{ form.bin }}</Span>
-            </div>
+        <!-- <div>
+          {% if form.instance.id %}
+            {% for bin in form.instance.bin.all %}
+                <span>{{ bin.rack.rack_name }}-{{ bin.bin_name }}</span>
+            {% empty %}
+                <span>No bins assigned.</span>
+            {% endfor %}
+        {% else %}
+            <span>Item not yet created.</span>
+        {% endif %}
+        </div> -->
+
+        <div class="mb-3">
+          <button type="button" class="edit_btn w-75 mb-3" id="AddButton">
+              Add Bins + <span class="labourIncompleteArrow"><i class="fas fa-angle-right arrowBtn"></i></span>
+          </button>
           
-        </div>
-        
-        
+          <div id="addbutton_List" style="display: none;">
+           
+              {% for rack in racks %}
+              
+              <button type="button" class="itemRack_btn w-75 mb-3 rackshow_btn" data-rack-id="rack{{ forloop.counter }}">
+                  {{ rack.rack_name }}
+                  <span class="labourIncompleteArrow"><i class="fas fa-angle-right arrowBtn"></i></span>
+              </button>
+              
+              <div id="rack{{ forloop.counter }}" class="BinsShow mb-2" style="display: none;">
+                  {% for bin in form.bin.field.queryset %}
+                      {% if bin.rack == rack %}
+                          <span class="mx-1">
+                              <input type="checkbox" name="bin[]" value="{{ bin.id }}" 
+                                  {% if bin in form.instance.bin.all %}checked{% endif %}>
+                              <span class="{% if forloop.counter|divisibleby:2 %}text-danger fw-bold {% else %}text-primary fw-bold{% endif %}">
+                                  {{ bin.bin_name }}
+                              </span>
+                          </span>
+                      {% endif %}
+                  {% endfor %}
+              </div>
+          {% endfor %}
+            </div>
+             
+          </div>
+      </div>
+
+
       </div>
     </div>
 
@@ -294,12 +331,59 @@
 
 
 
-
 <script>
+ 
 document.addEventListener("DOMContentLoaded", function () {
     window.onload = function() {
         document.getElementById("id_item-to-clone").focus();
     };
+    function toggleVisible(toggleButtonId, dataContainerId) {
+      const toggleButton = document.getElementById(toggleButtonId);
+      const icon = toggleButton.querySelector(".arrowBtn");
+      const dataContainer = document.getElementById(dataContainerId);
+      toggleButton.addEventListener("click", function () {
+        // Toggle the visibility of the data container
+        if (dataContainer.style.display === "none") {
+          dataContainer.style.display = "block";
+          icon.classList.add("rotate"); // Add rotate class to the icon
+        } else {
+          dataContainer.style.display = "none";
+          icon.classList.remove("rotate"); // Remove rotate class from the icon
+        }
+      });
+    }
+    toggleVisible("AddButton", "addbutton_List");
+
+
+    document.querySelectorAll(".rackshow_btn").forEach(button => {
+        button.addEventListener("click", function () {
+            let rackId = this.getAttribute("data-rack-id"); // Get the unique rack ID
+            let targetDiv = document.getElementById(rackId);
+            let icon = this.querySelector(".arrowBtn");
+
+            // Hide all bins except the clicked one
+            document.querySelectorAll(".BinsShow").forEach(div => {
+                if (div.id !== rackId) {
+                    div.style.display = "none";
+                }
+            });
+
+            // Reset all arrows
+            document.querySelectorAll(".arrowBtn").forEach(arrow => {
+                arrow.classList.remove("rotate");
+            });
+
+            // Toggle clicked rack
+            if (targetDiv.style.display === "none" || targetDiv.style.display === "") {
+                targetDiv.style.display = "block";
+                icon.classList.add("rotate"); // Rotate the icon
+            } else {
+                targetDiv.style.display = "none";
+                icon.classList.remove("rotate"); // Reset the icon
+            }
+        });
+    });
+  
   })
 $(document).ready(function(){
   $(document).on('change','#id_unit_name_item',function(){
