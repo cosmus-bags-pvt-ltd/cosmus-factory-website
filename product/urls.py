@@ -65,7 +65,6 @@ urlpatterns = [
     path('createbinforrawmaterial/<int:r_id>/',views.create_update_bin_for_raw_material , name= 'create-bin-for-raw-material'),
     path('updatebinforrawmaterial/<int:r_id>/<int:b_id>/',views.create_update_bin_for_raw_material , name= 'update-bin-for-raw-material'),
     path('deletebinforrawmaterial/<int:b_id>/',views.delete_bin_for_raw_material , name= 'delete-bin-for-raw-material'),
-    path("get-bins-by-rack/", views.get_bins_by_rack, name="get-bins-by-rack"),
 
 
     #item_routes

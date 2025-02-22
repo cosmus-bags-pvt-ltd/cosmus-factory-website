@@ -81,30 +81,9 @@ the input field will be pre-filled with that value when the page is loaded. -->
                   <span class="fw-bold text-success ps-1">{{ item.fab_grp }}</span><br>
                   <label class="fw-bold">M Code -</label>
                   <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span>
-<<<<<<< HEAD
-                  {% if item.bin.all %}
-                    {% with "" as last_rack_name %}
-                        {% for bin in item.bin.all %}
-                            {% if bin.rack.rack_name != last_rack_name %}
-                                {% if not forloop.first %}<br>{% endif %}
-                                <strong>{{ bin.rack.rack_name }}</strong>: 
-                            {% endif %}
-                            {{ bin.bin_name }}{% if not forloop.last and bin.rack.rack_name == last_rack_name %}, {% endif %}
-                            {% with bin.rack.rack_name as last_rack_name %}{% endwith %}
-                        {% endfor %}
-                    {% endwith %}
-                {% endif %}
+                  
 
 
-=======
-                  <div>
-                    {% for bin in item.bin.all %}
-                    <span class="">{{ bin.bin_name }}<br></span>
-                {% empty %}
-                    <span class="text-muted">No bins assigned</span>
-                {% endfor %}
-                  </div>
->>>>>>> 9bd5c5ca325ca9bbfe9df383aa50a4b7950a6bec
                 </div>
               </td>
               <td class="text-nowrap">{{item.Color_Name}}<span class="colorCheck fw-bold" style="float: right;">{{item.total_quantity | default_if_none:0}}</span></td>

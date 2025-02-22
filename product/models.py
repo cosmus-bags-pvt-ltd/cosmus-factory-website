@@ -1,4 +1,3 @@
-
 from email import message
 from django.db import models
 from django.conf import settings
@@ -1088,7 +1087,6 @@ class Product_bin_quantity_through_table(models.Model):
     bin = models.ForeignKey(finished_product_warehouse_bin, on_delete=models.PROTECT)
     product = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     product_quantity = models.BigIntegerField()
-    picklist_qty = models.BigIntegerField()
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
 
