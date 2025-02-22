@@ -1063,8 +1063,6 @@ def delete_rack_for_raw_material(request,r_id):
     return redirect('create-rack-for-raw-material')
 
 
-
-
 @login_required(login_url='login')
 def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
     try:
@@ -1098,7 +1096,6 @@ def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
     return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list})
 
 
-
 @login_required(login_url='login')
 def delete_bin_for_raw_material(request,b_id):
 
@@ -1122,17 +1119,6 @@ def delete_bin_for_raw_material(request,b_id):
     return redirect('create-bin-for-raw-material', r_id=rack_id)
 
 
-
-
-def get_bins_by_rack(request):
-    rack_id = request.GET.get("rack_id")  # Get rack ID from request
-    bins = bin_for_raw_material.objects.filter(rack_id=rack_id).values("id", "bin_name")  
-
-    return JsonResponse({"bins": list(bins)})
-
-
-
-
 @login_required(login_url='login')
 def item_create(request):
 
@@ -1145,9 +1131,6 @@ def item_create(request):
     colors = Color.objects.all()
     form = Itemform()
     racks = rack_for_raw_material.objects.all()
-
-    # if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-    #     rack = request.GET.get('')
 
 
     if request.path == '/itemcreatepopup/':
@@ -1162,7 +1145,7 @@ def item_create(request):
             form_instance = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
-            # form_instance.bin.set(form.cleaned_data['bin'])
+            
             form_instance.bin.set(form.cleaned_data.get('bin', []))
 
             
@@ -1182,8 +1165,6 @@ def item_create(request):
     return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material','racks':racks})
 
 
-
-
 @login_required(login_url='login')
 def item_edit(request,pk): 
     
@@ -1195,8 +1176,8 @@ def item_edit(request,pk):
     fab_finishes = FabricFinishes.objects.all()
     item_pk = get_object_or_404(Item_Creation ,pk = pk)
     racks = rack_for_raw_material.objects.all()
+
     form = Itemform(instance=item_pk)
-    selected_bins = list(item_pk.bin.values_list("id", flat=True))
     
     queryset = item_color_shade.objects.filter(items = pk).annotate(
         total_quantity=Sum('opening_shade_godown_quantity__opening_quantity'),
@@ -1210,15 +1191,16 @@ def item_edit(request,pk):
     if request.method == 'POST':
         form = Itemform(request.POST, request.FILES , instance = item_pk)
         formset = ShadeFormSet(request.POST , request.FILES, instance = item_pk)
-        formset.forms = [form for form in formset if form.has_changed()] 
+
+        formset.forms = [form for form in formset if form.has_changed()]
+
         try:
             if form.is_valid() and formset.is_valid():
                 form_instance = form.save(commit=False)  
                 form_instance.c_user = request.user
                 form_instance.save()
 
-                selected_bin_ids = request.POST.getlist('bin')
-                form_instance.bin.set(selected_bin_ids)
+                form_instance.bin.set(form.cleaned_data.get('bin', []))
 
                 for form in formset.deleted_forms: 
                     if form.instance.pk:
@@ -1282,11 +1264,7 @@ def item_edit(request,pk):
              logger.error(f'An exception occured in item edit - {e}')
              return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material"})
         
-    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material",'racks':racks,'selected_bins': json.dumps(selected_bins)})
-
-
-
-
+    return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material",'racks':racks})
 
 
 @login_required(login_url='login')
@@ -1308,8 +1286,6 @@ def item_clone_ajax(request):
             'hsn_code':selected_item.HSN_Code,'status':selected_item.status, 'unit_name_units':selected_item.unit_name_item.unit_value}
        
     return JsonResponse({'response_data':response_data})
-
-
 
 
 @login_required(login_url='login')
