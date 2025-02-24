@@ -56,7 +56,11 @@
                     <label for="id_purchase_order_no" class="item-form">PO.No :</label>
                     <input type="text" class="item-select" name="purchase_order_no" value="{{master_form.purchase_order_no.initial | default_if_none:''}}" required id="id_purchase_order_no" readonly style="border: 1px solid blue; outline: none;">
                 </div>
-            
+                <div class="d-flex mb-3">
+                    <label for="id_cutting_vch_no" class="item-form">cutting vch no :</label>
+                    <input type="text" class="item-select" name="cutting_vch_no" value="{{master_form.cutting_vch_no.initial}}" required id="id_cutting_vch_no" readonly style="border: 1px solid blue; outline: none;">
+    
+                </div>
                 
 
                 <div class="d-flex mb-2">
@@ -591,6 +595,7 @@ $(document).on('click', '.search-input',function(){
                 // Update form fields with master data
                 challanRows.find('#id_challan_no').val(masterData.challan_no);
                 challanRows.find('#id_purchase_order_no').val(masterData.purchase_order_no);
+                challanRows.find('#id_cutting_vch_no').val(masterData.cutting_vch_no);
                 challanRows.find('#id_refrence_number').val(masterData.refrence_number);
                 challanRows.find('#id_model_name').val(masterData.model_name);
                 challanRows.find('#id_total_p_o_qty').val(masterData.total_p_o_qty);

@@ -36,7 +36,7 @@
             </div>
             <div>
                 <label for="id_narration" class="fw-bold ms-3 me-2">Narration :</label>
-                <input type="text" class="item-select" name="narration" maxlength="255" required="" id="id_narration" value="{{ master_form.instance.narration |default_if_none:''}}">
+                <input type="text" class="item-select" name="narration" maxlength="255" id="id_narration" value="{{ master_form.instance.narration |default_if_none:''}}">
             </div>
            
         </div>
@@ -173,7 +173,7 @@
             <!-- <input type="number" class="product_row" name="productRow" id="id_productRow" value="1"> -->
             <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
         </div>
-        <button type="button" class="newProductCreateBtn" id="picklistSubmit" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Submit</button>
+        <button type="button" class="newProductCreateBtn" id="picklistSubmit">Submit</button>
     </form>
 </div>
 <div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
@@ -279,13 +279,42 @@
     }
 
     document.body.appendChild(document.getElementById('staticBackdrop'));
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById("picklistSubmit").addEventListener("click", function(event) {
+            event.preventDefault(); // Prevent default modal opening
+
+            let isValid = true;
+            let requiredFields = document.querySelectorAll("#picklistForm input[required], #picklistForm select[required]");
+
+            requiredFields.forEach(function(field) {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.style.border = "2px solid red"; // Highlight empty fields
+                } else {
+                    field.style.border = ""; // Reset border if filled
+                }
+            });
+
+            if (!isValid) {
+                alert("Please fill all required fields before submitting.");
+            } else {
+                // Open the modal manually if all fields are filled
+                let modal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
+                modal.show();
+            }
+        });
+
+        // Handle modal confirmation submit
+        document.getElementById("modalSubmitButton").addEventListener("click", function() {
+            document.getElementById("picklistForm").submit(); // Submit the form when user confirms
+        });
+
+    })
+
     $(document).ready(function(){
-        $('#modalSubmitButton').on('click',function(){
-            $('#picklistForm').submit();
-       })
-       var status = $('#picklist_status').val().trim();
+       var status = $('#picklist_status').val() || '';
        console.log('status',status)
-       if(status === 'Closed'){
+       if(status === 'Closed' ){
         $('#id_narration').attr('readonly',true)
         $('#addRowButton').hide()
         $('#picklistSubmit').hide();
@@ -1007,23 +1036,24 @@ document.addEventListener('DOMContentLoaded', function () {
                         if(qty.value === '') {
                             qty.focus();    
                         }else{
-                            addBtn.focus()
                             
-                            // var tableRow = document.querySelectorAll('#createpickListTable tr');
-                            // for (let row of tableRow) {
-                            //     var itemInput = row.querySelector('[name$="product_name_value"]');
-                            //     var qtyInput = row.querySelector('[name$="-bin_number"]');
+                            var tableRow = document.querySelectorAll('#createpickListTable tr');
+                            for (let row of tableRow) {
+                                var itemInput = row.querySelector('[name$="product_name_value"]');
+                                var qtyInput = row.querySelector('[name$="-bin_number"]');
 
-                            //     if (itemInput && itemInput.value === '') {
-                            //         itemInput.focus();
-                            //         return; 
-                            //     } 
-                            //     // Check if quantity is empty, then focus on it
-                            //     else if (qtyInput && qtyInput.value === '') {
-                            //         qtyInput.focus();
-                            //         return; 
-                            //     }
-                            // }
+                                if (itemInput && itemInput.value === '') {
+                                    itemInput.focus();
+                                    return; 
+                                } 
+                                // Check if quantity is empty, then focus on it
+                                else if (qtyInput && qtyInput.value === '') {
+                                    qtyInput.focus();
+                                    return; 
+                                }
+                            }
+
+                            addBtn.focus() 
                         }
                     }
                 })
@@ -1046,28 +1076,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
             }
-            if(addBtn){
-                addBtn.addEventListener('keydown',function(event){
-                    if(event.key === 'Enter'){
+            // if(addBtn){
+            //     addBtn.addEventListener('keydown',function(event){
+            //         if(event.key === 'Enter'){
                     
-                        var tableRow = document.querySelectorAll('#createpickListTable tr');
-                            for (let row of tableRow) {
-                                var itemInput = row.querySelector('[name$="product_name_value"]');
-                                var qtyInput = row.querySelector('[name$="-bin_number"]');
+            //             var tableRow = document.querySelectorAll('#createpickListTable tr');
+            //                 for (let row of tableRow) {
+            //                     var itemInput = row.querySelector('[name$="product_name_value"]');
+            //                     var qtyInput = row.querySelector('[name$="-bin_number"]');
 
-                                if (itemInput && itemInput.value === '') {
-                                    itemInput.focus();
-                                    return; 
-                                } 
-                                // Check if quantity is empty, then focus on it
-                                else if (qtyInput && qtyInput.value === '') {
-                                    qtyInput.focus();
-                                    return; 
-                                }
-                            }
-                    }
-                })
-            }
+            //                     if (itemInput && itemInput.value === '') {
+            //                         itemInput.focus();
+            //                         return; 
+            //                     } 
+            //                     // Check if quantity is empty, then focus on it
+            //                     else if (qtyInput && qtyInput.value === '') {
+            //                         qtyInput.focus();
+            //                         return; 
+            //                     }
+            //                 }
+            //         }
+            //     })
+            // }
         
         });
     }
@@ -1090,22 +1120,13 @@ function buttonCheck(){
                 var itemInput = row.querySelector('[name$="product_name_value"]');
                 var binNames = row.querySelector('[name$="-bin_number"]')
                 var qtyInput = row.querySelector('[name$="-bin_number"]');
-                var addbtn =  document.getElementById('addRowButton')
+               
 
-                    if (itemInput && itemInput.value === '') {
-                        itemInput.focus()
-                        return; 
-                    } 
-                    // Check if quantity is empty, then focus on it
-                    else if (qtyInput && qtyInput.value === '') {
-                        qtyInput.focus()
-                        return; 
-                    }else{
-                
-                      // Only set attributes if elements exist
-            if (itemInput) itemInput.setAttribute('readonly', true);
-            if (binNames) binNames.setAttribute('readonly', true);
-            if (qtyInput) qtyInput.setAttribute('readonly', true);
+                    if (itemInput && itemInput.value !== '' && qtyInput && qtyInput.value !== ''){
+                        
+                        if (itemInput) itemInput.setAttribute('readonly', true);
+                        if (binNames) binNames.setAttribute('readonly', true);
+                        if (qtyInput) qtyInput.setAttribute('readonly', true);
                     } 
             }
       

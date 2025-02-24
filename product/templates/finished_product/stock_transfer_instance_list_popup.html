@@ -6,8 +6,8 @@
     <form method="POST">
         {% csrf_token %}
             <div class="row ">
-                <div class="col-lg-6">
-                    <div>
+                <div class="col-lg-7">
+                    <div class="d-flex ">
                         {% if voucher_type == 'purchase' %}
                     <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
@@ -18,27 +18,25 @@
                     <h6 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h6>
         
                     {% endif %}
+                    <span id="responseMessage" class="ms-5 mb-1 fw-bold"></span>
                     </div>
                    
-                <div class="mb-2">
-                    <label for="inwordSerialNo" class="fw-bold me-2">Scan :</label>
-                    <input type="text" name="scanned_serial_number" class="item-selects ms-3" id="inwordSerialNo">
-                    <label for="id_bin_Name" class="fw-bold ms-2 me-3">Bin :</label>
-                    <select  class="item-selects ms-3" name="product_bin" id="id_bin_Name">
-                    </select>
-                </div>
-                <div class="d-flex ">
                     <div class="mb-2">
-                        <label for="id_manualSerialNo" class="fw-bold">M-Scan :</label>
-                        <input type="text" name="manual_serial_number" class="item-selects" id="id_manualSerialNo">
+                        <label for="inwordSerialNo" class="fw-bold me-1">Scan :</label>
+                        <input type="text" name="scanned_serial_number" class="purchase-itemName ms-1" id="inwordSerialNo">
+                        <label for="id_manualSerialNo" class="fw-bold ms-2 me-1">M-Scan :</label>
+                        <input type="text" name="manual_serial_number" class="purchase-itemName" id="id_manualSerialNo">
+                        <label for="id_bin_Name" class="fw-bold ms-2 me-1">Bin :</label>
+                        <select  class="purchase-itemName ms-3" name="product_bin" id="id_bin_Name">
+                        </select>
                     </div>
-                    <div>
-                        <button type="submit"  class="newProductCreateBtn ms-5" name="save" value="Save" id="stockTarnsferBin">Submit</button>
+                    <div class="d-flex mb-2">
+                        <h5 class="fw-bold">Product INWarded</h5>
+                        <button type="submit"  class="newProductCreateBtn" style="margin-left: 350px;" name="save" value="Save" id="stockTarnsferBin">Submit</button>
                     </div>
                 </div>
-                </div>
-                <div class="col-lg-6 " id="stockTransferList">
-                    <span id="responseMessage" class="ms-5 mb-1 fw-bold"></span>
+                <div class="col-lg-5 " id="stockTransferList">
+                    
                     <table class="table table-striped table-hover table-bordered" id="stockTransferInstanceTable">
                         <thead class="name_absolute">
                             <tr>
@@ -51,14 +49,13 @@
                         <tbody class="mainTableList" >
                            
                             <tr>
-                                <td><input name="product_name" type="text" class="productShadeCutting_Material_input" id="id_product" value="" readonly></td>
+                                <td><input name="product_name" type="text" class="stockQrcode_input" id="id_product" value="" readonly></td>
                                 <td><input name="product_sku" type="number" class="productorder_input"  id="id_product_sku" value="" readonly></td>
-                                <td><input name="product_color" type="text" class="productorder_input"  id="id_product_color" value="" readonly></td>
+                                <td><input name="product_color" type="text" class="productorderrawqty-input"  id="id_product_color" value="" readonly></td>
                                 <td>
                                     <img id="productImgPreview" name="product_img" src="" alt="Product" style="width: 30px; height: 30px;">
                                </td>
-                            
-                                
+
                             </tr>
                          
                         </tbody>
@@ -71,7 +68,8 @@
         <div class="">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h5 class="fw-bold">Product INWarded</h5>
+                      
+                        
                         <div class="stock_responsive">
                             <table class="table table-striped table-hover table-bordered " id="inwordDateTable">
                                 <thead class="name_absolute sticky-top">
@@ -82,7 +80,7 @@
                                         <th colspan="3">Balance For inward :<span class="pendingQty text-danger ps-3"></span></th>
                                        
                                     </tr>
-                                    <tr class="table-primary">
+                                    <tr >
                                         <th>No</th>
                                         <th>Ref No</th>
                                         <th>Model Name</th>
@@ -97,7 +95,7 @@
                                         <th>Delete</th>
                                     </tr>
                                 </thead>
-                                <tbody class="mainTableList table-primary" style="max-height: 350px; overflow-y: auto;">
+                                <tbody class="mainTableList" style="max-height: 350px; overflow-y: auto;">
                                     {% for entries in single_entries %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
@@ -149,8 +147,9 @@
                             <th>Model Name</th>
                             <th>Color</th>
                             <th class="text-primary">Quantity</th>
-                            <th class="text-danger">Diffe Qty</th>
                             <th class="text-success">QC Rec QTY</th>
+                            <th class="text-danger">Diffe Qty</th>
+                            
                         </tr>
                     </thead>
                     <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -172,8 +171,8 @@
                             </td>
                             <td><input type="text" class="productorder_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product_name.PProduct_color.color_name }}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input quantityTotal text-center text-primary"  name="{{form.prefix}}-quantity_total" id="id_{{form.prefix}}-quantity_total" value="{{ form.instance.quantity_total|default_if_none:0 }}" readonly></td>
-                            <td> <input type="number" class="productorderrawqty-input productInwordDiffernceQty text-center text-danger" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input productInwordRecivedQty text-center text-success" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input productInwordDiffernceQty text-center text-danger" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
                         </tr>
                     
                         {% elif form.instance.Finished_goods_Stock_TransferMasterinstance.voucher_no %}
@@ -189,9 +188,8 @@
                             </td>
                             <td><input type="text" class="productorder_input" name="{{form.prefix}}-product_color" id="id_{{form.prefix}}-product_color" value="{{ form.instance.product.PProduct_color.color_name }}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input quantityTotal text-center text-primary" name="{{form.prefix}}-product_quantity_transfer" id="id_{{form.prefix}}-product_quantity_transfer" value="{{ form.instance.product_quantity_transfer |default_if_none:0 }}" readonly></td>
-                            <td><input type="number" class="productorderrawqty-input productInwordDiffernceQty text-center text-danger" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
                             <td><input type="number" class="productorderrawqty-input productInwordRecivedQty text-center text-success" name="{{form.prefix}}-qc_recieved_qty" id="id_{{form.prefix}}-qc_recieved_qty" value="{{ form.instance.qc_recieved_qty |default_if_none:0}}" readonly></td>
-
+                            <td><input type="number" class="productorderrawqty-input productInwordDiffernceQty text-center text-danger" name="{{form.prefix}}-diffrence_qty" id="id_{{form.prefix}}-diffrence_qty" value="{{ form.instance.diffrence_qty |default_if_none:0}}" readonly></td>
                         </tr>
                     
                         {% endif %}
@@ -201,11 +199,9 @@
                         <tr class="fw-bold">
                             <td colspan="4" ></td>
                             <td >Total:</td>
-                            <td><input type="number" class="productorderrawqty-input productInwordRecivedQty text-center total text-primary"  value="" readonly></td>
-                            <td><input type="number" class="productorderrawqty-input productInwordRecivedQty text-center pending text-danger"  value="" readonly></td>
-                            <td><input type="number" class="productorderrawqty-input productInwordRecivedQty text-center receive text-success"  value="" readonly></td>
-                           
-
+                            <td><input type="number" class="productorderrawqty-input  text-center total text-primary"  value="" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input  text-center receive text-success"  value="" readonly></td>
+                            <td><input type="number" class="productorderrawqty-input  text-center pending text-danger"  value="" readonly></td>
                         </tr>
                     </tbody>  
                 </table>
@@ -516,6 +512,10 @@
     if (receiveElem) receiveElem.value = rec;
     if (totalEntriesElem) totalEntriesElem.textContent = rec;
     if (pendingQtyElem) pendingQtyElem.textContent = difference;
+    if(difference === 0){
+        // $('#responseMessage').html('<span class="text-success"><b>Scaning Completed</b><i>(All product Scan Successfully Thank You)<i>.</span>'); 
+    }
+
 }
 
  
