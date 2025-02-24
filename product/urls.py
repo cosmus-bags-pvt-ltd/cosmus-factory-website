@@ -337,6 +337,7 @@ urlpatterns = [
     path('finishedgoodsgodownproductrefvendorwisereport/<int:ref_no>/<int:challan_no>', views.finished_goods_vendor_model_wise_report, name = 'finished-goods-godown-product-ref-vendor-wise-report'),
 
     path('allfinishedgoodsstockreport/', views.allfinishedgoodsstockreport, name = 'all-finished-goods-stock-report'),
+    path('finishedgoodsstockreport/<str:action>/', views.allfinishedgoodsstockreport, name = 'finished-goods-stock-report'),
     path('finishedgoodsmodelwisereport/<int:ref_id>', views.finished_goods_model_wise_report, name = 'finished-goods-model-wise-report'),
     path('qcapprovedmodelwisereport/<int:ref_id>', views.qc_approved_model_wise_report, name = 'qc_approved-goods-model-wise-report'),
 
@@ -409,4 +410,9 @@ urlpatterns = [
     path('returnproductwithbinajax/', views.return_product_with_bin_ajax, name='return-product-with-bin-ajax'),
     path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/<int:sv_id>/<str:action>', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
     path('salesreturnvouchercreateupdate/<int:s_id>/<int:sr_id>/', views.sales_return_voucher_create_update, name='sales-return-voucher-create-update'),
+    
+    
+    path('deliverychallancreate/', views.delivery_challan_create_update, name='delivery-challan-create'),
+    path('deliverychallanupdate/<int:d_id>/', views.delivery_challan_create_update, name='delivery-challan-update'),
+    path('deliverychallanlist/', views.delivery_challan_list, name='delivery-challan-list'),
 ]

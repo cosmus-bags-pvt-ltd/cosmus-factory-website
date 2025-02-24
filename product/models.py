@@ -1,4 +1,5 @@
 from email import message
+from pyexpat import model
 from django.db import models
 from django.conf import settings
 from django.forms import ValidationError
@@ -1337,7 +1338,7 @@ class sales_voucher_master_outward_scan(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
-    # narration = models.CharField(null=True, blank=True)
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
@@ -1388,7 +1389,7 @@ class sales_return_voucher_master(models.Model):
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     grand_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
-    # narration = models.CharField(null=True, blank=True)
+    narration = models.CharField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add = True)
     modified_date_time = models.DateTimeField(auto_now = True)
 
@@ -1399,6 +1400,30 @@ class sales_return_voucher(models.Model):
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
     spl_disct = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+
+
+class DeliveryChallanMaster(models.Model):
+    delivery_challan_no = models.CharField(max_length=252, unique=True)
+    party_name = models.ForeignKey(Ledger, on_delete=models.PROTECT)
+    shipping_address = models.TextField()
+    vehicle_no = models.CharField(max_length=50)
+    driver_name = models.CharField(max_length=100)
+    dispatch_time = models.TimeField()
+    no_of_boxes = models.PositiveIntegerField()
+    no_of_pcs = models.PositiveIntegerField()
+    remark = models.TextField(blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+
+
+class DeliveryChallanProducts(models.Model):
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE,related_name="delivery_challan_products")
+    product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    quantity = models.PositiveIntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 

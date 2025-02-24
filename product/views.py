@@ -40,7 +40,7 @@ import requests
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 
-from .models import (AccountGroup, AccountSubGroup, Color, Fabric_Group_Model,
+from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
                     Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
                     Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info, StockItem,
@@ -85,7 +85,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset)
     
 
 
@@ -1292,22 +1292,24 @@ def item_clone_ajax(request):
 def item_list(request):
     
     g_search = request.GET.get('item_search','')
-    
-    racks = rack_for_raw_material.objects.all()
 
     queryset = Item_Creation.objects.all().annotate(total_quantity=Sum('shades__godown_shades__quantity'), shade_num = Count('shades', distinct=True),godown_num=Count('shades__godown_shades', distinct=True)).order_by('item_name').select_related('Item_Color','unit_name_item','Fabric_Group','Item_Creation_GST','Item_Fabric_Finishes','Item_Packing').prefetch_related('shades','shades__godown_shades','shades__godown_shades__godown_name','bin')
     
     bins = {}
 
     for item in queryset:
+        item_name = item.item_name
+        if item_name not in bins:
+            bins[item_name] = {}
+
         for bin in item.bin.all():
-            rack_name = bin.rack.rack_name  # Get rack name
+            rack_name = bin.rack.rack_name
 
-            if rack_name not in bins:
-                bins[rack_name] = {"item_name": item.item_name, "bins": []}  # Store item name and bins list
+            if rack_name not in bins[item_name]:
+                bins[item_name][rack_name] = []
 
-            if bin.bin_name not in bins[rack_name]["bins"]:
-                bins[rack_name]["bins"].append(bin.bin_name)
+            if bin.bin_name not in bins[item_name][rack_name]:
+                bins[item_name][rack_name].append(bin.bin_name)
 
     if g_search != '':
         queryset = queryset.filter(Q(item_name__icontains = g_search)| Q(Item_Color__color_name__icontains = g_search)| Q(Fabric_Group__fab_grp_name__icontains = g_search)| Q(Material_code__icontains = g_search))
@@ -5732,7 +5734,10 @@ def purchaseordercuttinglist(request,p_o_pk,prod_ref_no):
 
 @login_required(login_url='login')
 def purchaseordercuttingapprovalcheckajax(request):
+    print('in function')
     cutting_pk_no = request.GET.get('cutting_pk_no')
+
+    print('cutting_pk_no = ', cutting_pk_no)
 
     if not cutting_pk_no:
         return JsonResponse({'status': 'error', 'message': 'Cutting ID not provided'}, status=400)
@@ -5741,7 +5746,9 @@ def purchaseordercuttingapprovalcheckajax(request):
         
         purchase_order_master_instances = labour_workout_master.objects.filter(
             purchase_order_cutting_master__raw_material_cutting_id=cutting_pk_no
-        ).order_by('created_date')
+        ).order_by('created_date').values(
+            'created_date', 'total_approved_pcs', 'total_pending_pcs'
+        )
 
         if not purchase_order_master_instances.exists():
             return JsonResponse({'status': 'error', 'message': 'No records found for the given Cutting ID'}, status=404)
@@ -5749,10 +5756,10 @@ def purchaseordercuttingapprovalcheckajax(request):
         approval_data = []
         for x in purchase_order_master_instances:
             dict_to_append = {
-                'Approved_Date': x.created_date,
+                'Approved_Date': x['created_date'],
                 'Approved_Name': 'approved name',  
-                'Approved_Qty': x.total_approved_pcs,
-                'pending_Qty': x.total_pending_pcs
+                'Approved_Qty': x['total_approved_pcs'],
+                'pending_Qty': x['total_pending_pcs']
                 }
             approval_data.append(dict_to_append)
 
@@ -5772,10 +5779,14 @@ def purchaseordercuttingapprovalcheckajax(request):
 
 
 
+
+
 @login_required(login_url='login')
 def pendingapprovall(request):
     pending_approval_query = purchase_order_raw_material_cutting.objects.exclude(processed_qty = F('approved_qty')).order_by('created_date') 
     return render(request,'production/cuttingapprovallistall.html', {'pending_approval_query': pending_approval_query,'page_name':'Cutting Appr Pending List'})
+
+
 
 
 @login_required(login_url = 'login')
@@ -6291,6 +6302,8 @@ def labourworkincreatelist(request,l_w_o_id):
 
 
 
+
+
 @login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
@@ -6311,13 +6324,12 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
         product_to_item_formset = None
 
-        labour_work_in_product_to_item_formset = inlineformset_factory(labour_work_in_master,labour_work_in_product_to_item, 
-            form = labour_work_in_product_to_item_form, extra = 0, can_delete = False)
+        labour_work_in_product_to_item_formset = inlineformset_factory(labour_work_in_master,labour_work_in_product_to_item, form = labour_work_in_product_to_item_form, extra = 0, can_delete = False)
 
         labour_workout_child_instance = None
 
+
         if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-            
             try:
                 vendor_name_value = request.GET.get('nameValue')
 
@@ -6331,17 +6343,17 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                 choosed_vendor_name = request.GET.get('itemValue')       
 
-
                 labour_workout_instance_dict = []
 
                 if choosed_vendor_name:
-                    labour_workout_instances = labour_workout_childs.objects.filter(labour_name=choosed_vendor_name)
+                    labour_workout_instances = labour_workout_childs.objects.filter(labour_name=choosed_vendor_name).exclude(labour_workin_pending_pcs=0).exclude(labour_workin_pending_pcs__isnull=True)
                     
                     for instance in labour_workout_instances:
                         dict_to_append = {
                             'Challan_No': instance.challan_no,
                             'PO_No':instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number,
                             'PO_Total_QTY':instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces,
+                            'cutting_vch_no' : instance.labour_workout_master_instance.purchase_order_cutting_master.raw_material_cutting_id,
                             'Ref_No':instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID,
                             'Model_Name':instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name,
                             'Issued_QTY':instance.total_process_pcs,
@@ -6352,7 +6364,8 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                         labour_workout_instance_dict.append(dict_to_append)
 
-    
+
+
                 labour_work_out_id = request.GET.get('labourWorkOutId')
                
                 master_initial_data = None
@@ -6373,6 +6386,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                         'labour_name': labour_workout_child_instance.labour_name.name,
                         'challan_no' : labour_workout_child_instance.challan_no ,
                         'purchase_order_no' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number,
+                        'cutting_vch_no' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.raw_material_cutting_id,
                         'refrence_number' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID,
                         'model_name': labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name,
                         'total_p_o_qty' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces,
@@ -6381,9 +6395,11 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                         'total_balance_pcs' : labour_workout_child_instance.labour_workin_pending_pcs,
                         }
 
-                    product_to_item_l_w_in_instance = product_to_item_labour_child_workout.objects.filter(labour_workout=labour_workout_child_instance)
+                    print('master_initial_data = ',master_initial_data)
 
-                    
+
+                    product_to_item_l_w_in_instance = product_to_item_labour_child_workout.objects.filter(labour_workout=labour_workout_child_instance)
+ 
                     formset_initial_data = []
 
                     for instances in product_to_item_l_w_in_instance:
@@ -6401,9 +6417,14 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                         formset_initial_data.append(initial_data_dict)
                 
-                return JsonResponse({'vendor_name_dict':vendor_name_dict,'labour_workout_instance_dict':labour_workout_instance_dict,
-                                     'master_initial_data':master_initial_data,'formset_initial_data':formset_initial_data,
-                                     'labour_workout_child_instance_id': labour_workout_child_instance_id ,'labour_workin_all':labour_workin_all})
+
+                return JsonResponse({'vendor_name_dict':vendor_name_dict,
+                                     'labour_workout_instance_dict':labour_workout_instance_dict,
+                                     'master_initial_data':master_initial_data,
+                                     'formset_initial_data':formset_initial_data,
+                                     'labour_workout_child_instance_id': labour_workout_child_instance_id ,
+                                     'labour_workin_all':labour_workin_all}
+                                    )
 
             except ValueError as ve:
                     messages.error(request,f'Error Occured - {ve}')
@@ -6457,8 +6478,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
             formset_initial_data.append(initial_data_dict)
 
 
-        labour_work_in_product_to_item_formset = inlineformset_factory(labour_work_in_master,labour_work_in_product_to_item, 
-            form=labour_work_in_product_to_item_form, extra=len(formset_initial_data), can_delete=False)
+        labour_work_in_product_to_item_formset = inlineformset_factory(labour_work_in_master,labour_work_in_product_to_item,form=labour_work_in_product_to_item_form, extra=len(formset_initial_data), can_delete=False)
 
         product_to_item_formset = labour_work_in_product_to_item_formset(initial=formset_initial_data)
 
@@ -6490,21 +6510,31 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                 form.initial['total_recieved_qty'] = instance.processed_pcs - instance.labour_w_in_pending
 
     if request.method == 'POST':
+        print(request.POST)
         labour_workout_child_i = request.POST.get('labour_workout_child_instance_id')
+
         if labour_workout_child_i:
             labour_workout_child_instance = labour_workout_childs.objects.get(id=labour_workout_child_i)
 
         master_form = labour_workin_master_form(request.POST, instance = labour_workin_master_instance)
+
         product_to_item_formset = labour_work_in_product_to_item_formset(request.POST,instance = labour_workin_master_instance)
 
         try:
             with transaction.atomic():
                 if master_form.is_valid() and product_to_item_formset.is_valid():
+
                     parent_form = master_form.save(commit = False)
+
                     parent_form.labour_voucher_number = labour_workout_child_instance
 
+                    finalReceivedQty =  int(request.POST.get('finalReceivedQty') or 0)
+
+                    finalReturnQty = int(request.POST.get('finalReturnQty') or 0)
+
+                    diffrence_qty = finalReturnQty - finalReceivedQty 
                     
-                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + parent_form.total_return_pcs
+                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + diffrence_qty
 
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
 
@@ -6516,6 +6546,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                         if form.is_valid():
                             product_to_item_form = form.save(commit= False)
+
                             product_to_item_form.labour_workin_instance = parent_form
 
                             product_to_item_form.pending_for_approval = product_to_item_form.return_pcs
@@ -6526,14 +6557,11 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                             
                             
                             if product_to_item_form.pk:
-
                                 labour_workin_product2item = labour_work_in_product_to_item.objects.get( pk = product_to_item_form.pk)
                                 qty_to_change = product_to_item_form.return_pcs - labour_workin_product2item.return_pcs
 
                             else:
                                 qty_to_change = product_to_item_form.return_pcs
-
-                            print(qty_to_change)
 
                             l_w_o_instance.labour_w_in_pending = l_w_o_instance.labour_w_in_pending - qty_to_change
 
@@ -6543,9 +6571,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
 
                 else:
-                    
-                    
-                    
                     
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
                     
@@ -6565,7 +6590,9 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
 
 
-from django.db.models import F, Case, When, IntegerField
+
+
+
 @login_required(login_url='login')
 def labourworkinlistall(request):
 
@@ -13605,28 +13632,48 @@ def allrawmaterialstockreport(request):
 
 
 @login_required(login_url='login')
-def allfinishedgoodsstockreport(request):
+def allfinishedgoodsstockreport(request,action=None):
 
-    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(
+    if action == 'All_Record':
+        product_queryset_subquery = labour_work_in_product_to_item.objects.filter(
+            product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
+            total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
+
+
+        product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
+                total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+        
+
+        product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+        product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
+
+
+        product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
+            'godown_colors__quantity'),total_labour_workin_qty = Subquery(
+                product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),total_sales_qty = Subquery(product_sales_queryset_subquery)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+
+    else:
+        product_queryset_subquery = labour_work_in_product_to_item.objects.filter(
         product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
             total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
 
 
-    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
-            total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+        product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(
+                total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+        
+
+        product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+        product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
+
+
+        product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
+            'godown_colors__quantity'),total_labour_workin_qty = Subquery(
+                product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),total_sales_qty = Subquery(product_sales_queryset_subquery)).filter(Q(total_qty__gt=0) | Q(total_labour_workin_qty__gt=0) | Q(total_labour_workin_pending_qty__gt=0) | Q(total_labour_workin_approve_qty__gt=0) | Q(total_sales_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
     
-
-    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
-
-
-    product_sales_queryset_subquery = sales_voucher_finish_Goods.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_sales_qty_sum = Sum('quantity')).values('total_sales_qty_sum')
-
-
-    product_queryset = PProduct_Creation.objects.all().annotate(total_qty = Sum(
-        'godown_colors__quantity'),total_labour_workin_qty = Subquery(
-            product_queryset_subquery),total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),total_sales_qty = Subquery(product_sales_queryset_subquery)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
-    
-
     return render(request,'reports/allfinishedgoodsstockreport.html',{'product_queryset':product_queryset})
 
 
@@ -15699,3 +15746,71 @@ def sale_return_list(request):
     queryset = sales_return_inward.objects.annotate(total_qty=Sum('sales_return_product__scan_qty'),total_sale_qty=Subquery(total_sale_qty_subquery),grand_total=Subquery(grand_total_subquery)).order_by('created_date')
 
     return render(request,'accounts/sales_return_list.html',{'queryset':queryset})
+
+
+
+@login_required(login_url='login')
+def delivery_challan_product_ajax(request):
+    pass
+
+
+
+@login_required(login_url='login')
+def delivery_challan_create_update(request, d_id=None):
+
+    if d_id:
+        d_instance = DeliveryChallanMaster.objects.get(id = d_id)
+        master_form = DeliveryChallanMasterForm(instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(instance = d_instance)
+    else:
+        d_instance = None
+        master_form = DeliveryChallanMasterForm()
+        formset = DeliveryChallanProductsCreateFormset()
+
+    if request.method == 'POST':
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+
+        if master_form.is_valid() and formset.is_valid():
+
+            try:
+
+                with transaction.atomic():
+
+                    if not master_form.is_valid():
+                        print("Form Errors:", master_form.errors)
+                    
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    if not formset.is_valid():
+                        for form in formset:
+                            if not form.is_valid():
+                                print("Form Errors:", form.errors)
+
+                    if formset.is_valid():
+                        for form in formset.deleted_forms:
+                            if form.instance.pk:
+                                form.instance.delete()
+
+                        formset.forms = [form for form in formset.forms if form.has_changed()]
+
+                        for form in formset:
+                            instance = form.save(commit=False)
+                            instance.delivery_challan = master_form_instance
+                            instance.save()
+
+                    return(redirect('delivery-challan-list'))
+                
+            except Exception as e:
+                print(f"Error saving formset: {e}")
+
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset})
+
+
+
+
+@login_required(login_url='login')
+def delivery_challan_list(request):
+    delivary_challan_list = DeliveryChallanMaster.objects.all()
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list})
