@@ -31,8 +31,8 @@
                         <td><input type="number" class="productorderrawqty-input text-center text-success" name="{{form.prefix}}-cutting_quantity" value="{{form.instance.cutting_quantity}}" id="id_{{form.prefix}}-cutting_quantity" readonly></td>
                         <td><input type="number" class="productorderrawqty-input text-center text-danger" name="{{form.prefix}}-balance_pcs" value="{{form.instance.balance_pcs}}" id="id_{{form.prefix}}-balance_pcs" readonly>
                          <input type="hidden" class="productorderqty-input" name="{{form.prefix}}-updateBlance_pcs" value="{{form.instance.balance_pcs}}" id="id_{{form.prefix}}-updateBlance_pcs"></td>
-                        <td><input type="hidden"  class="text-danger productorderrawqty-input approvedReadonly" value="{{form.instance.approved_pcs}}" readonly>
-                            <input  class="text-danger productorderrawqty-input approvedReadonlyhidden" value="{{form.instance.approved_pcs}}" readonly>
+                        <td><input type="hidden"  class="productorderrawqty-input approvedReadonly" value="{{form.instance.approved_pcs}}" readonly>
+                            <input  class="productorderrawqty-input approvedReadonlyhidden text-primary" value="{{form.instance.approved_pcs}}" readonly>
                             <input type="hidden" class="productorderqty-input" name="{{form.prefix}}-approved_pcs" value="{{form.instance.approved_pcs}}" id="id_{{form.prefix}}-approved_pcs">
                             <input type="number" class="productorderqty-input text-primary" name="{{form.prefix}}-approved_pcs_Value" value="" id="id_{{form.prefix}}-approved_pcs_Value">
                         
@@ -322,8 +322,12 @@ function quantityCheck() {
     })
 
 
+
+    
+    console.log('windowopener',window.opener.sharedData)
+
     if (window.opener) {
-        
+        console.log('windowopener',window.opener.sharedData)
         const dataFromParent = window.opener.sharedData;
         var TotalApprove = 0;
         var totalBalance = 0;

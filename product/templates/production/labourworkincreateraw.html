@@ -32,10 +32,10 @@
                         <th>PO Total QTY</th>
                         <th>Ref No </th>
                         <th>Model Name</th>
-                        <th>Issued QTY</th>
+                        <th class="text-primary">Issue QTY</th>
                         <th class="text-success">Rec QTY</th>
-                        <th class="text-danger">Balance QTY</th>
-                        <th>Over Due</th>
+                        <th class="text-danger">Bal QTY <span id="totalBalance"></span> Pcs</th>
+                        <th>OverDue</th>
                     </tr>
                 </thead>
                 <tbody class="mainTableList" id="tableLabourWorkinIdBody">
@@ -314,19 +314,20 @@ $(document).ready(function () {
     
         suggestions.on('click', '.itemName-div-suggestion', function() {
        
-        $(this).closest('.custom-dropdown-container').find('.search-input').val($(this).text().trim());
-        $(this).addClass('selected').siblings().removeClass('selected');
-        var buttonClick = $(this).closest('form').find('#tableLabourWorkinId'); 
-        buttonClick.css('display', 'block');
-        const itemValue = $(this).attr('data-key');
-        $.ajax({
+            $(this).closest('.custom-dropdown-container').find('.search-input').val($(this).text().trim());
+            $(this).addClass('selected').siblings().removeClass('selected');
+            var buttonClick = $(this).closest('form').find('#tableLabourWorkinId'); 
+            buttonClick.css('display', 'block');
+            const itemValue = $(this).attr('data-key');
+            $.ajax({
                 url: '/labourworkinrawcreate/',
                 method: 'GET',
                 data: {
                     'itemValue': itemValue
                 },
                
-         success: function (response) {
+            success: function (response) {
+                var bal = 0;
                 var challan_instance = response.labour_workout_instance_dict;
                 var dates = new Date().toISOString().split('T')[0];
                 var  reminderCount = 0;
@@ -362,10 +363,13 @@ $(document).ready(function () {
                     }
 
                     var dateCell = $('<td>').append(dateText);
-
+            
+                    var balQty = value.Balance_QTY;
+                    console.log('balQty',balQty)
+                    bal += balQty
                     // Apply color based on remaining value
                  
-
+                    $('#totalBalance').text(bal)
                     var newRows = $('<tr>').append(
                     $('<td class="text-center">').text(value.Challan_No || 'N/A'),
                     $('<td class="text-center">').text(value.PO_No || 'N/A'),
