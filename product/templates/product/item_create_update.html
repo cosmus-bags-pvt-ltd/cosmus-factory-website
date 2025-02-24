@@ -304,8 +304,7 @@
                   {% for bin in form.bin.field.queryset %}
                       {% if bin.rack == rack %}
                           <span class="mx-1">
-                              <input type="checkbox" name="bin[]" value="{{ bin.id }}" 
-                                  {% if bin in form.instance.bin.all %}checked{% endif %}>
+                              <input type="checkbox" name="bin" value="{{ bin.id }}" {% if bin in form.instance.bin.all %}checked{% endif %} style="cursor:pointer;">
                               <span class="{% if forloop.counter|divisibleby:2 %}text-danger fw-bold {% else %}text-primary fw-bold{% endif %}">
                                   {{ bin.bin_name }}
                               </span>

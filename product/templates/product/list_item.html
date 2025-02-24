@@ -9,6 +9,39 @@ This means that if the user has previously submitted the form with a value for p
 the input field will be pre-filled with that value when the page is loaded. -->
 
 {% block body %}
+
+<style>
+  .rack-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: #007bff;
+      border-bottom: 1px solid #007bff;
+      display: inline-block;
+      margin-bottom: 5px;
+  }
+  .bin-list {
+      margin-top: 5px;
+  }
+  .bin-item {
+      display: inline-block;
+      background: #e9ecef;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: 500;
+      margin: 2px;
+      color: #343a40;
+  }
+  .bin-item:nth-child(odd) {
+      background: #ffc107;
+      color: #000;
+  }
+  .bin-item:nth-child(even) {
+      background: #28a745;
+      color: #fff;
+  }
+</style>
+
+
 <div>
 
   <div class="row">
@@ -82,18 +115,23 @@ the input field will be pre-filled with that value when the page is loaded. -->
                   <label class="fw-bold">M Code -</label>
                   <span class="fw-bold text-success ps-1">{{ item.Material_code }}</span><br>
                   
-                  {% for rack_name, data in bins.items %}
-                    {% if data.item_name == item.item_name %}
-                        <div class="inline-block mb-2">
-                            <b>{{ rack_name }}</b><br>
-                            {% for bin in data.bins %}
-                                <span class="{% if forloop.counter|divisibleby:2 %}text-danger fw-bold{% else %}text-primary fw-bold{% endif %}">
-                                    {{ bin }}
-                                </span>{% if not forloop.last %}, {% endif %}
+                  {% for key, value in bins.items %}
+                    {% if item.item_name == key %}
+                        <div class="bin-container">
+                            {% for k, v in value.items %}
+                                <div>
+                                    <span class="rack-name">{{ k }}</span>
+                                    <div class="bin-list">
+                                        {% for bin in v %}
+                                            <span class="bin-item">{{ bin }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             {% endfor %}
                         </div>
                     {% endif %}
-                  {% endfor %}
+                {% endfor %}
+
               
                 </div>
               </td>

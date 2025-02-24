@@ -5,7 +5,7 @@
 
 <div class="mb-3 pt-2">
 
-  <div class="responsive">
+  <div class="">
     <table class="table table-striped table-hover table-bordered" id="goodsReturnTables">
       <thead class="name_absolute sticky-top">
         <tr class="text-nowrap">
@@ -18,10 +18,10 @@
             <th>Ch. No</th>
             <th>Lab. Name</th>
             <th>Issu Pcs =<span id="totalIssued"></span></th>
-            <th class="text-success">Rtn Pcs =<span id="totalReceived"></span></th>
-            <th class="text-danger">Bal Pcs =<span id="totalBalance"></span></th>
-            <th class="text-danger ">T Appr Pend. =<span id="totalBalance"></span></th>
-            <th class="text-success">T Appr compl. =<span id="totalBalance"></span></th>
+            <th class="text-success">Rtn Pcs = <span id="totalReceived"></span></th>
+            <th class="text-danger">Bal Pcs = <span id="totalBalance"></span></th>
+            <th class="text-danger ">T Appr Pend. = <span id="totalpendingApproved"></span></th>
+            <th class="text-success">T Appr compl. = <span id="totalApproved"></span></th>
             <th>approve</th>
             <th>Odue Aft GRN</th>
         </tr>
@@ -69,11 +69,11 @@
     var totalApproved = 0;
     var totalTables = document.querySelectorAll('#goodsReturnTables .mainTableList tr')
     totalTables.forEach(function(row){
-      var issueQty = parseInt(row.querySelector('.issuedqty').textContent);
-      var receiveQty = parseInt(row.querySelector('.returnQty').textContent);
-      var balanceQty = parseInt(row.querySelector('.balanceQty').textContent);
-      var approvpendingQty = parseInt(row.querySelector('.pendingValue').textContent);
-      var approvedQty = parseInt(row.querySelector('.processedQty').textContent);
+      var issueQty = parseInt(row.querySelector('.issuedqty').textContent) || 0;
+      var receiveQty = parseInt(row.querySelector('.returnQty').textContent) || 0;
+      var balanceQty = parseInt(row.querySelector('.balanceQty').textContent) || 0;
+      var approvpendingQty = parseInt(row.querySelector('.pendingValue').textContent) || 0;
+      var approvedQty = parseInt(row.querySelector('.processedQty').textContent) || 0;
 
       totalIssue += issueQty;
       totalreturn += receiveQty;
@@ -119,7 +119,7 @@ function approvedGoodsReturn(button){
   function newPopup(button, path) {
  
     var goodsId = $(button).closest('tr').find('input').val();
-
+    console.log('goodsId',goodsId)
     var minWidth = 800; // minimum width
     var minHeight = 600;
     // this will generate http://127.0.0.1:8000/ 

@@ -8,10 +8,12 @@
     <a href="{% url 'purchase-order-cutting-list-all' %}" class="bg-c-blue border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Cutting Order</a> ->
     <a href="{% url 'labour-workout-all' %}" class="bg-c-green border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour Workout</a> ->
     {% if request.path == '/labourworkinlistall/' %}
-    <span class=" fw-bold  py-1 px-2 ">Labour Workin</span>
+    <span class=" fw-bold  py-1 px-2 ">Labour Workin</span> ->
     {% elif request.path != '/labourworkinlistall/' %}
-    <a href="{% url 'labour-workin-list-all' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour WorkIn</a>
+    <a href="{% url 'labour-workin-list-all' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour WorkIn</a> ->
+    
     {% endif %}
+    <a href="{% url 'delivery-challan-list' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Delivery Challan</a>
   
 </div>
 <div>
@@ -101,9 +103,8 @@
                   <td class="text-center">
                     {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}
                   </td>
-                  <td >
-                    
-                    <td><a href="{% url 'finished-goods-godown-product-ref-wise-report' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</a></td>
+                  <td>
+                    <a href="{% url 'finished-goods-godown-product-ref-wise-report' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</a>
                   </td>
                   <td class="text-center">
                     {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces}}

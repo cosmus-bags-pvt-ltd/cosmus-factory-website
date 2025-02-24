@@ -333,22 +333,23 @@ function cuttingPkValue(button){
       }
     })
   }
+  
   function totalBalanceCheck(){
-  var totalBalance = document.querySelector('.totalBalancePcs').textContent;
-  var createButton = document.querySelector('.item-btn');
-  var createLink = document.getElementById('addLabourWorkIn');
-  if (totalBalance === '0'){
-    createButton.disabled = true;
-    createButton.style.cursor = 'not-allowed';
-    createLink.style.pointerEvents = 'none';
-    createLink.style.cursor = 'not-allowed';
-  }else{
-    createButton.disabled = false;
-    createButton.style.cursor = 'pointer';
-    createLink.style.pointerEvents = 'auto';
-    createLink.style.cursor = 'pointer';
+    var totalBalance = document.querySelector('.totalBalancePcs').textContent;
+    var createButton = document.querySelector('.item-btn');
+    var createLink = document.getElementById('addLabourWorkIn');
+    if (totalBalance === '0'){
+      createButton.disabled = true;
+      createButton.style.cursor = 'not-allowed';
+      createLink.style.pointerEvents = 'none';
+      createLink.style.cursor = 'not-allowed';
+    }else{
+      createButton.disabled = false;
+      createButton.style.cursor = 'pointer';
+      createLink.style.pointerEvents = 'auto';
+      createLink.style.cursor = 'pointer';
+    }
   }
-}
 
 totalBalanceCheck();
   approvedValues();

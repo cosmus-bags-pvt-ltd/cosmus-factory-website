@@ -31,12 +31,12 @@
                             <label for="id_labour_name" class="">Labour:</label>
                             <select type="number" name="labour_name" id="id_labour_name" class="item-select ms-2 pb-2" required>
                             {% if labour_work_out_child_form.instance.id %}
-                            <option value="{{labour_work_out_child_form.instance.labour_name.id}}">{{labour_work_out_child_form.instance.labour_name.name}}</option>
+                            <option value="{{labour_work_out_child_form.instance.labour_name.id}}"  >{{labour_work_out_child_form.instance.labour_name.name}}</option>
                             {% for ledger in ledger_labour_instances %}
                                 <option value="{{ledger.id}}">{{ledger.name}}</option>
                             {% endfor %}
                             {% elif not labour_work_out_child_form.instance.id %}
-                            <option value=""></option>
+                            <option value="" selected disabled></option>
                             {% for ledger in ledger_labour_instances %}
                                 <option value="{{ledger.id}}">{{ledger.name}}</option>
                             {% endfor %}
@@ -359,27 +359,23 @@
         })
         
         $("#labourworkoutTable .mainTableList").on('focus','input', function() {
-                // Find the closest row to the input being edited
-
-                var row = $(this).closest('tr');
-              
-                var qty = parseInt(row.find('input[name$="-processed_pcs"]').val());
-                if(qty=== 0){
-                    row.find('input[name$="-processed_pcs"]').val('');
-                }else if(qty >0){
-                    row.find('input[name$="-processed_pcs"]').val(qty);
-                }
+            var row = $(this).closest('tr');
+            var qty = parseInt(row.find('input[name$="-processed_pcs"]').val());
+            if(qty=== 0){
+                row.find('input[name$="-processed_pcs"]').val('');
+            }else if(qty >0){
+                row.find('input[name$="-processed_pcs"]').val(qty);
+            }
                
         });
         $(document).on('focusout','input[name$="-processed_pcs"]',function(){
-                
-                var value = $(this).val();
-                console.log(value)
-                if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
-                    $(this).val('0'); // Set to 0 if empty or invalid
-                } else {
-                    $(this).val(value); // Retain the entered value if valid
-                }
+    
+            var value = $(this).val();
+            if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
+                $(this).val('0'); // Set to 0 if empty or invalid
+            } else {
+                $(this).val(value); // Retain the entered value if valid
+            }
         })
     }
         
@@ -696,10 +692,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     labourName.addEventListener("keydown", function (event) {
         if (event.key === 'Tab') {
-                event.preventDefault(); 
-                labourName.blur(); 
-                let qty = document.querySelector('[name$="-processed_pcs"]');  
-                qty.focus();
+                event.preventDefault();
+                if(labourName.value === ''){
+                    labourName.focus()
+                }else{
+                    labourName.blur(); 
+                    let qty = document.querySelector('[name$="-processed_pcs"]');  
+                    qty.focus();
+                } 
+                
             }
     })
         pendingQty.forEach((input, index) => {

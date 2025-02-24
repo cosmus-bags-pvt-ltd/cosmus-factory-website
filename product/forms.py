@@ -5,7 +5,7 @@ from django import forms
 from django.shortcuts import get_object_or_404
 
 from core.models import Company
-from .models import AccountSubGroup, Color, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, bin_for_raw_material, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, rack_for_raw_material, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, sales_voucher_master_outward_scan, sales_voucher_outward_scan,shade_godown_items, shade_godown_items_temporary_table
+from .models import AccountSubGroup, Color, DeliveryChallanMaster, DeliveryChallanProducts, Fabric_Group_Model, FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Item_Creation, Ledger, MainCategory, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info,  StockItem ,Product, ProductImage, PProduct_Creation, SubCategory, Unit_Name_Create, bin_for_raw_material, cutting_room,  factory_employee, finished_goods_warehouse_racks, finished_goods_warehouse_zone, finished_product_warehouse_bin, finishedgoodsbinallocation, gst, item_color_shade , ProductVideoUrls,ProductImage, item_godown_quantity_through_table,item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item, labour_workout_childs, labour_workout_cutting_items, labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products, packaging, product_2_item_through_table, product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout, product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, purchase_order_for_raw_material, purchase_order_for_raw_material_cutting_items, purchase_order_master_for_puchase_voucher_rm, purchase_order_raw_material_cutting, purchase_order_to_product, purchase_order_to_product_cutting, purchase_voucher_items, rack_for_raw_material, raw_material_product_ref_items, raw_material_product_to_items, raw_material_product_wise_qty, raw_material_production_estimation, sales_return_inward, sales_return_product, sales_return_voucher, sales_return_voucher_master, sales_voucher_finish_Goods, sales_voucher_master_finish_Goods, sales_voucher_master_outward_scan, sales_voucher_outward_scan,shade_godown_items, shade_godown_items_temporary_table
 from django.forms.models import inlineformset_factory
 from django.core.exceptions import ValidationError
 from django.forms import BaseModelFormSet, modelformset_factory, BaseInlineFormSet 
@@ -856,6 +856,7 @@ class labour_workin_master_form(forms.ModelForm):
     labour_name = forms.CharField()
     challan_no = forms.CharField()
     purchase_order_no = forms.CharField()
+    cutting_vch_no = forms.CharField()
     refrence_number = forms.IntegerField()
     model_name = forms.CharField()
     total_p_o_qty = forms.IntegerField()
@@ -1401,3 +1402,16 @@ sales_return_voucher_formset_create = inlineformset_factory(sales_return_voucher
 sales_return_voucher_formset_update = inlineformset_factory(sales_return_voucher_master, sales_return_voucher, form = sales_return_voucher_form,extra=0, can_delete=True)
 
 
+class DeliveryChallanMasterForm(forms.ModelForm):
+    class Meta:
+        model = DeliveryChallanMaster
+        fields = ['delivery_challan_no','party_name','shipping_address','vehicle_no','driver_name','dispatch_time','no_of_boxes','no_of_pcs','remark']
+
+
+
+class DeliveryChallanProductsForm(forms.ModelForm):
+    class Meta:
+        model = DeliveryChallanProducts
+        fields = ['product_name','quantity']
+
+DeliveryChallanProductsCreateFormset = inlineformset_factory(DeliveryChallanMaster, DeliveryChallanProducts, form = DeliveryChallanProductsForm, extra=1, can_delete=True)

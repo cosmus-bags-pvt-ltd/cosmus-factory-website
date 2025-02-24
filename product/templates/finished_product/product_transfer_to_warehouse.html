@@ -86,7 +86,7 @@
                       <td>
                           <div class="custom-dropdown-container">
                             <input type="hidden" name="{{form.prefix}}-product" id="id_{{form.prefix}}-product" value="{% if form.instance.id %}{{form.instance.product.PProduct_SKU}}{% endif %}" readonly> 
-                              <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Model_Name}}{% endif %}" readonly> 
+                              <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{% if form.instance.id %}{{ form.instance.product.Product.Model_Name}}{% endif %}"> 
                               <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice stock_input_name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
   
                                </div>
@@ -97,7 +97,7 @@
                           <input type="text" value="{{form.instance.product.PProduct_color.color_name}}" name="stock_color_{{forloop.counter0}}" id="id_stock_color_{{forloop.counter0}}" class="purchase-amount stock_color" readonly style="outline: none;">
                       </td>
                       <td>
-                          <input  type="text" value="{{form.instance.product_quantity_transfer|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity_transfer" maxlength="200" id="id_{{form.prefix}}-product_quantity_transfer" readonly>
+                          <input  type="text" value="{{form.instance.product_quantity_transfer|default_if_none:''}}" class="purchase-amount" name="{{form.prefix}}-product_quantity_transfer" maxlength="200" id="id_{{form.prefix}}-product_quantity_transfer" >
                       </td>
                       <td>
                           <input  type="text" value="{{form.instance.product.Product.Product_UOM}}" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-amount stock_units" readonly>
@@ -295,9 +295,9 @@
                       mainTable.appendChild(newTable);
                       }
                       document.getElementById('id_productRow').value = '1';
-                      deleteRow();
-                    editStockTransferProduct()
-                   inputCheck();
+                        deleteRow();
+                        editStockTransferProduct()
+                        inputCheck();
                     
                   } else {
                       console.error("No visible rows found to clone.");
@@ -357,25 +357,21 @@
             var addButton = document.getElementById('addRowButton');
             var submitBtn = document.getElementById('submitButtonStockTransfer')
            
-        
-            if(stockId !== "" && stockId !== "None"){
+
+            if(deleteButton === "true"){
+                addButton.style.display="none";
+                submitBtn.style.display = "none";
                 stockItemName.readOnly = true;
                 stockQty.readOnly = true;
             }else{
+                submitBtn.style.display = "block";
                 stockItemName.readOnly = false;
                 stockQty.readOnly = false;
-            }
-
-            if(deleteButton === "True"){
-                addButton.style.display="none";
-                submitBtn.style.display = "none";
-            }else{
-                submitBtn.style.display = "block";
             }
             var deleteBtn = document.querySelectorAll('.delete-btn')
             deleteBtn.forEach(function(button){
                 var deleteCheck = button.querySelector('[id$="-transnfer_cancelled_records"]').value;
-                if(deleteCheck === "True"){
+                if(deleteCheck === "true"){
                     button.style.display = "none";
                 }else{
                       button.style.display = "block";

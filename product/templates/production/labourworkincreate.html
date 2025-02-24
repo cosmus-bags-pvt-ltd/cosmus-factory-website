@@ -54,6 +54,21 @@
 
                 {% endif %}
             </div>
+
+
+            <div class="d-flex mb-3">
+                <label for="id_cutting_vch_no" class="item-form">cutting vch no :</label>
+
+                {% if not master_form.instance.id %}
+
+                <input type="text" class="item-select" name="cutting_vch_no" value="{{master_form.cutting_vch_no.initial}}" required id="id_cutting_vch_no" readonly style="border: 1px solid blue; outline: none;">
+                {% else %}
+                <input type="text" class="item-select" name="cutting_vch_no" value="{{ master_form.instance.labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.raw_material_cutting_id }}" required id="id_cutting_vch_no" readonly style="border: 1px solid blue; outline: none;">
+
+                {% endif %}
+            </div>
+
+
             <div class="d-flex mb-3">
                 <label for="id_refrence_number" class="item-form">Ref No :</label>
                 {% if not master_form.instance.id %}
