@@ -359,7 +359,7 @@
                         try {
                             const response = await sendSerialNumber(manualSerialNo);
                             
-                            $('#responseMessage').html('<span class="text-danger">Serial Number Added SuccessFully.</span>');
+                            $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                            
                         } catch (error) {
                             // const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
