@@ -6506,13 +6506,9 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     finalReceivedQty =  int(request.POST.get('finalReceivedQty'))
                     finalReturnQty = int(request.POST.get('finalReturnQty'))
                     diffrence_qty = finalReturnQty - finalReceivedQty 
-                    
                     labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + diffrence_qty
-
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
-
                     labour_workout_child_instance.save()
-
                     parent_form.save()
 
                     for form in product_to_item_formset:
