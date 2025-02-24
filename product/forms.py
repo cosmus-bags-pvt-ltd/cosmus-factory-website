@@ -856,6 +856,7 @@ class labour_workin_master_form(forms.ModelForm):
     labour_name = forms.CharField()
     challan_no = forms.CharField()
     purchase_order_no = forms.CharField()
+    cutting_vch_no = forms.CharField()
     refrence_number = forms.IntegerField()
     model_name = forms.CharField()
     total_p_o_qty = forms.IntegerField()
