@@ -780,6 +780,11 @@ input[type=number] {
 .bg-c-red {
     background: linear-gradient(45deg, #FF5370, #ff869a);
 }
+
+.bg-c-voilet {
+    background: linear-gradient(45deg, #ff7e53, #ff9c86); /* Violet to Orchid */
+   
+}
 .order-card {
     border-radius: 4px;
     box-shadow: 0 6px 10px rgba(0,0,0,.08), 0 0 6px rgba(0,0,0,.05);

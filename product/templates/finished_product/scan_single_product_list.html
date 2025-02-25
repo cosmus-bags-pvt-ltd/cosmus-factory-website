@@ -9,7 +9,7 @@
        <label>Model Name: </label> 
        <label>Img :</label>
     </div> -->
-    <table class="table table-striped table-hover table-bordered">
+    <table class="table table-striped table-hover table-bordered" id="scanSingleProductTable">
         <thead class="name_absolute sticky-top">
             <tr>
                 <th>No</th>
@@ -21,7 +21,7 @@
                 <th>Model Name</th>
                 <th>Color</th>
                 <th>SKU</th>
-                <th>Qty</th>
+                <th class="text-success text-nowrap">Qty = <span id="totalValue"></span></th>
                 <th>Invt age</th>
                 <th><span class="me-3">Zone</span> <span class="ms-5 me-2">Rack</span><span class="ms-5">Bin</span></th>
             </tr>
@@ -50,7 +50,7 @@
                 <td>{{ entry.product__Product__Model_Name }}</td>
                 <td>{{ entry.product__PProduct_color__color_name }}</td>
                 <td>{{ entry.product__PProduct_SKU }}</td>
-                <td class="text-center">1</td>
+                <td class="text-center qty text-success">1</td>
                 <td>{{entry.age_in_days}} days</td>
                 <td><span class="fw-bold me-2">{{ entry.bin_number__rack_finished_name__zone_finished_name__zone_name }}</span><span class="ms-3 text-success fw-bold">{{ entry.bin_number__rack_finished_name__rack_name }}</span><span class="ms-4 text-danger fw-bold">{{ entry.bin_number__bin_name }}</span></td>
              </tr>
@@ -76,6 +76,22 @@ function showLargeImage(src) {
          modal.style.display = "none";
      };
 }
+
+function totalQTy(){
+    let total = 0;
+    let totalValue = 0;
+    const scanTable = document.querySelectorAll('#scanproductTable .mainTableList tr')
+    const scanProductTable = document.querySelectorAll('#scanSingleProductTable .mainTableList tr')
+   
+    scanProductTable.forEach(function(row){
+        var qty = parseInt(row.querySelector('.qty').textContent) || 0;
+        console.log()
+        totalValue += qty ;
+        document.getElementById('totalValue').textContent = totalValue ;
+
+    })
+ }
+ totalQTy()
 </script>
 
 {% endblock body %}

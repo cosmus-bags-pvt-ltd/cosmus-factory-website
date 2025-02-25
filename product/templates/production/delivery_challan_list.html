@@ -2,7 +2,7 @@
 {% load static %}
 {% block body %}
 
-<div class="mt-2" style="padding-left: 250px;">
+<div class="mt-2" style="padding-left: 160px;">
     {% if request.path == '/purchaseorderlist/' %}
   <span class=" fw-bold  py-1 px-2 ">New Order</span> ->
   {% elif request.path != '/purchaseorderlist/' %}
@@ -12,12 +12,13 @@
   <a href="{% url 'purchase-order-raw-material-list' %}" class="bg-c-yellow border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block"> Purchase Order</a> ->
   <a href="{% url 'purchase-order-cutting-list-all' %}" class="bg-c-blue border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Cutting Order</a> ->
   <a href="{% url 'labour-workout-all' %}" class="bg-c-green border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour Workout</a> ->
-  <a href="{% url 'labour-workin-list-all' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour WorkIn</a> ->
-  <a href="{% url 'delivery-challan-list' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Delivery Challan</a>
+  <a href="{% url 'labour-workin-list-all' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour WorkIn</a> <-
+  {% if request.path == '/deliverychallanlist/' %}
+  <span class=" fw-bold  py-1 px-2 ">Delivery Challan</span> 
+  {% elif request.path != '/deliverychallanlist/' %}
+  <a href="{% url 'delivery-challan-list' %}" class="bg-c-voilet border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Delivery Challan</a>
+  {% endif %}
 </div>
-
-
-
 
 <div class="mt-3">
   <div>

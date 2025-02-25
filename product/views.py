@@ -15805,7 +15805,45 @@ def sale_return_list(request):
 
 @login_required(login_url='login')
 def delivery_challan_product_ajax(request):
-    pass
+    try:
+        product_name_typed = request.GET.get('nameValue')
+
+        if not product_name_typed:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+
+        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
+
+        products = PProduct_Creation.objects.filter(
+            Q(PProduct_SKU__icontains=product_name_typed) |
+            Q(PProduct_color__color_name__icontains=product_name_typed) |
+            Q(Product__Model_Name__icontains=product_name_typed)
+        ).values(
+            'PProduct_SKU',
+            'PProduct_color__color_name',
+            'Product__Model_Name',
+            'Product__Product_Refrence_ID',
+            'PProduct_image',
+        )
+
+        product_list = {}
+
+        for product in products:
+            sku = product['PProduct_SKU']
+
+            lwi_products = labour_work_in_product_to_item.objects.filter(product_sku=sku).values_list('approved_qty', flat=True)
+
+            approved_qty = sum(lwi_products) 
+            
+            if approved_qty > 0:
+
+                product_list[sku] = [product['PProduct_color__color_name'],product['Product__Model_Name'],product['Product__Product_Refrence_ID'],product['PProduct_image'],approved_qty]
+
+        return JsonResponse({'products': product_list}, safe=False)
+
+    except Exception as e:
+        logger.error(f"Error in delivery_challan_product_ajax: {e}")
+        return JsonResponse({'error': 'An error occurred while fetching data.'}, status=500)
+
 
 
 
@@ -15818,8 +15856,21 @@ def delivery_challan_create_update(request, d_id=None):
         formset = DeliveryChallanProductsCreateFormset(instance = d_instance)
     else:
         d_instance = None
+        party_names = Ledger.objects.all()
         master_form = DeliveryChallanMasterForm()
         formset = DeliveryChallanProductsCreateFormset()
+
+        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+
+            party_id = request.GET.get('partyName')
+
+            if party_id:
+                party_add = Ledger.objects.get(id = party_id)
+                
+                address = party_add.address
+
+                return JsonResponse({'address':address},status = 200)
+
 
     if request.method == 'POST':
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
@@ -15859,7 +15910,7 @@ def delivery_challan_create_update(request, d_id=None):
             except Exception as e:
                 print(f"Error saving formset: {e}")
 
-    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset})
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
 
 
 

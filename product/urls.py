@@ -415,4 +415,5 @@ urlpatterns = [
     path('deliverychallancreate/', views.delivery_challan_create_update, name='delivery-challan-create'),
     path('deliverychallanupdate/<int:d_id>/', views.delivery_challan_create_update, name='delivery-challan-update'),
     path('deliverychallanlist/', views.delivery_challan_list, name='delivery-challan-list'),
+    path('deliverychallanproductajax/', views.delivery_challan_product_ajax, name='delivery-challan-product-ajax'),
 ]
