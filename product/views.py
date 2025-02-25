@@ -15857,8 +15857,8 @@ def delivery_challan_create_update(request, d_id=None):
     else:
         d_instance = None
         party_names = Ledger.objects.all()
-        master_form = DeliveryChallanMasterForm()
-        formset = DeliveryChallanProductsCreateFormset()
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
 
         if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
 
@@ -15873,6 +15873,9 @@ def delivery_challan_create_update(request, d_id=None):
 
 
     if request.method == 'POST':
+        
+        print(request.POST)
+
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
         formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
 
