@@ -94,7 +94,7 @@
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
-                <input type="number" class="me-1 purchase-mark" name="no_of_pcs" min="0" required id="id_no_of_pcs" >
+                <input type="number" class="me-1 purchase-mark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
                 <label for="id_remark" class="me-1">Remark :</label>
                 <input type="text" class="productpurchaseInvoice ps-2" name="remark" id="id_remark" value="{{form.instance.narration |default_if_none:''}}">
             </div>
@@ -518,24 +518,30 @@
         };
     deleteRow();
 
-    function calculateTotal(){
-        var tables = document.querySelectorAll('#deliveryChallanTable .mainTableList tr');
+    function calculateTotal() {
+        var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
+        .filter(row => row.style.display !== 'none');
         var value = 0;
-        tables.forEach(function(row){
-            var qty = parseInt(row.querySelector('[name$="-quantity"]').value);
+    
+    tables.forEach(function(row) {
+        var inputField = row.querySelector('[name$="-quantity"]');
+        if (inputField) {
+            var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
             value += qty;
-            console.log('qty',qty)
-            console.log('value',value)
-            
-        })
-        document.getElementById('id_total-quantity').value = value;
-    }
+        }
+    });
 
-    document.querySelectorAll('[name$="-quantity"]').forEach(element =>{
-        element.addEventListener('input',function(){
-            calculateTotal()
-        })
-    })
+    document.getElementById('id_total-quantity').value = value;
+    document.getElementById('id_no_of_pcs').value = value;
+}
+
+// Event delegation for dynamically added rows
+document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
+    if (event.target.matches('[name$="-quantity"]')) {
+        calculateTotal();
+    }
+});
+
 });
 </script>
 
