@@ -1093,7 +1093,7 @@ def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
         messages.error(request, f"An unexpected error occurred: {str(e)}")
         print(f"Error in create_update_bin_for_raw_material: {str(e)}")
 
-    return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list})
+    return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list,'rack_instance':rack_instance})
 
 
 @login_required(login_url='login')
@@ -10051,6 +10051,11 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                 else:
                                     form_present = False
                                     
+                                    if form.instance.product_name.PProduct_SKU == scanned_sku:
+                                        if form.instance.quantity_total >= form.instance.qc_recieved_qty:
+                                            messages.success(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
+                                            return redirect(reverse('stock-transfer-instance-list-popup', args=[id, selected_voucher_type]))
+                                
                             
                         elif selected_voucher_type == 'transfer':
                             for form in formset:
@@ -10096,6 +10101,11 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                     break
                                 else:
                                     form_present = False
+
+                                    if form.instance.product.PProduct_SKU == scanned_sku:
+                                        if form.instance.product_quantity_transfer >= form.instance.qc_recieved_qty:
+                                            messages.success(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
+                                            return redirect(reverse('stock-transfer-instance-list-popup', args=[id, selected_voucher_type]))
                                     
                         if form_present == False:
                             messages.error(request,f'No Product SKU found in the scanned Voucher')
@@ -14065,11 +14075,15 @@ def picklist_product_ajax(request):
         for item in products_purchase:
             reserved_qty = Picklist_products_list.objects.filter(product__PProduct_SKU=item['product_name__PProduct_SKU'],picklist_master_instance__status="Pending").aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
+            reserved_qty = max(reserved_qty, 0)  # Ensure reserved_qty is never negative
+
+            qc_received_qty = max(item['qc_recieved_qty'] - reserved_qty, 0)
+
             standardized_purchase.append({
                 'product_sku': item['product_name__PProduct_SKU'],
                 'product_color': item['product_name__PProduct_color__color_name'],
                 'product_model': item['product_name__Product__Model_Name'],
-                'qc_received_qty': item['qc_recieved_qty'] - reserved_qty,
+                'qc_received_qty': qc_received_qty,
                 'product_ref_id': item['product_name__Product__Product_Refrence_ID'],
                 'product_image': item['product_name__PProduct_image'],
             })
@@ -14097,11 +14111,15 @@ def picklist_product_ajax(request):
                 product__PProduct_SKU=item['product__PProduct_SKU'],picklist_master_instance__status="Pending"
             ).aggregate(total_reserved=Sum('product_quantity'))['total_reserved'] or 0
 
+            reserved_qty = max(reserved_qty, 0)  # Ensure reserved_qty is never negative
+
+            qc_received_qty = max(item['qc_recieved_qty'] - reserved_qty, 0)
+
             standardized_transfer.append({
                 'product_sku': item['product__PProduct_SKU'],
                 'product_color': item['product__PProduct_color__color_name'],
                 'product_model': item['product__Product__Model_Name'],
-                'qc_received_qty': item['qc_recieved_qty'] - reserved_qty,
+                'qc_received_qty': qc_received_qty,
                 'product_ref_id': item['product__Product__Product_Refrence_ID'],
                 'product_image': item['product__PProduct_image'],
             })
@@ -14853,8 +14871,13 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     salesman_list = Salesman_info.objects.all()
 
     if s_id:
+
+        print("in sale s_id = ",s_id)
+
         voucher_instance = sales_voucher_master_outward_scan.objects.get(id=s_id)
-        master_form = Salesvouchermasteroutwardscanform(request.POST or None, instance=voucher_instance)
+
+        master_form = Salesvouchermasteroutwardscanform(instance=voucher_instance)
+
         page_name = 'Edit Sales Invoice'
         warehouse_id = voucher_instance.selected_warehouse.id
         outward_number = voucher_instance.outward_no.outward_no
@@ -14870,7 +14893,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
                 break
             
             
-            # print('product_list2 = ', product_list2)
+            print('product_list2 = ', product_list2)
 
             sales_product_info = sales_voucher_outward_scan.objects.filter(sales_voucher_master = s_id).values('product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','trade_disct','spl_disct')
 
@@ -14946,6 +14969,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
         
 
     else:
+        print('in else')
         voucher_instance = None
         
         page_name = 'Create Sales Invoice'
@@ -14959,7 +14983,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
                 product_list2 = val
                 break
 
-        master_form = Salesvouchermasteroutwardscanform(initial={'outward_no':outward_number})
+        master_form = Salesvouchermasteroutwardscanform(initial={'outward_no':outward_number},instance=voucher_instance)
 
         salesvoucherfromscancreateformset = inlineformset_factory(sales_voucher_master_outward_scan, sales_voucher_outward_scan, form=SalesvoucheroutwardscanForm, extra=len(product_list2), can_delete=True)
         
@@ -14983,7 +15007,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
             old_instances.delete()
         else:
-            formset = salesvoucherfromscancreateformset(request.POST or None )
+            formset = salesvoucherfromscancreateformset(request.POST or None ,instance=voucher_instance)
 
 
         if not master_form.is_valid():
