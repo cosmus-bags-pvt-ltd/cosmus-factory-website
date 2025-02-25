@@ -38,7 +38,7 @@
               <th>Driver Name</th>
               <th>Pending for Billing</th>
               <th>Edit</th>
-              <th>DEL</th>
+              <!-- <th>Delete</th> -->
           </tr>
       </thead>
       <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -53,8 +53,8 @@
           <td>{{ challan.vehicle_no }}</td>
           <td>{{ challan.driver_name }}</td>
           <td></td>
-          <td><a href="{% url 'delivery-challan-update' challan.id %}">Edit</a></td>
-          <td><a href="">DEL</a></td>
+          <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
+          <!-- <td><a href="">DEL</a></td> -->
         </tr>
         {% endfor %}
     
