@@ -32,12 +32,12 @@
           <td class="text-center"><a href="{% url 'outward-scan-product-update' sale.outward_no__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff8f10; text-decoration: none;">{{sale.outward_no__outward_no}}</a></td>
           <td><a href="{% url 'sales-voucher-view-sort-with-salesman' sale.salesman__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #3cacf7; text-decoration: none;">{{sale.salesman__salesman_name}}</a></td>
           <td>{{sale.ledger_type}}</td>
-          <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff10cb; text-decoration: none;">{{sale.sale_no}}</a></td>
+          <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id 'VIEW' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff10cb; text-decoration: none;">{{sale.sale_no}}</a></td>
           <td><a href="{% url 'sales-voucher-view-sort-with-partyname' sale.party_name__id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f55050; text-decoration: none;">{{sale.party_name__name}}</a></td>
           <td class="text-center">{{sale.total_qty}}</td>
           <td class="text-center fw-bold">{{sale.grand_total}}</td>
           <td class="text-center">0</td>
-          <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id %}"><i class="fa-solid fa-eye px-1"></i></a></td>
+          <td><a href="{% url 'sales-voucher-create-update-for-warehouse' sale.id 'VIEW' %}"><i class="fa-solid fa-eye px-1"></i></a></td>
           <td></td>
         </tr>
         {% else %}

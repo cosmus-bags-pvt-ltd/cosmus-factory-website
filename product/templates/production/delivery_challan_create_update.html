@@ -9,16 +9,23 @@
         <div class="mb-2 d-flex">
             <label for="id_delivery_challan_no" class="me-1">challan no :</label>
             <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no">
+
             <label for="id_party_name" class="me-1">Party name :</label>
             <select name="party_name" class="item-selects me-2" required id="id_party_name" class="item-selects">
+                <option value="" selected disabled>select party name</option>
+                {% if master_form.instance.id %}
+                <option value="{{ name.id }}">{{ name.name }}</option>
+                {% elif not master_form.instance.id %}
+                {% for name in party_names %}
+                  <option value="{{ name.id }}">{{ name.name }}</option>
+                {% endfor %}
+                {% endif %}
             </select>
-            <div>
-                <label for="id_buyer_address">Buyer Address :</label>
-                <textarea class="border-1 rounded-1" placeholder="Buyer Address.." name="buyer_address"  cols="30" rows="1" required id="id_buyer_address" readonly></textarea>
-            </div>
+            
+
             <div>
                 <label for="id_shipping_address">Shipping address:</label>
-                <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1" cols="30" rows="1" required id="id_shipping_address"></textarea>
+                <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 form-control" cols="70" rows="2" required id="id_shipping_address"></textarea>
                 
             </div>
         </div>
@@ -107,7 +114,28 @@
         var itemName;
         var purchaseValue;
         var filterData;
- 
+        
+        $(document).on('change','#id_party_name',function(){
+            var partyName = $(this).val();
+            console.log('partyName',partyName)
+            $.ajax({
+                url:"/deliverychallancreate/",
+                method: 'GET',
+                data: {
+                    'partyName': partyName,
+                    
+                },
+                success: function (response) {
+                    console.log(response.address)
+                    $('#id_shipping_address').val(response.address)
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
+
+
+            })
+        })
     
         $(document).on('click input keyup focus keydown', 'input[name$="-products"]', function () {
             itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
@@ -133,6 +161,21 @@
             function escapeRegExp(string) {
                 return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
             }
+            $.ajax({
+                url:"/deliverychallanproductajax/",
+                method: 'GET',
+                data: {
+                    'nameValue': nameValue,
+                },
+                success: function (response) {
+                    console.log(response.products);
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
+
+
+            })
             searchedProductNameDic = filterData; 
             console.log('searchedProductNameDic',searchedProductNameDic)
             const searchQuery = nameValue.toLowerCase();

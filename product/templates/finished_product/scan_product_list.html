@@ -60,9 +60,11 @@
                 <td class="text-nowrap"><span class="fw-bold me-2">{{ entry.bin_number__rack_finished_name__zone_finished_name__zone_name }}</span><span class="ms-3 text-success fw-bold">{{ entry.bin_number__rack_finished_name__rack_name }}</span><span class="ms-4 text-danger fw-bold">{{ entry.bin_number__bin_name }}</span></td>
                 
                 {% if entry.related_purchase_item__product_purchase_master__purchase_number %}
-                <td class="text-center">{{entry.total_qty}}</td>
+                
+                <td class="text-center"><a href="{% url 'scan-product-list' entry.related_purchase_item 'purchase' %}">{{entry.total_qty}}</a></td>
                 {% else %}
-                <td class="text-center">{{entry.total_qty_tr}}</td>
+                
+                <td class="text-center"><a href="{% url 'scan-product-list' entry.related_transfer_record 'transfer' %}">{{entry.total_qty_tr}}</a></td>
                 {% endif %}
              </tr>
             {% endfor %}
