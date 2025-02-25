@@ -1044,11 +1044,11 @@ class Finished_goods_Stock_TransferMaster_form(forms.ModelForm):
 class Finished_goods_transfer_records_form(forms.ModelForm):
     class Meta:
         model = Finished_goods_transfer_records
-        fields = ['product','product_quantity_transfer','remarks']
+        fields = ['product','product_quantity_transfer','remarks','transnfer_cancelled_records']
 
-Finished_goods_transfer_records_formset_create = inlineformset_factory(Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, form=Finished_goods_transfer_records_form, extra=1, can_delete=False)
+Finished_goods_transfer_records_formset_create = inlineformset_factory(Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, form=Finished_goods_transfer_records_form, extra=1, can_delete=True)
 
-Finished_goods_transfer_records_formset_update = inlineformset_factory(Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, form=Finished_goods_transfer_records_form, extra=0, can_delete=False)
+Finished_goods_transfer_records_formset_update = inlineformset_factory(Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, form=Finished_goods_transfer_records_form, extra=0, can_delete=True)
 
 
 """

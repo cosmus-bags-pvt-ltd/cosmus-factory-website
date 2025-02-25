@@ -48,7 +48,7 @@
                     {% with outward.sales_voucher_master_outward_scan_set.all as sales %}
                     {% if sales %}
                         {% for sale_process in sales %}
-                            <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale_process.id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff10cb; text-decoration: none;">{{ sale_process.sale_no |default_if_none:'' }}</a></td>
+                            <td class="text-center"><a href="{% url 'sales-voucher-create-update-for-warehouse' sale_process.id 'VIEW' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff10cb; text-decoration: none;">{{ sale_process.sale_no |default_if_none:'' }}</a></td>
                             <td class="text-center">{{ sale_process.party_name.name |default_if_none:'' }}</td>
                             <td class="text-center">{{ sale_process.grand_total |default_if_none:'' }}</td>
                         {% endfor %}
