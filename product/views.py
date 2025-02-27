@@ -5734,34 +5734,32 @@ def purchaseordercuttinglist(request,p_o_pk,prod_ref_no):
 
 @login_required(login_url='login')
 def purchaseordercuttingapprovalcheckajax(request):
-    print('in function')
+    
     cutting_pk_no = request.GET.get('cutting_pk_no')
-
-    print('cutting_pk_no = ', cutting_pk_no)
 
     if not cutting_pk_no:
         return JsonResponse({'status': 'error', 'message': 'Cutting ID not provided'}, status=400)
 
     try:
         
-        purchase_order_master_instances = labour_workout_master.objects.filter(
-            purchase_order_cutting_master__raw_material_cutting_id=cutting_pk_no
-        ).order_by('created_date').values(
-            'created_date', 'total_approved_pcs', 'total_pending_pcs'
-        )
+        purchase_order_master_instances = labour_workout_master.objects.filter(purchase_order_cutting_master__raw_material_cutting_id=cutting_pk_no).annotate(total_processed_qty = Sum('labour_workout_childs__total_process_pcs')).order_by('created_date').values('created_date', 'total_approved_pcs', 'total_pending_pcs','total_processed_qty')
 
         if not purchase_order_master_instances.exists():
             return JsonResponse({'status': 'error', 'message': 'No records found for the given Cutting ID'}, status=404)
 
         approval_data = []
+
         for x in purchase_order_master_instances:
             dict_to_append = {
                 'Approved_Date': x['created_date'],
                 'Approved_Name': 'approved name',  
                 'Approved_Qty': x['total_approved_pcs'],
-                'pending_Qty': x['total_pending_pcs']
+                'pending_Qty': x['total_pending_pcs'],
+                'total_processed_qty': x['total_processed_qty']
                 }
             approval_data.append(dict_to_append)
+
+        print('approval_data = ',approval_data)
 
         return JsonResponse({'status': 'success','approval_data': approval_data,'cutting_pk_no':cutting_pk_no})
 
@@ -7379,36 +7377,31 @@ def raw_material_estimation_calculate(request,u_id):
 
                     else:
                         final_total_list[material_name] = qty
-            
-                # print(primary_list)
 
             for key, value in final_total_list.items():
-
-                try:
                     
-                    difference_quantity_in_p_o_stage = purchase_order_for_raw_material.objects.filter(material_name=key).aggregate(total_po_qty=Sum('total_comsumption')) 
+                difference_quantity_in_p_o_stage = purchase_order_for_raw_material.objects.filter(material_name=key).aggregate(total_po_qty=Sum('total_comsumption')) 
 
-                    total_po_qty = difference_quantity_in_p_o_stage['total_po_qty'] if difference_quantity_in_p_o_stage['total_po_qty'] else 0
+                total_po_qty = difference_quantity_in_p_o_stage['total_po_qty'] if difference_quantity_in_p_o_stage['total_po_qty'] else 0
 
-                    difference_quantity_in_cutting_stage = purchase_order_for_raw_material_cutting_items.objects.filter(material_name=key).aggregate(total_cutting_qty = Sum('total_comsumption'))
+                difference_quantity_in_cutting_stage = purchase_order_for_raw_material_cutting_items.objects.filter(material_name=key).aggregate(total_cutting_qty = Sum('total_comsumption'))
 
-                    
+                total_cutting_qty = difference_quantity_in_cutting_stage['total_cutting_qty'] if difference_quantity_in_cutting_stage['total_cutting_qty'] else 0
 
-                    total_cutting_qty = difference_quantity_in_cutting_stage['total_cutting_qty'] if difference_quantity_in_cutting_stage['total_cutting_qty'] else 0
+                diffrence_qty = total_po_qty - total_cutting_qty
 
-                    diffrence_qty = total_po_qty - total_cutting_qty
+                
+                godown_item_instances_new = item_godown_quantity_through_table.objects.filter(Item_shade_name__items__item_name=key,godown_name=estimation_master_instance.raw_material_godown_id)
 
-                    
-                    godown_item_instance = item_godown_quantity_through_table.objects.get(Item_shade_name__items__item_name = key, godown_name=estimation_master_instance.raw_material_godown_id)
-                    godown_qty = godown_item_instance.quantity
-                    
-
-                except ObjectDoesNotExist:
+                if godown_item_instances_new.exists():
+                    godown_qty = godown_item_instances_new.aggregate(total_qty=Sum('quantity'))['total_qty'] or 0
+                else:
                     godown_qty = 0
 
                 total_godown_stock = godown_qty
+                
                 total_balance_stock = godown_qty - value
-
+                
                 raw_material_production_total.objects.create(raw_material_estination_master = estimation_master_instance,item_name=key,total_consump=value,godown_stock = total_godown_stock,balance_stock = total_balance_stock)
 
         response_dict = raw_material_production_total.objects.filter(raw_material_estination_master = estimation_master_instance).values('item_name','total_consump','godown_stock','balance_stock')
@@ -15850,15 +15843,17 @@ def delivery_challan_product_ajax(request):
 @login_required(login_url='login')
 def delivery_challan_create_update(request, d_id=None):
 
+    party_names = Ledger.objects.all()
+    
     if d_id:
         d_instance = DeliveryChallanMaster.objects.get(id = d_id)
-        master_form = DeliveryChallanMasterForm(instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(instance = d_instance)
+        master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(request.POST or None,instance = d_instance)
     else:
         d_instance = None
-        party_names = Ledger.objects.all()
-        master_form = DeliveryChallanMasterForm()
-        formset = DeliveryChallanProductsCreateFormset()
+        
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
 
         if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
 
@@ -15873,6 +15868,9 @@ def delivery_challan_create_update(request, d_id=None):
 
 
     if request.method == 'POST':
+        
+        print(request.POST)
+
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
         formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
 
