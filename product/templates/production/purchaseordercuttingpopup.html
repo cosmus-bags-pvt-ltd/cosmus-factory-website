@@ -63,10 +63,11 @@
     <table class="table table-striped table-hover table-bordered" id="approvalDataLog" >
       <thead class="name_absolute sticky-top">
         <tr>
-          <th>Date</th>
-          <th>Approved By</th>
-          <th class="text-success text-center">Approved QTY</th>
-          <th class="text-danger text-center">Balance QTY LWO</th>
+            <th>Date</th>
+            <th>Approved By</th>
+            <th class="text-primary">Appr QTY</th>
+            <th class="text-success">LWO QTY</th>
+            <th class="text-danger">Bal QTY = <span id="tBalQty"></span> LWO</th>
         </tr>
       </thead>
       <tbody class="mainTableList" >
@@ -75,9 +76,9 @@
       <tbody class="mainTableList" id="totalApproved">
         <tr>
           <td colspan="2" class="fw-bold">Total</td>
-        
-          <td class="fw-bold text-success text-center" id="tApprovedQty">0</td>
-          <td class="fw-bold text-danger text-center" id="tBalanceQty">0</td>
+          <td class="text-center"><span class="fw-bold text-primary" id="tApprovedQty">0</span></td>
+          <td class="text-center"><span class="fw-bold text-success" id="tLwoQty">0</span></td>
+          <td class="text-center"><span class="fw-bold text-danger" id="tBalanceQty">0</span></td>
         </tr>
       </tbody>
     </table>
@@ -337,8 +338,9 @@ function quantityCheck() {
         const dataFromParent = window.opener.sharedData;
         var TotalApprove = 0;
         var totalBalance = 0;
+        var TotalLwo = 0 ;
         var newTable = document.querySelector('#approvalDataLog tbody'); 
-        console.log(dataFromParent)
+     
         newTable.innerHTML = ''; // Clear previous table rows
 
         if(dataFromParent){
@@ -347,6 +349,7 @@ function quantityCheck() {
               var approveDate = new Date(items.Approved_Date).toLocaleDateString(); // Format the date
               var approveName = items.Approved_Name || 'N/A';   // Default if undefined
               var approveQty = items.Approved_Qty || 0;        // Default to 0 if undefined
+              var actualLwo = items.total_processed_qty || 0;
               var balanceQty = items.pending_Qty || 0;        // Default to 0 if undefined
               var row = document.createElement('tr');        // Create a new row
              
@@ -359,21 +362,28 @@ function quantityCheck() {
 
               var cell3 = document.createElement('td');
               cell3.textContent = approveQty;
-              cell3.style.color = "green";
+              cell3.style.color = "rgb(13,110,253)";
               cell3.style.textAlign  = "center";
-              
+
               var cell4 = document.createElement('td');
-              cell4.textContent = balanceQty;
-              cell4.style.color = "red";
-              cell4.style.textAlign  = "center";
+              cell4.style.textAlign  = 'center'
+              cell4.textContent = actualLwo;
+              cell4.style.color = 'green';
+              
+              var cell5 = document.createElement('td');
+              cell5.textContent = balanceQty;
+              cell5.style.color = "red";
+              cell5.style.textAlign  = "center";
 
               // Append cells to the row
               row.appendChild(cell1);
               row.appendChild(cell2);
               row.appendChild(cell3);
               row.appendChild(cell4);
+              row.appendChild(cell5);
 
               TotalApprove += approveQty;
+              TotalLwo += actualLwo;
               totalBalance += balanceQty;
 
               // Append the row to the table
@@ -382,9 +392,10 @@ function quantityCheck() {
  
         }
         
-          document.getElementById('tApprovedQty').textContent = TotalApprove;
-          document.getElementById('tBalanceQty').textContent = totalBalance;
-
+            document.getElementById('tApprovedQty').textContent = TotalApprove;
+            document.getElementById('tLwoQty').textContent = TotalLwo;
+            document.getElementById('tBalanceQty').textContent = totalBalance;
+            document.getElementById('tBalQty').textContent = totalBalance;
       
     }
 

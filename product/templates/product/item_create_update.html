@@ -285,8 +285,18 @@
             <span>Item not yet created.</span>
         {% endif %}
         </div> -->
+        <!-- <div class="mb-3">
+          <label for="" class="item-form">Racks :</label>
+          <select class="item-select " required id="id_rack">
+            {% for rack in racks %}
+            <option value="{{ rack.rack_name }}">{{ rack.rack_name }}</option>
+            {% endfor %}
+          </select>
+
+        </div> -->
 
         <div class="mb-3">
+
           <button type="button" class="edit_btn w-75 mb-3" id="AddButton">
               Add Bins + <span class="labourIncompleteArrow"><i class="fas fa-angle-right arrowBtn"></i></span>
           </button>

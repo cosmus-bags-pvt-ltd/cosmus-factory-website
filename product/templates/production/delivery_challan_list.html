@@ -26,31 +26,31 @@
   </div>
   
   <table class="table table-striped table-hover table-bordered">
-      <thead class="name_absolute sticky-top text-center">
+      <thead class="name_absolute sticky-top">
           <tr>
-              <th>Sr No</th>
-              <th>Deli Chal No</th>
-              <th>Pary Name</th>
-              <th>Shiping </th>
-              <th>Total Box</th>
-              <th>Total Qty</th>
+              <th>No</th>
+              <th>Chall No</th>
+              <th>Party Name</th>
+              <th>Shiping Address</th>
+              <th>T Box</th>
+              <th>T Qty</th>
               <th>Vehl No</th>
               <th>Driver Name</th>
-              <th>Pending for Billing</th>
+              <th>Pend. Bill</th>
               <th>Edit</th>
               <!-- <th>Delete</th> -->
           </tr>
       </thead>
       <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
         {% for challan in delivary_challan_list %}
-        <tr class="text-center">
+        <tr>
           <td>{{ forloop.counter }}</td>
           <td>{{ challan.delivery_challan_no }}</td>
-          <td>{{ challan.party_name.name }}</td>
+          <td class="text-nowrap">{{ challan.party_name.name }}</td>
           <td>{{ challan.shipping_address }}</td>
           <td>{{ challan.no_of_boxes }}</td>
           <td>{{ challan.no_of_pcs }}</td>
-          <td>{{ challan.vehicle_no }}</td>
+          <td class="text-nowrap">{{ challan.vehicle_no }}</td>
           <td>{{ challan.driver_name }}</td>
           <td></td>
           <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
