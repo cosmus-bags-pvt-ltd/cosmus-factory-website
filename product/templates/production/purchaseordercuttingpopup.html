@@ -46,7 +46,10 @@
                         <td colspan="2">Total</td>
                         <td class="text-center"><input type="number" class="text-success  productorderrawqty-input" id="TotalCutting" value="0" readonly></td>
                         <td class="text-center"><input type="number" class="text-danger  productorderrawqty-input" id="TotalBalance" value="0" readonly></td>
-                        <td><input type="number" class="text-primary  productorderrawqty-input" id="TotalApprove" value="0" readonly></td>
+                        <td><input type="number" class="text-primary  productorderrawqty-input" id="TotalApprove" value="0" readonly>
+                            <input type="number" class="text-primary  productorderrawqty-input" id="TotalApproveActual" value="0" readonly>
+                        </td>
+                        
                     </tr>
                 </tbody>
 
@@ -132,6 +135,7 @@ function quantityCheck() {
     totalCutting = 0;
     totalapprove = 0;
     totalbalance = 0;
+    totalActual = 0;
   
     var approved = document.querySelectorAll('[name$= "-approved_pcs_Value"]');
 
@@ -200,11 +204,13 @@ function quantityCheck() {
             }
            
             totalCutting += cuttingApprovedValue;
-            totalapprove += finalApprove;
+            totalapprove += approvedReadOnlyValue;                         //finalApprove; this value is calculate the actual value and already approved value 
             totalbalance += balanceApprovedValue;
+            totalActual += approvedValues
             document.getElementById('TotalCutting').value =totalCutting
             document.getElementById('TotalBalance').value =totalbalance;
             document.getElementById('TotalApprove').value = totalapprove;
+            document.getElementById('TotalApproveActual').value = totalActual;
         
     });
 }

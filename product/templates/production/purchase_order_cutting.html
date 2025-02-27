@@ -837,59 +837,59 @@ function updateCuttingQuantity(finalTotal){
 </script>
 
 <script>
-   document.addEventListener("DOMContentLoaded", function () {
-    const forms = document.getElementById('id_purchase_order_to_product_cutting_set-0-id').value;
-    if(forms === ''){
-        const form = document.getElementById("purchaseOrderForm");
-        const submitButton = document.getElementById("id_submitPurchaseOrderCutting");
-        //let modal = document.getElementById("exampleModal");
+//    document.addEventListener("DOMContentLoaded", function () {
+//     const forms = document.getElementById('id_purchase_order_to_product_cutting_set-0-id').value;
+//     if(forms === ''){
+//         const form = document.getElementById("purchaseOrderForm");
+//         const submitButton = document.getElementById("id_submitPurchaseOrderCutting");
+//         //let modal = document.getElementById("exampleModal");
 
-        // Handle form submission
-        form.addEventListener("submit", function (event) {
-            event.preventDefault(); // Prevent form from submitting immediately
+//         // Handle form submission
+//         form.addEventListener("submit", function (event) {
+//             event.preventDefault(); // Prevent form from submitting immediately
 
-            // Validate required fields
-            const requiredFields = form.querySelectorAll("[required]");
-            console.log('requiredFields',requiredFields)
-            let isValid = true;
+//             // Validate required fields
+//             const requiredFields = form.querySelectorAll("[required]");
+//             console.log('requiredFields',requiredFields)
+//             let isValid = true;
 
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    isValid = false;
-                    field.classList.add("is-invalid");
-                } else {
-                    field.classList.remove("is-invalid");
-                }
-            });
+//             requiredFields.forEach(field => {
+//                 if (!field.value.trim()) {
+//                     isValid = false;
+//                     field.classList.add("is-invalid");
+//                 } else {
+//                     field.classList.remove("is-invalid");
+//                 }
+//             });
 
-            if (isValid) {
-                // Show the loading overlay with the image
-            //     modal.style.display = "block";
-            //     setTimeout(function () {
-            //     form.submit(); // Submit the form after the delay
-            // }, 2000);
-            } else {
-                alert("Please fill all required fields.");
-            }
-        });
+//             if (isValid) {
+//                 // Show the loading overlay with the image
+//             //     modal.style.display = "block";
+//             //     setTimeout(function () {
+//             //     form.submit(); // Submit the form after the delay
+//             // }, 2000);
+//             } else {
+//                 alert("Please fill all required fields.");
+//             }
+//         });
 
-        // Handle "Enter" key press
-        form.addEventListener("keydown", function (event) {
-        if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
-            event.preventDefault(); // Prevent default form submission on Enter
+//         // Handle "Enter" key press
+//         form.addEventListener("keydown", function (event) {
+//         if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
+//             event.preventDefault(); // Prevent default form submission on Enter
 
-            // Trigger the submit button click manually
-            submitButton.click(); 
-        }
-    });
+//             // Trigger the submit button click manually
+//             submitButton.click(); 
+//         }
+//     });
 
-        // Button click handler (optional, redundant if using form submit)
-        submitButton.addEventListener("click", function (event) {
-            form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
-            //modal.style.display = "block";
-        });
-    }
+//         // Button click handler (optional, redundant if using form submit)
+//         submitButton.addEventListener("click", function (event) {
+//             form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+         
+//         });
+//     }
         
-    });
+//     });
 </script>
 {% endblock %}
