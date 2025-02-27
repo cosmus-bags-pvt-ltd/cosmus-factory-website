@@ -81,23 +81,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-
 
 
 @receiver(m2m_changed, sender=CustomUser.role.through)
@@ -112,7 +95,6 @@ def update_user_groups_on_role_change(sender, instance, action, **kwargs):
 
 
         """
-        
         role_choices = [
         ('Super Admin', 'Super Admin'),
         ('Admin', 'Admin'),

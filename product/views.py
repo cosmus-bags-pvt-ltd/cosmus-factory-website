@@ -39,6 +39,9 @@ from openpyxl.styles import Border, Side
 import requests
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
+from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import PermissionDenied
+
 
 from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
@@ -107,14 +110,15 @@ def custom_404_view(request, exception):
 
 
 
-@login_required(login_url='login')
+
 def dashboard(request):
     return render(request,'misc/dashboard.html',{"page_name":"Dashboard"})
 
 
 
 
-@login_required(login_url='login')
+
+
 def edit_production_product(request,pk):
    
     gsts = gst.objects.all()
@@ -399,7 +403,7 @@ def edit_production_product(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def product2subcategoryproductajax(request):
     selected_main_cat = request.GET.get('p_main_cat')
     sub_cats = SubCategory.objects.filter(product_main_category = selected_main_cat)
@@ -417,7 +421,7 @@ def product2subcategoryproductajax(request):
 
 
 
-@login_required(login_url='login')
+
 def product_color_sku(request,ref_id = None):
     
     color = Color.objects.all()
@@ -472,7 +476,7 @@ def product_color_sku(request,ref_id = None):
 
 
 
-@login_required(login_url='login')
+
 def pproduct_list(request):
     
     queryset = Product.objects.all().order_by('Product_Name').select_related('Product_GST').prefetch_related('productdetails','productdetails__PProduct_color')
@@ -520,7 +524,7 @@ def pproduct_list(request):
 
 
 
-@login_required(login_url='login')
+
 def pproduct_delete(request, pk):
     try:
         product = get_object_or_404(Product,Product_Refrence_ID=pk)
@@ -533,7 +537,7 @@ def pproduct_delete(request, pk):
 
 
 
-@login_required(login_url='login')
+
 def add_product_images(request, pk):
     product = PProduct_Creation.objects.get(pk=pk)   
     formset = ProductImagesFormSet(instance=product)  
@@ -562,7 +566,7 @@ def add_product_images(request, pk):
 
 
 
-@login_required(login_url='login')
+
 def add_product_video_url(request,pk):
     
     product = PProduct_Creation.objects.get(pk=pk)   
@@ -589,8 +593,13 @@ def add_product_video_url(request,pk):
     return render(request, 'product/add_product_videourl.html', {'formset': formset, 'product': product})
 
 
-@login_required(login_url='login')
 def definemaincategoryproduct(request,pk=None):
+
+    user = request.user
+
+    # Check if the user has 'view_color' permission; otherwise, block access
+    # if not user.has_perm('product.view_maincategory'):
+    #     raise PermissionDenied("You do not have permission to view this page.")
 
     queryset = MainCategory.objects.all()
 
@@ -640,7 +649,7 @@ def definemaincategoryproduct(request,pk=None):
                                                                     'page_name':page_name})
 
 
-@login_required(login_url='login')
+
 def definemaincategoryproductdelete(request,pk):
     try:
         instance = MainCategory.objects.get(pk=pk)
@@ -652,7 +661,7 @@ def definemaincategoryproductdelete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def definesubcategoryproduct(request, pk=None):
 
     if pk:
@@ -692,7 +701,7 @@ def definesubcategoryproduct(request, pk=None):
 
 
 
-@login_required(login_url='login')
+
 def assign_bin_to_product_ajax(request):
     formset = None
     rack_id = None
@@ -917,7 +926,7 @@ def subcategory_bin_list(request):
 
 
 
-@login_required(login_url='login')
+
 def definesubcategoryproductdelete(request, pk):
     try:
         instance = SubCategory.objects.get(pk=pk)
@@ -929,7 +938,7 @@ def definesubcategoryproductdelete(request, pk):
 
 
 
-@login_required(login_url='login')
+
 def product2subcategory(request):
     products = Product.objects.all()
     sub_category = SubCategory.objects.all()
@@ -995,7 +1004,7 @@ def product2subcategory(request):
 
 
 
-@login_required(login_url='login')
+
 def product2subcategoryajax(request):
 
     productid = request.GET.get('selected_product_id')
@@ -1014,7 +1023,7 @@ def product2subcategoryajax(request):
 
 
 
-@login_required(login_url='login')
+
 def create_update_rack_for_raw_material(request, r_id=None):
     try:
         rack_list = rack_for_raw_material.objects.all()
@@ -1045,7 +1054,7 @@ def create_update_rack_for_raw_material(request, r_id=None):
 
 
 
-@login_required(login_url='login')
+
 def delete_rack_for_raw_material(request,r_id):
     try:
         rack_instance = get_object_or_404(rack_for_raw_material, id=r_id)
@@ -1063,7 +1072,7 @@ def delete_rack_for_raw_material(request,r_id):
     return redirect('create-rack-for-raw-material')
 
 
-@login_required(login_url='login')
+
 def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
     try:
         bin_list = bin_for_raw_material.objects.filter(rack = r_id)
@@ -1096,7 +1105,7 @@ def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
     return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list,'rack_instance':rack_instance})
 
 
-@login_required(login_url='login')
+
 def delete_bin_for_raw_material(request,b_id):
 
     try:
@@ -1119,7 +1128,7 @@ def delete_bin_for_raw_material(request,b_id):
     return redirect('create-bin-for-raw-material', r_id=rack_id)
 
 
-@login_required(login_url='login')
+
 def item_create(request):
 
     gsts = gst.objects.all()
@@ -1165,7 +1174,7 @@ def item_create(request):
     return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material','racks':racks})
 
 
-@login_required(login_url='login')
+
 def item_edit(request,pk): 
     
     gsts = gst.objects.all()
@@ -1267,7 +1276,7 @@ def item_edit(request,pk):
     return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material",'racks':racks})
 
 
-@login_required(login_url='login')
+
 def item_clone_ajax(request):
     selected_item_name_value = int(request.GET.get('itemValue'))
     
@@ -1288,7 +1297,7 @@ def item_clone_ajax(request):
     return JsonResponse({'response_data':response_data})
 
 
-@login_required(login_url='login')
+
 def item_list(request):
     
     g_search = request.GET.get('item_search','')
@@ -1351,7 +1360,7 @@ def item_list(request):
 
 
 
-@login_required(login_url='login')
+
 def openingquantityformsetpopup(request,parent_row_id=None,primary_key=None):
     
     godowns =  Godown_raw_material.objects.all()
@@ -1445,7 +1454,7 @@ def openingquantityformsetpopup(request,parent_row_id=None,primary_key=None):
 
 
 
-@login_required(login_url='login')
+
 def openingquantityformsetpopupajax(request):
     itemValue_get = request.GET.get('itemValue')
     primary_key_id_get = request.GET.get('primary_key_id')        
@@ -1462,9 +1471,6 @@ def openingquantityformsetpopupajax(request):
     return JsonResponse({'popup_url':popup_url})
 
 
-
-
-@login_required(login_url='login')
 def item_delete(request, pk):
     
     try:
@@ -1481,14 +1487,14 @@ def item_delete(request, pk):
 
 
 
-
-
-
-
-
-
-@login_required(login_url='login')
 def color_create_update(request, pk=None):
+
+    user = request.user
+
+    # Check if the user has 'view_color' permission; otherwise, block access
+    if not user.has_perm('product.view_color'):
+        messages.error(request, "You do not have permission to view Colors")
+        return redirect('dashboard-main')  # Redirect to a safe page
 
     queryset = Color.objects.all()
     color_search = request.GET.get('color_search','')
@@ -1523,6 +1529,15 @@ def color_create_update(request, pk=None):
 
     form = ColorForm(instance=instance)
     if request.method == 'POST':
+        
+        # Check for add/update permissions only when modifying data
+        if instance and not user.has_perm('product.change_color'):
+            messages.error(request, "You do not have permission to update a color.")
+            return redirect('simplecolorlist')  # Redirect to a safe page
+        if not instance and not user.has_perm('product.add_color'):
+            messages.error(request, "You do not have permission to add a color.")
+            return redirect('simplecolorlist')  # Redirect to a safe page
+
 
         form = ColorForm(request.POST, instance=instance)
 
@@ -1553,10 +1568,11 @@ def color_create_update(request, pk=None):
 
 
 
-@login_required(login_url='login')
+
+@permission_required('product.delete_color', raise_exception=True)
 def color_delete(request, pk):
+    product_color = get_object_or_404(Color,pk=pk)
     try:
-        product_color = get_object_or_404(Color,pk=pk)
         product_color.delete()
         messages.success(request,f'Color {product_color.color_name} was deleted')
 
@@ -1571,9 +1587,6 @@ def color_delete(request, pk):
 
 
 
-
-
-@login_required(login_url='login')
 def item_fabric_group_create_update(request, pk = None):
     queryset = Fabric_Group_Model.objects.all()
 
@@ -1636,7 +1649,7 @@ def item_fabric_group_create_update(request, pk = None):
 
 
 
-@login_required(login_url='login')
+
 def item_fabric_group_delete(request,pk):
     try:
         item_fabric_pk = get_object_or_404(Fabric_Group_Model,pk=pk)
@@ -1655,7 +1668,10 @@ def item_fabric_group_delete(request,pk):
 
 
 
-@login_required(login_url='login')
+
+@permission_required('product.add_unit_name_create', raise_exception=True)
+@permission_required('product.change_unit_name_create', raise_exception=True)
+@permission_required('product.view_unit_name_create', raise_exception=True)
 def unit_name_create_update(request,pk=None):
     
     queryset = Unit_Name_Create.objects.all()
@@ -1720,7 +1736,6 @@ def unit_name_create_update(request,pk=None):
 
 
 
-@login_required(login_url='login')
 def unit_name_units_ajax(request):
     unit_name_pk = request.GET.get('unit_name_pk')
     if unit_name_pk is not None:
@@ -1730,8 +1745,7 @@ def unit_name_units_ajax(request):
         
 
 
-
-@login_required(login_url='login')
+@permission_required('product.delete_unit_name_create', raise_exception=True)
 def unit_name_delete(request,pk):
     try:
         unit_name_pk = get_object_or_404(Unit_Name_Create,pk=pk)
@@ -1751,7 +1765,7 @@ def unit_name_delete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def account_sub_group_create_update(request, pk=None):
 
     groups = AccountSubGroup.objects.select_related('acc_grp').all()
@@ -1786,7 +1800,7 @@ def account_sub_group_create_update(request, pk=None):
 
 
 
-@login_required(login_url='login')
+
 def account_sub_group_delete(request, pk):  
     try:
         group = get_object_or_404(AccountSubGroup ,pk=pk)
@@ -1798,7 +1812,7 @@ def account_sub_group_delete(request, pk):
 
 
 
-@login_required(login_url='login')
+
 def stock_item_create_update(request,pk=None):
     
     if pk:
@@ -1867,7 +1881,7 @@ Static Choices: If the form fields can be populated with static choices or query
 
 
 
-@login_required(login_url='login')
+
 def stock_item_delete(request, pk):
     try:
         stock = get_object_or_404(StockItem ,pk=pk)
@@ -1879,7 +1893,7 @@ def stock_item_delete(request, pk):
 
 
 
-@login_required(login_url='login')
+
 @transaction.atomic
 def ledgercreate(request):
 
@@ -1926,7 +1940,7 @@ def ledgercreate(request):
 
 
 
-@login_required(login_url='login')
+
 @transaction.atomic
 def ledgerupdate(request,pk):
     under_groups = AccountSubGroup.objects.all()
@@ -1985,7 +1999,7 @@ def ledgerupdate(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def ledgerlist(request):
     ledgers = Ledger.objects.select_related('under_group').all()
     return render(request, 'accounts/ledger_list.html', {'ledgers':ledgers,'page_name':'Ledger List'})
@@ -1993,7 +2007,7 @@ def ledgerlist(request):
 
 
 
-@login_required(login_url='login')
+
 def ledgerdelete(request, pk):
     try:
         Ledger_pk = get_object_or_404(Ledger ,pk=pk)
@@ -2006,7 +2020,7 @@ def ledgerdelete(request, pk):
 
 
 
-@login_required(login_url='login')
+
 def ledgerTypes_create_update(request,pk=None):
 
     ledger_types = ledgerTypes.objects.all()
@@ -2041,7 +2055,7 @@ def ledgerTypes_create_update(request,pk=None):
 
 
 
-@login_required(login_url='login')
+
 def ledgerTypes_delete(request,pk):
     type_instance = get_object_or_404(ledgerTypes,pk=pk)
     if type_instance:
@@ -2056,7 +2070,7 @@ def ledgerTypes_delete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def godowncreate(request):
     if request.method == 'POST':
        
@@ -2143,7 +2157,7 @@ def godowncreate(request):
 
 
     
-@login_required(login_url='login')
+
 def godownupdate(request,str,pk):
     if str == 'finished':
         godown_type = 'Finished Goods'
@@ -2194,7 +2208,7 @@ def godownupdate(request,str,pk):
 
 
 
-@login_required(login_url='login')
+
 def godownlist(request):
 
     godowns_raw = Godown_raw_material.objects.all()
@@ -2209,7 +2223,7 @@ def godownlist(request):
 
 
 
-@login_required(login_url='login')
+
 def godowndelete(request,str,pk):
     if str == 'finished':
         try:
@@ -2252,7 +2266,7 @@ def godowndelete(request,str,pk):
 
 
 
-@login_required(login_url='login')
+
 def stockTrasferRaw(request, pk=None):
     print(request.POST)
     godowns = Godown_raw_material.objects.all()
@@ -2404,7 +2418,7 @@ def stockTrasferRaw(request, pk=None):
 
 
 
-@login_required(login_url='login')
+
 def stockTrasferRawList(request):
 
     stocktrasferall = RawStockTransferMaster.objects.all().order_by('created_date')
@@ -2413,7 +2427,7 @@ def stockTrasferRawList(request):
 
 
 
-@login_required(login_url='login')
+
 def stockTrasferRawDelete(request,pk):
     stocktrasferinstance =  get_object_or_404(RawStockTransferMaster,pk = pk)
     stocktrasferinstance.delete()
@@ -2456,7 +2470,7 @@ def purchase_voucher_rm_with_po_ajax(request):
 
 
 
-@login_required(login_url='login')
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)  
 def purchasevouchercreateupdate(request, pk = None):
     
@@ -2588,7 +2602,7 @@ def purchasevouchercreateupdate(request, pk = None):
                     for form in items_formset:
                         
                         if form.is_valid():
-                            # *****************************
+                           
                             from_open_po = form.cleaned_data.get('from_open_po', None)
 
                             if from_open_po:
@@ -2867,17 +2881,13 @@ def purchasevoucherpopupupdate(popup_godown_data,shade_id,prefix_id,primarykey,o
                 
 
 
-@login_required(login_url='login')
+
 def purchasevoucherpopup(request,shade_id,prefix_id,unique_id=None,primarykey=None,item_rate=None):
     
     if item_rate != None:
         item_rate_value = decimal.Decimal(item_rate)
     else:
         item_rate_value = None
-    
-   
-    
-    
     
     
     if unique_id is not None:
@@ -2956,7 +2966,7 @@ def purchasevoucherpopup(request,shade_id,prefix_id,unique_id=None,primarykey=No
 
 
 
-@login_required(login_url='login')
+
 def purchasevouchercreategodownpopupurl(request):
     shade_id = request.GET.get('selected_shade')
     unique_id = request.GET.get('unique_invoice_row_id')
@@ -2988,7 +2998,7 @@ def purchasevouchercreategodownpopupurl(request):
 
 
 
-@login_required(login_url='login')
+
 def purchasevoucherlist(request):
     purchase_invoice_list = item_purchase_voucher_master.objects.all().order_by('created_date')
     return render(request,'accounts/purchase_invoice_list.html',{'purchase_invoice_list':purchase_invoice_list,'page_name':'Purchase List'})
@@ -2996,7 +3006,7 @@ def purchasevoucherlist(request):
 
 
 
-@login_required(login_url='login')
+
 def purchasevoucherdelete(request,pk):
     purchase_invoice_pk = get_object_or_404(item_purchase_voucher_master,pk=pk)
     purchase_invoice_pk.delete()
@@ -3011,7 +3021,7 @@ def purchasevoucherdelete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def salesvouchercreateupdate(request,s_id=None):
 
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
@@ -3201,7 +3211,7 @@ def sales_scan_product_dynamic_ajax(request):
 
 
 
-@login_required(login_url='login')
+
 def salesvoucherlist(request):
     sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
     return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
@@ -3213,7 +3223,7 @@ def salesvoucherlist(request):
 
 
 
-@login_required(login_url='login')
+
 def salesvoucherdelete(request,pk):
     sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
     if sales_instance:
@@ -3244,7 +3254,7 @@ def salesvoucherdelete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def gst_create_update(request, pk = None):
 
     queryset =  gst.objects.all()
@@ -3305,7 +3315,7 @@ def gst_create_update(request, pk = None):
 
 
 
-@login_required(login_url='login')
+
 def gst_delete(request,pk):
     gst_pk = gst.objects.get(pk=pk)
     gst_pk.delete()
@@ -3315,7 +3325,7 @@ def gst_delete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def fabric_finishes_create_update(request, pk = None):
     queryset =  FabricFinishes.objects.all()
 
@@ -3375,7 +3385,7 @@ def fabric_finishes_create_update(request, pk = None):
 
 
 
-@login_required(login_url='login')
+
 def fabric_finishes_delete(request,pk):
     fabric_finish =  FabricFinishes.objects.get(pk=pk)
     fabric_finish.delete()
@@ -3384,7 +3394,7 @@ def fabric_finishes_delete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def packaging_create_update(request, pk = None):
     
     queryset =  packaging.objects.all()
@@ -3443,7 +3453,7 @@ def packaging_create_update(request, pk = None):
 
 
 
-@login_required(login_url='login')
+
 def packaging_delete(request,pk):
     packaging_pk =  packaging.objects.get(pk=pk)
     packaging_pk.delete()
@@ -3459,7 +3469,7 @@ def packaging_delete(request,pk):
 
 
 
-# @login_required(login_url='login')
+# 
 # def product2item(request,product_refrence_id):
     
 #     try:
@@ -3708,7 +3718,7 @@ def packaging_delete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def product2item(request,product_refrence_id):
     
     try:
@@ -3966,7 +3976,7 @@ def product2item(request,product_refrence_id):
 
 
 
-@login_required(login_url='login')
+
 def export_Product2Item_excel(request,product_ref_id):
     
     try:
@@ -4121,7 +4131,7 @@ def export_Product2Item_excel(request,product_ref_id):
 
 
 
-@login_required(login_url='login')
+
 def viewproduct2items_configs(request, product_sku):
 
     try:
@@ -4149,7 +4159,7 @@ def viewproduct2items_configs(request, product_sku):
         return HttpResponseServerError(f'An unexpected error occurred: {e}')
     
 
-@login_required(login_url='login')
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def purchaseordercreateupdate(request,pk=None):
     
@@ -4268,14 +4278,14 @@ def purchaseordercreateupdate(request,pk=None):
 
 
 
-@login_required(login_url='login')
+
 def purchaseorderlist(request):
     purchase_orders = purchase_order.objects.all().select_related('ledger_party_name','product_reference_number').prefetch_related('raw_materials').order_by('created_date')
     return render(request,'production/purchaseorderlist.html',{'purchase_orders': purchase_orders,'page_name':'Order List'})
 
 
 
-@login_required(login_url='login')
+
 def purchaseorderdelete(request,pk):
 
     try:
@@ -5334,7 +5344,7 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
 
 
 
-@login_required(login_url='login')
+
 def purchase_order_for_raw_material_list(request):
     
     purchase_orders_pending = purchase_order.objects.annotate(raw_material_count=Count('raw_materials')).filter(raw_material_count__lt=1, purchase_order_to_product_saved=True).order_by('created_date')
@@ -5345,7 +5355,7 @@ def purchase_order_for_raw_material_list(request):
 
 
 
-@login_required(login_url='login')
+
 def purchase_order_for_raw_material_delete(request,pk):
 
     try:
@@ -5369,12 +5379,6 @@ def purchase_order_for_raw_material_delete(request,pk):
 
 
 
-
-
-
-
-
-@login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
 
@@ -5650,12 +5654,6 @@ def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
         else:
             
             
-            
-
-            
-            
-
-
             return render(request,'production/purchase_order_cutting.html',{'form':form,'labour_all':labour_all,'purchase_order_cutting_form':purchase_order_cutting_form,'p_o_pk':p_o_pk,
                                                                     'purchase_order_to_product_formset_form':purchase_order_to_product_formset_form,
                                                                      'purchase_order_for_raw_material_cutting_items_formset_form':purchase_order_for_raw_material_cutting_items_formset_form,'page_name':'Cutting Order View'})
@@ -5668,7 +5666,7 @@ def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
 
 
 
-@login_required(login_url='login')
+
 def purchaseordercuttinglistall(request):
 
     current_date = datetime.date.today
@@ -5720,7 +5718,7 @@ def purchaseordercuttinglistall(request):
 
 
 
-@login_required(login_url='login')
+
 def purchaseordercuttinglist(request,p_o_pk,prod_ref_no):
     p_o_cutting_order_all = purchase_order_raw_material_cutting.objects.filter(
         purchase_order_id = p_o_pk).select_related('purchase_order_id__ledger_party_name',
@@ -5732,7 +5730,7 @@ def purchaseordercuttinglist(request,p_o_pk,prod_ref_no):
 
 
 
-@login_required(login_url='login')
+
 def purchaseordercuttingapprovalcheckajax(request):
     print('in function')
     cutting_pk_no = request.GET.get('cutting_pk_no')
@@ -5781,7 +5779,7 @@ def purchaseordercuttingapprovalcheckajax(request):
 
 
 
-@login_required(login_url='login')
+
 def pendingapprovall(request):
     pending_approval_query = purchase_order_raw_material_cutting.objects.exclude(processed_qty = F('approved_qty')).order_by('created_date') 
     return render(request,'production/cuttingapprovallistall.html', {'pending_approval_query': pending_approval_query,'page_name':'Cutting Appr Pending List'})
@@ -5801,8 +5799,6 @@ def purchaseordercuttingpopup(request, cutting_id):
     formset = purchase_order_cutting_approval_formset(request.POST or None, instance = cutting_order_instance)
 
 
-
-
     if request.method == 'POST':
         if formset.is_valid():
             
@@ -5812,9 +5808,7 @@ def purchaseordercuttingpopup(request, cutting_id):
                 
                 raw_material_cutting_instance = purchase_order_raw_material_cutting.objects.get(raw_material_cutting_id=cutting_id)
 
-                
                 old_total_approved_qty_total = raw_material_cutting_instance.approved_qty
-
                 
                 labour_workout_master_instance = labour_workout_master.objects.create(purchase_order_cutting_master=raw_material_cutting_instance)
 
@@ -5858,7 +5852,7 @@ def purchaseordercuttingpopup(request, cutting_id):
 
 
 
-@login_required(login_url='login')
+
 def purchaseordercuttingmastercancelajax(request):
 
     if request.method == 'POST':
@@ -5932,7 +5926,7 @@ def purchaseordercuttingmastercancelajax(request):
         return JsonResponse({'status': 'Invalid request method.'}, status=405)
 
 
-@login_required(login_url='login')
+
 def labourworkoutlistall(request):
     labour_workout_pending = labour_workout_master.objects.all().annotate(total_processed_qty = Sum('labour_workout_childs__total_process_pcs')).filter(total_pending_pcs__gt=0).order_by('created_date')
     
@@ -5949,7 +5943,7 @@ def labourworkoutlistall(request):
 
 
 
-@login_required(login_url='login')
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def labourworkoutsingle(request, labour_workout_child_pk=None, pk=None):
 
@@ -6188,7 +6182,7 @@ def labourworkoutsingle(request, labour_workout_child_pk=None, pk=None):
 
 
 
-@login_required(login_url='login')
+
 def labour_workout_child_list(request, labour_master_pk):
     labour_work_out_master = labour_workout_master.objects.get(id=labour_master_pk)
     labour_workout_child_instances = labour_workout_childs.objects.filter(labour_workout_master_instance = labour_master_pk).order_by('created_date')
@@ -6201,7 +6195,7 @@ def labour_workout_child_list(request, labour_master_pk):
 
 
 
-@login_required(login_url='login')
+
 def labourworkoutsingledeleteajax(request):
     
     if request.method == 'POST':
@@ -6275,7 +6269,7 @@ def labourworkoutsingledeleteajax(request):
 
 
 
-@login_required(login_url='login')
+
 def cuttingroomqty(request):
     cutting_room_items = purchase_order_for_raw_material_cutting_items.objects.filter(total_comsumption_in_cutting__gt=0)
 
@@ -6284,7 +6278,7 @@ def cuttingroomqty(request):
 
 
 
-@login_required(login_url='login')
+
 def labourworkincreatelist(request,l_w_o_id):
 
     labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
@@ -6302,12 +6296,10 @@ def labourworkincreatelist(request,l_w_o_id):
 
 
 
-
-
-@login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
     
+    print(l_w_o_id)
     template_name = 'production/labourworkincreate.html'
     
     labour_workin_all = None
@@ -6395,9 +6387,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                         'total_balance_pcs' : labour_workout_child_instance.labour_workin_pending_pcs,
                         }
 
-                    print('master_initial_data = ',master_initial_data)
-
-
                     product_to_item_l_w_in_instance = product_to_item_labour_child_workout.objects.filter(labour_workout=labour_workout_child_instance)
  
                     formset_initial_data = []
@@ -6417,7 +6406,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                         formset_initial_data.append(initial_data_dict)
                 
-
                 return JsonResponse({'vendor_name_dict':vendor_name_dict,
                                      'labour_workout_instance_dict':labour_workout_instance_dict,
                                      'master_initial_data':master_initial_data,
@@ -6529,15 +6517,20 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                     parent_form.labour_voucher_number = labour_workout_child_instance
 
-                    finalReceivedQty =  int(request.POST.get('finalReceivedQty') or 0)
+                    if l_w_o_id is None:
+                        diffrence_qty = parent_form.total_return_pcs
 
-                    finalReturnQty = int(request.POST.get('finalReturnQty') or 0)
-
-                    diffrence_qty = finalReturnQty - finalReceivedQty 
+                    else:
+                        finalReceivedQty =  int(request.POST.get('finalReceivedQty'))
+                        finalReturnQty = int(request.POST.get('finalReturnQty'))
+                        diffrence_qty = finalReturnQty - finalReceivedQty 
+                        
                     labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + diffrence_qty
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
                     labour_workout_child_instance.save()
                     parent_form.save()
+
+                    
 
                     for form in product_to_item_formset:
 
@@ -6568,7 +6561,8 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
 
                 else:
-                    
+                    print(master_form.errors)
+                    print(product_to_item_formset.errors)
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
                     
                 
@@ -6590,7 +6584,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
 
 
-@login_required(login_url='login')
+
 def labourworkinlistall(request):
 
     current_date = datetime.date.today
@@ -6661,7 +6655,7 @@ def labourworkinlistall(request):
 
 
 
-@login_required(login_url='login')
+
 def labourworkinpurchaseorderlist(request ,p_o_no):
     purchase_order_instance = purchase_order.objects.get(id = p_o_no)
 
@@ -6686,7 +6680,7 @@ def labourworkinpurchaseorderlist(request ,p_o_no):
 
 
 
-@login_required(login_url='login')
+
 def labourworkinsingledeleteajax(request):
     
     if request.method == 'POST':
@@ -6734,7 +6728,7 @@ def labourworkinsingledeleteajax(request):
         return JsonResponse({'status': 'Invalid request method.'}, status=405)
 
 
-@login_required(login_url='login')
+
 def goods_return_pending_list(request):
     current_date = datetime.date.today
     labour_workin_instances = labour_work_in_master.objects.annotate(total_approved_pcs=Sum('l_w_in_products__approved_qty'),pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval')).filter(pending_for_approval_pcs__gt=0)
@@ -6743,7 +6737,7 @@ def goods_return_pending_list(request):
 
 
 
-@login_required(login_url='login')
+
 def goods_return_popup(request,pk):
 
     if pk:
@@ -9396,7 +9390,7 @@ def raw_material_estimation_calculate_excel_download(request):
 
 
 
-@login_required(login_url='login')
+
 def factory_employee_create_update_list(request ,pk=None):
 
     if request.path == '/factory_emp_create/':
@@ -9432,7 +9426,7 @@ def factory_employee_create_update_list(request ,pk=None):
 
 
 
-@login_required(login_url='login')
+
 def salesman_create_update(request,e_id=None):
     salesman_list = Salesman_info.objects.all()
 
@@ -9456,7 +9450,7 @@ def salesman_create_update(request,e_id=None):
 
 
 
-@login_required(login_url='login')
+
 def delete_salesman(request,e_id):
     try:
         instance = get_object_or_404(Salesman_info,pk=e_id)
@@ -9469,7 +9463,7 @@ def delete_salesman(request,e_id):
 
 
 
-@login_required(login_url='login')
+
 def factoryempdelete(request,pk=None): 
     try:
         instance = get_object_or_404(factory_employee,pk=pk)
@@ -9481,7 +9475,7 @@ def factoryempdelete(request,pk=None):
     return redirect('factory-emp-create')
 
 
-@login_required(login_url='login')
+
 def cutting_room_create_update_list(request, pk=None):
     if request.path == '/cutting_room_create/':
         page_name = "Create Cutting Room"
@@ -9512,7 +9506,7 @@ def cutting_room_create_update_list(request, pk=None):
 
 
 
-@login_required(login_url='login')
+
 def cuttingroomdelete(request,pk):
     instance = cutting_room.objects.get(pk=pk)
     instance.delete()
@@ -9521,7 +9515,7 @@ def cuttingroomdelete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def product_purchase_voucher_create_update(request, pk=None):
 
     products = PProduct_Creation.objects.all()
@@ -9660,7 +9654,7 @@ def product_purchase_voucher_create_update(request, pk=None):
 
 
 
-@login_required(login_url='login')
+
 def product_purchase_voucher_list(request):
 
     product_purchase_voucher_all = product_purchase_voucher_master.objects.all().annotate(check_diff_qty = Sum('product_purchase_voucher_items__qc_recieved_qty'),total_qty = Sum('product_purchase_voucher_items__quantity_total')).order_by('created_date')
@@ -9670,7 +9664,7 @@ def product_purchase_voucher_list(request):
 
 
 
-@login_required(login_url='login')
+
 def product_purchase_voucher_delete(request,pk):
     if pk:
         product_purchase_voucher_instance = get_object_or_404(product_purchase_voucher_master,pk=pk)
@@ -9681,7 +9675,7 @@ def product_purchase_voucher_delete(request,pk):
 
 
 
-@login_required(login_url='login')
+
 def warehouse_product_transfer_create_and_update(request,pk=None):
     
     products = PProduct_Creation.objects.all()
@@ -9848,7 +9842,7 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 
 
 
-@login_required(login_url='login')
+
 def product_transfer_to_warehouse_list(request):
 
     warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('created_date')
@@ -9861,7 +9855,7 @@ def product_transfer_to_warehouse_list(request):
 
 
 
-@login_required(login_url='login')
+
 def product_transfer_to_warehouse_delete(request):
     id = request.POST.get('ProductId')
     
@@ -10139,7 +10133,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
 
 
-@login_required(login_url='login')
+
 def delete_sigle_entries(request, e_id, voucher_type):
     try:
         delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
@@ -10169,7 +10163,7 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 
 
-@login_required(login_url='login')
+
 def scan_product_qty_list(request):
 
     product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name').values('id','product_purchase_master__ledger_type','product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image','quantity_total','qc_recieved_qty','diffrence_qty','created_date')
@@ -10187,7 +10181,7 @@ def scan_product_qty_list(request):
 
 
 from django.utils import timezone
-@login_required(login_url='login')
+
 def scan_product_list(request,pk,v_type):
 
     instance_entries_all = []
@@ -10266,7 +10260,7 @@ def scan_product_list(request,pk,v_type):
 
 
 
-@login_required(login_url='login')
+
 def warehouse_stock(request):
 
     purchase_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
@@ -10335,7 +10329,7 @@ def warehouse_stock(request):
 
 
 
-@login_required(login_url='login')
+
 def scan_single_product_list(request,sku):
     instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values(
         'related_purchase_item__product_purchase_master__purchase_number' or None,
@@ -10364,7 +10358,7 @@ def scan_single_product_list(request,sku):
 
 
 
-@login_required(login_url='login')
+
 def model_name_wise_purchase_transfer_sales_report(request,sku):
     purchase_instance = product_purchase_voucher_items.objects.filter(product_name__PProduct_SKU = sku)
 
@@ -10452,7 +10446,7 @@ def model_name_wise_purchase_transfer_sales_report(request,sku):
 
 
 
-@login_required(login_url='login')
+
 def product_wise_sales_report(request,sku):
     sales_voucher_queryset = sales_voucher_outward_scan.objects.filter(product_name = sku).select_related(
         'sales_voucher_master'
@@ -10474,7 +10468,7 @@ def product_wise_sales_report(request,sku):
 
 
 
-@login_required(login_url='login')
+
 def product_wise_sales_return_report(request,sku):
     sales_voucher_queryset = sales_return_voucher.objects.filter(product_name = sku).select_related(
         'sales_return_master'
@@ -10765,8 +10759,6 @@ def delete_bin_in_rack(request,bin_id):
     bin = get_object_or_404(finished_product_warehouse_bin,id=bin_id)
     bin.delete()
     return redirect('add-bin-in-rack', rack_id = rack_id.id)
-
-
 
 
 
@@ -12965,7 +12957,7 @@ def excel_download_for_purchase_order(request,p_id):
 
 
 
-@login_required(login_url='login')
+
 def itemdynamicsearchajax(request):
     
     try:
@@ -13017,7 +13009,7 @@ def itemdynamicsearchajax(request):
 
 
 
-@login_required(login_url='login')
+
 def productdynamicsearchajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
@@ -13171,7 +13163,7 @@ def UniqueValidCheckAjax(request):
 
 
 
-@login_required(login_url='login')
+
 def session_data_test(request):
         
     session_data = request.session
@@ -13254,7 +13246,7 @@ def product_2_item_ajax(request):
 
 
 
-@login_required(login_url='login')
+
 def creditdebitreport(request):
     all_reports = account_credit_debit_master_table.objects.all()
 
@@ -13265,7 +13257,7 @@ def creditdebitreport(request):
 
 
 
-@login_required(login_url='login')
+
 def godown_stock_raw_material_report_fab_grp(request,g_id,fab_id=None):
     
     
@@ -13358,7 +13350,7 @@ def godown_stock_raw_material_report_fab_grp(request,g_id,fab_id=None):
 
 
 
-@login_required(login_url='login')
+
 def godown_item_report(request, shade_id,g_id=None):
 
     """
@@ -13625,7 +13617,7 @@ def godown_item_report(request, shade_id,g_id=None):
 
 
 
-@login_required(login_url='login')
+
 def allrawmaterialstockreport(request):
     queryset = item_color_shade.objects.all().annotate(total_qty = Sum(
         'godown_shades__quantity')).order_by('items__item_name').prefetch_related(
@@ -13638,7 +13630,7 @@ def allrawmaterialstockreport(request):
 
 
 
-@login_required(login_url='login')
+
 def allfinishedgoodsstockreport(request,action=None):
 
     if action == 'All_Record':
@@ -13685,7 +13677,7 @@ def allfinishedgoodsstockreport(request,action=None):
 
 
 
-@login_required(login_url='login')
+
 def qc_approved_model_wise_report(request,ref_id):
     
     if ref_id:
@@ -13763,7 +13755,7 @@ def qc_approved_model_wise_report(request,ref_id):
 
 
 
-@login_required(login_url='login')
+
 def raw_material_excel_download(request):
 
     wb = Workbook()
@@ -13790,7 +13782,7 @@ def raw_material_excel_download(request):
 
 
 
-@login_required(login_url='login')
+
 def raw_material_excel_upload(request):
     
     if request.method == "POST":
@@ -13924,7 +13916,7 @@ def raw_material_excel_upload(request):
         
 
 
-@login_required(login_url='login')
+
 def finished_goods_model_wise_report(request,ref_id):
     
     if ref_id:
@@ -13958,7 +13950,7 @@ def finished_goods_model_wise_report(request,ref_id):
     return render(request, 'reports/finishedgoodsmodelwisereport.html',{'data_list':initial_sorted_data , 'product_instance':product_instance})
 
 
-@login_required(login_url='login')
+
 def lwo_and_lwi_report_vendor_wise(request):
 
     vendor_name = request.POST.get("vendor_name")
@@ -13999,7 +13991,7 @@ def lwo_and_lwi_report_vendor_wise(request):
 
 
 
-@login_required(login_url='login')
+
 def finished_goods_sorting_list(request):
     
     finished_goods_purchase_voucher_instances = product_purchase_voucher_master.objects.all().annotate(
@@ -14028,7 +14020,7 @@ def finished_goods_sorting_list(request):
 
 
 
-@login_required(login_url='login')
+
 def warehouse_navigator(request):
     warehouses = Finished_goods_warehouse.objects.prefetch_related('warehouses__zones__racks').all()
     return render(request,'finished_product/warehouse_navigator.html',{'warehouses':warehouses})
@@ -14041,7 +14033,7 @@ def warehouse_navigator(request):
 
 
 
-@login_required(login_url='login')
+
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
@@ -14181,7 +14173,7 @@ def picklist_product_ajax(request):
 
 
 
-@login_required(login_url='login')
+
 def bin_quantity_ajax(request):
     logger.info('Temp bin quantity function called using sessions')
 
@@ -14244,7 +14236,7 @@ def bin_quantity_ajax(request):
         return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
 
 
-@login_required(login_url='login')
+
 def create_update_picklist(request, p_id=None):
     
     if 'temp_bins' in request.session:
@@ -14330,7 +14322,7 @@ def create_update_picklist(request, p_id=None):
 
 
 
-@login_required(login_url='login')
+
 def delete_form_quantity_revert(request):
     """
     Handles reverting bin quantity when a product is deleted from the picklist.
@@ -14376,7 +14368,7 @@ def delete_form_quantity_revert(request):
 
 
 
-@login_required(login_url='login')
+
 def deletepicklist(request,pl_id):
     picklist = Picklist_voucher_master.objects.get(pk=pl_id)
 
@@ -14394,7 +14386,7 @@ def deletepicklist(request,pl_id):
 
 
 
-@login_required(login_url='login')
+
 def all_picklists_list(request):
     all_picklists = Picklist_voucher_master.objects.all().annotate(scanned_qty=Sum("picklist_process_in_outward__balance_qty")).order_by('created_date')
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
@@ -14402,7 +14394,7 @@ def all_picklists_list(request):
 
 
 
-@login_required(login_url='login')
+
 def picklist_view(request,pl_id):
     picklist_number=get_object_or_404(Picklist_voucher_master,pk=pl_id)
     picklist_data = Picklist_products_list.objects.filter(picklist_master_instance=pl_id)
@@ -14411,7 +14403,7 @@ def picklist_view(request,pl_id):
 
 
 
-@login_required(login_url='login')
+
 def download_picklist_pdf(request,pl_id):
  # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14455,7 +14447,7 @@ def download_picklist_pdf(request,pl_id):
 
 
 
-@login_required(login_url='login')
+
 def download_picklist_excel(request,pl_id):
     # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14505,7 +14497,7 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
-@login_required(login_url='login')
+
 def outward_picklist_no_ajax(request):
 
     picklistNo = request.GET.get('picklistNo')
@@ -14556,7 +14548,7 @@ def outward_picklist_no_ajax(request):
         return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
 
 
-@login_required(login_url='login')
+
 def outward_scan_serial_no_process(request):
     print("in scan def")
     try:
@@ -14609,7 +14601,7 @@ def decimal_to_float(obj):
 
 
 from urllib.parse import urlencode
-@login_required(login_url='login')
+
 def outward_scan_product_create(request,o_id=None):
     
     if o_id:
@@ -14840,7 +14832,7 @@ def outward_scan_product_create(request,o_id=None):
     return render(request,'finished_product/outward_scan_product_create.html',{'master_form':master_form,'formset': formset, 'picklist_formset':picklist_formset ,'dict_to_send':dict_to_send})
 
 
-@login_required(login_url='login')
+
 def outward_scan_product_list(request):
 
     sale_qty_subqeury = sales_voucher_master_outward_scan.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_sale_qty=Sum('sales_voucher_outward_scan__quantity')).values('total_sale_qty')
@@ -14857,7 +14849,7 @@ def outward_scan_product_list(request):
     return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
 
 
-@login_required(login_url='login')
+
 def sales_voucher_create_update_for_warehouse(request, s_id=None):
     print("in sale")
     party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
@@ -15066,7 +15058,7 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
     })
 
 
-@login_required(login_url='login')
+
 def salesvoucherlistwarehouse(request):
 
     if 'products_data' in request.session:
@@ -15120,7 +15112,7 @@ def salesvoucherlistwarehouse(request):
     return render(request,'accounts/sales_list_warehouse.html',{'final_list':final_list})
 
 
-@login_required(login_url='login')
+
 def sales_voucher_view_sort_with_salesman(request,id):
 
     sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(salesman__id = id).select_related(
@@ -15156,7 +15148,7 @@ def sales_voucher_view_sort_with_salesman(request,id):
     return render(request,'accounts/sales_voucher_view_sort_with_salesman.html',{'final_list':final_list,})
 
 
-@login_required(login_url='login')
+
 def sales_voucher_view_sort_with_partyname(request,id):
 
     sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(party_name__id = id).select_related(
@@ -15192,7 +15184,7 @@ def sales_voucher_view_sort_with_partyname(request,id):
 
 
 
-@login_required(login_url='login')
+
 def ref_no_search_ajax(request):
     try:
         ref_no_typed = request.GET.get('productnamevalue')
@@ -15225,7 +15217,7 @@ def ref_no_search_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-@login_required(login_url='login')
+
 def party_name_search_ajax(request):
     try:
         party_name_typed = request.GET.get('productnamevalue')
@@ -15257,7 +15249,7 @@ def party_name_search_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-@login_required(login_url='login')
+
 def otward_data_for_sale_return_ajax(request):
     try:
         sale_no = request.GET.get('saleNo')
@@ -15304,7 +15296,7 @@ def otward_data_for_sale_return_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-@login_required(login_url='login')
+
 def process_serial_no_for_return_sales_ajax(request):
     try:
         serial_no = request.GET.get('serialNo')
@@ -15377,7 +15369,7 @@ def process_serial_no_for_return_sales_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-@login_required(login_url='login')
+
 def return_product_with_bin_ajax(request):
     try:
         product_sku = request.GET.get('productSku')
@@ -15421,7 +15413,7 @@ def return_product_with_bin_ajax(request):
 
 
 
-@login_required(login_url='login')
+
 def sales_return_inward_to_bin(request, r_id=None):
 
     
@@ -15574,7 +15566,7 @@ def sales_return_inward_to_bin(request, r_id=None):
 
 
 
-@login_required(login_url='login')
+
 def sales_return_voucher_create_update(request,s_id=None, sr_id=None, sv_id=None, action=None):
 
     master_form_data = get_object_or_404(sales_return_inward, id=sr_id)
@@ -15756,7 +15748,7 @@ def sales_return_voucher_create_update(request,s_id=None, sr_id=None, sv_id=None
 
 
 
-@login_required(login_url='login')
+
 def sale_return_list(request):
 
     total_sale_qty_subquery = sales_voucher_outward_scan.objects.filter(sales_voucher_master=OuterRef('sales_voucher_master')).values('sales_voucher_master').annotate(total_sale_qty=Sum('quantity')).values('total_sale_qty')
@@ -15770,13 +15762,13 @@ def sale_return_list(request):
 
 
 
-@login_required(login_url='login')
+
 def delivery_challan_product_ajax(request):
     pass
 
 
 
-@login_required(login_url='login')
+
 def delivery_challan_create_update(request, d_id=None):
 
     if d_id:
@@ -15831,7 +15823,7 @@ def delivery_challan_create_update(request, d_id=None):
 
 
 
-@login_required(login_url='login')
+
 def delivery_challan_list(request):
     delivary_challan_list = DeliveryChallanMaster.objects.all()
     return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list})

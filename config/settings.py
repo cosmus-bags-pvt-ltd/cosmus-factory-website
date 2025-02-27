@@ -31,6 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1']
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -77,6 +78,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_htmx.middleware.HtmxMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',  # for serving static file in production mode in django server
+    # 'core.middleware.PermissionMiddleware', # custom middleware for authenntication
+    'core.middleware.LoginRequiredMiddleware',
 ]
 
 
@@ -194,5 +197,3 @@ DATE_FORMAT = 'd-m-Y'
 LOGGING_CONFIG = None
 import logging.config
 logging.config.dictConfig(LOGGING)
-
-
