@@ -2,7 +2,7 @@
 {% load static %}
 {% block body %}
 
-<form method="post">
+<form method="POST">
     {% csrf_token %}
 
     <div class="mt-3">
@@ -42,6 +42,7 @@
                     </tr>
                 </thead>
                 <tbody class="mainTableList">
+
                     {{ formset.management_form }}
                     {% for form in formset %}
                     {{form.id}}
@@ -88,7 +89,7 @@
                 <label for="id_driver_name" class="me-1">Driver name :</label>
                 <input type="text" class="item-selects me-3" name="driver_name" maxlength="100" required id="id_driver_name">
                 <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
-                <input type="date" class="item-selects me-3" name="dispatch_time" required id="id_dispatch_time">
+                <input type="time" class="item-selects me-3" name="dispatch_time" required id="id_dispatch_time">
             </div>
             <div class="mb-2">
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
@@ -96,7 +97,8 @@
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
                 <label for="id_remark" class="me-1">Remark :</label>
-                <input type="text" class="productpurchaseInvoice ps-2" name="remark" id="id_remark" value="{{form.instance.narration |default_if_none:''}}">
+                <textarea  placeholder="id_remark.." name="remark" class="border-1 rounded-1" cols="50" rows="2" required id="id_remark"></textarea>
+                
             </div>
             
         </div>
@@ -248,11 +250,11 @@
                     const productRef = selectedValue[2]
                     var newNameValue = namevalueCheck + '                             '+ productQty;
             
-                    $(`input[name="delivery_challan_products-${purchaseValue}-products"]`).val(newNameValue);
-                    $(`input[name="delivery_challan_products-${purchaseValue}-quantity"]`).focus();
-                    $(`input[name="delivery_challan_products-${purchaseValue}-product_name"]`).val(item_value)
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
-                    $(`input[name="delivery_challan_products-${purchaseValue}-product_RefNo"]`).val(productRef);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
                 }
             
                 suggestionsContainer.css('display', 'none');
@@ -367,11 +369,11 @@
                 const productRef = selectedValue[2]
                 var newNameValue = namevalueCheck + '                             '+ productQty;
         
-                    $(`input[name="delivery_challan_products-${purchaseValue}-products"]`).val(newNameValue);
-                    $(`input[name="delivery_challan_products-${purchaseValue}-quantity"]`).focus();
-                    $(`input[name="delivery_challan_products-${purchaseValue}-product_name"]`).val(item_value)
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
-                    $(`input[name="delivery_challan_products-${purchaseValue}-product_RefNo"]`).val(productRef);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
 
                     
                 }
@@ -410,7 +412,7 @@
                     }
                 });
                 if (lastVisibleRow) {
-                    const newForm = document.getElementById('id_delivery_challan_products-TOTAL_FORMS');
+                    const newForm = document.getElementById('id_deliverychallanproducts_set-TOTAL_FORMS');
                     
                     for(let i = 0; i<addInputRow; i++){
                         const newFormCount = parseInt(newForm.value);
@@ -425,20 +427,20 @@
                     newId.name = `rowNo_${newFormCount}`;
                     newId.value = newFormCount + 1;
 
-                    const productReferenceElement = newTable.querySelector('input[name^="delivery_challan_products-"][name$="-product_RefNo"]');
-                    productReferenceElement.id = `id_delivery_challan_products-${newFormCount}-product_RefNo`;
-                    productReferenceElement.name = `delivery_challan_products-${newFormCount}-product_RefNo`;
+                    const productReferenceElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-product_RefNo"]');
+                    productReferenceElement.id = `id_deliverychallanproducts_set-${newFormCount}-product_RefNo`;
+                    productReferenceElement.name = `deliverychallanproducts_set-${newFormCount}-product_RefNo`;
                     productReferenceElement.value = "";
                     productReferenceElement.style.outline ="none";
 
-                    const productNameElement = newTable.querySelector('input[name^="delivery_challan_products-"][name$="-products"]');
-                    productNameElement.id = `id_delivery_challan_products-${newFormCount}-products`;
-                    productNameElement.name = `delivery_challan_products-${newFormCount}-products`;
+                    const productNameElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-products"]');
+                    productNameElement.id = `id_deliverychallanproducts_set-${newFormCount}-products`;
+                    productNameElement.name = `deliverychallanproducts_set-${newFormCount}-products`;
                     productNameElement.value = "";
 
-                    const itemNameElement = newTable.querySelector('input[name^="delivery_challan_products-"][name$="-product_name"]');
-                    itemNameElement.id = `id_delivery_challan_products-${newFormCount}-product_name`;
-                    itemNameElement.name = `delivery_challan_products-${newFormCount}-product_name`;
+                    const itemNameElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-product_name"]');
+                    itemNameElement.id = `id_deliverychallanproducts_set-${newFormCount}-product_name`;
+                    itemNameElement.name = `deliverychallanproducts_set-${newFormCount}-product_name`;
                     itemNameElement.value = "";
                     itemNameElement.style.readonly =false;
 
@@ -453,15 +455,15 @@
                     itemColorElement.name = `stock_color_${newFormCount}`;
                     itemColorElement.value = "";
 
-                    const itemQuantityElement = newTable.querySelector('input[name^="delivery_challan_products-"][name$="-quantity"]');
-                    itemQuantityElement.id = `id_delivery_challan_products-${newFormCount}-quantity`;
-                    itemQuantityElement.name = `delivery_challan_products-${newFormCount}-quantity`;
+                    const itemQuantityElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-quantity"]');
+                    itemQuantityElement.id = `id_deliverychallanproducts_set-${newFormCount}-quantity`;
+                    itemQuantityElement.name = `deliverychallanproducts_set-${newFormCount}-quantity`;
                     itemQuantityElement.value = "";
 
 
-                    const deleteElement = newTable.querySelector('.stock_deleteId[name^="delivery_challan_products-"][name$="-DELETE"]');
-                    deleteElement.id = `id_delivery_challan_products-${newFormCount}-DELETE`;
-                    deleteElement.name = `delivery_challan_products-${newFormCount}-DELETE`;
+                    const deleteElement = newTable.querySelector('.stock_deleteId[name^="deliverychallanproducts_set-"][name$="-DELETE"]');
+                    deleteElement.id = `id_deliverychallanproducts_set-${newFormCount}-DELETE`;
+                    deleteElement.name = `deliverychallanproducts_set-${newFormCount}-DELETE`;
                     deleteElement.value = "";
                     deleteElement.checked = false;
 
@@ -497,7 +499,7 @@
 
                     if (row) {
                         // Find the checkbox for deletion in the row
-                        const checkRow = row.querySelector('.stock_deleteId[name^="delivery_challan_products-"][name$="-DELETE"]');
+                        const checkRow = row.querySelector('.stock_deleteId[name^="deliverychallanproducts_set-"][name$="-DELETE"]');
 
                         if (checkRow) {
                             checkRow.checked = true; // Mark as checked
