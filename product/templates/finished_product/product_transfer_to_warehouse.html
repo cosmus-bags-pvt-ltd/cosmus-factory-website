@@ -103,7 +103,7 @@
                           <input  type="text" value="{{form.instance.product.Product.Product_UOM}}" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-amount stock_units" readonly>
                       </td>
                       <td>
-                          <span class="delete-btn border-0 bg-transparent" style="cursor: pointer; display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-transnfer_cancelled_records" id="id_{{form.prefix}}-transnfer_cancelled_records" value="" readonly></i></span>
+                          <span class="delete-btn border-0 bg-transparent" style="cursor: pointer; display: none;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
                       </td>
                   </tr>
                   {% else %}
@@ -132,8 +132,9 @@
                     <td>
                         <input type="text" value="{{form.instance.product.Product.Product_UOM}}" name='stock_per_{{forloop.counter0}}' id="id_stock_per_{{forloop.counter0}}" class="purchase-mark" style="outline: none;" readonly>
                     </td>
+                    
                     <td>
-                        <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-transnfer_cancelled_records" id="id_{{form.prefix}}-transnfer_cancelled_records" value="{{ form.instance.transnfer_cancelled_records }}"></i></span>
+                        <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="{{ form.instance.DELETE }}"></i></span>
                     </td>
                     
                 </tr>
@@ -159,7 +160,7 @@
       <button type="submit" id="submitButtonStockTransfer" class="create-btn mt-4" name="save" value="Save">Submit</button>
       {% endif %}
     </form>
-  
+    
   <script>
      $(document).ready(function(){
         $('#id_voucher_no').focus()
@@ -285,9 +286,9 @@
                       itemPerElement.name = `stock_per_${newFormCount}`;
                       itemPerElement.value = "";
   
-                      const deleteElement = newTable.querySelector('.stock_deleteId[name^="finished_goods_transfer_records_set-"][name$="-transnfer_cancelled_records"]');
-                      deleteElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-transnfer_cancelled_records`;
-                      deleteElement.name = `finished_goods_transfer_records_set-${newFormCount}-transnfer_cancelled_records`;
+                      const deleteElement = newTable.querySelector('.stock_deleteId[name^="finished_goods_transfer_records_set-"][name$="-DELETE"]');
+                      deleteElement.id = `id_finished_goods_transfer_records_set-${newFormCount}-DELETE`;
+                      deleteElement.name = `finished_goods_transfer_records_set-${newFormCount}-DELETE`;
                       deleteElement.value = "";
                       deleteElement.checked = false;
   
@@ -323,7 +324,7 @@
 
                     if (row) {
                         // Find the checkbox for deletion in the row
-                        const checkRow = row.querySelector('.stock_deleteId[name^="finished_goods_transfer_records_set-"][name$="-transnfer_cancelled_records"]');
+                        const checkRow = row.querySelector('.stock_deleteId[name^="finished_goods_transfer_records_set-"][name$="-DELETE"]');
 
                         if (checkRow) {
                             checkRow.checked = true; // Mark as checked
@@ -354,7 +355,7 @@
             var stockId = document.getElementById('id_finished_goods_transfer_records_set-' + i +'-ids').value;
             var stockItemName = document.getElementById('id_finished_goods_transfer_records_set-'+ i+'-products');
             var stockQty = document.getElementById('id_finished_goods_transfer_records_set-'+i+'-product_quantity_transfer');
-            var deleteButton = document.getElementById('id_finished_goods_transfer_records_set-'+ i +'-transnfer_cancelled_records').value;
+            var deleteButton = document.getElementById('id_finished_goods_transfer_records_set-'+ i +'-DELETE').value;
             var addButton = document.getElementById('addRowButton');
             var submitBtn = document.getElementById('submitButtonStockTransfer')
            
@@ -369,15 +370,7 @@
                 stockItemName.readOnly = false;
                 stockQty.readOnly = false;
             }
-            var deleteBtn = document.querySelectorAll('.delete-btn')
-            deleteBtn.forEach(function(button){
-                var deleteCheck = button.querySelector('[id$="-transnfer_cancelled_records"]').value;
-                if(deleteCheck === "true"){
-                    button.style.display = "none";
-                }else{
-                      button.style.display = "block";
-                }
-            })
+           
         }
       
     }
