@@ -14,7 +14,7 @@
   <a href="{% url 'purchase-order-cutting-list-all' %}" class="bg-c-blue border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Cutting Order</a> ->
   <a href="{% url 'labour-workout-all' %}" class="bg-c-green border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour Workout</a> ->
   <a href="{% url 'labour-workin-list-all' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour WorkIn</a> ->
-  <a href="{% url 'delivery-challan-list' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Delivery Challan</a>
+  <a href="{% url 'delivery-challan-list' %}" class="bg-c-voilet border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Delivery Challan</a>
 
 </div>
 
@@ -44,7 +44,7 @@
                 <th>Target Date</th>
                 <th class="text-success">Total P.O Qty</th>
                 <th class="text-danger">Balance Qty</th>
-                <th>Edit</th>
+                <th>View</th>
                 <th>Delete</th>
             </tr>
         </thead>
@@ -60,7 +60,7 @@
                 <td>{{po.target_date}}</td>
                 <td class="text-center text-success">{{po.number_of_pieces}}</td>
                 <td class="text-center text-danger">{{po.balance_number_of_pieces}}</td>
-                <td><a href="{% url 'purchase-order-update' po.id %}" class="border-0 bg-transparent" ><i class="fa-solid fa-pen-to-square px-2"></i></a></td>
+                <td><a href="{% url 'purchase-order-update' po.id %}" class="border-0 bg-transparent" ><i class="fa-solid fa-eye px-2"></i></a></td>
                 <td><button class="border-0 bg-transparent deletes-btn" data-item-id="{{po.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></i></button></td> 
                   <input type="hidden" value="{{po.raw_materials.exists}}" class="purchaseOderDelete">
              

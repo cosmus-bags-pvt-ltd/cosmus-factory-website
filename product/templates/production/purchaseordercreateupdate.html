@@ -205,24 +205,26 @@
        
         $("#productTable tbody").on('focus','input', function() {
                 // Find the closest row to the input being edited
-
-                var row = $(this).closest('tr');
-                console.log('row',row)
-                var qty = parseInt(row.find('input[name$="-order_quantity"]').val());
-                if(qty=== 0){
-                    row.find('input[name$="-order_quantity"]').val('');
-                }else if(qty >= 0){
-                    row.find('input[name$="-order_quantity"]').val(qty);
-                }
+            var row = $(this).closest('tr');
+            console.log('row',row)
+            var qty = parseInt(row.find('input[name$="-order_quantity"]').val());
+            if(qty=== 0){
+                row.find('input[name$="-order_quantity"]').val('');
+            }else if(qty >= 0){
+                row.find('input[name$="-order_quantity"]').val(qty);
+            }
                
-            });
+        });
              $(document).on('focusout','input[name$="-order_quantity"]',function(){
                 
                 var value = $(this).val();
+                console.log('value',value,typeof(value))
                 if(value){
-                    if (value === '' || parseFloat(value) <= 0 || isNaN(value)) {
-                    $(this).val('0'); // Set to 0 if empty or invalid
+                    if (value === '' ) {
+                        console.log('test')
+                        $(this).val('0'); // Set to 0 if empty or invalid
                     } else {
+                        console.log('test2222')
                         $(this).val(value); // Retain the entered value if valid
                     }  
                 }
@@ -403,16 +405,16 @@
                    
                 }else {
                     // If it's the last input, focus the submit button
-                    submitButton.focus();
+                    //submitButton.focus();
                 }
             }
         });
     });
-    submitButton.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            form.submit(); // Trigger form submission
-        }
-    });
+    // submitButton.addEventListener("keydown", function (event) {
+    //     if (event.key === "Enter") {
+    //         form.submit(); // Trigger form submission
+    //     }
+    // });
     }
     inputCheck()
 

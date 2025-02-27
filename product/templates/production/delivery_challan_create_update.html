@@ -2,152 +2,561 @@
 {% load static %}
 {% block body %}
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
-        margin: 20px;
-        padding: 20px;
-    }
-
-    form {
-        max-width: 800px;
-        margin: auto;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    fieldset {
-        border: 1px solid #ddd;
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        background: #fff;
-    }
-
-    legend {
-        font-size: 18px;
-        font-weight: bold;
-        color: #333;
-        padding: 0 10px;
-    }
-
-    .formset-item {
-        border: 1px solid #ccc;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        background: #f1f1f1;
-        position: relative;
-    }
-
-    .remove-form {
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 3px;
-        cursor: pointer;
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        font-size: 12px;
-    }
-
-    .remove-form:hover {
-        background: #c82333;
-    }
-
-    #add-form {
-        background: #28a745;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 3px;
-        cursor: pointer;
-        display: block;
-        margin: 10px auto;
-        font-size: 14px;
-    }
-
-    #add-form:hover {
-        background: #218838;
-    }
-
-    button[type="submit"] {
-        background: #007bff;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 14px;
-        display: block;
-        width: 100%;
-    }
-
-    button[type="submit"]:hover {
-        background: #0056b3;
-    }
-
-</style>
-
-<form method="post">
+<form method="POST">
     {% csrf_token %}
-    
-    <fieldset>
-        <legend>Challan Details</legend>
-        {{ master_form.as_p }}
-    </fieldset>
 
-    <fieldset>
-        <legend>Products</legend>
-        {{ formset.management_form }}
-        <div id="formset-container">
-            {% for form in formset %}
-                <div class="formset-item">
-                    {{ form.as_p }}
-                    <button type="button" class="remove-form">Remove</button>
+    <div class="mt-3">
+        <div class="mb-2 d-flex">
+            <div class="d-flex">
+                <label for="id_delivery_challan_no" class="me-1">Challan no :</label>
+                <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no">
+            </div>
+            <div class="ms-2" >
+                <div class="mb-1">
+                    <label for="id_party_name" class="me-1">Party name :</label>
+                    <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
+                        <option value="" selected disabled>select party name</option>
+                        {% if master_form.instance.id %}
+                        <option value="{{ name.id }}">{{ name.name }}</option>
+                        {% elif not master_form.instance.id %}
+                        {% for name in party_names %}
+                          <option value="{{ name.id }}">{{ name.name }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
                 </div>
-            {% endfor %}
+                
+                <div class="">
+                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1" cols="40" rows="2" id="id_party_address" readonly></textarea>
+                </div>
+               
+            </div>
+
+            
+            
+            <label for="id_shipping_address" class="me-1">Shipping address :</label>
+            <div>
+                <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 ps-1" cols="50" rows="2" required id="id_shipping_address"></textarea>
+                
+            </div>
+        </div>
+        <div>
+            <table class="table table-striped table-hover table-bordered" id="deliveryChallanTable">
+                <thead class="name_absolute sticky-top">
+                    <tr>
+                        <th>No</th>
+                        <th>Ref No</th>
+                        <th>Model Name</th>
+                        <th>Color</th>
+                        <th>SKU</th>
+                        <th>Qty</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="mainTableList">
+
+                    {{ formset.management_form }}
+                    {% for form in formset %}
+                    {{form.id}}
+                    <tr>
+                        <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}" readonly></td>
+                        <td><input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly></td>
+                        <td>
+                            <div class="custom-dropdown-container">
+                                
+                                <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value=""> 
+                                <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice stock_input_name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
+    
+                                </div>
+                            </div> 
+                         
+                        </td>
+                        <td>
+                            <input type="text" value="" name="stock_color_{{forloop.counter0}}" id="id_stock_color_{{forloop.counter0}}" class="purchase-amount stock_color" readonly style="outline: none;">
+                        </td>
+                        <td><input type="number" class="purchase-amount stock_color" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="" style="outline: none;" readonly> </td>
+                        <td>
+                            <input type="text" value="" class="purchase-amount stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity">
+                        </td>
+                        <td>
+                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                </tbody>
+                <tr>
+                    <td colspan="5">Total :</td>
+                    <td><input type="text" value="" class="purchase-amount stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
+                </tr>
+            </table>
+            <input  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
+            <button type="button" class="create-btn" id="addRowButton">Add +</button>
         </div>
 
-        <button type="button" id="add-form">+ Add Product</button>
-    </fieldset>
+        <div class="mb-2">
+            <div class="mb-2">
+                <label for="id_vehicle_no" class="me-1">Vehicle no :</label>
+                <input type="text" class="item-selects me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no">
+                <label for="id_driver_name" class="me-1">Driver name :</label>
+                <input type="text" class="item-selects me-3" name="driver_name" maxlength="100" required id="id_driver_name">
+                <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
+                <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time">
+            </div>
+            <div class="mb-2">
+                <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
+                <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes">
+                <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
+                <input type="number" class="me-1 purchase-mark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
+                <label for="id_remark" class="me-1">Remark :</label>
+                <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark">
+            </div>
+            
+        </div>
 
-    <button type="submit">Save</button>
+        </div>
+
+    <button type="submit" id="submitButtonStockTransfer" class="create-btn mt-4" name="save" value="Save">Submit</button>
 </form>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        let formsetContainer = document.getElementById("formset-container");
-        let addButton = document.getElementById("add-form");
-        let totalForms = document.querySelector("#id_delivery_challan_products-TOTAL_FORMS");
+    $(document).ready(function () {
+        var searchedItemNameDict;
+        var enterPressed = false;
+        var itemName;
+        var purchaseValue;
+   
+        
+        $(document).on('change','#id_party_name',function(){
+            var partyName = $(this).val();
+            console.log('partyName',partyName)
+            $.ajax({
+                url:"/deliverychallancreate/",
+                method: 'GET',
+                data: {
+                    'partyName': partyName,
+                    
+                },
+                success: function (response) {
+                    console.log(response.address)
+                    $('#id_party_address').val(response.address)
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
 
-        let emptyFormTemplate = `
-            <div class="formset-item">
-                {{ formset.empty_form.as_p|escapejs }}
-                <button type="button" class="remove-form">Remove</button>
-            </div>`;
 
-        addButton.addEventListener("click", function() {
-            let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, totalForms.value);
-            let newFormElement = document.createElement("div");
-            newFormElement.innerHTML = newFormHtml;
-            formsetContainer.appendChild(newFormElement);
+            })
+        })
+    
+        $(document).on('click input keyup focus keydown', 'input[name$="-products"]', function () {
+            itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
+            purchaseValue = itemName.split('-')[1];
+                    
+        });
+
+        $(document).on('input', 'input[name$="-products"]', function(e) {
+            var StockValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
+            var nameValue = $(this).val().trim();
+            var selectNameValue = `select_product_name_${StockValue}`;
+            var suggestionsContainer = $(`#${selectNameValue}`);
             
-            totalForms.value = parseInt(totalForms.value) + 1;
-        });
-
-        formsetContainer.addEventListener("click", function(event) {
-            if (event.target.classList.contains("remove-form")) {
-                event.target.closest(".formset-item").remove();
-                totalForms.value = parseInt(totalForms.value) - 1;
+            if (nameValue === 'None' || nameValue === '') {
+            suggestionsContainer.css('display', 'none').empty();
+                $(this).attr('data-key', '');
+                return;
             }
-        });
+            if(!enterPressed){
+                suggestionsContainer.css('display', 'block');
+            }
+            enterPressed = false;
+            
+            function escapeRegExp(string) {
+                return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
+            }
+            $.ajax({
+                url:"/deliverychallanproductajax/",
+                method: 'GET',
+                data: {
+                    'nameValue': nameValue,
+                },
+                success: function (response) {
+                    // console.log(response.products);
+                    searchedProductNameDic = response.products; 
+                    console.log('searchedProductNameDic',searchedProductNameDic)
+                    const searchQuery = nameValue.toLowerCase();
+                    const searchTerms = searchQuery.split(/\s+/);
+                    const convertStringData = searchTerms.toString();
+                
+                    const escapedTerms = searchTerms.map(escapeRegExp);
+
+                    const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+
+                    const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
+
+                    const filteredOptions = Object.entries(searchedProductNameDic).filter(
+                    ([key, value]) => {
+                        const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
+                        const normalizedProductName = normalizeSpaces(value[1].toString().toLowerCase());
+                        const normalizedColor = normalizeSpaces(value[0].toString().toLowerCase());
+                    
+                        const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
+
+                        return normalizedKey.includes(normalizedQuery) ||
+                            normalizedProductName.includes(normalizedQuery) ||
+                            normalizedColor.includes(normalizedQuery);
+                    });
+
+                    suggestionsContainer.empty();
+                    // Generate suggestions for matching options
+                    filteredOptions.forEach(([key, value], index) => {
+                        // Extract relevant fields
+                        const productName = value[1]; // Product name
+                        const productSKU = key; // SKU
+                        const productColor = value[0];
+                        const productQty = value[4];
+
+                        // Highlight matches in name, SKU, and color
+                        const highlightedText = productName.replace(regex, '<span class="highlight">$1</span>');
+                        const highlightedSKU = productSKU.replace(regex, '<span class="highlight">$1</span>');
+                        const highlightedColor = productColor.replace(regex, '<span class="highlight">$1</span>');
+                        // const highlightedQty = productQty.replace(regex, '<span class="highlight">$1</span>');
+
+                        // Add the suggestion to the container
+                        suggestionsContainer.append(`
+                            <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
+                                ${highlightedText}<span style="padding-left:20px">${highlightedColor}</span> <span style="float:right">${productQty}</span>
+                            </div>
+                        `);
+                        
+                    });
+                    if(filteredOptions == ''){
+                        suggestionsContainer.show();
+                        suggestionsContainer.empty();
+                        suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+                    }
+                },
+                error: function (error) {   
+                    console.log(error);
+                }
+
+
+            })
+            
+                
+            suggestionsContainer.on('click', '.itemName-div', function(e) {
+                var item_value = $(this).data('key');
+                var itemNamevaluesCheck = $(this).text().trim();
+                
+                // $(this).closest('.custom-dropdown-container').find('.search-input').val(newNameValue);
+                
+                $(this).addClass('selected').siblings().removeClass('selected');
+
+                if (item_value !== undefined) {
+                    var selectedValue = searchedProductNameDic[item_value];
+                    console.log('selectedValue',selectedValue)
+                    var namevalueCheck = selectedValue[1];
+                    const productQty = selectedValue[4];
+                    const productColor = selectedValue[0];
+                    const productRef = selectedValue[2]
+                    var newNameValue = namevalueCheck + '                             '+ productQty;
+            
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
+                    $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
+                }
+            
+                suggestionsContainer.css('display', 'none');
+                
+            })
+
+        })
+        
+    
+        var index = 0; // Declare index outside of the event listener
+        var indexbool = true;
+
+        $(document).on('keydown', 'input[name$="-products"]', function(event) {
+            const $inputField = $(this);
+            const $dropdownOptions = $inputField.next('.stock_input_name');
+            const $options = $dropdownOptions.find('.itemName-div');
+            const optionsCount = $options.length - 1;
+            const searchText = $inputField.val().trim();
+            const hiddenValue = $inputField.closest('.custom-dropdown-container').find(`#select_product_name_${purchaseValue}`);
+            if (searchText === '') {
+                index = 0;
+                return;
+            }
+            const newHeight = $inputField.offset();
+            const windowHeight = $(window).height();
+            const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
+    
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+
+                if (index <= optionsCount) {
+                
+                    const $selectedItem = $options.eq(index);
+                    const $nextItem = $selectedItem.next();
+                    const nameDataKey = $selectedItem.text();
+                    const nameKey = $selectedItem.data('key');
+
+                    $inputField.attr('data-key', nameKey);
+                
+                    $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                    const itemOffsetTop = $nextItem.position().top;
+                    const itemHeight = $nextItem.outerHeight();
+                    const selectScrollTop = $dropdownOptions.scrollTop();
+                    const selectHeight = $dropdownOptions.height();
+
+                    if (itemOffsetTop + itemHeight > selectHeight) {
+                        $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                    } else if (itemOffsetTop < 0) {
+                        $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                    }
+                    $selectedItem.addClass('selected');
+                    if (index !== optionsCount) {
+                        index += 1;
+                        indexbool = true;
+                    }
+                } else {
+                    index = 0;
+                }
+            }
+
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+
+                if (index != 0 && indexbool == true) {
+                    index -= 1;
+                }
+
+                if (index <= optionsCount) {
+                
+                    const $selectedItem = $options.eq(index);
+                    const $prevItem = $selectedItem.prev();
+                    const nameDataKey = $selectedItem.text();
+                    const nameKey = $selectedItem.data('key');
+
+                    $inputField.attr('data-key', nameKey);
+                    
+                    $selectedItem.addClass('bg-highlight').siblings().removeClass('bg-highlight');
+                    
+                    const itemOffsetTop = $prevItem.position().top;
+                    const itemHeight = $prevItem.outerHeight();
+                    const selectScrollTop = $dropdownOptions.scrollTop();
+                    const selectHeight = $dropdownOptions.height();
+
+                    if (itemOffsetTop < 0) {
+                        $dropdownOptions.scrollTop(selectScrollTop - itemHeight);
+                    } else if (itemOffsetTop + itemHeight > selectHeight) {
+                        $dropdownOptions.scrollTop(selectScrollTop + itemHeight);
+                    }
+
+                    $selectedItem.addClass('selected');
+                } else {
+                    index = 0;
+                }
+            }
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const itemEnterValue = $(this);
+                const item_value = itemEnterValue.attr('data-key');
+
+                nameDataKey = '';
+                nameKey = '';
+                index = 0;
+                indexbool = false;
+                if (item_value !== undefined) {
+                var selectedValue = searchedProductNameDic[item_value];
+                
+                var namevalueCheck = selectedValue[1];
+                const productQty = selectedValue[4];
+                const productColor = selectedValue[0];
+                const productRef = selectedValue[2]
+                var newNameValue = namevalueCheck + '                             '+ productQty;
+        
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
+                    $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
+                    $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
+
+                    
+                }
+
+
+                enterPressed = true;
+                hiddenValue.css("display" ,"none");
+                $inputField.blur();
+            }
+            if (event.key === 'Tab' && enterPressed) {
+            enterPressed = false; // Reset Enter key handling
+            return true; // Allow default Tab behavior
+            }
+        })
+    
+    })
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+  
+        const addRowButton = document.getElementById('addRowButton');
+        const mainTable = document.querySelector('.mainTableList');
+
+        if (addRowButton && mainTable) {
+            addRowButton.addEventListener('click', function () {
+                let addInputRow = parseInt(document.getElementById('id_productRow').value, 10);
+
+                if (isNaN(addInputRow) || addInputRow <= 0) {
+                    addInputRow = 1;
+                    return;
+                }
+                let lastVisibleRow = null;
+                mainTable.querySelectorAll('tr').forEach(row => {
+                    if (window.getComputedStyle(row).display !== 'none') {
+                        lastVisibleRow = row;
+                    }
+                });
+                if (lastVisibleRow) {
+                    const newForm = document.getElementById('id_deliverychallanproducts_set-TOTAL_FORMS');
+                    
+                    for(let i = 0; i<addInputRow; i++){
+                        const newFormCount = parseInt(newForm.value);
+                    const newTable = lastVisibleRow.cloneNode(true);
+                    console.log('newFormCount',newFormCount)
+                    newTable.querySelectorAll("input select").forEach(function (e) {
+                        e.value = "";
+                    });
+
+                    const newId = newTable.querySelector('input[name^="rowNo_"]');
+                    newId.id = `id_rowNo_${newFormCount}`;
+                    newId.name = `rowNo_${newFormCount}`;
+                    newId.value = newFormCount + 1;
+
+                    const productReferenceElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-product_RefNo"]');
+                    productReferenceElement.id = `id_deliverychallanproducts_set-${newFormCount}-product_RefNo`;
+                    productReferenceElement.name = `deliverychallanproducts_set-${newFormCount}-product_RefNo`;
+                    productReferenceElement.value = "";
+                    productReferenceElement.style.outline ="none";
+
+                    const productNameElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-products"]');
+                    productNameElement.id = `id_deliverychallanproducts_set-${newFormCount}-products`;
+                    productNameElement.name = `deliverychallanproducts_set-${newFormCount}-products`;
+                    productNameElement.value = "";
+
+                    const itemNameElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-product_name"]');
+                    itemNameElement.id = `id_deliverychallanproducts_set-${newFormCount}-product_name`;
+                    itemNameElement.name = `deliverychallanproducts_set-${newFormCount}-product_name`;
+                    itemNameElement.value = "";
+                    itemNameElement.style.readonly =false;
+
+                    const selectElement = newTable.querySelector('.stock_input_name[name^="select_product_name_"]');
+                    selectElement.id = `select_product_name_${newFormCount}`;
+                    selectElement.name = `select_product_name_${newFormCount}`;
+                    selectElement.innerHTML = '';
+
+
+                    const itemColorElement = newTable.querySelector('input[name^="stock_color_"]');
+                    itemColorElement.id = `id_stock_color_${newFormCount}`;
+                    itemColorElement.name = `stock_color_${newFormCount}`;
+                    itemColorElement.value = "";
+
+                    const itemQuantityElement = newTable.querySelector('input[name^="deliverychallanproducts_set-"][name$="-quantity"]');
+                    itemQuantityElement.id = `id_deliverychallanproducts_set-${newFormCount}-quantity`;
+                    itemQuantityElement.name = `deliverychallanproducts_set-${newFormCount}-quantity`;
+                    itemQuantityElement.value = "";
+
+
+                    const deleteElement = newTable.querySelector('.stock_deleteId[name^="deliverychallanproducts_set-"][name$="-DELETE"]');
+                    deleteElement.id = `id_deliverychallanproducts_set-${newFormCount}-DELETE`;
+                    deleteElement.name = `deliverychallanproducts_set-${newFormCount}-DELETE`;
+                    deleteElement.value = "";
+                    deleteElement.checked = false;
+
+                    newForm.value = newFormCount + 1;
+
+                    mainTable.appendChild(newTable);
+                    }
+                    document.getElementById('id_productRow').value = '1';
+                        deleteRow();
+                        
+                        // inputCheck();
+                    
+                } else {
+                    console.error("No visible rows found to clone.");
+                }
+            });
+        }
+        function getVisibleRows() {
+            // Select all rows that are not hidden (excluding those with display: none)
+            const visibleRows = document.querySelectorAll('.mainTableList tr:not([style*="display: none"])');
+            return visibleRows;
+        }
+
+        function deleteRow() {
+            // Add click event listener to all delete buttons
+            document.querySelectorAll('.delete-btn').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    // Find the row containing the clicked delete button
+                    const rows = getVisibleRows();
+                    if (rows.length > 1) {
+                            // Find the row containing the clicked delete button
+                    const row = this.closest('tr');
+
+                    if (row) {
+                        // Find the checkbox for deletion in the row
+                        const checkRow = row.querySelector('.stock_deleteId[name^="deliverychallanproducts_set-"][name$="-DELETE"]');
+
+                        if (checkRow) {
+                            checkRow.checked = true; // Mark as checked
+                            checkRow.value = 'true'; // Set the value to 'true'
+
+                            row.style.display = 'none';
+                        
+                        } else {
+                            console.error("Checkbox for deletion not found in this row");
+                        }
+                    }
+                } else {
+                    // If only one row remains, alert the user
+                    alert('Cannot delete this row; at least one row must remain.');
+                }   
+                });
+            });
+        };
+    deleteRow();
+
+    function calculateTotal() {
+        var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
+        .filter(row => row.style.display !== 'none');
+
+        var value = 0;
+    
+    tables.forEach(function(row) {
+        var inputField = row.querySelector('[name$="-quantity"]');
+        if (inputField) {
+            var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
+            value += qty;
+        }
     });
+
+    document.getElementById('id_total-quantity').value = value;
+    document.getElementById('id_no_of_pcs').value = value;
+}
+
+// Event delegation for dynamically added rows
+document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
+    if (event.target.matches('[name$="-quantity"]')) {
+        calculateTotal();
+    }
+});
+
+});
 </script>
 
 {% endblock body %}

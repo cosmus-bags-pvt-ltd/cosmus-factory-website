@@ -1421,7 +1421,7 @@ class DeliveryChallanMaster(models.Model):
 
 
 class DeliveryChallanProducts(models.Model):
-    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE,related_name="delivery_challan_products")
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
     quantity = models.PositiveIntegerField()
     created_date = models.DateTimeField(auto_now_add=True)

@@ -94,8 +94,9 @@
                 <tr>
                   <th>Date</th>
                   <th>Approved By</th>
-                  <th>Approved QTY</th>
-                  <th>Balance QTY LWO</th>
+                  <th class="text-primary">Appr QTY</th>
+                  <th class="text-success">LWO QTY</th>
+                  <th class="text-danger">Bal QTY = <span id="tBalQty"></span> LWO</th>
                 </tr>
               </thead>
               <tbody class="mainTableList" >
@@ -104,9 +105,9 @@
               <tbody class="mainTableList" id="totalApproved">
                 <tr>
                   <td colspan="2" class="fw-bold">Total</td>
-                
-                  <td><span class="fw-bold" id="tApprovedQty">0</span></td>
-                  <td><span class="fw-bold" id="tBalanceQty">0</span></td>
+                  <td class="text-center"><span class="fw-bold text-primary" id="tApprovedQty">0</span></td>
+                  <td class="text-center"><span class="fw-bold text-success" id="tLwoQty">0</span></td>
+                  <td class="text-center"><span class="fw-bold text-danger" id="tBalanceQty">0</span></td>
                 </tr>
               </tbody>
             </table>
@@ -326,11 +327,13 @@ function approvedQty(button) {
   function cuttingPkValue(button){
     var TotalApprove = 0;
     var totalBalance = 0;
+    var TotalLwo = 0;
     var title = button.getAttribute('data-id');
     var Qty = document.getElementById('tQty');
     Qty.textContent = title
     var cuttingoderId = $(button).closest('tr').find('td').eq(2).text();
     var newTable = document.querySelector('#approvalDataLogs tbody'); 
+  
     document.getElementById('cuttingVNo').textContent = cuttingoderId; 
     $.ajax({
       type: "GET",
@@ -344,13 +347,14 @@ function approvedQty(button) {
   
          
           newTable.innerHTML = ''; // Clear previous table rows
-     
+          // tables.innerHTML = '';
           
           allApproveLogs.forEach(function(items, index) {
             console.log(items)
               var approveDate = new Date(items.Approved_Date).toLocaleDateString(); // Format the date
               var approveName = items.Approved_Name || 'N/A';  // Default if undefined
               var approveQty = items.Approved_Qty || 0;        // Default to 0 if undefined
+              var actualLwo = items.total_processed_qty || 0;
               var balanceQty = items.pending_Qty || 0;        // Default to 0 if undefined
               var row = document.createElement('tr'); // Create a new row
              
@@ -363,28 +367,45 @@ function approvedQty(button) {
 
               var cell3 = document.createElement('td');
               cell3.textContent = approveQty;
-              
+              cell3.style.textAlign  = 'center';
+              cell3.style.color = "rgb(13,110,253)";
+
               var cell4 = document.createElement('td');
-              cell4.textContent = balanceQty;
+              cell4.style.textAlign  = 'center'
+              cell4.textContent = actualLwo;
+              cell4.style.color = 'green';
+
+              var cell5 = document.createElement('td');
+              cell5.style.textAlign  = 'center'
+              cell5.textContent = balanceQty;
+              cell5.style.color = 'red';
 
               // Append cells to the row
               row.appendChild(cell1);
               row.appendChild(cell2);
               row.appendChild(cell3);
               row.appendChild(cell4);
+              row.appendChild(cell5);
 
               TotalApprove += approveQty;
+              TotalLwo += actualLwo;
               totalBalance += balanceQty;
               // Append the row to the table
               newTable.appendChild(row);
           });
           document.getElementById('tApprovedQty').textContent = TotalApprove;
+          document.getElementById('tLwoQty').textContent = TotalLwo;
           document.getElementById('tBalanceQty').textContent = totalBalance;
+          document.getElementById('tBalQty').textContent = totalBalance;
       },
       error: function(xhr, status, error) {
         console.error("Error occurred: " + error);
         console.error(status);
         newTable.innerHTML = '';
+        $('#tApprovedQty').text('0');
+        $('#tLwoQty').text('0');
+        $('#tBalanceQty').text('0');
+        $('#tBalQty').text('0');
         $('#modal-body-text').html('An error occurred. Please try again.');
       }
     })

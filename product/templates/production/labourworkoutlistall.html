@@ -13,7 +13,7 @@
     <a href="{% url 'labour-workout-all' %}" class="bg-c-green border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour Workout</a> ->
     {% endif %}
     <a href="{% url 'labour-workin-list-all' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Labour WorkIn</a> ->
-    <a href="{% url 'delivery-challan-list' %}" class="bg-c-purple border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Delivery Challan</a>
+    <a href="{% url 'delivery-challan-list' %}" class="bg-c-voilet border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block">Delivery Challan</a>
 </div>
 <!-- <h2 class="mb-3">Labour Workout List</h2> -->
 <div class="mt-2">
@@ -45,7 +45,7 @@
                         <tr>
                             <td>{{forloop.counter}}</td>
                             <td class="text-nowrap">{{record.created_date}}</td>
-                            <td>{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</td>
+                            <td><a href="{% url 'purchase-order-update' record.purchase_order_cutting_master.purchase_order_id.id %}">{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
                             <td>{{record.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</td>
                             <td class="text-center"><a href="{% url 'edit_production_product' record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a></td>
                             <td class="text-nowrap">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name}}</td>
@@ -111,7 +111,7 @@
                             <tr>
                                 <td>{{forloop.counter}}</td>
                                 <td class="text-nowrap">{{record.created_date}}</td>
-                                <td>{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</td>
+                                <td><a href="{% url 'purchase-order-update' record.purchase_order_cutting_master.purchase_order_id.id %}">{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
                                 <td>{{record.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</td>
                                 <td class="text-center"><a href="{% url 'edit_production_product' record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a></td>
                                 <td class="text-nowrap">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name}}</td>
@@ -171,7 +171,8 @@
             <td class="text-center"><a href="{% url 'edit_production_product' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;"> {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}} </a> </td>
             <td>{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name}}</td>
             <td>{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</td>
-            <td class="text-center">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</td>
+            <td class="text-center"><a href="{% url 'purchase-order-update' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.id %}">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
+
             <td class="text-center">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces}}</td>
             <td>Entry By</td>
             <td><a href="{% url 'labour-workout-single-view' instance.id %}"><i class="fa-solid fa-eye px-2"></i></a></td>
@@ -203,8 +204,9 @@
                 <tr>
                   <th>Date</th>
                   <th>Name</th>
-                  <th>Approved QTY</th>
-                  <th>Balance QTY LWO</th>
+                  <th class="text-primary">Appr QTY</th>
+                  <th class="text-success">LWO QTY</th>
+                  <th class="text-danger">Bal QTY = <span id="tBalQty"></span> LWO</th>
                 </tr>
               </thead>
               <tbody class="mainTableList" >
@@ -213,9 +215,9 @@
               <tbody class="mainTableList" id="totalApproved">
                 <tr>
                   <td colspan="2" class="fw-bold">Total</td>
-                
-                  <td><span class="fw-bold" id="tApprovedQty">0</span></td>
-                  <td><span class="fw-bold" id="tBalanceQty">0</span></td>
+                  <td class="text-center"><span class="fw-bold text-primary" id="tApprovedQty">0</span></td>
+                  <td class="text-center"><span class="fw-bold text-success" id="tLwoQty">0</span></td>
+                  <td class="text-center"><span class="fw-bold text-danger" id="tBalanceQty">0</span></td>
                 </tr>
               </tbody>
             </table>
@@ -266,6 +268,7 @@
     var Qty = document.getElementById('tQty');
     var TotalApprove = 0;
     var totalBalance = 0;
+    var TotalLwo = 0;
     Qty.textContent = title
     var cuttingoderId = $(button).closest('tr').find('.cuttingValueId').text();
 
@@ -284,8 +287,9 @@
           newTable.innerHTML = ''; // Clear previous table rows 
           allApproveLogs.forEach(function(items, index) {
               var approveDate = new Date(items.Approved_Date).toLocaleDateString(); // Format the date
-              var approveName = items.Approved_Name || 'N/A';  // Default if undefined
-              var approveQty = items.Approved_Qty || 0;        // Default to 0 if undefined
+              var approveName = items.Approved_Name || 'N/A';  
+              var approveQty = items.Approved_Qty || 0; 
+              var actualLwo = items.total_processed_qty || 0;       
               var balanceQty = items.pending_Qty || 0;  
 
               var row = document.createElement('tr'); // Create a new row
@@ -299,28 +303,45 @@
 
               var cell3 = document.createElement('td');
               cell3.textContent = approveQty;
+              cell3.style.textAlign  = 'center';
+              cell3.style.color = "rgb(13,110,253)";
 
               var cell4 = document.createElement('td');
-              cell4.textContent = balanceQty;
+              cell4.style.textAlign  = 'center'
+              cell4.textContent = actualLwo;
+              cell4.style.color = 'green';
+
+              var cell5 = document.createElement('td');
+              cell5.style.textAlign  = 'center'
+              cell5.textContent = balanceQty;
+              cell5.style.color = 'red';
 
               // Append cells to the row
               row.appendChild(cell1);
               row.appendChild(cell2);
               row.appendChild(cell3);
               row.appendChild(cell4);
+              row.appendChild(cell5);
 
               TotalApprove += approveQty;
+              TotalLwo += actualLwo;
               totalBalance += balanceQty;
               // Append the row to the table
               newTable.appendChild(row);
           });
           document.getElementById('tApprovedQty').textContent = TotalApprove;
+          document.getElementById('tLwoQty').textContent = TotalLwo;
           document.getElementById('tBalanceQty').textContent = totalBalance;
+          document.getElementById('tBalQty').textContent = totalBalance;
       },
       error: function(xhr, status, error) {
         console.error("Error occurred: " + error);
         console.error(status);
-        newTable.innerHTML = ''; 
+        newTable.innerHTML = '';
+        $('#tApprovedQty').text('0');
+        $('#tLwoQty').text('0');
+        $('#tBalanceQty').text('0');
+        $('#tBalQty').text('0'); 
         $('#modal-body-text').html('An error occurred. Please try again.');
       }
     })

@@ -255,12 +255,34 @@
 <script>
 
 $(document).ready(function () {
-    $('#id_pickList_no').focus();
+    // $('#id_pickList_no').focus();
    $('#modalSubmitButton').on('click',function(){
         $('#outwardScanForm').submit();
    })
+    
+});
 
-// Event listener for when the picklist number is entered
+// image priview on click on image 
+document.body.appendChild(document.getElementById('staticBackdrop'));
+document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+     let modal = document.getElementById("customModal");
+     let modalImg = document.getElementById("modalImg");
+
+     modalImg.src = src;
+     modal.style.display = "flex";
+     modal.style.width = '100%'
+     // Clicking anywhere outside the image will close the modal
+     modal.onclick = function() {
+         modal.style.display = "none";
+     };
+ }
+</script>
+<script>
+
+$(document).ready(function () {
+    let debounceTimeout;
+    // Event listener for when the picklist number is entered
     $('#id_pickList_no').on('blur', function () { 
         var picklistNo = parseInt($(this).val(), 10);
         var picklistTable = $('#picklistTable .mainTableList tr');
@@ -345,20 +367,7 @@ $(document).ready(function () {
         row.find('.pickBalance').val('');
     };
 
-    // onclick picklistqty modal will open and change the sku type qty with balance
-    $(document).on('click', 'input.outwardPick-btn', function () {
-        var productTable = $('#picklistProductTable .mainTableList');
-        productTable.empty();
-        var productKey = $(this).closest('tr').find('.pickId').val()?.trim();
-        var storedData = $('#picklistHiddenData').val();
-        var updateValue = $('#picklistupdateData').val();
-
-        if (updateValue) {
-            var latestUpdate = updateValue.replace(/'/g, '"');
-            latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
-        }
-
-        function safeParseJSON(jsonString) {
+    function safeParseJSON(jsonString) {
             try {
                 if (!jsonString || jsonString.trim().toLowerCase() === "none") return {};
                 return JSON.parse(jsonString);
@@ -366,6 +375,30 @@ $(document).ready(function () {
                 console.error("Invalid JSON format:", jsonString, error);
                 return {};
             }
+        }
+    // onclick picklistqty modal will open and change the sku type qty with balance
+  function processOutwardPicking () {
+        var productTable = $('#picklistProductTable .mainTableList');
+        productTable.empty();
+
+       
+        var checkedRadio = $('.picklistRadio:checked');
+
+        if (checkedRadio.length === 0) {
+            console.warn("No picklist selected.");
+            $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
+            return;
+        }
+        var selectedRow = checkedRadio.closest('tr'); 
+        var productKey = selectedRow.find('.pickId').val()?.trim()
+
+
+        var storedData = $('#picklistHiddenData').val();
+        var updateValue = $('#picklistupdateData').val();
+
+        if (updateValue) {
+            var latestUpdate = updateValue.replace(/'/g, '"');
+            latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
         }
 
         var parsedData = safeParseJSON(storedData);
@@ -443,7 +476,10 @@ $(document).ready(function () {
         });
         
 
-    });
+    };
+    $(document).on('click', 'input.outwardPick-btn', function () {
+        processOutwardPicking()
+    })
 
 
     function addpickListRow() {
@@ -505,29 +541,6 @@ $(document).ready(function () {
         tableBody.appendChild(lastRow);
     }
 
-    
-});
-
-// image priview on click on image 
-document.body.appendChild(document.getElementById('staticBackdrop'));
-document.body.appendChild(document.getElementById('customModal'));
-    function showLargeImage(src) {
-     let modal = document.getElementById("customModal");
-     let modalImg = document.getElementById("modalImg");
-
-     modalImg.src = src;
-     modal.style.display = "flex";
-     modal.style.width = '100%'
-     // Clicking anywhere outside the image will close the modal
-     modal.onclick = function() {
-         modal.style.display = "none";
-     };
- }
-</script>
-<script>
-
-$(document).ready(function () {
-    let debounceTimeout;
 
     $('#inwordSerialNo').on('input', function () {
         clearTimeout(debounceTimeout);
@@ -608,11 +621,10 @@ $(document).ready(function () {
         row.find('[name$="-outward_picklist_no"]').val(productResponse[9]);
 
         picklistQtyCheck();
-        totalValueCalculate()
-     
-       
+        totalValueCalculate();
+         processOutwardPicking()
     }
-
+ 
     function picklistQtyCheck() {
         var checkedRadio = $('.picklistRadio:checked');
 
@@ -629,15 +641,7 @@ $(document).ready(function () {
             var latestUpdate = updateData.replace(/'/g, '"');
             latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');
         }
-        function safeParseJSON(jsonString) {
-            try {
-                if (!jsonString || jsonString.trim().toLowerCase() === "none") return {}; // ✅ Convert 'None' to {}
-                return JSON.parse(jsonString);
-            } catch (error) {
-                console.error("Invalid JSON format:", jsonString, error);
-                return {}; 
-            }
-        }
+      
 
 
         var parsedUpdateData = safeParseJSON(latestUpdate);
@@ -705,14 +709,12 @@ $(document).ready(function () {
         }
       
         selectedRow.find('.pickBalance').val(pickBal);
+   
     }
 
    
     async function sendSerialNumber(serialNo) {
-    
         var checkedRadio = $('.picklistRadio:checked');
-       
-
         if (checkedRadio.length === 0) {
             console.warn("No picklist selected.");
             $('#responseMessage').html('<span class="text-danger">Please select a picklist before scanning.</span>');
@@ -754,15 +756,6 @@ $(document).ready(function () {
                 latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');
             }
 
-            function safeParseJSON(jsonString) {
-                try {
-                    if (!jsonString || jsonString.trim().toLowerCase() === "none") return {}; 
-                    return JSON.parse(jsonString);
-                } catch (error) {
-                    console.error("Invalid JSON format:", jsonString, error);
-                    return {}; 
-                }
-            }
 
             var parsedData = safeParseJSON(storedData);
             var updateData = safeParseJSON(latestUpdate);
@@ -983,6 +976,8 @@ $(document).ready(function () {
         
     }
 
+ 
+
     function getVisibleRows() {
         return document.querySelectorAll('#outwardSales .mainTableList tr:not([style*="display: none"])');;
     }
@@ -1010,12 +1005,13 @@ $(document).ready(function () {
                                 $('#responseMessage').html('<span class="text-danger">Please select a picklist before calculating.</span>');
                                 return;
                             }
+                            
                             if (checkRow) {
                                 checkRow.checked = true; 
                                 checkRow.value = 'true'; 
                                 row.style.display = 'none';
                                 
-                        
+                                $('#responseMessage').html('')
                                 var selectedRow = checkedRadio.closest('tr'); 
                                 var pickNo = parseInt(selectedRow.find('.pickId').val().trim(), 10);
                                 var pickQty = parseInt(selectedRow.find('.pickQty').val().trim(), 10) || 0; 
@@ -1031,7 +1027,7 @@ $(document).ready(function () {
                             }
                         }
                     }else{
-                        alert('This Serial No Already use in Sales');
+                        $('#responseMessage').html('<span class="text-danger">This Serial No already Issue in Sales Voucher.</span>');
                         return;
                     }
                     
@@ -1051,16 +1047,6 @@ $(document).ready(function () {
         if (updateValue) {
             var latestUpdate = updateValue.replace(/'/g, '"');
             latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
-        }
-
-        function safeParseJSON(jsonString) {
-            try {
-                if (!jsonString || jsonString.trim().toLowerCase() === "none") return {};
-                return JSON.parse(jsonString);
-            } catch (error) {
-                console.error("Invalid JSON format:", jsonString, error);
-                return {};
-            }
         }
 
         var parsedData = safeParseJSON(storedData);
@@ -1127,6 +1113,7 @@ $(document).ready(function () {
         }
 
         selectedRow.find('.pickBalance').val(pickBal);
+        processOutwardPicking()
     }
 
     function totalValueCalculate(){

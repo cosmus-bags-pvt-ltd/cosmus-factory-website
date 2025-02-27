@@ -161,7 +161,7 @@ urlpatterns = [
 
 
     path('salesvouchercreateupdateforwarehouse/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
-    path('salesvouchercreateupdateforwarehouse/<int:s_id>/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
+    path('salesvouchercreateupdateforwarehouse/<int:s_id>/<str:action>/', views.sales_voucher_create_update_for_warehouse, name = 'sales-voucher-create-update-for-warehouse'),
     path('salesvoucherlistwarehouse/', views.salesvoucherlistwarehouse, name = 'sales-voucher-list-warehouse'),
     path('salesvoucherviewsortwithsalesman/<int:id>/', views.sales_voucher_view_sort_with_salesman, name='sales-voucher-view-sort-with-salesman'),
     path('salesvoucherviewsortwithpartyname/<int:id>/', views.sales_voucher_view_sort_with_partyname, name='sales-voucher-view-sort-with-partyname'),
@@ -415,4 +415,5 @@ urlpatterns = [
     path('deliverychallancreate/', views.delivery_challan_create_update, name='delivery-challan-create'),
     path('deliverychallanupdate/<int:d_id>/', views.delivery_challan_create_update, name='delivery-challan-update'),
     path('deliverychallanlist/', views.delivery_challan_list, name='delivery-challan-list'),
+    path('deliverychallanproductajax/', views.delivery_challan_product_ajax, name='delivery-challan-product-ajax'),
 ]
