@@ -46,16 +46,18 @@
             {% endif %}
             <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{warehouse_product_transfer.id}}" data-key="{{warehouse_product_transfer.all_qc_qty}}" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa-solid fa-xmark text-danger px-3 fs-5"></i></button></td>
             <input type="hidden" class="deleted_Value" value="{{warehouse_product_transfer.transnfer_cancelled}}">
+            
           </tr>
           
           
           
           {% endfor %}
+          
         </tbody>
       </table>
     </div>
      
-
+    
   
   
   </div>
