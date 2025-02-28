@@ -15908,5 +15908,31 @@ def delivery_challan_create_update(request, d_id=None):
 
 @login_required(login_url='login')
 def delivery_challan_list(request):
+
     delivary_challan_list = DeliveryChallanMaster.objects.all()
-    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list})
+
+    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
+
+
+    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+    
+
+    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
+
+    product_queryset = PProduct_Creation.objects.all().annotate(
+        total_qty = Sum('godown_colors__quantity'),
+        total_labour_workin_qty = Subquery(product_queryset_subquery),
+        total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),
+        total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
+        total_challan_qty = Subquery(delivery_challan_subquery)).filter(
+            Q(total_qty__gt=0) | 
+            Q(total_labour_workin_qty__gt=0) | 
+            Q(total_labour_workin_pending_qty__gt=0) | 
+            Q(total_labour_workin_approve_qty__gt=0) |  
+            Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+    
+    
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
