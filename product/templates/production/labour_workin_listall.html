@@ -54,7 +54,7 @@
                     <td class="text-center">{{instance.number_of_pieces}}</td>
                     <td>{{instance.product_reference_number.Model_Name}}</td>
                     <td class="text-center">{{instance.total_lwo_pcs|default_if_none:0}}</td>
-                    <td class="text-center text-success">{{instance.total_labour_workin_pcs|default_if_none:0}}</td>
+                     <td class="text-center text-success">{{instance.total_labour_workin_pcs|default_if_none:0}}</td> {% comment %} issue with this line {% endcomment %}
                     <td class="text-center text-danger">{{instance.total_labour_workin_pending|default_if_none:0}}</td>
                     <td class="text-center text-success">{{instance.total_approved_qty|default_if_none:0}}</td>
                     <td class="text-center text-danger">{{instance.total_pending_approved_qty|default_if_none:0}}</td>
