@@ -56,7 +56,7 @@
           <td>{{ challan.driver_name }}</td>
           <td class="text-center text-danger pendingValue"></td>
           <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-          <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
+          <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ challan.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
         </tr>
         {% endfor %}
     
@@ -244,7 +244,7 @@
       var itemId = $(this).data('item-id');
   
       // Redirect to delete view
-      window.location.href = '//' + itemId;
+      window.location.href = '/deletedeliverychallan/' + itemId;
     });
   });
 </script>
