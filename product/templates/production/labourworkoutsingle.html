@@ -387,41 +387,41 @@
     checkBoxLwo.addEventListener('change',changeLabourOutValue)
 
         function changeLabourOutValue(){
-        var lwoCheckboxs = document.querySelectorAll('[name$="-processed_pcs"]');
-        console.log('lwoCheckboxs',lwoCheckboxs)
-        lwoCheckboxs.forEach(item =>{
-            var row = item.closest('tr');
-            var balanceQTy = row.querySelector('[name$="-balance_pcs"]');
-            var cuttingQty = parseInt(item.value) || 0;
-            var processQty = row.querySelector('[name$= "-pending_pcs"]') ;
-            var balanceValue = parseInt(balanceQTy.value) || 0;
-            var processValue = parseInt(processQty.value) || 0;
- 
-            if (checkBoxLwo.checked) {
-                if (cuttingQty > 0) {
-                    item.value = processValue;
-                    balanceQTy.value = 0;
+            var lwoCheckboxs = document.querySelectorAll('[name$="-processed_pcs"]');
+            console.log('lwoCheckboxs',lwoCheckboxs)
+            lwoCheckboxs.forEach(item =>{
+                var row = item.closest('tr');
+                var balanceQTy = row.querySelector('[name$="-balance_pcs"]');
+                var cuttingQty = parseInt(item.value) || 0;
+                var processQty = row.querySelector('[name$= "-pending_pcs"]') ;
+                var balanceValue = parseInt(balanceQTy.value) || 0;
+                var processValue = parseInt(processQty.value) || 0;
+    
+                if (checkBoxLwo.checked) {
+                    if (cuttingQty > 0) {
+                        item.value = processValue;
+                        balanceQTy.value = 0;
+                    } else {
+                        item.value = balanceValue;
+                        balanceQTy.value = 0;
+                    }
                 } else {
-                    item.value = balanceValue;
-                    balanceQTy.value = 0;
+                if (cuttingQty > 0) {
+                    balanceQTy.value = processValue;
+                    item.value = 0;
+                } else {
+                    item.value = 0;
+                    balanceQTy.value = cuttingQty;
                 }
-            } else {
-            if (cuttingQty > 0) {
-                balanceQTy.value = processValue;
-                item.value = 0;
-            } else {
-                item.value = 0;
-                balanceQTy.value = cuttingQty;
             }
+                    
+            })
+            balanceQty();
+            fabricQty();
+            updateBalanceAndProcessQty();
+            labourworkoutBalanceQty();
+            labourWorkOutCheck()
         }
-                
-        })
-        balanceQty();
-        fabricQty();
-        updateBalanceAndProcessQty();
-        labourworkoutBalanceQty();
-        labourWorkOutCheck()
-    }
     });
    
 function labourApprovedQty() {
@@ -464,19 +464,18 @@ function labourApprovedQty() {
 
             const row = element.closest('tr');
             const approvedQty = parseInt(element.value) || 0;
-            console.log('approvedQty',approvedQty)
+          
             const aproveValue = parseInt(row.querySelector('[name$="-pending_pcs"]').value) || 0;
             const balanceValue = parseInt(row.querySelector('[name$="-balance_pcs"]').value) || 0;
 
             balanceQty += balanceValue;
             approveQty += aproveValue;
             totals += approvedQty;
+
             document.getElementById('id_processQty').value = totals;
             document.getElementById('id_OderQty').value = approveQty;
             document.getElementById('id_balanceQtys').value = balanceQty;
         });
-    }else{
-
     }
 }
 

@@ -47,7 +47,7 @@
         <div class="mb-3 d-flex">
           <div class="d-flex mb-3">
             <label for="id_delivery_challan" class="me-1 fw-bold" >W/O DC :</label>
-            <input type="checkbox"  name="delivery_challan" id ="id_delivery_challan" value="false" >
+            <input type="checkbox"  name="delivery_challan" id ="id_delivery_challan" value="true" checked>
         </div>
           <div class="d-flex ms-3">
             <label for="id_selected_godown" class="me-1">Godown :</label>
@@ -414,6 +414,7 @@ $(document).ready(function(){
     })
   })
   var checkbox = $('#id_delivery_challan');
+
     checkbox.on('change',function(){
         if(checkbox.prop('checked')){
             checkbox.val('true');
@@ -440,8 +441,9 @@ $(document).ready(function(){
       $(document).on('change', '#id_selected_godown, #id_delivery_challan', function () {
         const godown_id = $('#id_selected_godown').val();
         const deliveryChallan = $('#id_delivery_challan').val();
+
         console.log('deliveryChallan',deliveryChallan)
-          handleGodownIdAjax(godown_id)
+          handleGodownIdAjax(godown_id,deliveryChallan)
       })
     }else{
       var productSaleDate = $('#productSaleDate').val();
@@ -463,7 +465,7 @@ $(document).ready(function(){
       }
     }
 
-    function handleGodownIdAjax(godown_id){
+    function handleGodownIdAjax(godown_id,deliveryChallan){
       if (!godown_id) return;
       resetInputs();
       $.ajax({
