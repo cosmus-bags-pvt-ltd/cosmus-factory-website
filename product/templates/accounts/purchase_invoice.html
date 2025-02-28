@@ -53,21 +53,12 @@
                         <option value="{{master_form.instance.party_name.id}}">{{master_form.instance.party_name.name}}</option>
                     
                         {% elif not master_form.instance.id %}
-                        <option value=""></option>
+                        <option value="" disabled selected>Select Party Name</option>
                         {% for x in party_names %}
                         <option value="{{x.id}}">{{x.name}}</option>
                         {% endfor %}
                         {% endif%}
                     </select>
-                    <!-- <div class="custom-dropdown-container-ref">
-                        <input type="hidden" name="party_name" id="id_party_name" value="{% if master_form.instance.id %}{{master_form.instance.party_name.id}}{% endif %}" readonly> 
-                          <input type="text" name="ledger_party_name_input" id="id_ledger_party_name_input" class="stock-Input refernceName"  placeholder="Party Name" autocomplete="off" value="{% if master_form.instance.id %}{{master_form.instance.party_name.name}}{% endif %}"> 
-                          <div name="select_partyName" class="stock-Input  s-suggestion-container partyName_input" id="select_partyName" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
-    
-                           </div>
-                    </div> -->
-                
-                  
                 </div>
                     <button type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
              
@@ -626,7 +617,7 @@ randomValue();
                
                 $(this).closest('.custom-dropdown-container').find('.search-input').val(itemNamevaluesCheck);
                 $(this).addClass('selected').siblings().removeClass('selected');
-                // $('#purchase_voucher_items_set-' + purchaseValue + '-item_shade').focus();
+                $('#item_color_' + purchaseValue ).focus();
 
                 if (newData == '' && itemShadeValue != '' && itemShadeValue != "None") {
                     itemShade.val(itemShadeValue);
@@ -775,7 +766,7 @@ randomValue();
                 const newData = $('#purchase_voucher_items_set-' + purchaseValue + '-jsonDataInputquantity').val();
                 const itemShade = $('#input_item_shade_' + purchaseValue);
                 const itemShadeValue = $('#purchase_voucher_items_set-' + purchaseValue + '-old_item_shade_for_dropdown_change').val();
-                // $('#purchase_voucher_items_set-' + purchaseValue + '-item_shade').focus();
+                 $('#item_color_' + purchaseValue ).focus();
 
                 if (newData == '' && itemShadeValue != '' && itemShadeValue != "None") {
                     itemShade.val(itemShadeValue);
@@ -815,7 +806,7 @@ randomValue();
                         'item_value': item_value,
                     },
                     success: function (response) {
-                        console.log('Data sent successfully');
+                        // console.log('Data sent successfully');
                       
                         var itemrownameid = itemName.split('-')[1];
                         var differentShades = Object.keys(response.item_shade).length;
@@ -1326,77 +1317,75 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
  
     document.addEventListener("DOMContentLoaded", function () {
-    const submitButton = document.getElementById("parentFormClick");
-    const itemNameInputs = document.querySelectorAll("input[id^='item_name_']");
-    const form = document.getElementById("newForm");
-    let formSubmitted = false;
+    // const submitButton = document.getElementById("parentFormClick");
+    // const itemNameInputs = document.querySelectorAll("input[id^='item_name_']");
+    // const form = document.getElementById("newForm");
+    // let formSubmitted = false;
     
-    function validateInputs() {
-        let isValid = true;
-        // Check all item name inputs
-        itemNameInputs.forEach(input => {
+    // function validateInputs() {
+    //     let isValid = true;
+    //     // Check all item name inputs
+    //     itemNameInputs.forEach(input => {
            
-            if (!input.value.trim()) {
-                isValid = false;
-            }
-            if(input.value.trim() == ""){
-                submitButton.disabled = true;
-            }else{
-                submitButton.disabled = false; 
-            }
+    //         if (!input.value.trim()) {
+    //             isValid = false;
+    //         }
+    //         if(input.value.trim() == ""){
+    //             submitButton.disabled = true;
+    //         }else{
+    //             submitButton.disabled = false; 
+    //         }
             
-        });
+    //     });
         
-    }
+    // }
     
 
-    itemNameInputs.forEach(input => {
-        input.addEventListener("input", validateInputs);
-    });
+    // itemNameInputs.forEach(input => {
+    //     input.addEventListener("input", validateInputs);
+    // });
 
-    submitButton.addEventListener('click',function(){
-        validateInputs()
-    })
+    // submitButton.addEventListener('click',function(){
+    //     validateInputs()
+    // })
     
 
     // Prevent Enter key from submitting the form on specific inputs
-    form.addEventListener("keydown", function (event) {
-        const forbiddenKeys = ["Enter"];
-        const target = event.target;
+    // form.addEventListener("keydown", function (event) {
+    //     const forbiddenKeys = ["Enter"];
+    //     const target = event.target;
 
-        // Check if the target is an input field (rate, quantity, GST, etc.)
-        if (forbiddenKeys.includes(event.key) && target.tagName === "INPUT") {
-            event.preventDefault(); // Stop form submission
-            // console.log(`Enter key prevented on input: ${target.id}`);
-        }
-    });
+    //     // Check if the target is an input field (rate, quantity, GST, etc.)
+    //     if (forbiddenKeys.includes(event.key) && target.tagName === "INPUT") {
+    //         event.preventDefault(); // Stop form submission
+    //         // console.log(`Enter key prevented on input: ${target.id}`);
+    //     }
+    // });
 
     // Allow form submission only when clicking the submit button
  
 
-    submitButton.addEventListener("click", function () {
-        formSubmitted = true;
-    });
+    // submitButton.addEventListener("click", function () {
+    //     formSubmitted = true;
+    // });
 
-    form.addEventListener("submit", function (event) {
-        if (!formSubmitted) {
-            event.preventDefault();
-            // console.log("Form submission blocked: Submit button not clicked.");
-        } else {
-            // console.log("Form submitted successfully!");
-            formSubmitted = false; // Reset for next submission
-        }
-    });
+    // form.addEventListener("submit", function (event) {
+    //     if (!formSubmitted) {
+    //         event.preventDefault();
+    //         // console.log("Form submission blocked: Submit button not clicked.");
+    //     } else {
+    //         formSubmitted = false;
+    //     }
+    // });
   
     // Initial validation on page load
-    validateInputs();
+    //validateInputs();
     //inputCheck();
     document.getElementById('id_purchase_number').focus();
 });
 
 
 function inputCheck(){
-    // const purchaseOrder = document.getElementById('id_purchase_number');
     const suppileNo = document.getElementById('id_supplier_invoice_number');
     const itemNameInputsid = document.querySelectorAll('[name^="item_name_"]');
     const productInvoiceId = document.getElementById('id_purchase_voucher_items_set-0-id').value;
@@ -1407,10 +1396,9 @@ function inputCheck(){
     if(suppileNo){
         suppileNo.addEventListener('keydown',function(event){
             if(event.key === "Tab"){
-                event.preventDefault()
-                console.log(suppileNo.value)
+                event.preventDefault();
+
                 if(suppileNo.value === ''){
-                    console.log('test')
                     suppileNo.focus();
                     return;
                 }else{
@@ -1425,7 +1413,7 @@ function inputCheck(){
         partyName.addEventListener('keydown', function(event) {
             if (event.key === "Tab") {
                 event.preventDefault();
-                console.log(parseInt(partyName.value))
+               
                 if (partyName.value === '' ) {
                     partyName.focus();
                     return;
@@ -1439,9 +1427,7 @@ function inputCheck(){
                     if (itemInput && itemInput.value === '') {
                         itemInput.focus();
                         return; 
-                    } 
-                    // Check if quantity is empty, then focus on it
-                    else if (qtyInput && qtyInput.value === '') {
+                    }else if (qtyInput && qtyInput.value === '') {
                         qtyInput.focus();
                         return; 
                     }
@@ -1461,32 +1447,28 @@ function inputCheck(){
             
                 if(allInputsInRow === ''){
                     if (event.key === "Tab") {
-                        event.preventDefault(); // Prevent default tab behavior
-                        console.log('input.value',input.value)
+                        event.preventDefault();
+                    
                         if (input.value.trim() !== "") {
                             if (ShadesInput) {
                                 ShadesInput.focus();
                                 return;
                             }
                         } else {
-                            input.focus(); // Refocus on the current input if empty
+                            input.focus();
                         }
                     }
                     if (event.key === 'Enter') {
-                        event.preventDefault(); // Prevent default Enter key behavior
-
-                        // Find the current <td> containing this input
+                        event.preventDefault(); 
                         const currentTd = input.closest('td');
-                            console.log('currentId',currentTd)
-                        // Find the next <td> sibling
+                           
                         if (currentTd) {
                             const nextTd = currentTd.nextElementSibling;
 
-                            // Check if next <td> exists and contains an input
                             if (nextTd) {
                                 const nextInput = nextTd.querySelector('[name$="-item_shade"]');
                                 if (nextInput) {
-                                    nextInput.focus(); // Move focus to the next input
+                                    nextInput.focus(); 
                                 }
                             }
                         }
@@ -1523,216 +1505,5 @@ function inputCheck(){
 
     inputCheck();
 </script>
-<!-- <script>
-    $(document).ready(function(){
 
-var searchedItemNameDict;
-var enterPressed = false;
-var index = 0; // Declare index outside of the event listener
-var indexbool = true;
-
-function fetchSuggestions(inputSelector, url, suggestionsContainerId) {
-    $(document).on('input', inputSelector, function(e) {
-    
-        var productnamevalue = $(this).val().trim();
-        var suggestionsContainer = $(`#${suggestionsContainerId}`);
-        
-        if (productnamevalue === 'None' || productnamevalue === '') {
-            suggestionsContainer.hide().empty();
-            $(this).attr('data-key', '');
-            return;
-        }
-        if(!enterPressed){
-            suggestionsContainer.show();
-        }
-        enterPressed = false;
-        $.ajax({
-            
-            url: url,
-            method: 'GET',
-            data: { 'productnamevalue': productnamevalue },
-            success: function (response) {
-        
-             searchedProductNameDic = response.party_name; 
-                searchinputneworder(searchedProductNameDic ,suggestionsContainer,productnamevalue)
-        
-            },
-            error: function (xhr) {
-                console.log(xhr.status + ": " + xhr.responseText);
-                if (xhr.status === 404) {
-                    
-                    suggestionsContainer.show().empty().append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
-                }
-            }
-        })
-    })
-}
-
-function searchinputneworder(searchedProductNameDic,suggestionsContainer,productnamevalue){
-    function escapeRegExp(string) {
-        return string.replace(/[.*+?^${}()|[\]\\,]/g, '\\$&');
-    }
-        
-    const searchQuery = productnamevalue.toLowerCase();
-    const searchTerms = searchQuery.split(/\s+/);
-    const convertStringData = searchTerms.toString();
-
-    const escapedTerms = searchTerms.map(escapeRegExp);
-
-    const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
-
-    const normalizeSpaces = (str) => str.replace(/\s+/g, ' ').trim();
-
-    const filteredOptions = Object.entries(searchedProductNameDic).filter(
-    ([key, value]) => {
-        const normalizedKey = normalizeSpaces(key.toString().toLowerCase());
-        const normalizedProductName = normalizeSpaces(value[0].toString().toLowerCase());
-    
-        const normalizedQuery = normalizeSpaces(convertStringData.toLowerCase());
-
-        return normalizedKey.includes(normalizedQuery) || normalizedProductName.includes(normalizedQuery);
-    });
-
-    suggestionsContainer.empty();
-
-    filteredOptions.forEach(([key, value], index) => {
-        
-        const productRefIdName = key;
-        const productRefId = String(value[0] || ''); 
-        
-        const highlightedText = productRefId.replace(regex, '<span class="highlight">$1</span>');
-
-                
-        suggestionsContainer.append(`
-            <div id="itemName-div_${index}" class="itemName-div itemName-div-suggestion" data-key="${key}">
-                ${highlightedText}
-            </div>
-        `);
-        
-    });
-    if(filteredOptions == ''){
-        suggestionsContainer.show();
-        suggestionsContainer.empty();
-        suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
-    }
-}
-
-function handleSelection(inputSelector, hiddenInputSelector, suggestionsContainerId) {
-   
-    $(document).on('click',`#${suggestionsContainerId} .itemName-div`, function(e) {
-        var refId = $(this).data('key');
-        var referenceNameCheck = $(this).text().trim();
-        
-        if(refId !== undefined){
-        
-            $(inputSelector).val(referenceNameCheck);
-            $(hiddenInputSelector).val(refId);
-            const selected_party_name = refId;
-            $.ajax({
-                url: '/purchasevouchercreate/',
-                method: 'GET',
-                data: {
-                    'selected_party_name': selected_party_name,
-                },
-                success: function (response) {
-                    const party_gst_no_response = response.party_gst_no
-                    const gst_no_input = document.getElementById('id_GST_number')
-                    gst_no_input.value = party_gst_no_response
-                    getGstNo()
-                    calculateTotalAmount()
-                },
-                error: function (xhr, errmsg, err) {
-                    console.log('Error sending value to the backend');
-                }
-            })
-        }
-        
-        
-        $(this).addClass('selected').siblings().removeClass('selected');
-
-
-        $(`#${suggestionsContainerId}`).hide();
-        
-    })
-}
-
-function handleKeyNavigation(inputSelector,hiddenInputSelector, suggestionsContainerId) {
-    $(document).on('keydown', inputSelector, function(event) {
-        const $inputField = $(this);
-        const $dropdownOptions = $inputField.next(`#${suggestionsContainerId}`);
-        const $options = $dropdownOptions.find('.itemName-div');
-        const optionsCount = $options.length - 1;
-
-        if ($options.length === 0) return;
-        const searchText = $inputField.val().trim();
-        
-        if (searchText === '') {
-            index = 0;
-            return;
-        }
-        const newHeight = $inputField.offset();
-        const windowHeight = $(window).height();
-        const availableSpace = windowHeight - newHeight.top - $inputField.outerHeight();
-
-
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-            event.preventDefault();
-            index = event.key === 'ArrowDown' ? Math.min(index + 1, optionsCount) : Math.max(index - 1, 0);
-            $options.removeClass('bg-highlight').eq(index).addClass('bg-highlight');
-        }
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            const selectedOption = $options.eq(index);
-            
-            if (selectedOption.length) {
-                const refKey = selectedOption.data('key'); 
-                const referenceName = selectedOption.text().trim();
-
-                if (refKey) {
-                    // Assign values correctly
-                    $inputField.val(referenceName).attr('data-key', refKey);
-                    $(hiddenInputSelector).val(refKey);
-
-                    const selected_party_name = refKey;
-                    $.ajax({
-                        url: '/purchasevouchercreate/',
-                        method: 'GET',
-                        data: {
-                            'selected_party_name': selected_party_name,
-                        },
-                        success: function (response) {
-                            const party_gst_no_response = response.party_gst_no
-                            const gst_no_input = document.getElementById('id_GST_number')
-                            gst_no_input.value = party_gst_no_response
-                            getGstNo()
-                            calculateTotalAmount()
-                        },
-                        error: function (xhr, errmsg, err) {
-                            console.log('Error sending value to the backend');
-                        }
-                    })
-                }
-
-                enterPressed = true;
-                $dropdownOptions.hide();
-            }
-        }
-        if (event.key === 'Tab' && enterPressed) {
-        enterPressed = false; // Reset Enter key handling
-        return true; // Allow default Tab behavior
-        }
-    })
-
-}
-
-
-
-    // Initialize functions for Party Name
-fetchSuggestions('input[name^="ledger_party_name_input"]', '/partynamesearchajax/', 'select_partyName');
-handleSelection('#id_ledger_party_name_input', '#id_party_name', 'select_partyName');
-handleKeyNavigation('input[name^="ledger_party_name_input"]','#id_party_name', 'select_partyName');
-
-
-}) -->
-</script>
 {% endblock body %}
