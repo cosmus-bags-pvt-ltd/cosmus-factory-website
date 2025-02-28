@@ -1192,6 +1192,28 @@ class finishedgoodsbinallocation(models.Model):
 
 
 
+class DeliveryChallanMaster(models.Model):
+    delivery_challan_no = models.CharField(max_length=252, unique=True)
+    party_name = models.ForeignKey(Ledger, on_delete=models.PROTECT)
+    shipping_address = models.TextField()
+    vehicle_no = models.CharField(max_length=50)
+    driver_name = models.CharField(max_length=100)
+    dispatch_time = models.TimeField()
+    no_of_boxes = models.PositiveIntegerField()
+    no_of_pcs = models.PositiveIntegerField()
+    remark = models.TextField(blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+
+
+class DeliveryChallanProducts(models.Model):
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
+    product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    quantity = models.PositiveIntegerField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
 
 
 
@@ -1202,6 +1224,7 @@ class sales_voucher_master_finish_Goods(models.Model):
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     selected_godown = models.ForeignKey(Godown_finished_goods, on_delete=models.PROTECT,null=True, blank=True)
+    delivery_challans = models.ManyToManyField('DeliveryChallanMaster', blank=True)
     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
@@ -1219,6 +1242,8 @@ class sales_voucher_finish_Goods(models.Model):
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
 
 
 class purchase_order_master_for_puchase_voucher_rm(models.Model):
@@ -1405,27 +1430,7 @@ class sales_return_voucher(models.Model):
 
 
 
-class DeliveryChallanMaster(models.Model):
-    delivery_challan_no = models.CharField(max_length=252, unique=True)
-    party_name = models.ForeignKey(Ledger, on_delete=models.PROTECT)
-    shipping_address = models.TextField()
-    vehicle_no = models.CharField(max_length=50)
-    driver_name = models.CharField(max_length=100)
-    dispatch_time = models.TimeField()
-    no_of_boxes = models.PositiveIntegerField()
-    no_of_pcs = models.PositiveIntegerField()
-    remark = models.TextField(blank=True, null=True)
-    created_date = models.DateTimeField(auto_now_add=True)
-    updated_date = models.DateTimeField(auto_now=True)
 
-
-
-class DeliveryChallanProducts(models.Model):
-    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
-    product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
-    quantity = models.PositiveIntegerField()
-    created_date = models.DateTimeField(auto_now_add=True)
-    updated_date = models.DateTimeField(auto_now=True)
 
 
 
