@@ -56,7 +56,7 @@
           <td>{{ challan.driver_name }}</td>
           <td class="text-center text-danger pendingValue"></td>
           <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-          <td><a href="">DEL</a></td>
+          <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ sale.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
         </tr>
         {% endfor %}
     
@@ -114,6 +114,27 @@
 <div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
   <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
 </div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modal-body-text">
+        Are you sure you want to delete the Delivery Challan?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
+        <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
       function toggleVisible(toggleButtonId, dataContainerId) {
@@ -201,6 +222,31 @@
     }
     calculateAllTotalValue();
     totalValueCheck();
+
+
+    document.body.appendChild(document.getElementById('exampleModal'));
+
+  $(document).ready(function () {
+   
+    $('.delete-btn').click(function () {
+      var itemId = $(this).data('item-id');
+      var name = $(this).closest('tr').find('td').eq(2).text();
+      var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
+      $('#modal-body-text').html('Are you sure you want to delete the Delivery challan is ' + coloredName + '?');
+      $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
+      $('#exampleModal').modal('show');
+
+
+    });
+
+    // Confirm delete button click event
+    $('#confirmDeleteButton').click(function () {
+      var itemId = $(this).data('item-id');
+  
+      // Redirect to delete view
+      window.location.href = '//' + itemId;
+    });
+  });
 </script>
 
 
