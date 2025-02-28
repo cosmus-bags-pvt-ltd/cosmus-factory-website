@@ -25,9 +25,9 @@
     <button class="mb-2 border-0 bg-c-blue rounded-1 px-2 py-1 "><a href="{% url 'delivery-challan-create' %}" class="text-light text-decoration-none">create</a></button>
   </div>
 
-  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challan_btn">Delivery Challan List <span class="ms-5 text-success">Total Delivery Qty =<span id="totalqcqty"></span></span> <span class="ms-5 text-danger">Balance for Billing =<span id="totalBalanceqty"></span></span><span class="labourworkoutChallanArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challan_btn">Delivery Challan List<span class="labourworkoutChallanArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
   <div id="Delivery_challan_list" style="display: none;">
-    <table class="table table-striped table-hover table-bordered">
+    <table class="table table-striped table-hover table-bordered" id="deliveryChallanList">
       <thead class="name_absolute sticky-top">
           <tr>
               <th>No</th>
@@ -35,10 +35,10 @@
               <th>Party Name</th>
               <th>Shiping Address</th>
               <th>T Box</th>
-              <th>T Qty</th>
+              <th class="text-success">T Qty = <span id="totalQtys"></span></th>
               <th>Vehl No</th>
               <th>Driver Name</th>
-              <th>Pend. Bill</th>
+              <th class="text-danger">Pend. Bill = <span id="pendingBillQty"></span></th>
               <th>Edit</th>
               <th>Delete</th>
           </tr>
@@ -51,10 +51,10 @@
           <td class="text-nowrap">{{ challan.party_name.name }}</td>
           <td>{{ challan.shipping_address }}</td>
           <td>{{ challan.no_of_boxes }}</td>
-          <td>{{ challan.no_of_pcs }}</td>
+          <td class="text-center text-success totalValue">{{ challan.no_of_pcs }}</td>
           <td class="text-nowrap">{{ challan.vehicle_no }}</td>
           <td>{{ challan.driver_name }}</td>
-          <td></td>
+          <td class="text-center text-danger pendingValue"></td>
           <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
           <td><a href="">DEL</a></td>
         </tr>
@@ -63,7 +63,7 @@
       </tbody>    
   </table>
   </div>
-  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challanAll_btn">Delivery Challan <span class="ms-5 text-success">Total Qc App Qty =<span id="totalqcqty"></span></span><span class="ms-5 text-warning">Comp Delivery Qty =<span id="totalqcqty"></span></span> <span class="ms-5 text-danger">Balance for Billing =<span id="totalBalanceqty"></span></span><span class="labourworkoutChallanArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challanAll_btn">Delivery Challan<span class="labourworkoutChallanArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
   <div id="Delivery_challanAll_List" style="display: none;">
     <table class="table table-hover table-bordered table-striped" id="allFinishGoodReportTable">
       <thead class="sticky-top name_absolute">
@@ -74,11 +74,11 @@
               <th>Mod. Name</th> 
               <th>Color</th>
               <th>SKU ID</th>
-              <th>T Rec As LWI =<span class="text-success" id="tRecLwi"></span></th> 
-              <th>QC Pend PCs =<span class="text-danger" id="tQcPendQty"></span></th>
-              <th>T QC APP Qty =<span class="text-primary" id="tQcAppQty"></span></th>
-              <th>Dely. Qty =<span id="tDelyQty"></span></th>
-              <th>Bal Qty =<span id="tSales"></span></th>
+              <th class="text-success">T Rec As LWI = <span class="text-success" id="tRecLwi"></span></th> 
+              <th class="text-danger">QC Pend PCs = <span class="text-danger" id="tQcPendQty"></span></th>
+              <th class="text-primary">T QC APP Qty = <span class="text-primary" id="tQcAppQty"></span></th>
+              <th class="text-warning">Dely. Qty = <span class="text-warning" id="tDelyQty"></span></th>
+              <th class="text-danger">Bal Qty = <span class="text-danger" id="balanceQty"></span></th>
               <th>Due Day</th> 
           </tr>
       </thead>
@@ -97,9 +97,10 @@
               <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;"><span class="lwiapprQty">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</span></a></td>
-              <td class="text-center"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></td>
-              <td class="toatlQty text-center"><span class="salesQty"></span></td>
-              <td class="text-center"><span class="totalQtys">{{query.total_qty | default_if_none:0}}</span></td>
+              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ffbb10; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
+              <td class=" text-center text-danger"><span class="balanceQty"></span></td>
+              <td class="text-center"></td>
+              <!-- <span class="totalQtys">{{query.total_qty | default_if_none:0}}</span> -->
           </tr>
           {% endfor %}
       </tbody>
@@ -107,6 +108,11 @@
   </table>
   </div>
   
+</div>
+
+
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+  <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -129,6 +135,72 @@
       toggleVisible("Delivery_challanAll_btn", "Delivery_challanAll_List");
 
     })
+
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+        let modal = document.getElementById("customModal");
+        let modalImg = document.getElementById("modalImg");
+
+        modalImg.src = src;
+        modal.style.display = "flex";
+        modal.style.width = '100%'
+        // Clicking anywhere outside the image will close the modal
+        modal.onclick = function() {
+            modal.style.display = "none";
+        };
+ }
+
+
+    function totalValueCheck(){
+      var total = 0;
+      var pending = 0;
+      var  totalqty = document.querySelectorAll('#deliveryChallanList .mainTableList tr');
+        totalqty.forEach(row => {
+            var value = parseInt(row.querySelector('.totalValue').textContent) || 0;
+            var pendingBill = parseInt(row.querySelector('.pendingValue').textContent) || 0;
+            total += value;
+            pending += pendingBill;
+            document.getElementById('totalQtys').textContent = total;
+            document.getElementById('pendingBillQty').textContent = pending;
+        });
+    }
+
+    function calculateAllTotalValue(){
+        let lwiqty = 0;
+        let lwipendingqty = 0;
+        let lwiapproveqty = 0;
+        let balanceqty = 0;
+        let totalqty = 0;
+        let delQty = 0;
+
+        const allFinishGoodTable = document.querySelectorAll('#allFinishGoodReportTable .mainTableList tr');
+        
+        allFinishGoodTable.forEach(function(row){
+            const lwiQty = parseInt(row.querySelector('.lwiQty').textContent) || 0;
+            const lwiPendingQty = parseInt(row.querySelector('.lwipendingQty').textContent) || 0;
+            const lwiApproveQty = parseInt(row.querySelector('.lwiapprQty').textContent) || 0;
+            const delvQty = parseInt(row.querySelector('.delQty').textContent) || 0;
+
+            lwiqty += lwiQty
+            lwipendingqty += lwiPendingQty;
+            lwiapproveqty += lwiApproveQty;
+            delQty += delvQty;
+            let balance = lwiApproveQty - delvQty;
+
+            balanceqty += balance
+            console.log('balance',delQty)
+            row.querySelector('.balanceQty').textContent = balance;
+           document.getElementById('tRecLwi').textContent = lwiqty;
+           document.getElementById('tQcPendQty').textContent = lwipendingqty;
+           document.getElementById('tQcAppQty').textContent = lwiapproveqty;
+           document.getElementById('balanceQty').textContent = balanceqty;
+      
+           document.getElementById('tDelyQty').textContent = delQty;
+        })
+
+    }
+    calculateAllTotalValue();
+    totalValueCheck();
 </script>
 
 

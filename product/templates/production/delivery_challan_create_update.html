@@ -31,7 +31,6 @@
                         {% endif %}
                     </select>
                 </div>
-                
                 <div class="">
                     {% if master_form.instance.id %}
                     <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1" cols="40" rows="2" id="id_party_address" readonly>{{ master_form.instance.party_name.address }}</textarea>
@@ -41,9 +40,6 @@
                 </div>
                
             </div>
-
-            
-            
             <label for="id_shipping_address" class="me-1">Shipping address :</label>
             <div>
                 {% if master_form.instance.id %}
@@ -54,7 +50,7 @@
             </div>
         </div>
         <div>
-            <table class="table table-striped table-hover table-bordered" id="deliveryChallanTable">
+            <table class="table table-striped table-hover table-bordered table-primary"  id="deliveryChallanTable">
                 <thead class="name_absolute sticky-top">
                     <tr>
                         <th>No</th>
@@ -89,7 +85,7 @@
 
                         <td><input type="number" class="purchase-amount stock_color" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}" style="outline: none;" readonly></td>
 
-                        <td><input type="text" value="{{ form.instance.quantity | default_if_none:0 }}" class="purchase-amount stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity"></td>
+                        <td><input type="text" class="purchase-amount stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity" value="{{ form.instance.quantity | default_if_none:'' }}"></td>
 
                         <td>
                             <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
@@ -100,7 +96,8 @@
                 </tbody>
                 <tr>
                     <td colspan="5">Total :</td>
-                    <td><input type="text" value="" class="purchase-amount stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
+                    <td><input type="text" value="" class="purchase-amount  border-0 stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
+                    <td></td>
                 </tr>
             </table>
             <input  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
@@ -122,7 +119,7 @@
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes" value="{{ master_form.instance.no_of_boxes}}">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
-                <input type="number" class="me-1 purchase-mark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly value="{{ master_form.instance.no_of_pcs}}">
+                <input type="number" class="me-1 purchase-amount" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly value="{{ master_form.instance.no_of_pcs}}">
                 <label for="id_remark" class="me-1">Remark :</label>
                 <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark" value="{{ master_form.instance.remark}}">
             </div>
@@ -141,7 +138,7 @@
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
-                <input type="number" class="me-1 purchase-mark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
+                <input type="number" class="me-1 purchase-amount" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
                 <label for="id_remark" class="me-1">Remark :</label>
                 <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark">
             </div>
@@ -407,24 +404,23 @@
                 index = 0;
                 indexbool = false;
                 if (item_value !== undefined) {
-                var selectedValue = searchedProductNameDic[item_value];
+                    var selectedValue = searchedProductNameDic[item_value];
+                    
+                    var namevalueCheck = selectedValue[1];
+                    const productQty = selectedValue[4];
+                    const productColor = selectedValue[0];
+                    const productRef = selectedValue[2];
                 
-                var namevalueCheck = selectedValue[1];
-                const productQty = selectedValue[4];
-                const productColor = selectedValue[0];
-                const productRef = selectedValue[2]
-                var newNameValue = namevalueCheck + '                             '+ productQty;
+                    var newNameValue = namevalueCheck + '                             '+ productQty;
         
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
-
                     
+                   totalValue(productQty)
                 }
-
-
                 enterPressed = true;
                 hiddenValue.css("display" ,"none");
                 $inputField.blur();
@@ -434,12 +430,16 @@
             return true; // Allow default Tab behavior
             }
         })
-    
+        
+        function totalValue(productQty){
+            console.log(productQty,'productQty')
+            
+        }
     })
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-  
+        document.getElementById('id_delivery_challan_no').focus()
         const addRowButton = document.getElementById('addRowButton');
         const mainTable = document.querySelector('.mainTableList');
 
@@ -520,7 +520,7 @@
                     document.getElementById('id_productRow').value = '1';
                         deleteRow();
                         
-                        // inputCheck();
+                        inputCheck();
                     
                 } else {
                     console.error("No visible rows found to clone.");
@@ -572,26 +572,217 @@
 
         var value = 0;
     
-    tables.forEach(function(row) {
-        var inputField = row.querySelector('[name$="-quantity"]');
-        if (inputField) {
-            var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
-            value += qty;
+        tables.forEach(function(row) {
+            var inputField = row.querySelector('[name$="-quantity"]');
+            if (inputField) {
+                var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
+                value += qty;
+            }
+        });
+
+        document.getElementById('id_total-quantity').value = value;
+        document.getElementById('id_no_of_pcs').value = value;
+    }
+
+        // Event delegation for dynamically added rows
+        document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
+            if (event.target.matches('[name$="-quantity"]')) {
+                calculateTotal();
+            }
+        });
+    inputCheck()
+    calculateTotal();
+});
+
+
+function inputCheck() {
+    const itemNameInputs = document.querySelectorAll('[name$="-products"]');
+    const productInvoiceId = document.getElementById('id_deliverychallanproducts_set-0-id').value;
+    const challanNo = document.getElementById('id_delivery_challan_no');
+    const partyName = document.getElementById('id_party_name');
+    const shipping_address = document.getElementById('id_shipping_address');
+    const vehicelNo = document.getElementById('id_vehicle_no');
+    const driverName = document.getElementById('id_driver_name');
+    const dispatchTime = document.getElementById('id_dispatch_time');
+    const noBox = document.getElementById('id_no_of_boxes');
+    const remark = document.getElementById('id_remark');
+    var AddElement = document.getElementById('addRowButton');
+    var tableRows = document.querySelectorAll('#deliveryChallanTable .mainTableList tr');
+
+    challanNo.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(challanNo.value === ''){
+                challanNo.focus();
+                return;
+            }else{
+                partyName.focus()
+            }
+        }
+    })
+    partyName.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(partyName.value === ''){
+                partyName.focus();
+                return;
+            }else{
+                shipping_address.focus()
+            }
+        }
+    })
+    shipping_address.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(shipping_address.value === ''){
+                shipping_address.focus();
+                return;
+            }else{
+                var tableRow = document.querySelectorAll('#deliveryChallanTable .mainTableList tr');
+                for (let row of tableRow) {
+                    var itemInput = row.querySelector('[name$="products"]');
+                    var qtyInput = row.querySelector('[name$="-quantity"]');
+
+                    if (itemInput && itemInput.value === '') {
+                        itemInput.focus();
+                        return; 
+                    } 
+                    // Check if quantity is empty, then focus on it
+                    else if (qtyInput && qtyInput.value === '') {
+                        qtyInput.focus();
+                        return; 
+                    }
+                }
+            }
+        }
+    })
+    itemNameInputs.forEach((input, index) => {
+        if (input) {
+            input.addEventListener("keydown", function (event) {
+                const closestRow = input.closest('tr');
+                const qtyInput = closestRow.querySelector('[name$="-quantity"]');
+
+                if (productInvoiceId === 'None') {
+                  
+                    if (event.key === "Tab" || event.key === "Enter") {
+                        event.preventDefault(); 
+
+                        if (input.value.trim() !== "") {
+                            if (qtyInput) {
+                                qtyInput.focus(); 
+                            }
+                        } else {
+                            input.focus(); 
+                        }
+                    }
+                }
+            });
         }
     });
 
-    document.getElementById('id_total-quantity').value = value;
-    document.getElementById('id_no_of_pcs').value = value;
+    tableRows.forEach(function(row ,index){
+        var qty = row.querySelector('[name$="-quantity"]');
+        if(qty){
+            qty.addEventListener('keydown', function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+
+                    if (qty.value === '') {
+                       
+                        qty.focus();
+                    } else {
+                        var nextRow = tableRows[index + 1];;
+                
+                        if (nextRow) {
+                            var nextItemInput = nextRow.querySelector('[name$="-products"]');
+                            console.log('nextRow',nextItemInput)
+                            if (nextItemInput && nextItemInput.value === '') {
+                                nextItemInput.focus();
+                            } else {
+                                var nextQtyInput = nextRow.querySelector('[name$="-quantity"]');
+                                if (nextQtyInput) {
+                                    nextQtyInput.focus();
+                                }
+                            }
+                        } else {
+                        
+                            
+                            if (AddElement) {
+                              AddElement.focus();
+                                
+                               
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    })
+    AddElement.addEventListener('keydown', function (event) {
+        if (event.key === "Tab") {
+            event.preventDefault();
+            vehicelNo.focus()
+        }
+
+    })
+    vehicelNo.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(vehicelNo.value === ''){
+                vehicelNo.focus();
+                return;
+            }else{
+                driverName.focus()
+            }
+        }
+    })
+    driverName.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(driverName.value === ''){
+                driverName.focus();
+                return;
+            }else{
+                dispatchTime.focus()
+            }
+        }
+    })
+    dispatchTime.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(dispatchTime.value === ''){
+                dispatchTime.focus();
+                return;
+            }else{
+                noBox.focus()
+            }
+        }
+    })
+    noBox.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(noBox.value === ''){
+                noBox.focus();
+                return;
+            }else{
+                remark.focus()
+            }
+        }
+    })
+    remark.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(remark.value === ''){
+                remark.focus();
+                return;
+            }else{
+                document.getElementById('submitButtonStockTransfer').focus()
+            }
+        }
+    })
 }
 
-// Event delegation for dynamically added rows
-document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
-    if (event.target.matches('[name$="-quantity"]')) {
-        calculateTotal();
-    }
-});
-
-});
+inputCheck()
 </script>
 
 {% endblock body %}
