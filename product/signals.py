@@ -485,6 +485,10 @@ def create_update_warehouse_stock_transfer(sender, instance, created, **kwargs):
         godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown,product_color_name=product)
         godown_qty_value.quantity = godown_qty_value.quantity - quantity
         godown_qty_value.save()
+
+        warehouse_obj , created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=warehouse,product=product)
+        warehouse_obj.quantity = warehouse_obj.quantity + quantity
+        warehouse_obj.save()
     else:
         pass
 

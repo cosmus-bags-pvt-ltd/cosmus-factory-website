@@ -88,7 +88,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset,DeliveryChallanProductsUpdateFormset)
     
 
 
@@ -9668,7 +9668,7 @@ def product_purchase_voucher_delete(request,pk):
 
 
 
-
+@login_required(login_url = 'login')
 def warehouse_product_transfer_create_and_update(request,pk=None):
     
     products = PProduct_Creation.objects.all()
@@ -9687,6 +9687,7 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
             godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage'))
         
         if filtered_product:
+            
             dict_to_send = {}
 
             for query in filtered_product:
@@ -9764,17 +9765,49 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
                             form_instance = form.save(commit=False)
                             form_instance.Finished_goods_Stock_TransferMasterinstance = first_form_instance
                             form_instance.diffrence_qty = form_instance.product_quantity_transfer
-                            form_instance.save()
+                            
 
                             old_product_name = form.initial.get('product')
                             old_product_quantity = form.initial.get('product_quantity_transfer')
-
                             
-                            #if any quantity has change 
-                            warehouse_obj , created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse,product=form_instance.product)
+                            #if both has change
+                            if pk and form.has_changed() and 'product' and 'product_quantity_transfer' in form.changed_data:
 
-                            if old_product_quantity:
+                                print(" IN BOTH ")
+
+                                print("old godown")
+                                old_godown_qty, _ = product_godown_quantity_through_table.objects.get_or_create(godown_name=selected_godown, product_color_name=old_product_name)
+
+                                old_godown_qty.quantity += old_product_quantity
+                                old_godown_qty.save()
+
+                                print("new godown")
+                                new_godown_qty, _ = product_godown_quantity_through_table.objects.get_or_create(godown_name=selected_godown, product_color_name=form_instance.product)
+
+                                new_godown_qty.quantity -= form_instance.product_quantity_transfer
+                                new_godown_qty.save()
+
+                                
+                                print("old warehouse")
+                                old_warehouse_qty, _ = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse, product = old_product_name)
+
+                                old_warehouse_qty.quantity = max(0, old_warehouse_qty.quantity - old_product_quantity)
+                                old_warehouse_qty.save()
+
+                                
+                                print("new warehouse")
+                                new_warehouse_qty, _ = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse, product=form_instance.product)
+
+                                new_warehouse_qty.quantity += form_instance.product_quantity_transfer
+                                new_warehouse_qty.save()
+                            
+                            
+                            #if any quantity has change
+                            elif pk and form.has_changed() and 'product_quantity_transfer' in form.changed_data:
                                 print(" ONLY QTY ")
+
+                                warehouse_obj , created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse,product=form_instance.product)
+
                                 difference =  form_instance.product_quantity_transfer - old_product_quantity
                                 warehouse_obj.quantity =  warehouse_obj.quantity + difference
                                 warehouse_obj.save()
@@ -9784,43 +9817,45 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
                                 godown_qty_update_obj_through_quantity.quantity -= difference
                                 godown_qty_update_obj_through_quantity.save()
 
-                            else:
-                                warehouse_obj.quantity = form_instance.product_quantity_transfer
-
-                            warehouse_obj.save()
-
+                            
 
                             #if any product has change
-                            if old_product_name:
+                            elif pk and form.has_changed() and 'product' in form.changed_data:
+
                                 print(" ONLY PRODUCT ")
+
+                                print("old godown")
                                 godown_qty_update_obj_through_old_product, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name = old_product_name)
 
                                 godown_qty_update_obj_through_old_product.quantity += old_product_quantity
                                 godown_qty_update_obj_through_old_product.save()
 
-                                godown_qty_update_obj_through_new_product, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name = form.instance.product)
+                                print("new godown")
+                                godown_qty_update_obj_through_new_product, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name = form_instance.product)
 
                                 godown_qty_update_obj_through_new_product.quantity -= form_instance.product_quantity_transfer
                                 godown_qty_update_obj_through_new_product.save()
-
-                                warehouse_qty_update_obj_through_old_product = Product_warehouse_quantity_through_table.objects.get(warehouse = selected_warehouse,product = old_product_name,)
+                                
+                                print("old warehouse")
+                                warehouse_qty_update_obj_through_old_product, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse,product = old_product_name)
 
                                 warehouse_qty_update_obj_through_old_product.quantity -= old_product_quantity
                                 warehouse_qty_update_obj_through_old_product.save()
-
-                                warehouse_qty_update_obj_through_new_product = Product_warehouse_quantity_through_table.objects.get(warehouse = selected_warehouse,product = form.instance.product)
+                                
+                                print("new warehouse")
+                                warehouse_qty_update_obj_through_new_product, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse, product=form_instance.product)
 
                                 warehouse_qty_update_obj_through_new_product.quantity += old_product_quantity
                                 warehouse_qty_update_obj_through_new_product.save()
 
-                            
+                            form_instance.save()
 
                     return redirect('all-product-transfer-to-warehouse')
             
             except Exception as e:
                 print(e)
-    return render(request,'finished_product/product_transfer_to_warehouse.html',{'form':form,'formset':formset,'godowns':godowns,'voucher_instance':voucher_instance,
-                                                                                'warehouses':warehouses,'dict_to_send':dict_to_send})
+
+    return render(request,'finished_product/product_transfer_to_warehouse.html',{'form':form,'formset':formset,'godowns':godowns,'voucher_instance':voucher_instance,'warehouses':warehouses,'dict_to_send':dict_to_send})
 
 
 
@@ -9872,8 +9907,7 @@ def product_transfer_to_warehouse_delete(request):
 def product_transfer_to_warehouse_ajax(request):
     
     godown_id = request.GET.get('godown_id')
-
-
+    
     if godown_id:
 
         try:
@@ -15709,10 +15743,9 @@ def delivery_challan_create_update(request, d_id=None):
     if d_id:
         d_instance = DeliveryChallanMaster.objects.get(id = d_id)
         master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None,instance = d_instance)
+        formset = DeliveryChallanProductsUpdateFormset(request.POST or None,instance = d_instance)
     else:
         d_instance = None
-        
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
         formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
 
@@ -15733,7 +15766,11 @@ def delivery_challan_create_update(request, d_id=None):
         print(request.POST)
 
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+
+        if d_id:
+            formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+        else:
+            formset = DeliveryChallanProductsUpdateFormset(request.POST or None, instance = d_instance)
 
         if master_form.is_valid() and formset.is_valid():
 
