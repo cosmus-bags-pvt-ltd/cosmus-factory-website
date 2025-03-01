@@ -3130,6 +3130,27 @@ def delivery_challan_create_update(request, d_id=None):
 
 
 
+def delivery_challan_process_for_sale_voucher(request):
+    try:
+        d_challan_no = request.GET.get('challanNo')
+
+        if not d_challan_no:
+            return JsonResponse({"error": "challanNo parameter is required"}, status=400)
+
+        d_id = get_object_or_404(DeliveryChallanMaster, delivery_challan_no=d_challan_no)
+
+        d_challan_data = {
+            "delivery_challan_no": d_challan_no,
+            "id": d_id.id,
+            "total_qty": d_id.total_qty,
+            "balance_qty": d_id.balance_qty
+        }
+
+        return JsonResponse(d_challan_data)
+
+    except Exception as e:
+        print(f"Error in processing delivery challan: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @login_required(login_url='login')
