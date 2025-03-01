@@ -10113,16 +10113,16 @@ def product_transfer_to_warehouse_delete(request):
 def product_transfer_to_warehouse_ajax(request):
     
     godown_id = request.GET.get('godown_id')
-    delivery_challan = request.GET.get('deliveryChallan')
+    delivery_challan_id = request.GET.get('deliveryChallan')
 
     
-    if delivery_challan == "true" and godown_id:
+    if delivery_challan_id == "true" and godown_id:
 
         print('in delivery_challan and godown_id')
 
         try:
 
-            filtered_product = list(DeliveryChallanProducts.objects.all().annotate(total_qty = Sum('quantity')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty'))
+            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('quantity')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty'))
 
             if filtered_product:
 
