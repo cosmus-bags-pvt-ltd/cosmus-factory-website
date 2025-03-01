@@ -607,6 +607,13 @@ class product_godown_quantity_through_table(models.Model):
 
 
 
+class product_delivery_challan_quantity_through_table(models.Model):
+    product_name = models.ForeignKey(PProduct_Creation, on_delete = models.PROTECT)
+    quantity = models.BigIntegerField(default = 0)
+    created_date = models.DateTimeField(auto_now_add = True)
+    updated_date = models.DateTimeField(auto_now = True)
+
+
 class RawStockTransferMaster(models.Model):
     voucher_no = models.IntegerField(primary_key=True)
     source_godown = models.ForeignKey(Godown_raw_material, on_delete=models.CASCADE , related_name='source_godowns')
@@ -1192,6 +1199,8 @@ class finishedgoodsbinallocation(models.Model):
 
 
 
+
+
 class DeliveryChallanMaster(models.Model):
     delivery_challan_no = models.CharField(max_length=252, unique=True)
     party_name = models.ForeignKey(Ledger, on_delete=models.PROTECT)
@@ -1201,18 +1210,35 @@ class DeliveryChallanMaster(models.Model):
     dispatch_time = models.TimeField()
     no_of_boxes = models.PositiveIntegerField()
     no_of_pcs = models.PositiveIntegerField()
+    total_qty = models.PositiveIntegerField(default=0)
+    balance_qty = models.PositiveIntegerField(default=0)
     remark = models.TextField(blank=True, null=True)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
 
+    def update_total_qty(self):
+        total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=self).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
+        self.total_qty = total_qty
+        self.balance_qty = total_qty
+        self.save(update_fields=['total_qty', 'balance_qty'])
+
 
 class DeliveryChallanProducts(models.Model):
     delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
-    product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
+    product_name = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.delivery_challan.update_total_qty()
+
+    def delete(self, *args, **kwargs):
+        print("DELETE CALL FROM MODELS ")
+        super().delete(*args, **kwargs)
+        self.delivery_challan.update_total_qty()
 
 
 
@@ -1220,11 +1246,10 @@ class DeliveryChallanProducts(models.Model):
 class sales_voucher_master_finish_Goods(models.Model):
     sales_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
     buyer_inv_no = models.CharField(max_length = 100)
-    company_gst = models.CharField()
+    company_gst = models.CharField(max_length = 100)
     ledger_type = models.CharField(max_length = 20, default = 'sales')
     party_name = models.ForeignKey(Ledger, on_delete = models.PROTECT)
     selected_godown = models.ForeignKey(Godown_finished_goods, on_delete=models.PROTECT,null=True, blank=True)
-    delivery_challans = models.ManyToManyField('DeliveryChallanMaster', blank=True)
     fright_transport = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     gross_total = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     cash_disct = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
@@ -1236,12 +1261,34 @@ class sales_voucher_master_finish_Goods(models.Model):
 
 class sales_voucher_finish_Goods(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_finish_Goods,on_delete=models.CASCADE)
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+
+class SalesVoucherDeliveryChallan(models.Model):
+    sales_voucher = models.ForeignKey(sales_voucher_master_finish_Goods, on_delete=models.CASCADE)
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('sales_voucher', 'delivery_challan')
+
+
+    # def save(self, *args, **kwargs):
+    #     """Reduce balance_qty when linking a delivery challan to a sales voucher."""
+    #     super().save(*args, **kwargs)
+    #     self.delivery_challan.balance_qty -= self.delivery_challan.total_qty
+    #     self.delivery_challan.save(update_fields=['balance_qty'])
+
+    # def delete(self, *args, **kwargs):
+    #     """Restore balance_qty when unlinking a delivery challan."""
+    #     self.delivery_challan.balance_qty += self.delivery_challan.total_qty
+    #     self.delivery_challan.save(update_fields=['balance_qty'])
+    #     super().delete(*args, **kwargs)
 
 
 

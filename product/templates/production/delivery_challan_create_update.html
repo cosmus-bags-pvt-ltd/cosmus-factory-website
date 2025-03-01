@@ -23,6 +23,7 @@
                     <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
                         {% if master_form.instance.id %}
                         <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
+                        <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
                         {% elif not master_form.instance.id %}
                         <option value="" selected disabled>select party name</option>
                         {% for name in party_names %}
@@ -163,6 +164,7 @@
         var enterPressed = false;
         var itemName;
         var purchaseValue;
+        
         var formid = $('#id_deliverychallanproducts_set-0-id').val();
         if(formid === ''){
             $(document).on('change','#id_party_name',function(){
