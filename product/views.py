@@ -3005,6 +3005,119 @@ def purchasevoucherdelete(request,pk):
 
 
 
+@login_required(login_url='login')
+def delivery_challan_product_ajax(request):
+    try:
+        product_name_typed = request.GET.get('nameValue')
+
+        if not product_name_typed:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+
+        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
+
+        products = product_godown_quantity_through_table.objects.filter(
+            Q(product_color_name__Product__Model_Name__icontains = product_name_typed) |
+            Q(product_color_name__PProduct_color__color_name__icontains= product_name_typed) | 
+            Q(product_color_name__Product__Product_Refrence_ID__icontains=product_name_typed)
+            ).values(
+                'product_color_name__Product__Model_Name',
+                'product_color_name__PProduct_SKU',
+                'product_color_name__PProduct_color__color_name',
+                'quantity',
+                'product_color_name__Product__Product_Refrence_ID',
+                'product_color_name__PProduct_image'
+                )
+
+        print(products)
+
+        product_list = {}
+
+        for product in products:
+            sku = product['product_color_name__PProduct_SKU'] 
+            
+            product_list[sku] = [product['product_color_name__PProduct_color__color_name'],product['product_color_name__Product__Model_Name'],product['product_color_name__Product__Product_Refrence_ID'],product['product_color_name__PProduct_image'],product['quantity']]
+
+        return JsonResponse({'products': product_list}, safe=False)
+    
+
+    except Exception as e:
+        logger.error(f"Error in delivery_challan_product_ajax: {e}")
+        return JsonResponse({'error': 'An error occurred while fetching data.'}, status=500)
+
+
+
+@login_required(login_url='login')
+def delivery_challan_create_update(request, d_id=None):
+
+    party_names = Ledger.objects.all()
+    
+    if d_id:
+        d_instance = DeliveryChallanMaster.objects.get(id = d_id)
+        master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
+        formset = DeliveryChallanProductsUpdateFormset(request.POST or None,instance = d_instance)
+    else:
+        d_instance = None
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+
+        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+
+            party_id = request.GET.get('partyName')
+
+            if party_id:
+                party_add = Ledger.objects.get(id = party_id)
+                
+                address = party_add.address
+
+                return JsonResponse({'address':address},status = 200)
+
+
+    if request.method == 'POST':
+        
+        print(request.POST)
+
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+
+        if d_id:
+            formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+        else:
+            formset = DeliveryChallanProductsUpdateFormset(request.POST or None, instance = d_instance)
+
+        if master_form.is_valid() and formset.is_valid():
+
+            try:
+
+                with transaction.atomic():
+
+                    if not master_form.is_valid():
+                        print("Form Errors:", master_form.errors)
+                    
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    if not formset.is_valid():
+                        for form in formset:
+                            if not form.is_valid():
+                                print("Form Errors:", form.errors)
+
+                    if formset.is_valid():
+                        for form in formset.deleted_forms:
+                            if form.instance.pk:
+                                form.instance.delete()
+
+                        formset.forms = [form for form in formset.forms if form.has_changed()]
+
+                        for form in formset:
+                            instance = form.save(commit=False)
+                            instance.delivery_challan = master_form_instance
+                            instance.save()
+
+                    return(redirect('delivery-challan-list'))
+                
+            except Exception as e:
+                print(f"Error saving formset: {e}")
+
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
 
 
 
@@ -3148,6 +3261,56 @@ def salesvouchercreateupdate(request,s_id=None):
 
 
 
+@login_required(login_url='login')
+def delivery_challan_list(request):
+
+    delivary_challan_list = DeliveryChallanMaster.objects.all()
+
+    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
+
+
+    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+    
+
+    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
+
+    product_queryset = PProduct_Creation.objects.all().annotate(
+        total_qty = Sum('godown_colors__quantity'),
+        total_labour_workin_qty = Subquery(product_queryset_subquery),
+        total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),
+        total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
+        total_challan_qty = Subquery(delivery_challan_subquery)).filter(
+            Q(total_qty__gt=0) | 
+            Q(total_labour_workin_qty__gt=0) | 
+            Q(total_labour_workin_pending_qty__gt=0) | 
+            Q(total_labour_workin_approve_qty__gt=0) |  
+            Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+    
+    
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
+
+
+@login_required(login_url='login')
+def delete_delivery_challan(request,pk):
+
+    logger.info('delete_delivery_challan function called')
+
+    try:
+        challan = get_object_or_404(DeliveryChallanMaster, pk=pk)
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no}')
+        
+        challan.delete()
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no} delete successfully')
+
+    except Exception as e:
+        logger.error(f'Error deleting Delivery Challan {pk}: {e}')
+
+    return redirect('delivery-challan-list')
 
 
 
@@ -15789,171 +15952,4 @@ def sale_return_list(request):
 
 
 
-@login_required(login_url='login')
-def delivery_challan_product_ajax(request):
-    try:
-        product_name_typed = request.GET.get('nameValue')
-
-        if not product_name_typed:
-            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
-
-        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
-
-        products = product_godown_quantity_through_table.objects.filter(
-            Q(product_color_name__Product__Model_Name__icontains = product_name_typed) |
-            Q(product_color_name__PProduct_color__color_name__icontains= product_name_typed) | 
-            Q(product_color_name__Product__Product_Refrence_ID__icontains=product_name_typed)
-            ).values(
-                'product_color_name__Product__Model_Name',
-                'product_color_name__PProduct_SKU',
-                'product_color_name__PProduct_color__color_name',
-                'quantity',
-                'product_color_name__Product__Product_Refrence_ID',
-                'product_color_name__PProduct_image'
-                )
-
-        print(products)
-
-        product_list = {}
-
-        for product in products:
-            sku = product['product_color_name__PProduct_SKU'] 
-            
-            product_list[sku] = [product['product_color_name__PProduct_color__color_name'],product['product_color_name__Product__Model_Name'],product['product_color_name__Product__Product_Refrence_ID'],product['product_color_name__PProduct_image'],product['quantity']]
-
-        return JsonResponse({'products': product_list}, safe=False)
-    
-
-    except Exception as e:
-        logger.error(f"Error in delivery_challan_product_ajax: {e}")
-        return JsonResponse({'error': 'An error occurred while fetching data.'}, status=500)
-
-
-
-
-def delivery_challan_create_update(request, d_id=None):
-
-    party_names = Ledger.objects.all()
-    
-    if d_id:
-        d_instance = DeliveryChallanMaster.objects.get(id = d_id)
-        master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
-        formset = DeliveryChallanProductsUpdateFormset(request.POST or None,instance = d_instance)
-    else:
-        d_instance = None
-        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
-
-        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-
-            party_id = request.GET.get('partyName')
-
-            if party_id:
-                party_add = Ledger.objects.get(id = party_id)
-                
-                address = party_add.address
-
-                return JsonResponse({'address':address},status = 200)
-
-
-    if request.method == 'POST':
-        
-        print(request.POST)
-
-        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-
-        if d_id:
-            formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
-        else:
-            formset = DeliveryChallanProductsUpdateFormset(request.POST or None, instance = d_instance)
-
-        if master_form.is_valid() and formset.is_valid():
-
-            try:
-
-                with transaction.atomic():
-
-                    if not master_form.is_valid():
-                        print("Form Errors:", master_form.errors)
-                    
-                    master_form_instance = master_form.save(commit=False)
-                    master_form_instance.save()
-
-                    if not formset.is_valid():
-                        for form in formset:
-                            if not form.is_valid():
-                                print("Form Errors:", form.errors)
-
-                    if formset.is_valid():
-                        for form in formset.deleted_forms:
-                            if form.instance.pk:
-                                form.instance.delete()
-
-                        formset.forms = [form for form in formset.forms if form.has_changed()]
-
-                        for form in formset:
-                            instance = form.save(commit=False)
-                            instance.delivery_challan = master_form_instance
-                            instance.save()
-
-                    return(redirect('delivery-challan-list'))
-                
-            except Exception as e:
-                print(f"Error saving formset: {e}")
-
-    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
-
-
-
-
-@login_required(login_url='login')
-def delivery_challan_list(request):
-
-    delivary_challan_list = DeliveryChallanMaster.objects.all()
-
-    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
-
-
-    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
-    
-
-    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
-
-
-    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
-
-    product_queryset = PProduct_Creation.objects.all().annotate(
-        total_qty = Sum('godown_colors__quantity'),
-        total_labour_workin_qty = Subquery(product_queryset_subquery),
-        total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),
-        total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
-        total_challan_qty = Subquery(delivery_challan_subquery)).filter(
-            Q(total_qty__gt=0) | 
-            Q(total_labour_workin_qty__gt=0) | 
-            Q(total_labour_workin_pending_qty__gt=0) | 
-            Q(total_labour_workin_approve_qty__gt=0) |  
-            Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
-    
-    
-    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
-
-
-
-@login_required(login_url='login')
-def delete_delivery_challan(request,pk):
-
-    logger.info('delete_delivery_challan function called')
-
-    try:
-        challan = get_object_or_404(DeliveryChallanMaster, pk=pk)
-
-        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no}')
-        
-        challan.delete()
-
-        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no} delete successfully')
-
-    except Exception as e:
-        logger.error(f'Error deleting Delivery Challan {pk}: {e}')
-
-    return redirect('delivery-challan-list') 
+ 
