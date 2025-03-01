@@ -1192,7 +1192,7 @@ class finishedgoodsbinallocation(models.Model):
 
 
 
-from django.db import models
+
 
 class DeliveryChallanMaster(models.Model):
     delivery_challan_no = models.CharField(max_length=252, unique=True)
@@ -1210,14 +1210,14 @@ class DeliveryChallanMaster(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
     def update_total_qty(self):
-        total_qty = self.products.aggregate(models.Sum('quantity'))['quantity__sum'] or 0
+        total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=self).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
         self.total_qty = total_qty
         self.balance_qty = total_qty
         self.save(update_fields=['total_qty', 'balance_qty'])
 
 
 class DeliveryChallanProducts(models.Model):
-    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE, related_name='products')
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
@@ -1258,6 +1258,7 @@ class sales_voucher_finish_Goods(models.Model):
     spl_disct = models.IntegerField()
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
 
 class SalesVoucherDeliveryChallan(models.Model):
     sales_voucher = models.ForeignKey(sales_voucher_master_finish_Goods, on_delete=models.CASCADE)
