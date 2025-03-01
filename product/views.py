@@ -15936,3 +15936,24 @@ def delivery_challan_list(request):
     
     
     return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
+
+
+
+@login_required(login_url='login')
+def delete_delivery_challan(request,pk):
+
+    logger.info('delete_delivery_challan function called')
+
+    try:
+        challan = get_object_or_404(DeliveryChallanMaster, pk=pk)
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no}')
+        
+        challan.delete()
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no} delete successfully')
+
+    except Exception as e:
+        logger.error(f'Error deleting Delivery Challan {pk}: {e}')
+
+    return redirect('delivery-challan-list') 
