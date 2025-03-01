@@ -85,7 +85,9 @@
 
                         <td><input type="number" class="purchase-amount stock_color" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}" style="outline: none;" readonly></td>
 
-                        <td><input type="text" class="purchase-amount stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity" value="{{ form.instance.quantity | default_if_none:'' }}"></td>
+                        <td><input type="text" class="purchase-amount stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity" value="{{ form.instance.quantity | default_if_none:'' }}">
+                            <input type="hidden" class="purchase-amount" name="quantity-{{forloop.counter0}}" maxlength="200" id="id_quantity-{{forloop.counter0}}" value="">
+                        </td>
 
                         <td>
                             <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
@@ -157,29 +159,31 @@
         var enterPressed = false;
         var itemName;
         var purchaseValue;
-   
-        
-        $(document).on('change','#id_party_name',function(){
-            var partyName = $(this).val();
-            console.log('partyName',partyName)
-            $.ajax({
-                url:"/deliverychallancreate/",
-                method: 'GET',
-                data: {
-                    'partyName': partyName,
-                    
-                },
-                success: function (response) {
-                    console.log(response.address)
-                    $('#id_party_address').val(response.address)
-                },
-                error: function (error) {   
-                    console.log(error);
-                }
+        var formid = $('#id_deliverychallanproducts_set-0-id').val();
+        if(formid === ''){
+            $(document).on('change','#id_party_name',function(){
+                var partyName = $(this).val();
+                console.log('partyName',partyName)
+                $.ajax({
+                    url:"/deliverychallancreate/",
+                    method: 'GET',
+                    data: {
+                        'partyName': partyName,
+                        
+                    },
+                    success: function (response) {
+                        console.log(response.address)
+                        $('#id_party_address').val(response.address)
+                    },
+                    error: function (error) {   
+                        console.log(error);
+                    }
 
 
+                })
             })
-        })
+        }
+        
     
         $(document).on('click input keyup focus keydown', 'input[name$="-products"]', function () {
             itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
@@ -292,12 +296,32 @@
                     const productColor = selectedValue[0];
                     const productRef = selectedValue[2]
                     var newNameValue = namevalueCheck + '                             '+ productQty;
-            
+                    console.log('productQty',productQty)
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
+                    $(`input[name^=quantity-${purchaseValue}]`).val(productQty);
+
+                    let totalExistingQuantity = 0;
+                
+                    $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
+                        var rowProductValue = parseInt($(this).val());
+                        var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
+                        console.log('rowProductValue',rowProductValue,typeof(item_value))
+                        console.log('rowIndex',rowIndex)
+                        if (rowProductValue === item_value) {
+                            var rowQuantity = parseInt($(`.stock_qty[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
+                            console.log('rowQuantity',rowQuantity)
+                            totalExistingQuantity += rowQuantity;
+                            console.log('rowIndex',totalExistingQuantity)
+                            $(`input[name^=quantity-${rowIndex}]`).val(totalExistingQuantity)
+                        }else{
+                            $(`input[name^=quantity-${rowIndex}]`).val(productQty)
+                        }
+            
+                    })
                 }
             
                 suggestionsContainer.css('display', 'none');
@@ -305,8 +329,71 @@
             })
 
         })
+        let timeout = null; // Declare timeout variable globally
+        $(document).on('input', 'input[name$="-quantity"]', function (e) {  
+       
+            clearTimeout(timeout); // Clear previous timeout to prevent multiple requests
+            let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
+            let productValue = parseInt($(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val()) || 0;
+            let sku = $(`#id_deliverychallanproducts_set-${rowIndex}-product_name`).val();
+            let Qty =  $(`input[name^=quantity-${rowIndex}]`).val();
+           console.log('productValue',productValue)
+           console.log('sku',sku)
+           console.log('Qty',Qty)
+
+            if (productValue > Qty) {
+
+                $(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val(Qty);
+
+            }
+
+            calculateTotal();
+
+
+            timeout = setTimeout(() => { // Wait before sending request
+                // Sending data via AJAX after debounce
+
+                // $.ajax({
+                //     url: '/binquantityajax/',
+                //     method: 'GET',
+                //     data: { 
+                //         "sku": sku,
+                //
+                //         "productQty": productQty,
+                //       
+                //     },
+                //     success: function (response) {
+                //     console.log(response);
+
+                //     },
+                //     error: function (error) {
+                //         console.log(error);
+                //     }
+                // });
+            }, 500); // Adjust delay (in milliseconds) as needed, 500ms is a good default
+
+        });
         
     
+        function calculateTotal() {
+        var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
+        .filter(row => row.style.display !== 'none');
+
+        var value = 0;
+    
+        tables.forEach(function(row) {
+            var inputField = row.querySelector('[name$="-quantity"]');
+            if (inputField) {
+                var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
+                value += qty;
+            }
+        });
+
+        document.getElementById('id_total-quantity').value = value;
+        document.getElementById('id_no_of_pcs').value = value;
+    }
+
+    calculateTotal()
         var index = 0; // Declare index outside of the event listener
         var indexbool = true;
 
@@ -418,8 +505,22 @@
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
+                    $(`input[name^=quantity-${purchaseValue}]`).val(productQty)
                     
-                   totalValue(productQty)
+                    let totalExistingQuantity = 0;
+                
+                $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
+                var rowProductValue = parseInt($(this).val());
+                var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
+              
+                if (rowProductValue === item_value) {
+                    var rowQuantity = parseInt($(`input[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
+                    totalExistingQuantity += rowQuantity;
+    
+                    $(`input[name^=quantity-${purchaseValue}]`).val(totalExistingQuantity)
+                }
+      
+            })
                 }
                 enterPressed = true;
                 hiddenValue.css("display" ,"none");
@@ -431,10 +532,7 @@
             }
         })
         
-        function totalValue(productQty){
-            console.log(productQty,'productQty')
-            
-        }
+        
     })
 </script>
 <script>
@@ -506,6 +604,11 @@
                     itemQuantityElement.name = `deliverychallanproducts_set-${newFormCount}-quantity`;
                     itemQuantityElement.value = "";
 
+                    const QuantityElement = newTable.querySelector('input[name^="quantity-"]');
+                    QuantityElement.id = `id_quantity-${newFormCount}`;
+                    QuantityElement.name = `quantity-${newFormCount}`;
+                    QuantityElement.value = "";
+
 
                     const deleteElement = newTable.querySelector('.stock_deleteId[name^="deliverychallanproducts_set-"][name$="-DELETE"]');
                     deleteElement.id = `id_deliverychallanproducts_set-${newFormCount}-DELETE`;
@@ -566,32 +669,16 @@
         };
     deleteRow();
 
-    function calculateTotal() {
-        var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
-        .filter(row => row.style.display !== 'none');
+   
 
-        var value = 0;
-    
-        tables.forEach(function(row) {
-            var inputField = row.querySelector('[name$="-quantity"]');
-            if (inputField) {
-                var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
-                value += qty;
-            }
-        });
-
-        document.getElementById('id_total-quantity').value = value;
-        document.getElementById('id_no_of_pcs').value = value;
-    }
-
-        // Event delegation for dynamically added rows
-        document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
-            if (event.target.matches('[name$="-quantity"]')) {
-                calculateTotal();
-            }
-        });
+        // // Event delegation for dynamically added rows
+        // document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
+        //     if (event.target.matches('[name$="-quantity"]')) {
+               
+        //     }
+        // });
     inputCheck()
-    calculateTotal();
+   
 });
 
 
