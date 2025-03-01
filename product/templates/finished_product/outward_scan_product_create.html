@@ -714,7 +714,9 @@ $(document).ready(function () {
 
    
     async function sendSerialNumber(serialNo) {
+    
         var checkedRadio = $('.picklistRadio:checked');
+
         if (checkedRadio.length === 0) {
             console.warn("No picklist selected.");
             $('#responseMessage').html('<span class="text-danger">Please select a picklist before scanning.</span>');
