@@ -51,7 +51,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster
                     item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item,
                     labour_workin_approval_report, labour_workout_childs, labour_workout_cutting_items,
                     labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products,
-                    packaging, product_2_item_through_table, product_godown_quantity_through_table, 
+                    packaging, product_2_item_through_table, product_delivery_challan_quantity_through_table, product_godown_quantity_through_table, 
                     product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
@@ -3015,17 +3015,17 @@ def delivery_challan_product_ajax(request):
 
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
 
-        products = product_godown_quantity_through_table.objects.filter(
-            Q(product_color_name__Product__Model_Name__icontains = product_name_typed) |
-            Q(product_color_name__PProduct_color__color_name__icontains= product_name_typed) | 
-            Q(product_color_name__Product__Product_Refrence_ID__icontains=product_name_typed)
+        products = product_delivery_challan_quantity_through_table.objects.filter(
+            Q(product_name__Product__Model_Name__icontains = product_name_typed) |
+            Q(product_name__PProduct_color__color_name__icontains= product_name_typed) | 
+            Q(product_name__Product__Product_Refrence_ID__icontains=product_name_typed)
             ).values(
-                'product_color_name__Product__Model_Name',
-                'product_color_name__PProduct_SKU',
-                'product_color_name__PProduct_color__color_name',
+                'product_name__Product__Model_Name',
+                'product_name__PProduct_SKU',
+                'product_name__PProduct_color__color_name',
                 'quantity',
-                'product_color_name__Product__Product_Refrence_ID',
-                'product_color_name__PProduct_image'
+                'product_name__Product__Product_Refrence_ID',
+                'product_name__PProduct_image'
                 )
 
         print(products)
@@ -3033,9 +3033,9 @@ def delivery_challan_product_ajax(request):
         product_list = {}
 
         for product in products:
-            sku = product['product_color_name__PProduct_SKU'] 
+            sku = product['product_name__PProduct_SKU'] 
             
-            product_list[sku] = [product['product_color_name__PProduct_color__color_name'],product['product_color_name__Product__Model_Name'],product['product_color_name__Product__Product_Refrence_ID'],product['product_color_name__PProduct_image'],product['quantity']]
+            product_list[sku] = [product['product_name__PProduct_color__color_name'],product['product_name__Product__Model_Name'],product['product_name__Product__Product_Refrence_ID'],product['product_name__PProduct_image'],product['quantity']]
 
         return JsonResponse({'products': product_list}, safe=False)
     
@@ -3100,16 +3100,23 @@ def delivery_challan_create_update(request, d_id=None):
                             if not form.is_valid():
                                 print("Form Errors:", form.errors)
 
+                    formset.forms = [form for form in formset.forms if form.has_changed()]
+                    
                     if formset.is_valid():
                         for form in formset.deleted_forms:
                             if form.instance.pk:
-                                form.instance.delete()
+                                form.instance.delete()   
 
-                        formset.forms = [form for form in formset.forms if form.has_changed()]
-
-                        for form in formset:
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
                             instance = form.save(commit=False)
                             instance.delivery_challan = master_form_instance
+
+                            obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
+
+                            obj.quantity -= instance.quantity
+                            obj.save()
+                                
                             instance.save()
 
                     return(redirect('delivery-challan-list'))
@@ -6930,6 +6937,8 @@ def goods_return_popup(request,pk):
                             selected_product = PProduct_Creation.objects.get(PProduct_SKU = form_instance.product_sku)
                             obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown_instance, product_color_name = selected_product)
 
+                            delivery_challan_obj, created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = selected_product)
+
 
                             quantity_to_add = obj.quantity if not created else 0
                             
@@ -6941,8 +6950,10 @@ def goods_return_popup(request,pk):
                                 approved_qty_differ = form_instance.approved_qty
 
                             obj.quantity = quantity_to_add + approved_qty_differ  
+                            delivery_challan_obj.quantity = quantity_to_add + approved_qty_differ
                             
                             obj.save()
+                            delivery_challan_obj.save()
 
                             form_instance.save()
 

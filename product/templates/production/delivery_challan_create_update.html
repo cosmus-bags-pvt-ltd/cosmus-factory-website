@@ -22,7 +22,7 @@
                     <label for="id_party_name" class="me-1">Party name :</label>
                     <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
                         {% if master_form.instance.id %}
-                        <option value="{{ name.id }}">{{ master_form.instance.party_name.name }}</option>
+                        <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
                         {% elif not master_form.instance.id %}
                         <option value="" selected disabled>select party name</option>
                         {% for name in party_names %}
@@ -90,7 +90,11 @@
                         </td>
 
                         <td>
-                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
+                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;">
+                                <i class="fa-solid fa-trash text-danger px-3 py-2 fs-6">
+                                    <input type="checkbox" class="stock_deleteId px-2" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly>
+                                </i>
+                            </span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -115,7 +119,7 @@
                 <label for="id_driver_name" class="me-1">Driver name :</label>
                 <input type="text" class="item-selects me-3" name="driver_name" maxlength="100" required id="id_driver_name" value="{{ master_form.instance.driver_name}}">
                 <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
-                <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time" value="{{ master_form.instance.dispatch_time }}"> 
+                <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time" value="{{ master_form.instance.dispatch_time|time:'H:i' }}"> 
             </div>
             <div class="mb-2">
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
@@ -159,6 +163,7 @@
         var enterPressed = false;
         var itemName;
         var purchaseValue;
+        
         var formid = $('#id_deliverychallanproducts_set-0-id').val();
         if(formid === ''){
             $(document).on('change','#id_party_name',function(){
@@ -304,24 +309,7 @@
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
                     $(`input[name^=quantity-${purchaseValue}]`).val(productQty);
 
-                    let totalExistingQuantity = 0;
-                
-                    $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
-                        var rowProductValue = parseInt($(this).val());
-                        var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
-                        console.log('rowProductValue',rowProductValue,typeof(item_value))
-                        console.log('rowIndex',rowIndex)
-                        if (rowProductValue === item_value) {
-                            var rowQuantity = parseInt($(`.stock_qty[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
-                            console.log('rowQuantity',rowQuantity)
-                            totalExistingQuantity += rowQuantity;
-                            console.log('rowIndex',totalExistingQuantity)
-                            $(`input[name^=quantity-${rowIndex}]`).val(totalExistingQuantity)
-                        }else{
-                            $(`input[name^=quantity-${rowIndex}]`).val(productQty)
-                        }
-            
-                    })
+                    
                 }
             
                 suggestionsContainer.css('display', 'none');

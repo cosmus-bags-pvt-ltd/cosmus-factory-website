@@ -1414,5 +1414,6 @@ class DeliveryChallanProductsForm(forms.ModelForm):
         model = DeliveryChallanProducts
         fields = ['product_name','quantity']
 
-DeliveryChallanProductsCreateFormset = inlineformset_factory(DeliveryChallanMaster, DeliveryChallanProducts, form = DeliveryChallanProductsForm, extra=1, can_delete=True)
-DeliveryChallanProductsUpdateFormset = inlineformset_factory(DeliveryChallanMaster, DeliveryChallanProducts, form = DeliveryChallanProductsForm, extra=0, can_delete=True)
+DeliveryChallanProductsCreateFormset = inlineformset_factory(DeliveryChallanMaster, DeliveryChallanProducts, form = DeliveryChallanProductsForm, extra=1, can_delete = True)
+
+DeliveryChallanProductsUpdateFormset = inlineformset_factory(DeliveryChallanMaster, DeliveryChallanProducts, form = DeliveryChallanProductsForm, extra=0, can_delete = True)

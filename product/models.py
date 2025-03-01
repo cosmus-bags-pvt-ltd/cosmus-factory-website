@@ -607,6 +607,13 @@ class product_godown_quantity_through_table(models.Model):
 
 
 
+class product_delivery_challan_quantity_through_table(models.Model):
+    product_name = models.ForeignKey(PProduct_Creation, on_delete = models.PROTECT)
+    quantity = models.BigIntegerField(default = 0)
+    created_date = models.DateTimeField(auto_now_add = True)
+    updated_date = models.DateTimeField(auto_now = True)
+
+
 class RawStockTransferMaster(models.Model):
     voucher_no = models.IntegerField(primary_key=True)
     source_godown = models.ForeignKey(Godown_raw_material, on_delete=models.CASCADE , related_name='source_godowns')
@@ -1209,6 +1216,7 @@ class DeliveryChallanMaster(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
+
     def update_total_qty(self):
         total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=self).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
         self.total_qty = total_qty
@@ -1228,6 +1236,7 @@ class DeliveryChallanProducts(models.Model):
         self.delivery_challan.update_total_qty()
 
     def delete(self, *args, **kwargs):
+        print("DELETE CALL FROM MODELS ")
         super().delete(*args, **kwargs)
         self.delivery_challan.update_total_qty()
 
@@ -1252,6 +1261,7 @@ class sales_voucher_master_finish_Goods(models.Model):
 
 class sales_voucher_finish_Goods(models.Model):
     sales_voucher_master = models.ForeignKey(sales_voucher_master_finish_Goods,on_delete=models.CASCADE)
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation,on_delete = models.PROTECT)
     quantity = models.IntegerField()
     trade_disct = models.IntegerField()
@@ -1268,17 +1278,17 @@ class SalesVoucherDeliveryChallan(models.Model):
         unique_together = ('sales_voucher', 'delivery_challan')
 
 
-    def save(self, *args, **kwargs):
-        """Reduce balance_qty when linking a delivery challan to a sales voucher."""
-        super().save(*args, **kwargs)
-        self.delivery_challan.balance_qty -= self.delivery_challan.total_qty
-        self.delivery_challan.save(update_fields=['balance_qty'])
+    # def save(self, *args, **kwargs):
+    #     """Reduce balance_qty when linking a delivery challan to a sales voucher."""
+    #     super().save(*args, **kwargs)
+    #     self.delivery_challan.balance_qty -= self.delivery_challan.total_qty
+    #     self.delivery_challan.save(update_fields=['balance_qty'])
 
-    def delete(self, *args, **kwargs):
-        """Restore balance_qty when unlinking a delivery challan."""
-        self.delivery_challan.balance_qty += self.delivery_challan.total_qty
-        self.delivery_challan.save(update_fields=['balance_qty'])
-        super().delete(*args, **kwargs)
+    # def delete(self, *args, **kwargs):
+    #     """Restore balance_qty when unlinking a delivery challan."""
+    #     self.delivery_challan.balance_qty += self.delivery_challan.total_qty
+    #     self.delivery_challan.save(update_fields=['balance_qty'])
+    #     super().delete(*args, **kwargs)
 
 
 
