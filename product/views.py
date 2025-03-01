@@ -3055,6 +3055,7 @@ def delivery_challan_create_update(request, d_id=None):
         d_instance = DeliveryChallanMaster.objects.get(id = d_id)
         master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
         formset = DeliveryChallanProductsUpdateFormset(request.POST or None,instance = d_instance)
+
     else:
         d_instance = None
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
@@ -3143,6 +3144,7 @@ def salesvouchercreateupdate(request,s_id=None):
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
+        
         page_name = 'Edit Sales Invoice'
         godown_id = voucher_instance.selected_godown.id
 
@@ -3172,6 +3174,7 @@ def salesvouchercreateupdate(request,s_id=None):
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
         formset = salesvouchercreateformset()
+        delivery_challan_formset = SalesVoucherDeliveryChallanForm()
         page_name = 'Create Sales Invoice'
     
 
@@ -3263,7 +3266,7 @@ def salesvouchercreateupdate(request,s_id=None):
             except Exception as e:
                 print(e)
 
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send})
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset})
 
 
 
