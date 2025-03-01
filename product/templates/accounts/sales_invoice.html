@@ -3,7 +3,7 @@
 
 {% block body %}
 <div>
-      
+      {{ delivery_challan_formset }}
       <form class="mt-3" action="" method="POST" id="salesForm">
         {% csrf_token %}
         <div class="d-flex mb-3">
