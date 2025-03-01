@@ -11,7 +11,7 @@
             <div class="d-flex">
                 <label for="id_delivery_challan_no" class="me-1">Challan no :</label>
                 {% if master_form.instance.id %}
-                <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no" value="{{ master_form.instance.delivery_challan_no }}">
+                <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no" value="{{ master_form.instance.delivery_challan_no }}" readonly>
                 {% elif not master_form.instance.id %}
                 <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no">
                 {% endif %}
@@ -22,7 +22,7 @@
                     <label for="id_party_name" class="me-1">Party name :</label>
                     <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
                         {% if master_form.instance.id %}
-                        <option value="{{ name.id }}">{{ master_form.instance.party_name.name }}</option>
+                        <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
                         {% elif not master_form.instance.id %}
                         <option value="" selected disabled>select party name</option>
                         {% for name in party_names %}
@@ -83,14 +83,16 @@
 
                         <td><input type="text" name="stock_color_{{forloop.counter0}}" id="id_stock_color_{{forloop.counter0}}" class="purchase-amount stock_color" value="{{ form.instance.product_name.PProduct_color.color_name }}" readonly style="outline: none;"></td>
 
-                        <td><input type="number" class="purchase-amount stock_color" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}" style="outline: none;" readonly></td>
+                        <td><input type="number" class="purchase-amount stock_color" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}" style="outline: none;" readonly>
+                            <input type="hidden" class="purchase-amount " name="productSku-{{forloop.counter0}}" id="id_productSku-{{forloop.counter0}}" value=""  readonly>
+                        </td>
 
-                        <td><input type="text" class="purchase-amount stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity" value="{{ form.instance.quantity | default_if_none:'' }}">
-                            <input type="hidden" class="purchase-amount" name="quantity-{{forloop.counter0}}" maxlength="200" id="id_quantity-{{forloop.counter0}}" value="">
+                        <td><input type="text" class="product_remark stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity" value="{{ form.instance.quantity | default_if_none:'' }}">
+                            <input type="hidden" class="purchase-vNo" name="quantity-{{forloop.counter0}}" maxlength="200" id="id_quantity-{{forloop.counter0}}" value="">
                         </td>
 
                         <td>
-                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
+                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -98,7 +100,7 @@
                 </tbody>
                 <tr>
                     <td colspan="5">Total :</td>
-                    <td><input type="text" value="" class="purchase-amount  border-0 stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
+                    <td><input type="text" value="" class="product_remark  border-0 stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
                     <td></td>
                 </tr>
             </table>
@@ -111,17 +113,18 @@
 
             <div class="mb-2">
                 <label for="id_vehicle_no" class="me-1">Vehicle no :</label>
-                <input type="text" class="item-selects me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no" value="{{ master_form.instance.vehicle_no}}">
+                <input type="text" class="purchase-itemName me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no" value="{{ master_form.instance.vehicle_no}}">
                 <label for="id_driver_name" class="me-1">Driver name :</label>
-                <input type="text" class="item-selects me-3" name="driver_name" maxlength="100" required id="id_driver_name" value="{{ master_form.instance.driver_name}}">
+                <input type="text" class="purchase-itemName me-3" name="driver_name" maxlength="100" required id="id_driver_name" value="{{ master_form.instance.driver_name}}">
                 <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
                 <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time" value="{{ master_form.instance.dispatch_time }}"> 
-            </div>
-            <div class="mb-2">
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes" value="{{ master_form.instance.no_of_boxes}}">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
-                <input type="number" class="me-1 purchase-amount" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly value="{{ master_form.instance.no_of_pcs}}">
+                <input type="number" class="me-1 product_remark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly value="{{ master_form.instance.no_of_pcs}}">
+            </div>
+            <div class="mb-2">
+                
                 <label for="id_remark" class="me-1">Remark :</label>
                 <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark" value="{{ master_form.instance.remark}}">
             </div>
@@ -130,17 +133,18 @@
 
             <div class="mb-2">
                 <label for="id_vehicle_no" class="me-1">Vehicle no :</label>
-                <input type="text" class="item-selects me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no">
+                <input type="text" class="purchase-itemName me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no">
                 <label for="id_driver_name" class="me-1">Driver name :</label>
-                <input type="text" class="item-selects me-3" name="driver_name" maxlength="100" required id="id_driver_name">
+                <input type="text" class="purchase-itemName me-3" name="driver_name" maxlength="100" required id="id_driver_name">
                 <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
                 <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time"> 
-            </div>
-            <div class="mb-2">
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
-                <input type="number" class="me-1 purchase-amount" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
+                <input type="number" class="me-1 product_remark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
+            </div>
+            <div class="mb-2">
+               
                 <label for="id_remark" class="me-1">Remark :</label>
                 <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark">
             </div>
@@ -219,7 +223,7 @@
                 success: function (response) {
                     // console.log(response.products);
                     searchedProductNameDic = response.products; 
-                    console.log('searchedProductNameDic',searchedProductNameDic)
+                    // console.log('searchedProductNameDic',searchedProductNameDic)
                     const searchQuery = nameValue.toLowerCase();
                     const searchTerms = searchQuery.split(/\s+/);
                     const convertStringData = searchTerms.toString();
@@ -284,7 +288,7 @@
                 var item_value = $(this).data('key');
                 var itemNamevaluesCheck = $(this).text().trim();
                 
-                // $(this).closest('.custom-dropdown-container').find('.search-input').val(newNameValue);
+        
                 
                 $(this).addClass('selected').siblings().removeClass('selected');
 
@@ -303,25 +307,26 @@
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
                     $(`input[name^=quantity-${purchaseValue}]`).val(productQty);
+                    $(`input[name^=productSku-${purchaseValue}]`).val(item_value);
 
                     let totalExistingQuantity = 0;
                 
-                    $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
-                        var rowProductValue = parseInt($(this).val());
-                        var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
-                        console.log('rowProductValue',rowProductValue,typeof(item_value))
-                        console.log('rowIndex',rowIndex)
-                        if (rowProductValue === item_value) {
-                            var rowQuantity = parseInt($(`.stock_qty[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
-                            console.log('rowQuantity',rowQuantity)
-                            totalExistingQuantity += rowQuantity;
-                            console.log('rowIndex',totalExistingQuantity)
-                            $(`input[name^=quantity-${rowIndex}]`).val(totalExistingQuantity)
-                        }else{
-                            $(`input[name^=quantity-${rowIndex}]`).val(productQty)
-                        }
+                    // $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
+                    //     var rowProductValue = parseInt($(this).val());
+                    //     var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
+                    //     console.log('rowProductValue',rowProductValue ,typeof(item_value))
+                    //     console.log('item_value',item_value)
+                    //     if (rowProductValue === item_value) {
+                    //         var rowQuantity = parseInt($(`.stock_qty[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
+                    //         console.log('rowQuantity',rowQuantity)
+                    //         totalExistingQuantity += rowQuantity;
+                    //         console.log('rowIndex',totalExistingQuantity)
+                    //         // $(`input[name^=quantity-${rowIndex}]`).val(totalExistingQuantity)
+                    //     }else{
+                    //         // $(`input[name^=quantity-${rowIndex}]`).val(productQty)
+                    //     }
             
-                    })
+                    // })
                 }
             
                 suggestionsContainer.css('display', 'none');
@@ -329,71 +334,42 @@
             })
 
         })
-        let timeout = null; // Declare timeout variable globally
+   
         $(document).on('input', 'input[name$="-quantity"]', function (e) {  
-       
-            clearTimeout(timeout); // Clear previous timeout to prevent multiple requests
+    
             let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
             let productValue = parseInt($(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val()) || 0;
             let sku = $(`#id_deliverychallanproducts_set-${rowIndex}-product_name`).val();
             let Qty =  $(`input[name^=quantity-${rowIndex}]`).val();
-           console.log('productValue',productValue)
-           console.log('sku',sku)
-           console.log('Qty',Qty)
+
+            console.log('productValue',productValue)
+            console.log('Qty',Qty)
 
             if (productValue > Qty) {
-
                 $(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val(Qty);
-
             }
 
-            calculateTotal();
+            var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
+            .filter(row => row.style.display !== 'none');
 
+            var value = 0;
+    
+            tables.forEach(function(row) {
+                var inputField = row.querySelector('[name$="-quantity"]');
+                if (inputField) {
+                    var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
+                    value += qty;
+                }
+            });
 
-            timeout = setTimeout(() => { // Wait before sending request
-                // Sending data via AJAX after debounce
+            document.getElementById('id_total-quantity').value = value;
+            document.getElementById('id_no_of_pcs').value = value;
 
-                // $.ajax({
-                //     url: '/binquantityajax/',
-                //     method: 'GET',
-                //     data: { 
-                //         "sku": sku,
-                //
-                //         "productQty": productQty,
-                //       
-                //     },
-                //     success: function (response) {
-                //     console.log(response);
-
-                //     },
-                //     error: function (error) {
-                //         console.log(error);
-                //     }
-                // });
-            }, 500); // Adjust delay (in milliseconds) as needed, 500ms is a good default
+            
 
         });
         
-    
-        function calculateTotal() {
-        var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
-        .filter(row => row.style.display !== 'none');
 
-        var value = 0;
-    
-        tables.forEach(function(row) {
-            var inputField = row.querySelector('[name$="-quantity"]');
-            if (inputField) {
-                var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
-                value += qty;
-            }
-        });
-
-        document.getElementById('id_total-quantity').value = value;
-        document.getElementById('id_no_of_pcs').value = value;
-    }
-
-    calculateTotal()
         var index = 0; // Declare index outside of the event listener
         var indexbool = true;
 
@@ -507,20 +483,20 @@
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
                     $(`input[name^=quantity-${purchaseValue}]`).val(productQty)
                     
-                    let totalExistingQuantity = 0;
+            //         let totalExistingQuantity = 0;
                 
-                $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
-                var rowProductValue = parseInt($(this).val());
-                var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
+            //     $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
+            //     var rowProductValue = parseInt($(this).val());
+            //     var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
               
-                if (rowProductValue === item_value) {
-                    var rowQuantity = parseInt($(`input[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
-                    totalExistingQuantity += rowQuantity;
+            //     if (rowProductValue === item_value) {
+            //         var rowQuantity = parseInt($(`input[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
+            //         totalExistingQuantity += rowQuantity;
     
-                    $(`input[name^=quantity-${purchaseValue}]`).val(totalExistingQuantity)
-                }
+            //         $(`input[name^=quantity-${purchaseValue}]`).val(totalExistingQuantity)
+            //     }
       
-            })
+            // })
                 }
                 enterPressed = true;
                 hiddenValue.css("display" ,"none");
@@ -534,8 +510,7 @@
         
         
     })
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('id_delivery_challan_no').focus()
         const addRowButton = document.getElementById('addRowButton');
@@ -593,6 +568,10 @@
                     selectElement.name = `select_product_name_${newFormCount}`;
                     selectElement.innerHTML = '';
 
+                    const selectSkuElement = newTable.querySelector('input[name^="productSku-"]');
+                    selectSkuElement.id = `id_productSku-${newFormCount}`;
+                    selectSkuElement.name = `productSku-${newFormCount}`;
+                    selectSkuElement.value = '';
 
                     const itemColorElement = newTable.querySelector('input[name^="stock_color_"]');
                     itemColorElement.id = `id_stock_color_${newFormCount}`;
@@ -655,7 +634,7 @@
                             checkRow.value = 'true'; // Set the value to 'true'
 
                             row.style.display = 'none';
-                        
+                            calculateTotal()
                         } else {
                             console.error("Checkbox for deletion not found in this row");
                         }
@@ -667,16 +646,35 @@
                 });
             });
         };
+
+
+        function calculateTotal() {
+            var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
+            .filter(row => row.style.display !== 'none');
+
+            var value = 0;
+    
+            tables.forEach(function(row) {
+                var inputField = row.querySelector('[name$="-quantity"]');
+                if (inputField) {
+                    var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
+                    value += qty;
+                }
+            });
+
+            document.getElementById('id_total-quantity').value = value;
+            document.getElementById('id_no_of_pcs').value = value;
+        }
+
+        document.querySelector('[name$="-quantity"]').addEventListener('input', function() {
+
+            calculateTotal();
+        });
+
+    calculateTotal()
     deleteRow();
 
-   
 
-        // // Event delegation for dynamically added rows
-        // document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
-        //     if (event.target.matches('[name$="-quantity"]')) {
-               
-        //     }
-        // });
     inputCheck()
    
 });
