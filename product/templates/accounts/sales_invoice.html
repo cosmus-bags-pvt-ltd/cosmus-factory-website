@@ -13,27 +13,26 @@
       <span id="purchaseError" class="error-messages"></span>
       <div class="d-flex ms-2">
         <label for="id_challan_no" class="fw-bold">Add Challan+ :</label>
-    
-        <input type="text" name="challan_no" class="purchase-mark  ms-1 me-1" id="id_challan_no">
+        <input type="text" name="challan_no" class="purchase-mark me-1" id="id_challan_no">
       </div>
+
       <div class="d-flex ms-2">
         <label for="id_sales_no" class="me-1">Sales No :</label>
         {% if master_form.instance.id %}
         <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no" value="{{master_form.instance.sales_no}}"
           maxlength="255" required readonly>
         {% elif not master_form.instance.id %}
-        <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no"
-          value="{{master_form.sales_no.initial }}" maxlength="255" required>
+        <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no" value="{{master_form.sales_no.initial }}" maxlength="255" required>
         {% endif %}
       </div>
       <span id="SupplierError" class="error-messages"></span>
       <div class="d-flex ms-2">
         <label for="id_buyer_inv_no" class="me-1">Buyer No :</label>
         {% if master_form.instance.id %}
-        <input type="text" class="purchase-vNo me-3" name="buyer_inv_no" id="id_buyer_inv_no"
+        <input type="text" class="purchase-vNo " name="buyer_inv_no" id="id_buyer_inv_no"
           value="{{master_form.instance.buyer_inv_no}}" maxlength="255" readonly>
         {% elif not master_form.instance.id %}
-        <input type="text" class="purchase-vNo me-3" name="buyer_inv_no" id="id_buyer_inv_no"
+        <input type="text" class="purchase-vNo " name="buyer_inv_no" id="id_buyer_inv_no"
           value="{{master_form.instance.buyer_inv_no}}" maxlength="255" required aria-required="true">
         {% endif %}
       </div>
@@ -42,15 +41,14 @@
         <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
           maxlength="50" readonly>
       </div>
-      <div class="d-flex ms-3">
+      <div class="d-flex ms-2">
         <label for="id_ledger_type" class="me-1">ledger Type :</label>
-        <input type="text" class="purchase-vNo" name="ledger_type" id="id_ledger_type"
+        <input type="text" class="product_remark" name="ledger_type" id="id_ledger_type"
           value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
           placeholder="Sales" readonly>
       </div>
     </div>
-    <div class="mb-3 d-flex">
-  
+    <div class="mb-2 d-flex">
       <div class="d-flex">
         <label for="id_selected_godown" class="me-1">Godown :</label>
         <select class="item-select text-black" name="selected_godown" required id="id_selected_godown">
@@ -66,7 +64,7 @@
         </select>
       </div>
       <span id="purchaseError" class="error-messages"></span>
-      <div class="d-flex ms-3">
+      <div class="d-flex ms-2">
         <label for="id_party_name" class="me-1">Party Name :</label>
         <select class="item-select text-black" name="party_name" required id="id_party_name">
           {% if master_form.instance.id %}
@@ -79,22 +77,25 @@
           {% endfor %}
           {% endif %}
         </select>
-        <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+        <div>
+          <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+        </div>
+        
       </div>
 
-      <div class="d-flex ms-3">
+      <div class="d-flex ms-2">
         <label for="id_GST_number" class="me-2">Party GST No :</label>
         <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
           value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
           readonly required>
       </div>
-      <div class="ms-2">
+      <div class="ms-3">
         <table class="table table-striped table-hover table-bordered table-warning" id="challanTable">
           <thead class="name_absolute">
               <tr>
                   <th>Chall No</th>
                   <th>Qty</th>
-                  <th>Balance</th>
+                  <!-- <th>Balance</th> -->
                   <th>check</th>
               </tr>
           </thead>
@@ -108,16 +109,17 @@
                   <td>
                       <input type="number" class="rowNo challanQty" name="challanQty-{{forloop.counter0}}" id="id_challanQty-{{forloop.counter0}}" value="{% if form.instance.id %}{{ form.instance }}{% endif %}" readonly  style="cursor: pointer;">
                   </td>
-                  <td><input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{% if form.instance.id %}{{ form.instance }}{% endif %}" readonly></td>
-                  <td><input type="radio" class="challanRadio outwardChallan-btn" name="challan_group"></td>
+                  <!-- <td><input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{% if form.instance.id %}{{ form.instance }}{% endif %}" readonly></td> -->
+                  <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan"></td>
               </tr>
-
+  
               {% endfor %}
-
+  
           </tbody>
       </table>
       </div>
     </div>
+   
 
     <table class="table table-striped table-hover table-responsive" id="salesTable">
       <thead class="name_absolute">
@@ -465,124 +467,119 @@ $(document).ready(function(){
             method: 'GET',
             data: { "challanNo": challanNo },
             success: function (response) {
-                // var productPickList = response.picklistDict;
-        
-                // if (response.picklistDict && response.picklisQty !== null) {
-                //     var picklistKey = Object.keys(response.picklistDict)[0]; 
-                //     var picklistData = response.picklistDict[picklistKey]; 
-                //     var hiddenData = $('#picklistHiddenData').val();
-                //     var currentData = hiddenData ? JSON.parse(hiddenData) : {};
+               var productPickList = response;
+              console.log('productPickList',productPickList)
+                if (response.delivery_challan_no && response.total_qty !== null) {
 
-                //     if (!Array.isArray(currentData[picklistKey])) {
-                //         currentData[picklistKey] = []; 
-                //     }
-
-                //     picklistData.forEach(item => {
-                //         currentData[picklistKey].push({
-                //             sku: item.sku,
-                //             model_name: item.model_name,
-                //             color: item.color,
-                //             qty: item.qty
-                //         });
-                //     });
-
-                //     $('#picklistHiddenData').val(JSON.stringify(currentData));
-
-                //     var tables = $('#picklistTable .mainTableList');
-                //     tables.find('tr').each(function () {
-                //         const row = $(this);
+                    var tables = $('#challanTable .mainTableList');
+                    tables.find('tr').each(function () {
+                        const row = $(this);
                     
-                //         if (row.find('.pickId').val()?.trim() === "") {
-                //             rowToPopulate = row;
-                //             return false;
-                //         }
-                //     });
+                        if (row.find('.chalId').val()?.trim() === "") {
+                            rowToPopulate = row;
+                            return false;
+                        }
+                    });
     
-                //     if (rowToPopulate) {
-                //         populatePicklistRow(rowToPopulate, response);
+                    if (rowToPopulate) {
+                        populatePicklistRow(rowToPopulate, response);
                         
-                //     } else {
-                //         addpickListRow();
-                //         const newRow = tables.find('tr').last();
-                //         populatePicklistRow(newRow, response)
-                //     }
-                // }
+                    } else {
+                        addpickListRow();
+                        const newRow = tables.find('tr').last();
+                        populatePicklistRow(newRow, response)
+                    }
+                }
             },
             error: function (error) {
                 console.log(error);
             }
         });
 
-        $('#id_pickList_no').val('');
+        $('#id_challan_no').val('');
   })
 
-  // function populatePicklistRow(row, response){
-  //       row.find('.picklistId').val(response.id);
-  //       row.find('.pickId').val(response.picklistNo);
-  //       row.find('.pickQty').val(response.picklisQty)
-  //       row.find('.pickBalance').val('');
-  //   };
+  function populatePicklistRow(row, response){
+        row.find('.challanId').val(response.id);
+        row.find('.chalId').val(response.delivery_challan_no);
+        row.find('.challanQty').val(response.total_qty)
+        // row.find('.challanBalance').val(response.balance_qty);
+    };
 
-  //   function addpickListRow() {
-  //       const tableBody = document.querySelector('#picklistTable .mainTableList');
-  //       let lastVisibleRow = null;
-  //       tableBody.querySelectorAll('tr').forEach(row => {
-  //           if (window.getComputedStyle(row).display !== 'none') {
-  //               lastVisibleRow = row;
-  //           }
-  //       });
+    function addpickListRow() {
+        const tableBody = document.querySelector('#challanTable .mainTableList');
+        let lastVisibleRow = null;
+        tableBody.querySelectorAll('tr').forEach(row => {
+            if (window.getComputedStyle(row).display !== 'none') {
+                lastVisibleRow = row;
+            }
+        });
 
-  //       if (!lastVisibleRow) {
-  //           console.error("No visible row found to clone.");
-  //           return;
-  //       }
+        if (!lastVisibleRow) {
+            console.error("No visible row found to clone.");
+            return;
+        }
 
-  //       const formCountInput = document.getElementById("id_picklist_process_in_outward_set-TOTAL_FORMS");
-  //       const formCount = parseInt(formCountInput.value, 10);
-  //       const formIndex = formCount;
+        const formCountInput = document.getElementById("id_salesvoucherdeliverychallan_set-TOTAL_FORMS");
+        const formCount = parseInt(formCountInput.value, 10);
+        const formIndex = formCount;
         
-  //       const lastRow = lastVisibleRow.cloneNode(true);
-  //       lastRow.querySelectorAll("input, select").forEach(function (e) {
-  //           e.value = "";
-  //       });
+        const lastRow = lastVisibleRow.cloneNode(true);
+        lastRow.querySelectorAll("input, select").forEach(function (e) {
+            e.value = "";
+        });
 
-  //       const picklistElement = lastRow.querySelector('[name$="-picklist"]');
-  //       if (picklistElement) {
-  //           picklistElement.id = `id_picklist_process_in_outward_set-${formIndex}-picklist`;
-  //           picklistElement.name = `picklist_process_in_outward_set-${formIndex}-picklist`;
-  //           picklistElement.value = "";
-  //       }
+        const picklistElement = lastRow.querySelector('[name$="-delivery_challan"]');
+        if (picklistElement) {
+            picklistElement.id = `id_salesvoucherdeliverychallan_set-${formIndex}-delivery_challan`;
+            picklistElement.name = `salesvoucherdeliverychallan_set-${formIndex}-delivery_challan`;
+            picklistElement.value = "";
+        }
 
-  //       const pickListNoElement = lastRow.querySelector('input[name$="-picklistNo"]');
-  //       if (pickListNoElement) {
-  //           pickListNoElement.id = `id_picklist_process_in_outward_set-${formIndex}-picklistNo`;
-  //           pickListNoElement.name = `picklist_process_in_outward_set-${formIndex}-picklistNo`;
-  //           pickListNoElement.value = "";
-  //       }
-  //       const inputSelectElement = lastRow.querySelector('input[name$="-picklistQty"]');
-  //       if (inputSelectElement) {
-  //           inputSelectElement.id = `id_picklist_process_in_outward_set-${formIndex}-picklistQty`;
-  //           inputSelectElement.name = `picklist_process_in_outward_set-${formIndex}-picklistQty`;
-  //           inputSelectElement.value = "";
-  //       }
+        const pickListNoElement = lastRow.querySelector('input[name$="-delivery_challan_value"]');
+        if (pickListNoElement) {
+            pickListNoElement.id = `id_salesvoucherdeliverychallan_set-${formIndex}-delivery_challan_value`;
+            pickListNoElement.name = `salesvoucherdeliverychallan_set-${formIndex}-delivery_challan_value`;
+            pickListNoElement.value = "";
+        }
+        const inputSelectElement = lastRow.querySelector('input[name^="challanQty-"]');
+        if (inputSelectElement) {
+            inputSelectElement.id = `id_challanQty-${formIndex}`;
+            inputSelectElement.name = `challanQty-${formIndex}`;
+            inputSelectElement.value = "";
+        }
 
-  //       const inputElement = lastRow.querySelector('input[name$="-balance_qty"]');
-  //       if (inputElement) {
-  //           inputElement.id = `id_picklist_process_in_outward_set-${formIndex}-balance_qty`;
-  //           inputElement.name = `picklist_process_in_outward_set-${formIndex}-balance_qty`;
-  //           inputElement.value = "";
-  //       }
+        // const inputElement = lastRow.querySelector('input[name^="challanBalanceQty-"]');
+        // if (inputElement) {
+        //     inputElement.id = `id_challanBalanceQty-${formIndex}`;
+        //     inputElement.name = `challanBalanceQty-${formIndex}`;
+        //     inputElement.value = "";
+        // }
 
-  //       const checkboxElement = lastRow.querySelector('input[name^="picklist_group"]');
-  //       if (checkboxElement) {
-  //           checkboxElement.checked = false;
-  //       }
+        const checkboxElement = lastRow.querySelector('input[name^="delivery_challan"]'); 
+        if (checkboxElement) {
+            checkboxElement.checked = false;
+        }
 
-  //       formCountInput.value = formCount + 1;
-  //       tableBody.appendChild(lastRow);
-  //   }
+        formCountInput.value = formCount + 1;
+        tableBody.appendChild(lastRow);
+    }
 
+    $(document).on('click', 'input.outwardChallan-btn', function () {
+      processSalesChallan()
+    })
+    function processSalesChallan () {
+      var checkedRadio = $('.challanRadio:checked');
 
+        if (checkedRadio.length === 0) {
+            console.warn("No Challan selected.");
+            // $('#responseMessage').html('<span class="text-danger">Please select a Challan before calculating.</span>');
+            return;
+        }
+        var selectedRow = checkedRadio.closest('tr'); 
+        var productKey = selectedRow.find('.chalId').val()?.trim()
+      
+    }
 })
 </script>
 
@@ -597,11 +594,13 @@ $(document).ready(function(){
     var productWerhouseid = $('#id_sales_voucher_finish_goods_set-0-id').val(); 
 
     if(productWerhouseid === ''){
-      $(document).on('change', '#id_selected_godown, #id_delivery_challan', function () {
-        const godown_id = $('#id_selected_godown').val();
-        const deliveryChallan = $('#id_delivery_challan').val();
-
-        console.log('deliveryChallan',deliveryChallan)
+      $(document).on('change', '#id_selected_godown, .challanRadio', function () {
+        const godown_id = $('#id_selected_godown').val() || ""; // Default to empty string
+        const checkedRadio = $('.challanRadio:checked'); // Default to empty string
+        var selectedRow = checkedRadio.closest('tr'); 
+        var deliveryChallan = selectedRow.find('.challanId').val()?.trim()
+    console.log('Selected Godown:', godown_id);
+    console.log('Selected Delivery Challan:', deliveryChallan);
           handleGodownIdAjax(godown_id,deliveryChallan)
       })
     }else{
