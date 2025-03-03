@@ -606,31 +606,26 @@ $(document).ready(function(){
     var productWerhouseid = $('#id_sales_voucher_finish_goods_set-0-id').val(); 
 
     if(productWerhouseid === ''){
-      $(document).on('change', '#id_selected_godown', function () {
-        const godown_id = $('#id_selected_godown').val() || ""; // Default to empty string
-        const checkedRadio = $('.challanRadio:checked'); // Default to empty string
-        var selectedRow = checkedRadio.closest('tr'); 
-        var deliveryChallan = selectedRow.find('.challanId').val()?.trim()
-        console.log('Selected Godown:', godown_id);
-        console.log('Selected Delivery Challan:', deliveryChallan);
-        if(godown_id && deliveryChallan){
-          handleGodownIdAjax(godown_id,deliveryChallan)
-        }
-      })
+      function handleGodownAndChallan() {
+        const godown_id = $('#id_selected_godown').val() || "";
+        const checkedRadio = $('.challanRadio:checked'); 
+        
+        if (checkedRadio.length === 0) return; 
 
-      $(document).on('click', '.challanRadio', function () {
-        const godown_id = $('#id_selected_godown').val() || ""; // Default to empty string
-        const checkedRadio = $('.challanRadio:checked'); // Default to empty string
-        var selectedRow = checkedRadio.closest('tr'); 
-        var deliveryChallan = selectedRow.find('.challanId').val()?.trim()
+        const selectedRow = checkedRadio.closest('tr'); 
+        const deliveryChallan = selectedRow.find('.challanId').val()?.trim() || "";
 
         console.log('Selected Godown:', godown_id);
         console.log('Selected Delivery Challan:', deliveryChallan);
-        if(godown_id && deliveryChallan){
-          handleGodownIdAjax(godown_id,deliveryChallan)
-        }
-         
-      })
+
+          if (godown_id && deliveryChallan) {
+              handleGodownIdAjax(godown_id, deliveryChallan);
+          }
+      }
+
+      $(document).on('change', '#id_selected_godown', handleGodownAndChallan);
+      $(document).on('click', '.challanRadio', handleGodownAndChallan);
+
     }else{
       // var productSaleDate = $('#productSaleDate').val();
       // if(productSaleDate !== "None"){
@@ -654,7 +649,7 @@ $(document).ready(function(){
     function handleGodownIdAjax(godown_id,deliveryChallan){
       if (!godown_id) return;
   
-      resetInputs();
+      // resetInputs();
       $.ajax({
           url:'/producttransfertowarehouseajax/',
           method: "GET",
@@ -679,11 +674,11 @@ $(document).ready(function(){
     }
     
     function resetInputs() {
-            $('.productpurchaseInvoice').val('');
-            $('.s-suggestion-container').hide().empty();
-            $('[name^="select_product_name_"]').empty();
-            $('.purchase-input, .purchase-amount, .purchase-mark').val('');
-        }
+      $('.productpurchaseInvoice').val('');
+      $('.s-suggestion-container').hide().empty();
+      $('[name^="select_product_name_"]').empty();
+      $('.purchase-input, .purchase-amount, .purchase-mark').val('');
+    }
     function handleSalesProduct(filterProducts){
       if (filterProducts || Object.keys(filterProducts).length === 0) {
         $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {
