@@ -16,55 +16,62 @@
                 <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no">
                 {% endif %}
             </div>
-
-            <div class="ms-2" >
-                <div class="mb-1">
-                    <label for="id_selected_godown" class="me-1">selected_godown :</label>
-                    <select name="selected_godown" class="item-select me-2" required id="id_selected_godown" class="item-selects">
-                        {% if master_form.instance.id %}
-                        <option value="{{ master_form.instance.selected_godown.id }}">{{ master_form.instance.selected_godown.godown_name_finished }}</option>
-                        {% elif not master_form.instance.id %}
-                        <option value="" selected disabled>selected_godown</option>
-                        {% for godown in godowns %}
-                          <option value="{{ godown.id }}">{{ godown.godown_name_finished }}</option>
-                        {% endfor %}
-                        {% endif %}
-                    </select>
-                </div>
-
-
-                <div class="mb-1">
-                    <label for="id_party_name" class="me-1">Party name :</label>
-                    <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
-                        {% if master_form.instance.id %}
-                        <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
-                        <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
-                        {% elif not master_form.instance.id %}
-                        <option value="" selected disabled>select party name</option>
-                        {% for name in party_names %}
-                          <option value="{{ name.id }}">{{ name.name }}</option>
-                        {% endfor %}
-                        {% endif %}
-                    </select>
-                </div>
-                <div class="">
+            <div>
+                <div class="d-flex" >
+                    <div class="mb-1">
+                        <label for="id_selected_godown" class="me-1">Godown :</label>
+                        <select name="selected_godown" class="item-select " required id="id_selected_godown" class="item-selects">
+                            {% if master_form.instance.id %}
+                            <option value="{{ master_form.instance.selected_godown.id }}">{{ master_form.instance.selected_godown.godown_name_finished }}</option>
+                            {% elif not master_form.instance.id %}
+                            <option value="" selected disabled>selected_godown</option>
+                            {% for godown in godowns %}
+                              <option value="{{ godown.id }}">{{ godown.godown_name_finished }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+    
+    
+                    <div class="mb-1 ms-2">
+                        <label for="id_party_name" class="me-1">Party name :</label>
+                        <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
+                            {% if master_form.instance.id %}
+                            
+                            <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
+                            {% elif not master_form.instance.id %}
+                            <option value="" selected disabled>select party name</option>
+                            {% for name in party_names %}
+                              <option value="{{ name.id }}">{{ name.name }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                       
+                    </div>
+                    <label for="id_shipping_address" class="me-1">Address :</label>
+                <div>
                     {% if master_form.instance.id %}
-                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1 " cols="40" rows="2" id="id_party_address" readonly>{{ master_form.instance.party_name.address }}</textarea>
+                    <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 ps-1" cols="35" rows="2" required id="id_shipping_address">{{ master_form.instance.shipping_address }}</textarea>
                     {% elif not master_form.instance.id %}
-                    <textarea placeholder="Party Address.." name="party_address" class="form-control" cols="40" rows="2" id="id_party_address" readonly></textarea>
+                    <textarea  placeholder="Shipping Address.." name="shipping_address" class="form-control" cols="35" rows="2" required id="id_shipping_address"></textarea>
                     {% endif %}
                 </div>
-               
+                   
             </div>
-            <label for="id_shipping_address" class="me-1">Shipping address :</label>
-            <div>
+                
+
+            </div>
+            <!-- <div>
                 {% if master_form.instance.id %}
-                <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 ps-1" cols="50" rows="2" required id="id_shipping_address">{{ master_form.instance.shipping_address }}</textarea>
-                {% elif not master_form.instance.id %}
-                <textarea  placeholder="Shipping Address.." name="shipping_address" class="form-control" cols="50" rows="2" required id="id_shipping_address"></textarea>
-                {% endif %}
-            </div>
+            <p name="party_address" class="border-1 rounded-1 ps-1 " id="id_party_address" readonly >{{ master_form.instance.party_name.address }}</p>
+            {% elif not master_form.instance.id %}
+            <p name="party_address" class="border-1 rounded-1 ps-1" id="id_party_address" readonly>test</p>
+            {% endif %}
+            </div> -->
+            
+           
         </div>
+   
         <div>
             <table class="table table-striped table-hover table-bordered table-primary"  id="deliveryChallanTable">
                 <thead class="name_absolute sticky-top">
@@ -173,6 +180,8 @@
     <button type="submit" id="submitButtonStockTransfer" class="create-btn mt-4" name="save" value="Save">Submit</button>
 </form>
 
+
+
 <script>
     $(document).ready(function () {
         var searchedItemNameDict;
@@ -194,7 +203,7 @@
                     },
                     success: function (response) {
                         console.log(response.address)
-                        $('#id_party_address').val(response.address)
+                        $('#id_party_address').text(response.address)
                     },
                     error: function (error) {   
                         console.log(error);
@@ -205,6 +214,24 @@
             })
         }
         
+        $(document).on('change', 'select[name^="selected_godown"]', function () {
+
+        const selected_godown = $(this).val()
+        $.ajax({
+            url: '/deliverychallanproductajax/',
+            method: 'GET',
+            data: {
+                'selected_godown': selected_godown,
+            },
+            success: function (response) {
+            console.log(response)
+        
+            },
+            error: function (xhr, errmsg, err) {
+                console.log('Error sending value to the backend');
+            }
+        })
+        })
     
         $(document).on('click input keyup focus keydown', 'input[name$="-products"]', function () {
             itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
