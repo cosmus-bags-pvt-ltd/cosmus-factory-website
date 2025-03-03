@@ -89,13 +89,14 @@
           value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
           readonly required>
       </div>
+
       <div class="ms-3">
         <table class="table table-striped table-hover table-bordered table-warning" id="challanTable">
           <thead class="name_absolute">
               <tr>
                   <th>Chall No</th>
                   <th>Qty</th>
-                  <!-- <th>Balance</th> -->
+                  <th>Bal</th>
                   <th>check</th>
               </tr>
           </thead>
@@ -104,12 +105,16 @@
               {% for form in delivery_challan_formset %}
               {{ form.id }}
               <tr>
-                  <td><input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{% if form.instance.id %}{{ form.instance.delivery_challan.id}}{% endif %}" readonly>
-                      <input type="number" class="rowNo chalId" name="{{form.prefix}}-delivery_challan_value" id="id_{{form.prefix}}-delivery_challan_value" value="{% if form.instance.id %}{{ form.instance.delivery_challan }}{% endif %}" readonly></td>
                   <td>
-                      <input type="number" class="rowNo challanQty" name="challanQty-{{forloop.counter0}}" id="id_challanQty-{{forloop.counter0}}" value="{% if form.instance.id %}{{ form.instance }}{% endif %}" readonly  style="cursor: pointer;">
+                    <input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{% if form.instance.id %}{{ form.instance.delivery_challan.id }}{% endif %}" readonly>
+                    <input type="number" class="rowNo chalId" name="{{form.prefix}}-delivery_challan_value" id="id_{{form.prefix}}-delivery_challan_value" value="{{ form.instance.delivery_challan.delivery_challan_no }}" readonly>
                   </td>
-                  <!-- <td><input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{% if form.instance.id %}{{ form.instance }}{% endif %}" readonly></td> -->
+                  <td>
+                      <input type="number" class="rowNo challanQty" name="challanQty-{{forloop.counter0}}" id="id_challanQty-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.total_qty }}" readonly  style="cursor: pointer;">
+                  </td>
+                  <td>
+                    <input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
+                  </td>
                   <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan"></td>
               </tr>
   
@@ -549,12 +554,12 @@ $(document).ready(function(){
             inputSelectElement.value = "";
         }
 
-        // const inputElement = lastRow.querySelector('input[name^="challanBalanceQty-"]');
-        // if (inputElement) {
-        //     inputElement.id = `id_challanBalanceQty-${formIndex}`;
-        //     inputElement.name = `challanBalanceQty-${formIndex}`;
-        //     inputElement.value = "";
-        // }
+        const inputElement = lastRow.querySelector('input[name^="challanBalanceQty-"]');
+        if (inputElement) {
+            inputElement.id = `id_challanBalanceQty-${formIndex}`;
+            inputElement.name = `challanBalanceQty-${formIndex}`;
+            inputElement.value = "";
+        }
 
         const checkboxElement = lastRow.querySelector('input[name^="delivery_challan"]'); 
         if (checkboxElement) {
