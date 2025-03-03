@@ -1210,35 +1210,41 @@ class DeliveryChallanMaster(models.Model):
     dispatch_time = models.TimeField()
     no_of_boxes = models.PositiveIntegerField()
     no_of_pcs = models.PositiveIntegerField()
-    total_qty = models.PositiveIntegerField(default=0)
-    balance_qty = models.PositiveIntegerField(default=0)
+    # total_qty = models.PositiveIntegerField(default=0)
+    # balance_qty = models.PositiveIntegerField(default=0)
     remark = models.TextField(blank=True, null=True)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
 
-    def update_total_qty(self):
-        total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=self).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
-        self.total_qty = total_qty
-        self.balance_qty = total_qty
-        self.save(update_fields=['total_qty', 'balance_qty'])
+    # def update_total_qty(self):
+    #     total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=self).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
+    #     self.total_qty = total_qty
+    #     self.balance_qty = total_qty
+    #     self.save(update_fields=['total_qty', 'balance_qty'])
 
 
 class DeliveryChallanProducts(models.Model):
     delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
+    balance_qty = models.PositiveIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-
+    
     def save(self, *args, **kwargs):
+        self.balance_qty = self.quantity
         super().save(*args, **kwargs)
-        self.delivery_challan.update_total_qty()
 
-    def delete(self, *args, **kwargs):
-        print("DELETE CALL FROM MODELS ")
-        super().delete(*args, **kwargs)
-        self.delivery_challan.update_total_qty()
+
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #     self.delivery_challan.update_total_qty()
+
+    # def delete(self, *args, **kwargs):
+    #     print("DELETE CALL FROM MODELS ")
+    #     super().delete(*args, **kwargs)
+    #     self.delivery_challan.update_total_qty()
 
 
 
@@ -1270,9 +1276,11 @@ class sales_voucher_finish_Goods(models.Model):
 
 
 class SalesVoucherDeliveryChallan(models.Model):
-    sales_voucher = models.ForeignKey(sales_voucher_master_finish_Goods, on_delete=models.CASCADE)
-    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
-
+    sales_voucher = models.ForeignKey(sales_voucher_master_finish_Goods, on_delete=models.CASCADE, null=True, blank=True)
+    delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE, null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    
     class Meta:
         unique_together = ('sales_voucher', 'delivery_challan')
 

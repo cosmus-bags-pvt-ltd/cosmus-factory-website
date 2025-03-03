@@ -15596,6 +15596,8 @@ def delivery_challan_product_ajax(request):
 
 
 
+
+
 @login_required(login_url='login')
 def delivery_challan_create_update(request, d_id=None):
 
@@ -15679,8 +15681,9 @@ def delivery_challan_create_update(request, d_id=None):
 
 
 
-
+@login_required(login_url='login')
 def delivery_challan_process_for_sale_voucher(request):
+    
     try:
         d_challan_no = request.GET.get('challanNo')
 
@@ -15689,18 +15692,24 @@ def delivery_challan_process_for_sale_voucher(request):
 
         d_id = get_object_or_404(DeliveryChallanMaster, delivery_challan_no=d_challan_no)
 
+        total_data = DeliveryChallanProducts.objects.filter(delivery_challan=d_id).aggregate(
+            total_qty=Sum('quantity'),
+            total_balance=Sum('balance_qty')
+        )
+
         d_challan_data = {
             "delivery_challan_no": d_challan_no,
             "id": d_id.id,
-            "total_qty": d_id.total_qty,
-            "balance_qty": d_id.balance_qty
+            "total_qty": total_data['total_qty'] or 0,
+            "balance_qty": total_data['total_balance'] or 0
         }
 
-        return JsonResponse(d_challan_data)
+        return JsonResponse(d_challan_data, status=200)
 
     except Exception as e:
         print(f"Error in processing delivery challan: {e}")
         return JsonResponse({"error": str(e)}, status=500)
+
 
 
 @login_required(login_url='login')
@@ -15797,6 +15806,7 @@ def salesvouchercreateupdate(request,s_id=None):
 
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
+
                             form_instance = form.save(commit=False)
                             form_instance.sales_voucher_master = master_form_instance
                             form_instance.save()
@@ -15901,11 +15911,6 @@ def delete_delivery_challan(request,pk):
     return redirect('delivery-challan-list')
 
 
-
-
-
-
-
 def sales_scan_product_dynamic_ajax(request):
     
     try:
@@ -15949,18 +15954,10 @@ def sales_scan_product_dynamic_ajax(request):
         return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
 
 
-
-
-
 @login_required(login_url='login')
 def salesvoucherlist(request):
     sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
     return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
-
-
-
-
-
 
 
 
