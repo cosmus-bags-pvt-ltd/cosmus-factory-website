@@ -1169,23 +1169,22 @@ $(document).ready(function(){
             const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
             const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
             const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
-            const challanElement = row.querySelector('input[name^="-challanValue"]');
+            const challanElement = row.querySelector('input[name$="-challanValue"]');
             const challanId = challanElement ? parseInt(challanElement.value) || 0 : 0;
 
             var checkedRadio = $('.challanRadio:checked');
 
             if (checkedRadio.length === 0) {
                 console.warn("No Challan selected.");
-                // $('#responseMessage').html('<span class="text-danger">Please select a Challan before calculating.</span>');
                 return;
             }
             var selectedRow = checkedRadio.closest('tr'); 
-            var productKey = selectedRow.find('.chalId').val()?.trim();
+            var productKey = parseInt(selectedRow.find('.chalId').val()) || 0
             var challanBalQty = parseFloat(selectedRow.find('.challanBalancehidden').val()?.trim()) || 0;
             var challanQty = parseFloat(selectedRow.find('.challanQty').val()?.trim()) || 0;
-            console.log('productKey',productKey,typeof(productKey))
-            console.log('challanQty',challanQty)
-            console.log('challanId',challanId)
+            // console.log('productKey',productKey,typeof(productKey))
+            // console.log('challanQty',challanQty)
+            // console.log('challanBalQty',challanBalQty)
 
          
             // Get the values of quantity and rate
@@ -1432,7 +1431,7 @@ $(document).ready(function(){
     
     
     calculateTaxSummary()
-    // calculateTotalAmount();
+     calculateTotalAmount();
     calculateOtherTotal();
     deleteRowData()
   function inputCheck(){
