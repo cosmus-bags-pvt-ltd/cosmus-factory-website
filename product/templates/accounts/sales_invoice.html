@@ -1174,10 +1174,10 @@ $(document).ready(function(){
 
             var checkedRadio = $('.challanRadio:checked');
 
-            if (checkedRadio.length === 0) {
-                console.warn("No Challan selected.");
-                return;
-            }
+            // if (checkedRadio.length === 0) {
+            //     console.warn("No Challan selected.");
+            //     return;
+            // }
             var selectedRow = checkedRadio.closest('tr'); 
             var productKey = parseInt(selectedRow.find('.chalId').val()) || 0
             var challanBalQty = parseFloat(selectedRow.find('.challanBalancehidden').val()?.trim()) || 0;
