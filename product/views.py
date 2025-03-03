@@ -9690,7 +9690,7 @@ def product_transfer_to_warehouse_ajax(request):
 
         try:
 
-            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('balance_qty')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty','id','balance_qty'))
+            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('balance_qty')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty','id','balance_qty','delivery_challan__delivery_challan_no'))
 
             if filtered_product:
 
@@ -9709,7 +9709,9 @@ def product_transfer_to_warehouse_ajax(request):
                     gst = query.get('product_name__Product__Product_GST__gst_percentage')
                     total_qty = query.get('total_qty')
                     id = query.get('id')
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id]
+                    d_challan_no = query.get('delivery_challan__delivery_challan_no')
+                    
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id,d_challan_no]
 
                 print('dict_to_send = ',dict_to_send)
 
@@ -15768,6 +15770,7 @@ def salesvouchercreateupdate(request,s_id=None):
     
 
     if request.method == "POST":
+        print(request.POST)
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
         delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
