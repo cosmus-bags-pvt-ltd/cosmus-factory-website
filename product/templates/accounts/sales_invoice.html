@@ -211,7 +211,7 @@
       <tbody>
         <tr>
             <td class="text-center fw-bold" ><span>Total</span></td>
-            <td colspan="3"></td>
+            <td colspan="4"></td>
             <td> <input type="number" class="purchase-input" style="border: 1px solid red;" name="grand_quantity" id ="id_grand_quantity" value="" maxlength="50" step=".01" readonly></td>
             <td colspan="4"></td>
             <td><input type="number" class="purchase-amount" style="border: 1px solid red;"  name="grand_taxableAmount" id ="id_grand_taxableAmount" value="" maxlength="50" step=".01" readonly ></td>
@@ -764,7 +764,7 @@ $(document).ready(function(){
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val(productPrice);
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-quantity"]`).focus();
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-challanId"]`).val(challanId);
-                $('#challanValue_' + purchaseValue).val(challanvalue)
+                $('#challanValue_' + purchaseValue).val(challanvalue);
             }
 
           
