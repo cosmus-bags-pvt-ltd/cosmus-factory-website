@@ -6529,8 +6529,7 @@ def goods_return_popup(request,pk):
                             selected_product = PProduct_Creation.objects.get(PProduct_SKU = form_instance.product_sku)
                             obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown_instance, product_color_name = selected_product)
 
-                            delivery_challan_obj, created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = selected_product)
-
+                            delivery_challan_obj, created = product_delivery_challan_quantity_through_table.objects.get_or_create(godown_name = godown_instance,product_name = selected_product)
 
                             quantity_to_add = obj.quantity if not created else 0
                             
@@ -9710,7 +9709,7 @@ def product_transfer_to_warehouse_ajax(request):
                     total_qty = query.get('total_qty')
                     id = query.get('id')
                     d_challan_no = query.get('delivery_challan__delivery_challan_no')
-                    
+
                     dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id,d_challan_no]
 
                 print('dict_to_send = ',dict_to_send)
@@ -15822,7 +15821,8 @@ def salesvouchercreateupdate(request,s_id=None):
                             form_instance = form.save(commit=False)
                             form_instance.sales_voucher_master = master_form_instance
                             form_instance.save()
-
+                            challan = form.cleaned_data.get('challanId')
+                            print('challan = ',challan)
                             product_name = form.instance.product_name
                             product_qty = form.instance.quantity
 
