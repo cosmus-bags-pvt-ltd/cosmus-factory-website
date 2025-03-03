@@ -504,16 +504,13 @@ def sales_voucher_stock_minus(sender, instance, created, **kwargs):
     
     master_instance = instance.sales_voucher_master
     godown = master_instance.selected_godown if master_instance.selected_godown else None
-    # warehouse = master_instance.selected_warehouse if master_instance.selected_warehouse else None
+
     if created:
         if godown:
             godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown,product_color_name=product)
             godown_qty_value.quantity = godown_qty_value.quantity - quantity
             godown_qty_value.save()
-        # else:
-        #     warehouse_qty_value, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = warehouse,product=product)
-        #     warehouse_qty_value.quantity = warehouse_qty_value.quantity - quantity
-        #     warehouse_qty_value.save()
+        
     else:
         pass
 
