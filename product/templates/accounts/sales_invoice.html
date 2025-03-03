@@ -63,33 +63,42 @@
           {% endif %}
         </select>
       </div>
-      <span id="purchaseError" class="error-messages"></span>
-      <div class="d-flex ms-2">
-        <label for="id_party_name" class="me-1">Party Name :</label>
-        <select class="item-select text-black" name="party_name" required id="id_party_name">
-          {% if master_form.instance.id %}
-          <option value="{{master_form.instance.party_name.id}}">
-            {{master_form.instance.party_name.name}}</option>
-          {% else %}
-          <option value="" selected disabled>Select Party name</option>
-          {% for x in party_name %}
-          <option value="{{x.id}}">{{x.name}}</option>
-          {% endfor %}
-          {% endif %}
-        </select>
-        <div>
-          <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+      <div >
+        <div class="d-flex">
+          <span id="purchaseError" class="error-messages"></span>
+          <div class="d-flex ms-2">
+            <label for="id_party_name" class="me-1">Party Name :</label>
+            <select class="item-select text-black" name="party_name" required id="id_party_name">
+              {% if master_form.instance.id %}
+              <option value="{{master_form.instance.party_name.id}}">
+                {{master_form.instance.party_name.name}}</option>
+              {% else %}
+              <option value="" selected disabled>Select Party name</option>
+              {% for x in party_name %}
+              <option value="{{x.id}}">{{x.name}}</option>
+              {% endfor %}
+              {% endif %}
+            </select>
+            <div>
+              <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+            </div>
+            
+          </div>
+
+          <div class="d-flex ms-2">
+            <label for="id_GST_number" class="me-2">Party GST No :</label>
+            <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
+              value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
+              readonly required>
+          </div>
         </div>
-        
+        <div>
+          <span id="responseMessage" class="ms-1 fw-bold"></span>
+        </div>
+      
       </div>
-
-      <div class="d-flex ms-2">
-        <label for="id_GST_number" class="me-2">Party GST No :</label>
-        <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
-          value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
-          readonly required>
-      </div>
-
+      
+      
       <div class="ms-3">
         <table class="table table-striped table-hover table-bordered table-warning" id="challanTable">
           <thead class="name_absolute">
@@ -451,22 +460,22 @@ $(document).ready(function(){
     var challanNo = parseInt($(this).val(), 10);
     console.log('challanNo',challanNo)
     var challanable = $('#challantTable .mainTableList tr');
-        var challanExists = false; 
-        let rowToPopulate = null;
+    var challanExists = false; 
+    let rowToPopulate = null;
         
-        challanable.each(function () {
-            var challanId = $(this).find('.challId').val()?.trim();
-            if (challanId == challanNo) {
-              challanExists = true;
-                return false; 
-            }
-        });
-
-        if (challanExists) {
-            alert('Challan already used');
-            $('#id_challan_no').val('');
-            return;
+    challanable.each(function () {
+        var challanId = $(this).find('.challId').val()?.trim();
+        if (challanId == challanNo) {
+          challanExists = true;
+            return false; 
         }
+    });
+
+    if (challanExists) {
+        alert('Challan already used');
+        $('#id_challan_no').val('');
+        return;
+    }
         $.ajax({
             url: '/deliverychallanprocessforsalevoucher/',
             method: 'GET',
@@ -498,6 +507,8 @@ $(document).ready(function(){
             },
             error: function (error) {
                 console.log(error);
+                // $('#responseMessage').html('<span class="text-danger">Please select a Challan.</span>');
+                
             }
         });
 
@@ -570,21 +581,21 @@ $(document).ready(function(){
         tableBody.appendChild(lastRow);
     }
 
-    $(document).on('click', 'input.outwardChallan-btn', function () {
-      processSalesChallan()
-    })
-    function processSalesChallan () {
-      var checkedRadio = $('.challanRadio:checked');
+    // $(document).on('click', 'input.outwardChallan-btn', function () {
+    //   processSalesChallan()
+    // })
+    // function processSalesChallan () {
+    //   var checkedRadio = $('.challanRadio:checked');
 
-        if (checkedRadio.length === 0) {
-            console.warn("No Challan selected.");
-            // $('#responseMessage').html('<span class="text-danger">Please select a Challan before calculating.</span>');
-            return;
-        }
-        var selectedRow = checkedRadio.closest('tr'); 
-        var productKey = selectedRow.find('.chalId').val()?.trim()
+    //     if (checkedRadio.length === 0) {
+    //         console.warn("No Challan selected.");
+    //         // $('#responseMessage').html('<span class="text-danger">Please select a Challan before calculating.</span>');
+    //         return;
+    //     }
+    //     var selectedRow = checkedRadio.closest('tr'); 
+    //     var productKey = selectedRow.find('.chalId').val()?.trim()
       
-    }
+    // }
 })
 </script>
 
@@ -596,41 +607,51 @@ $(document).ready(function(){
     var itemName;
     var purchaseValue;
     var filterProducts;
-    var productWerhouseid = $('#id_sales_voucher_finish_goods_set-0-id').val(); 
+  
+      function handleGodownAndChallan() {
+        const godown_id = $('#id_selected_godown').val() || "";
+        const checkedRadio = $('.challanRadio:checked'); 
+        
+        if (checkedRadio.length === 0) return; 
 
-    if(productWerhouseid === ''){
-      $(document).on('change', '#id_selected_godown, .challanRadio', function () {
-        const godown_id = $('#id_selected_godown').val() || ""; // Default to empty string
-        const checkedRadio = $('.challanRadio:checked'); // Default to empty string
-        var selectedRow = checkedRadio.closest('tr'); 
-        var deliveryChallan = selectedRow.find('.challanId').val()?.trim()
-    console.log('Selected Godown:', godown_id);
-    console.log('Selected Delivery Challan:', deliveryChallan);
-          handleGodownIdAjax(godown_id,deliveryChallan)
-      })
-    }else{
-      var productSaleDate = $('#productSaleDate').val();
-      if(productSaleDate !== "None"){
+        const selectedRow = checkedRadio.closest('tr'); 
+        const deliveryChallan = selectedRow.find('.challanId').val()?.trim() || "";
+
+        console.log('Selected Godown:', godown_id);
+        console.log('Selected Delivery Challan:', deliveryChallan);
+
+          if (godown_id && deliveryChallan) {
+              handleGodownIdAjax(godown_id, deliveryChallan);
+          }
+      }
+
+      $(document).on('change', '#id_selected_godown', handleGodownAndChallan);
+      $(document).on('click', '.challanRadio', handleGodownAndChallan);
+
+ 
+      // var productSaleDate = $('#productSaleDate').val();
+      // if(productSaleDate !== "None"){
        
         
-        try {
+      //   try {
         
-            let sanitizedData = productSaleDate.replace(/'/g, '"');
-            sanitizedData = sanitizedData.replace(/Decimal\("([\d.]+)"\)/g, '$1');
-            sanitizedData = sanitizedData.replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":');
-            filterProducts = JSON.parse(sanitizedData);
-            if(filterProducts)handleSalesProduct(filterProducts)
+      //       let sanitizedData = productSaleDate.replace(/'/g, '"');
+      //       sanitizedData = sanitizedData.replace(/Decimal\("([\d.]+)"\)/g, '$1');
+      //       sanitizedData = sanitizedData.replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":');
+      //       filterProducts = JSON.parse(sanitizedData);
+      //       if(filterProducts)handleSalesProduct(filterProducts)
         
-        } catch (error) {
-            console.error('Error parsing stockData:', error);
+      //   } catch (error) {
+      //       console.error('Error parsing stockData:', error);
            
-        }
-      }
-    }
+      //   }
+      // }
+    
 
     function handleGodownIdAjax(godown_id,deliveryChallan){
       if (!godown_id) return;
-      resetInputs();
+  
+      // resetInputs();
       $.ajax({
           url:'/producttransfertowarehouseajax/',
           method: "GET",
@@ -655,11 +676,11 @@ $(document).ready(function(){
     }
     
     function resetInputs() {
-            $('.productpurchaseInvoice').val('');
-            $('.s-suggestion-container').hide().empty();
-            $('[name^="select_product_name_"]').empty();
-            $('.purchase-input, .purchase-amount, .purchase-mark').val('');
-        }
+      $('.productpurchaseInvoice').val('');
+      $('.s-suggestion-container').hide().empty();
+      $('[name^="select_product_name_"]').empty();
+      $('.purchase-input, .purchase-amount, .purchase-mark').val('');
+    }
     function handleSalesProduct(filterProducts){
       if (filterProducts || Object.keys(filterProducts).length === 0) {
         $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {

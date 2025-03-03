@@ -9690,7 +9690,7 @@ def product_transfer_to_warehouse_ajax(request):
 
         try:
 
-            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('quantity')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty'))
+            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('balance_qty')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty','id'))
 
             if filtered_product:
 
@@ -9703,13 +9703,13 @@ def product_transfer_to_warehouse_ajax(request):
                     product_model_name = query.get('product_name__Product__Model_Name')
                     color = query.get('product_name__PProduct_color__color_name')
                     uom = query.get('product_name__Product__Product_UOM')
-                    qty = query.get('quantity')
+                    qty = query.get('balance_qty')
                     mrp = query.get('product_name__Product__Product_MRP')
                     customer_price = query.get('product_name__Product__Product_SalePrice_CustomerPrice')
                     gst = query.get('product_name__Product__Product_GST__gst_percentage')
                     total_qty = query.get('total_qty')
-
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty]
+                    id = query.get('id')
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id]
 
                 print('dict_to_send = ',dict_to_send)
 
