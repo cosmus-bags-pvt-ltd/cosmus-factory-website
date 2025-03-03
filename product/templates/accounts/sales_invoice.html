@@ -2,135 +2,125 @@
 {% load static %} 
 
 {% block body %}
-<div>
-      
+<div>   
   <form class="mt-3" action="" method="POST" id="salesForm">
     {% csrf_token %}
-    <div class="d-flex mb-3">
-      <span class="me-1">Type :<span class="text-danger fw-bold">Finish Goods</span></span>
-      <span id="purchaseError" class="error-messages"></span>
-      <div class="d-flex ms-2">
-        <label for="id_challan_no" class="fw-bold">Add Chall+ :</label>
-        <input type="text" name="challan_no" class="purchase-mark me-1" id="id_challan_no">
-      </div>
-
-      <div class="d-flex ms-2">
-        <label for="id_sales_no" class="me-1">Sales No :</label>
-        {% if master_form.instance.id %}
-        <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no" value="{{master_form.instance.sales_no}}"
-          maxlength="255" required readonly>
-        {% elif not master_form.instance.id %}
-        <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no" value="{{master_form.sales_no.initial }}" maxlength="255" required>
-        {% endif %}
-      </div>
-      <span id="SupplierError" class="error-messages"></span>
-      <div class="d-flex ms-2">
-        <label for="id_buyer_inv_no" class="me-1">Buyer No :</label>
-        {% if master_form.instance.id %}
-        <input type="text" class="purchase-vNo " name="buyer_inv_no" id="id_buyer_inv_no"
-          value="{{master_form.instance.buyer_inv_no}}" maxlength="255" readonly>
-        {% elif not master_form.instance.id %}
-        <input type="text" class="purchase-vNo " name="buyer_inv_no" id="id_buyer_inv_no"
-          value="{{master_form.instance.buyer_inv_no}}" maxlength="255" required aria-required="true">
-        {% endif %}
-      </div>
-      <div class="d-flex ms-2">
-        <label for="id_company_gst" class="me-1">GST No :</label>
-        <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
-          maxlength="50" readonly>
-      </div>
-      <div class="d-flex ms-2">
-        <label for="id_ledger_type" class="me-1">L-Type :</label>
-        <input type="text" class="product_remark" name="ledger_type" id="id_ledger_type"
-          value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
-          placeholder="Sales" readonly>
-      </div>
-    </div>
-    <div class="mb-2 d-flex">
-      <div class="d-flex">
-        <label for="id_selected_godown" class="me-1">Godown :</label>
-        <select class="item-select text-black" name="selected_godown" required id="id_selected_godown">
-          {% if master_form.instance.id %}
-          <option value="{{master_form.instance.selected_godown.id}}">
-            {{master_form.instance.selected_godown.godown_name_finished}}</option>
-          {% else %}
-          <option value="" selected disabled>Select Godown</option>
-          {% for x in godown_names %}
-          <option value="{{x.id}}">{{x.godown_name_finished}}</option>
-          {% endfor %}
-          {% endif %}
-        </select>
-      </div>
-      <div >
-        <div class="d-flex">
+    <div class="row">
+      <div class="col-lg-9">
+        <div class="d-flex mb-3">
+          <span class="me-1">Type :<span class="text-danger fw-bold">Finish Goods</span></span>
           <span id="purchaseError" class="error-messages"></span>
           <div class="d-flex ms-2">
-            <label for="id_party_name" class="me-1">Party Name :</label>
-            <select class="item-select text-black" name="party_name" required id="id_party_name">
-              {% if master_form.instance.id %}
-              <option value="{{master_form.instance.party_name.id}}">
-                {{master_form.instance.party_name.name}}</option>
-              {% else %}
-              <option value="" selected disabled>Select Party name</option>
-              {% for x in party_name %}
-              <option value="{{x.id}}">{{x.name}}</option>
-              {% endfor %}
-              {% endif %}
-            </select>
-            <div>
-              <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
-            </div>
-            
+            <label for="id_challan_no" class="fw-bold">Add Chall+ :</label>
+            <input type="text" name="challan_no" class="purchase-mark me-1" id="id_challan_no">
           </div>
-
+    
           <div class="d-flex ms-2">
-            <label for="id_GST_number" class="me-2">Party GST No :</label>
-            <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
-              value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
-              readonly required>
+            <label for="id_sales_no" class="me-1">Sales No :</label>
+            {% if master_form.instance.id %}
+            <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no" value="{{master_form.instance.sales_no}}"
+              maxlength="255" required readonly>
+            {% elif not master_form.instance.id %}
+            <input type="text" class="purchase-vNo" name="sales_no" id="id_sales_no" value="{{master_form.sales_no.initial }}" maxlength="255" required>
+            {% endif %}
           </div>
+          <span id="SupplierError" class="error-messages"></span>
+          <div class="d-flex ms-2">
+            <label for="id_buyer_inv_no" class="me-1">Buyer No :</label>
+            {% if master_form.instance.id %}
+            <input type="text" class="purchase-vNo " name="buyer_inv_no" id="id_buyer_inv_no"
+              value="{{master_form.instance.buyer_inv_no}}" maxlength="255" readonly>
+            {% elif not master_form.instance.id %}
+            <input type="text" class="purchase-vNo " name="buyer_inv_no" id="id_buyer_inv_no"
+              value="{{master_form.instance.buyer_inv_no}}" maxlength="255" required aria-required="true">
+            {% endif %}
+          </div>
+          <div class="d-flex ms-2">
+            <label for="id_company_gst" class="me-1">GST No :</label>
+            <input type="text" class="purchase-itemName" name="company_gst" id="id_company_gst" value="27AAACG20210238"
+              maxlength="50" readonly>
+          </div>
+         
         </div>
-        <div>
-          <span id="responseMessage" class="ms-1 fw-bold"></span>
-        </div>
+
+        <div class="mb-2 d-flex">
+          <div class="d-flex ms-2">
+            <label for="id_ledger_type" class="me-1">L-Type :</label>
+            <input type="text" class="product_remark" name="ledger_type" id="id_ledger_type"
+              value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
+              placeholder="Sales" readonly>
+          </div>
+            <div class="d-flex">
+              <span id="purchaseError" class="error-messages"></span>
+              <div class="d-flex ms-2">
+                <label for="id_party_name" class="me-1">Party Name :</label>
+                <select class="item-select text-black" name="party_name" required id="id_party_name">
+                  {% if master_form.instance.id %}
+                  <option value="{{master_form.instance.party_name.id}}">
+                    {{master_form.instance.party_name.name}}</option>
+                  {% else %}
+                  <option value="" selected disabled>Select Party name</option>
+                  {% for x in party_name %}
+                  <option value="{{x.id}}">{{x.name}}</option>
+                  {% endfor %}
+                  {% endif %}
+                </select>
+                <div>
+                  <button  type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+                </div>
+                
+              </div>
+    
+              <div class="d-flex ms-2">
+                <label for="id_GST_number" class="me-2">Party GST No :</label>
+                <input type="text" class="purchase-itemName" name="GST_number" id="id_GST_number"
+                  value="{% if master_form.instance.id %}{{ master_form.instance.party_name.Gst_no }}{% endif %}" maxlength="15"
+                  readonly required>
+              </div>
+            </div>
+            <div>
+              <span id="responseMessage" class="ms-1 fw-bold"></span>
+            </div>
+          
+          </div>
+      </div>
+      <div class="col-lg-3">
+    
+          <table class="table table-striped table-hover table-bordered table-warning" id="challanTable">
+            <thead class="name_absolute">
+                <tr>
+                    <th>Chall No</th>
+                    <th>Qty</th>
+                    <th>Bal</th>
+                    <th>check</th>
+                </tr>
+            </thead>
+            <tbody class="mainTableList">
+                {{ delivery_challan_formset.management_form }}
+                {% for form in delivery_challan_formset %}
+                {{ form.id }}
+                <tr>
+                    <td>
+                      <input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{% if form.instance.id %}{{ form.instance.delivery_challan.id }}{% endif %}" readonly>
+                      <input type="number" class="rowNo chalId" name="{{form.prefix}}-delivery_challan_value" id="id_{{form.prefix}}-delivery_challan_value" value="{{ form.instance.delivery_challan.delivery_challan_no }}" readonly>
+                    </td>
+                    <td>
+                        <input type="number" class="rowNo challanQty" name="{{form.prefix}}-challanQty" id="id_{{form.prefix}}-challanQty" value="{{ form.instance.delivery_challan.total_qty }}" readonly  style="cursor: pointer;">
+                    </td>
+                    <td>
+                      <input type="number" class="rowNo challanBalance" name="{{form.prefix}}-challanBalanceQty" id="id_{{form.prefix}}-challanBalanceQty" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
+                      <input type="hidden" class="rowNo challanBalancehidden" name="challanBalanceQtyhidden-{{forloop.counter0}}" id="id_challanBalanceQtyhidden-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
+                    </td>
+                    <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan"></td>
+                </tr>
+    
+                {% endfor %}
+    
+            </tbody>
+        </table>
       
       </div>
-      
-      
-      <div class="ms-3">
-        <table class="table table-striped table-hover table-bordered table-warning" id="challanTable">
-          <thead class="name_absolute">
-              <tr>
-                  <th>Chall No</th>
-                  <th>Qty</th>
-                  <th>Bal</th>
-                  <th>check</th>
-              </tr>
-          </thead>
-          <tbody class="mainTableList">
-              {{ delivery_challan_formset.management_form }}
-              {% for form in delivery_challan_formset %}
-              {{ form.id }}
-              <tr>
-                  <td>
-                    <input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{% if form.instance.id %}{{ form.instance.delivery_challan.id }}{% endif %}" readonly>
-                    <input type="number" class="rowNo chalId" name="{{form.prefix}}-delivery_challan_value" id="id_{{form.prefix}}-delivery_challan_value" value="{{ form.instance.delivery_challan.delivery_challan_no }}" readonly>
-                  </td>
-                  <td>
-                      <input type="number" class="rowNo challanQty" name="challanQty-{{forloop.counter0}}" id="id_challanQty-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.total_qty }}" readonly  style="cursor: pointer;">
-                  </td>
-                  <td>
-                    <input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
-                    <input type="hidden" class="rowNo challanBalancehidden" name="challanBalanceQtyhidden-{{forloop.counter0}}" id="id_challanBalanceQtyhidden-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
-                  </td>
-                  <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan"></td>
-              </tr>
-  
-              {% endfor %}
-  
-          </tbody>
-      </table>
-      </div>
+
     </div>
    
 
@@ -164,7 +154,7 @@
             <input type="hidden" class="" name="{{forms.prefix}}-challanId" id="id_{{forms.prefix}}-challanId" value="">
           </td>
           <td>
-            <input type="number" class="purchase-mark" name="challanValue_{{forloop.counter0}}" id="challanValue_{{forloop.counter0}}" value="" readonly>
+            <input type="number" class="purchase-mark" name="{{forms.prefix}}-challanValue" id="{{forms.prefix}}-challanValue" value="" readonly>
           </td>
           <td> 
             <div class="custom-dropdown-container">
@@ -494,6 +484,13 @@ $(document).ready(function(){
                             return false;
                         }
                     });
+                //     if ($('#id_selected_godown option[value="' + response.godown_id + '"]').length === 0) {
+                //     $('#id_selected_godown').append(
+                //         $('<option>', { value: response.godown_id, text: response.godown_name })
+                //     );
+                // }
+                // $('#id_selected_godown').val(response.godown_id).trigger('change');
+
     
                     if (rowToPopulate) {
                         populatePicklistRow(rowToPopulate, response);
@@ -559,17 +556,17 @@ $(document).ready(function(){
             pickListNoElement.name = `salesvoucherdeliverychallan_set-${formIndex}-delivery_challan_value`;
             pickListNoElement.value = "";
         }
-        const inputSelectElement = lastRow.querySelector('input[name^="challanQty-"]');
+        const inputSelectElement = lastRow.querySelector('input[name$="-challanQty"]');
         if (inputSelectElement) {
-            inputSelectElement.id = `id_challanQty-${formIndex}`;
-            inputSelectElement.name = `challanQty-${formIndex}`;
+            inputSelectElement.id = `id_salesvoucherdeliverychallan_set-${formIndex}-challanQty`;
+            inputSelectElement.name = `id_salesvoucherdeliverychallan_set-${formIndex}-challanQty`;
             inputSelectElement.value = "";
         }
 
-        const inputElement = lastRow.querySelector('input[name^="challanBalanceQty-"]');
+        const inputElement = lastRow.querySelector('input[name$="-challanBalanceQty"]');
         if (inputElement) {
-            inputElement.id = `id_challanBalanceQty-${formIndex}`;
-            inputElement.name = `challanBalanceQty-${formIndex}`;
+            inputElement.id = `id_salesvoucherdeliverychallan_set-${formIndex}-challanBalanceQty`;
+            inputElement.name = `id_salesvoucherdeliverychallan_set-${formIndex}-challanBalanceQty`;
             inputElement.value = "";
         }
 
@@ -600,7 +597,7 @@ $(document).ready(function(){
     var filterProducts;
   
       function handleGodownAndChallan() {
-        const godown_id = $('#id_selected_godown').val() || "";
+        // const godown_id = $('#id_selected_godown').val() || "";
         const checkedRadio = $('.challanRadio:checked'); 
         
         if (checkedRadio.length === 0) return; 
@@ -608,27 +605,27 @@ $(document).ready(function(){
         const selectedRow = checkedRadio.closest('tr'); 
         const deliveryChallan = selectedRow.find('.challanId').val()?.trim() || "";
 
-        console.log('Selected Godown:', godown_id);
+        // console.log('Selected Godown:', godown_id);
         console.log('Selected Delivery Challan:', deliveryChallan);
 
-          if (godown_id && deliveryChallan) {
-              handleGodownIdAjax(godown_id, deliveryChallan);
+          if ( deliveryChallan) {
+              handleGodownIdAjax( deliveryChallan);
           }
       }
 
-      $(document).on('change', '#id_selected_godown', handleGodownAndChallan);
+      // $(document).on('change', '#id_selected_godown', handleGodownAndChallan);
       $(document).on('click', '.challanRadio', handleGodownAndChallan);
 
  
-    function handleGodownIdAjax(godown_id,deliveryChallan){
-      if (!godown_id) return;
+    function handleGodownIdAjax(deliveryChallan){
+      // if (!godown_id) return;
   
       // resetInputs();
       $.ajax({
           url:'/producttransfertowarehouseajax/',
           method: "GET",
           data:{
-            "godown_id":godown_id,
+            // "godown_id":godown_id,
             'deliveryChallan':deliveryChallan
           },
           success: function(response){
@@ -651,7 +648,7 @@ $(document).ready(function(){
       $('.s-suggestion-container').hide().empty();
       $('[name^="select_product_name_"]').empty();
       $('.purchase-input, .purchase-amount, .purchase-mark').val('');
-      $('[name^="challanValue_"]').val('');
+      $('[name$="-challanValue"]').val('');
     }
     function handleSalesProduct(filterProducts){
       if (filterProducts || Object.keys(filterProducts).length === 0) {
@@ -772,7 +769,7 @@ $(document).ready(function(){
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val(productPrice);
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-quantity"]`).focus();
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-challanId"]`).val(challanId);
-                $('#challanValue_' + purchaseValue).val(challanvalue);
+                $('##id_sales_voucher_finish_goods_set-' + purchaseValue + '-challanValue').val(challanvalue);
             }
 
           
@@ -900,11 +897,12 @@ $(document).ready(function(){
               const productPrice = selectedValue[7];
               const challanId = selectedValue[10];
               const challanvalue = selectedValue[11];
+
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name"]`).val(item_value);
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name_value"]`).val(newNameValue)
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-quantity"]`).focus();
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-challanId"]`).val(challanId);
-              $('#challanValue_' + purchasedata).val(challanvalue);
+              $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-challanValue"]`).val(challanvalue);
                const newGst = productGst + ' % '       
                 itemcolorinput.value = productColor;
                 itemgstinputs.value = newGst ;
@@ -968,9 +966,9 @@ $(document).ready(function(){
                     challanElement.name = `sales_voucher_finish_goods_set-${formIndex}-challanId`;;
                     challanElement.value = '';
 
-                    const challanNameElement = lastRow.querySelector('input[name^="challanValue_"]');
-                    challanNameElement.id = `challanValue_${formIndex}`;
-                    challanNameElement.name = `challanValue_${formIndex}`;
+                    const challanNameElement = lastRow.querySelector('input[name$="-challanValue"]');
+                    challanNameElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-challanValue`;
+                    challanNameElement.name = `sales_voucher_finish_goods_set-${formIndex}-challanValue`;
                     challanNameElement.value = '';
             
 
@@ -1171,7 +1169,7 @@ $(document).ready(function(){
             const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
             const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
             const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
-            const challanElement = row.querySelector('.rowNo[name^="challanValue_"]');
+            const challanElement = row.querySelector('.rowNo[name^="-challanValue"]');
             const challanId = challanElement ? parseInt(challanElement.value) || 0 : 0;
 
             var checkedRadio = $('.challanRadio:checked');
@@ -1440,7 +1438,7 @@ $(document).ready(function(){
   function inputCheck(){
     const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
     const buyerNo = document.getElementById('id_buyer_inv_no')
-    const godownSelect = document.getElementById('id_selected_godown')
+    // const godownSelect = document.getElementById('id_selected_godown')
     var tableRows = document.querySelectorAll('#salesbody tr');
     var partyName = document.getElementById('id_party_name')
   
@@ -1497,7 +1495,7 @@ $(document).ready(function(){
             buyerNo.focus();
             return;
           }else{
-            godownSelect.focus();
+            partyName.focus();
           }
         }
       })
@@ -1505,22 +1503,7 @@ $(document).ready(function(){
    
     
     
-    if(godownSelect){
-      godownSelect.addEventListener('keydown', function(event) {
-        if (event.key === "Tab") {
-            event.preventDefault();
-
-            if (godownSelect.value === '') {
-                godownSelect.focus();
-                return; 
-            }else{
-
-              partyName.focus();
-              
-            } 
-        }
-      });
-    }
+    
     if(partyName){
       partyName.addEventListener('keydown',function(){
         if (event.key === "Tab") {
