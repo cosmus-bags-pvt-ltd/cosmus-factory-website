@@ -1169,7 +1169,7 @@ $(document).ready(function(){
             const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
             const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
             const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
-            const challanElement = row.querySelector('.rowNo[name^="-challanValue"]');
+            const challanElement = row.querySelector('input[name^="-challanValue"]');
             const challanId = challanElement ? parseInt(challanElement.value) || 0 : 0;
 
             var checkedRadio = $('.challanRadio:checked');
