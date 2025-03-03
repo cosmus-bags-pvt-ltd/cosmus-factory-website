@@ -15563,7 +15563,7 @@ def delivery_challan_product_ajax(request):
         godown_name = request.GET.get('selected_godown')
 
         print(godown_name)
-        
+
         if not godown_name:
             return JsonResponse({'error': 'Please select godown first'}, status=400)
 
@@ -15580,7 +15580,7 @@ def delivery_challan_product_ajax(request):
                 'quantity',
                 'product_name__Product__Product_Refrence_ID',
                 'product_name__PProduct_image'
-                )
+                ).exclude(quantity=0)
 
         print(products)
 
@@ -15705,6 +15705,8 @@ def delivery_challan_process_for_sale_voucher(request):
         d_challan_data = {
             "delivery_challan_no": d_challan_no,
             "id": d_id.id,
+            "godown_id":d_id.selected_godown.id,
+            "godown_name":d_id.selected_godown.godown_name_finished,
             "total_qty": total_data['total_qty'] or 0,
             "balance_qty": total_data['total_balance'] or 0
         }
