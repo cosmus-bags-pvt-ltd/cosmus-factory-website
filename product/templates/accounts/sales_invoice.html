@@ -7,12 +7,10 @@
   <form class="mt-3" action="" method="POST" id="salesForm">
     {% csrf_token %}
     <div class="d-flex mb-3">
-      <input type="hidden" id="productSaleDate" value="{{dict_to_send}}">
-      <label for="" class="me-1">Type :</label>
-      <span class="text-danger fw-bold">Finish Goods</span>
+      <span class="me-1">Type :<span class="text-danger fw-bold">Finish Goods</span></span>
       <span id="purchaseError" class="error-messages"></span>
       <div class="d-flex ms-2">
-        <label for="id_challan_no" class="fw-bold">Add Challan+ :</label>
+        <label for="id_challan_no" class="fw-bold">Add Chall+ :</label>
         <input type="text" name="challan_no" class="purchase-mark me-1" id="id_challan_no">
       </div>
 
@@ -42,7 +40,7 @@
           maxlength="50" readonly>
       </div>
       <div class="d-flex ms-2">
-        <label for="id_ledger_type" class="me-1">ledger Type :</label>
+        <label for="id_ledger_type" class="me-1">L-Type :</label>
         <input type="text" class="product_remark" name="ledger_type" id="id_ledger_type"
           value="{{master_form.instance.ledger_type}}" maxlength="50" default='Sales'
           placeholder="Sales" readonly>
@@ -139,19 +137,20 @@
       <thead class="name_absolute">
         <tr>
           <th>NO</th>
-          <th>Model Names</th>
+          <th>Chall No</th>
+          <th>Mod. Name</th>
           <th>Color</th>
           <th>SKU No</th>
           <th>QTY</th>
           <th>MRP</th>
-          <th>Customer Price/units</th>
-          <th>Treade Disc %</th>
+          <th>C.Price/U</th>
+          <th>TrDisc %</th>
           <th>Spl Dlr Disc %</th>
-          <th>Taxable Value</th>
+          <th>Tax Value</th>
           <th>Gst %</th>
           <th>CGST %</th>
           <th>SGST/IGST %</th>
-          <th>NRP Including GST</th>
+          <th>NRP Inc. GST</th>
           <th>Delete</th>
         </tr>
       </thead>
@@ -161,7 +160,10 @@
         {{ forms.id }}
         <tr>
           <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
-            <input type="hidden" class="rowNo" name="challanId_{{forloop.counter0}}" id="challanId_{{forloop.counter0}}" value="">
+            <input type="hidden" class="" name="{{forms.prefix}}-challanId" id="id_{{forms.prefix}}-challanId" value="">
+          </td>
+          <td>
+            <input type="text" class="rowNo" name="challanValue_{{forloop.counter0}}" id="challanValue_{{forloop.counter0}}" value="" readonly>
           </td>
           <td> 
             <div class="custom-dropdown-container">
@@ -177,7 +179,7 @@
 
           <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
 
-          <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-input sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" ></td>
+          <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-mark sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" ></td>
 
           <td><input type="number" id="id_{{forms.prefix}}-mrp" class="purchase-input sales-mrp" name="{{forms.prefix}}-mrp" value="{{forms.instance.product_name.Product.Product_MRP}}" readonly></td>
 
@@ -512,12 +514,12 @@ $(document).ready(function(){
         $('#id_challan_no').val('');
   })
 
-  function populatePicklistRow(row, response){
+      function populatePicklistRow(row, response){
         row.find('.challanId').val(response.id);
         row.find('.chalId').val(response.delivery_challan_no);
         row.find('.challanQty').val(response.total_qty)
         row.find('.challanBalance').val(response.balance_qty);
-    };
+      };
 
     function addpickListRow() {
         const tableBody = document.querySelector('#challanTable .mainTableList');
@@ -578,25 +580,9 @@ $(document).ready(function(){
         tableBody.appendChild(lastRow);
     }
 
-    // $(document).on('click', 'input.outwardChallan-btn', function () {
-    //   processSalesChallan()
-    // })
-    // function processSalesChallan () {
-    //   var checkedRadio = $('.challanRadio:checked');
-
-    //     if (checkedRadio.length === 0) {
-    //         console.warn("No Challan selected.");
-    //         // $('#responseMessage').html('<span class="text-danger">Please select a Challan before calculating.</span>');
-    //         return;
-    //     }
-    //     var selectedRow = checkedRadio.closest('tr'); 
-    //     var productKey = selectedRow.find('.chalId').val()?.trim()
-      
-    // }
+    
 })
 </script>
-
-
 <script>
   $(document).ready(function () {
     var searchedItemNameDict;
@@ -657,6 +643,7 @@ $(document).ready(function(){
       $('.s-suggestion-container').hide().empty();
       $('[name^="select_product_name_"]').empty();
       $('.purchase-input, .purchase-amount, .purchase-mark').val('');
+      $('[name^="challanValue_"]').val('');
     }
     function handleSalesProduct(filterProducts){
       if (filterProducts || Object.keys(filterProducts).length === 0) {
@@ -763,7 +750,8 @@ $(document).ready(function(){
                 const productGst = selectedValue[8];
                 const productmrp = selectedValue[6];
                 const productPrice = selectedValue[7];
-                const challanId = selectedValue[10]
+                const challanId = selectedValue[10];
+                const challanvalue = selectedValue[11];
                 const newNameValue = namevalueCheck + '                             '+ productQty;
                 const newGst = productGst + ' % '       
               
@@ -775,7 +763,8 @@ $(document).ready(function(){
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp').val(productmrp);
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val(productPrice);
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-quantity"]`).focus();
-                $('#challanId_' + purchaseValue).val(challanId)
+                $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-challanId"]`).val(challanId);
+                $('#challanValue_' + purchaseValue).val(challanvalue)
             }
 
           
@@ -902,10 +891,12 @@ $(document).ready(function(){
               const productmrps = selectedValue[6];
               const productPrice = selectedValue[7];
               const challanId = selectedValue[10];
+              const challanvalue = selectedValue[11];
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name"]`).val(item_value);
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name_value"]`).val(newNameValue)
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-quantity"]`).focus();
-              $('#challanId_' + purchaseValue).val(challanId)
+              $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-challanId"]`).val(challanId);
+              $('#challanValue_' + purchasedata).val(challanvalue);
                const newGst = productGst + ' % '       
                 itemcolorinput.value = productColor;
                 itemgstinputs.value = newGst ;
@@ -964,10 +955,15 @@ $(document).ready(function(){
                     rowElement.value = formIndex + 1 ;
                     rowElement.style.border="none";
 
-                    const challanElement = lastRow.querySelector('input[name^="challanId_"]');
-                    challanElement.id = `challanId_${formIndex}`;
-                    challanElement.name = `challanId_${formIndex}`;
+                    const challanElement = lastRow.querySelector('input[name$="-challanId"]');
+                    challanElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-challanId`;;
+                    challanElement.name = `sales_voucher_finish_goods_set-${formIndex}-challanId`;;
                     challanElement.value = '';
+
+                    const challanNameElement = lastRow.querySelector('input[name^="challanValue_"]');
+                    challanNameElement.id = `challanValue_${formIndex}`;
+                    challanNameElement.name = `challanValue_${formIndex}`;
+                    challanNameElement.value = '';
             
 
                     const inputSelectElement = lastRow.querySelector('input[name$="-product_name"]');
@@ -1425,7 +1421,7 @@ $(document).ready(function(){
     
     
     calculateTaxSummary()
-    calculateTotalAmount();
+    // calculateTotalAmount();
     calculateOtherTotal();
     deleteRowData()
   function inputCheck(){

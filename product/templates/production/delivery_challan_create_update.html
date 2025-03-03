@@ -32,11 +32,11 @@
                         {% endif %}
                     </select>
                 </div>
-                <div class="">
+                <div style="margin-left: 110px;">
                     {% if master_form.instance.id %}
-                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1 " cols="40" rows="2" id="id_party_address" readonly>{{ master_form.instance.party_name.address }}</textarea>
+                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1 " cols="25" rows="1" id="id_party_address" readonly>{{ master_form.instance.party_name.address }}</textarea>
                     {% elif not master_form.instance.id %}
-                    <textarea placeholder="Party Address.." name="party_address" class="form-control" cols="40" rows="2" id="id_party_address" readonly></textarea>
+                    <textarea placeholder="Party Address.." name="party_address" class="form-control" cols="25" rows="1" id="id_party_address" readonly></textarea>
                     {% endif %}
                 </div>
                
