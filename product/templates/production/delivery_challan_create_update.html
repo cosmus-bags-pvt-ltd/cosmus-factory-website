@@ -304,8 +304,9 @@
                         suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
                     }
                 },
-                error: function (error) {   
-                    console.log(error);
+                error: function (response) {   
+                    console.log(response);
+                    alert("Please select Godown!!")
                 }
 
 
