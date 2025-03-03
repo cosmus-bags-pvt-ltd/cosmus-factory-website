@@ -43,7 +43,7 @@ from xhtml2pdf import pisa
 from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, DeliveryChallanProducts, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
                     Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
-                    Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info, StockItem,
+                    Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, SalesVoucherDeliveryChallan, Salesman_info, StockItem,
                     SubCategory, Unit_Name_Create, account_credit_debit_master_table, bin_for_raw_material, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
                     finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,
@@ -85,7 +85,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset,DeliveryChallanProductsUpdateFormset,SalesVoucherDeliveryChallanFormset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset,DeliveryChallanProductsUpdateFormset,SalesVoucherDeliveryChallanFormset,SalesVoucherDeliveryChallanFormsetupdate)
     
 
 
@@ -9690,7 +9690,7 @@ def product_transfer_to_warehouse_ajax(request):
 
         try:
 
-            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('quantity')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty'))
+            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('balance_qty')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty','id'))
 
             if filtered_product:
 
@@ -9703,13 +9703,13 @@ def product_transfer_to_warehouse_ajax(request):
                     product_model_name = query.get('product_name__Product__Model_Name')
                     color = query.get('product_name__PProduct_color__color_name')
                     uom = query.get('product_name__Product__Product_UOM')
-                    qty = query.get('quantity')
+                    qty = query.get('balance_qty')
                     mrp = query.get('product_name__Product__Product_MRP')
                     customer_price = query.get('product_name__Product__Product_SalePrice_CustomerPrice')
                     gst = query.get('product_name__Product__Product_GST__gst_percentage')
                     total_qty = query.get('total_qty')
-
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty]
+                    id = query.get('id')
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id]
 
                 print('dict_to_send = ',dict_to_send)
 
@@ -15724,7 +15724,16 @@ def salesvouchercreateupdate(request,s_id=None):
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
-        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
+
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormsetupdate(request.POST or None, instance=voucher_instance)
+
+        for form in delivery_challan_formset:
+            challan = form.instance.delivery_challan
+            if challan:
+                total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0 
+                challan.total_qty = total_qty
+                balance_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(balance_qty=Sum('balance_qty'))['balance_qty'] or 0
+                challan.balance_qty = balance_qty
         page_name = 'Edit Sales Invoice'
         godown_id = voucher_instance.selected_godown.id
 
@@ -15754,7 +15763,7 @@ def salesvouchercreateupdate(request,s_id=None):
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
         formset = salesvouchercreateformset()
-        delivery_challan_formset = SalesVoucherDeliveryChallanFormset()
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST or None,queryset=SalesVoucherDeliveryChallan.objects.none())
         page_name = 'Create Sales Invoice'
     
 
@@ -15852,7 +15861,7 @@ def salesvouchercreateupdate(request,s_id=None):
 
                     return redirect('sales-voucher-list')
             except Exception as e:
-                print(e)
+                print(e) 
 
     return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset})
 

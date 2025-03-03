@@ -1431,3 +1431,5 @@ class SalesVoucherDeliveryChallanForm(forms.ModelForm):
 SalesVoucherDeliveryChallanFormset = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=1, can_delete=True)
 
 SalesVoucherDeliveryChallanFormsetupdate = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=0, can_delete=True)
+
+

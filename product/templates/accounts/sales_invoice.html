@@ -105,7 +105,7 @@
               <tr>
                   <th>Chall No</th>
                   <th>Qty</th>
-                  <!-- <th>Balance</th> -->
+                  <th>Bal</th>
                   <th>check</th>
               </tr>
           </thead>
@@ -114,12 +114,16 @@
               {% for form in delivery_challan_formset %}
               {{ form.id }}
               <tr>
-                  <td><input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{% if form.instance.id %}{{ form.instance.delivery_challan.id}}{% endif %}" readonly>
-                      <input type="number" class="rowNo chalId" name="{{form.prefix}}-delivery_challan_value" id="id_{{form.prefix}}-delivery_challan_value" value="{% if form.instance.id %}{{ form.instance.delivery_challan }}{% endif %}" readonly></td>
                   <td>
-                      <input type="number" class="rowNo challanQty" name="challanQty-{{forloop.counter0}}" id="id_challanQty-{{forloop.counter0}}" value="{% if form.instance.id %}{{ form.instance }}{% endif %}" readonly  style="cursor: pointer;">
+                    <input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{% if form.instance.id %}{{ form.instance.delivery_challan.id }}{% endif %}" readonly>
+                    <input type="number" class="rowNo chalId" name="{{form.prefix}}-delivery_challan_value" id="id_{{form.prefix}}-delivery_challan_value" value="{{ form.instance.delivery_challan.delivery_challan_no }}" readonly>
                   </td>
-                  <!-- <td><input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{% if form.instance.id %}{{ form.instance }}{% endif %}" readonly></td> -->
+                  <td>
+                      <input type="number" class="rowNo challanQty" name="challanQty-{{forloop.counter0}}" id="id_challanQty-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.total_qty }}" readonly  style="cursor: pointer;">
+                  </td>
+                  <td>
+                    <input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
+                  </td>
                   <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan"></td>
               </tr>
   
@@ -156,7 +160,9 @@
         {% for forms in formset %}
         {{ forms.id }}
         <tr>
-          <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}"></td>
+          <td><input type="number" class="rowNo" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}">
+            <input type="hidden" class="rowNo" name="challanId_{{forloop.counter0}}" id="challanId_{{forloop.counter0}}" value="">
+          </td>
           <td> 
             <div class="custom-dropdown-container">
               <input type="hidden" name="{{forms.prefix}}-product_name" id="id_{{forms.prefix}}-product_name"  value="{% if forms.instance.id %}{{forms.instance.product_name.PProduct_SKU}}{% endif %}" > 
@@ -312,16 +318,15 @@
     }
 
     function newPopUpwindow(button, path){
-        // Specify minimum height and width
-      var minWidth = 1150; // minimum width
-      var minHeight = 800; // minimum height
+      var minWidth = 1150; 
+      var minHeight = 800; 
 
       $('body').addClass('popup-open');
       $('body').append('<div class="popup-overlay"></div>');
 
-      // Open new page with specified dimensions
+
       popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-        // Ensure only one event listener is attached
+
       
         window.addEventListener('message', function(event){
             if (event.data.message === 'close') {
@@ -331,9 +336,6 @@
                     
                 }
               });
-
-
-        // Listen for messages from the popup window
         window.addEventListener('click', function(event) {
         handleOutsideClick(event);
       });
@@ -342,8 +344,7 @@
       var popUpRect = document.querySelector('body').getBoundingClientRect();
       var clickX = event.clientX;
       var clickY = event.clientY;
-      
-        // Check if the click is outside the popup window
+    
         if (
           clickX > popUpRect.left || clickX <= popUpRect.right ||
           clickY > popUpRect.top || clickY <= popUpRect.bottom
@@ -515,7 +516,7 @@ $(document).ready(function(){
         row.find('.challanId').val(response.id);
         row.find('.chalId').val(response.delivery_challan_no);
         row.find('.challanQty').val(response.total_qty)
-        // row.find('.challanBalance').val(response.balance_qty);
+        row.find('.challanBalance').val(response.balance_qty);
     };
 
     function addpickListRow() {
@@ -561,12 +562,12 @@ $(document).ready(function(){
             inputSelectElement.value = "";
         }
 
-        // const inputElement = lastRow.querySelector('input[name^="challanBalanceQty-"]');
-        // if (inputElement) {
-        //     inputElement.id = `id_challanBalanceQty-${formIndex}`;
-        //     inputElement.name = `challanBalanceQty-${formIndex}`;
-        //     inputElement.value = "";
-        // }
+        const inputElement = lastRow.querySelector('input[name^="challanBalanceQty-"]');
+        if (inputElement) {
+            inputElement.id = `id_challanBalanceQty-${formIndex}`;
+            inputElement.name = `challanBalanceQty-${formIndex}`;
+            inputElement.value = "";
+        }
 
         const checkboxElement = lastRow.querySelector('input[name^="delivery_challan"]'); 
         if (checkboxElement) {
@@ -603,9 +604,7 @@ $(document).ready(function(){
     var itemName;
     var purchaseValue;
     var filterProducts;
-    //var productWerhouseid = $('#id_sales_voucher_finish_goods_set-0-id').val(); 
-
-    // if(productWerhouseid === ''){
+  
       function handleGodownAndChallan() {
         const godown_id = $('#id_selected_godown').val() || "";
         const checkedRadio = $('.challanRadio:checked'); 
@@ -626,26 +625,7 @@ $(document).ready(function(){
       $(document).on('change', '#id_selected_godown', handleGodownAndChallan);
       $(document).on('click', '.challanRadio', handleGodownAndChallan);
 
-    // }else{
-      // var productSaleDate = $('#productSaleDate').val();
-      // if(productSaleDate !== "None"){
-       
-        
-      //   try {
-        
-      //       let sanitizedData = productSaleDate.replace(/'/g, '"');
-      //       sanitizedData = sanitizedData.replace(/Decimal\("([\d.]+)"\)/g, '$1');
-      //       sanitizedData = sanitizedData.replace(/([{,])\s*(\d+)\s*:/g, '$1"$2":');
-      //       filterProducts = JSON.parse(sanitizedData);
-      //       if(filterProducts)handleSalesProduct(filterProducts)
-        
-      //   } catch (error) {
-      //       console.error('Error parsing stockData:', error);
-           
-      //   }
-      // }
-    // }
-
+ 
     function handleGodownIdAjax(godown_id,deliveryChallan){
       if (!godown_id) return;
   
@@ -660,9 +640,8 @@ $(document).ready(function(){
           success: function(response){
             console.log(response)
             filterProducts = {}
-           filterProducts = response.filtered_product;
+            filterProducts = response.filtered_product;
             handleSalesProduct(filterProducts)
-           
           },
           error : function(error){
             console.log(error)
@@ -682,16 +661,17 @@ $(document).ready(function(){
     function handleSalesProduct(filterProducts){
       if (filterProducts || Object.keys(filterProducts).length === 0) {
         $(document).on('click input keyup focus keydown', 'input[name$="-product_name_value"]', function () {
-            itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
-            purchaseValue = itemName.split('-')[1];
+          itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
+          purchaseValue = itemName.split('-')[1];
         });
 
         $(document).on('input', 'input[name$="-product_name_value"]', function(e) {
-          var  purchaseValue = $(this).attr('name').match(/\d+/)[0]; // Extract the numeric value from the input name
+          var purchaseValue = $(this).attr('name').match(/\d+/)[0]; 
           var productnamevalue = $(this).val().trim();
           var selectNameValue = `select_product_name_${purchaseValue}`;
           var suggestionsContainer = $(`#${selectNameValue}`);
           suggestionsContainer.empty();
+
           if (productnamevalue === 'None' || productnamevalue === '') {
               var selectNameValue = $(this).closest('tr').find('[name^="select_product_name_"]');
                   
@@ -783,6 +763,7 @@ $(document).ready(function(){
                 const productGst = selectedValue[8];
                 const productmrp = selectedValue[6];
                 const productPrice = selectedValue[7];
+                const challanId = selectedValue[10]
                 const newNameValue = namevalueCheck + '                             '+ productQty;
                 const newGst = productGst + ' % '       
               
@@ -794,6 +775,7 @@ $(document).ready(function(){
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-mrp').val(productmrp);
                 $('#id_sales_voucher_finish_goods_set-' + purchaseValue + '-sale_price').val(productPrice);
                 $(`input[name="sales_voucher_finish_goods_set-${purchaseValue}-quantity"]`).focus();
+                $('#challanId_' + purchaseValue).val(challanId)
             }
 
           
@@ -919,9 +901,11 @@ $(document).ready(function(){
               const productGst = selectedValue[8];
               const productmrps = selectedValue[6];
               const productPrice = selectedValue[7];
+              const challanId = selectedValue[10];
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name"]`).val(item_value);
               $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-product_name_value"]`).val(newNameValue)
-              $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-quantity"]`).focus()
+              $(`input[name="sales_voucher_finish_goods_set-${purchasedata}-quantity"]`).focus();
+              $('#challanId_' + purchaseValue).val(challanId)
                const newGst = productGst + ' % '       
                 itemcolorinput.value = productColor;
                 itemgstinputs.value = newGst ;
@@ -979,6 +963,12 @@ $(document).ready(function(){
                     rowElement.name = `rowNo_${formIndex}`;
                     rowElement.value = formIndex + 1 ;
                     rowElement.style.border="none";
+
+                    const challanElement = lastRow.querySelector('input[name^="challanId_"]');
+                    challanElement.id = `challanId_${formIndex}`;
+                    challanElement.name = `challanId_${formIndex}`;
+                    challanElement.value = '';
+            
 
                     const inputSelectElement = lastRow.querySelector('input[name$="-product_name"]');
                     inputSelectElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-product_name`;
