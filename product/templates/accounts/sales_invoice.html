@@ -1167,13 +1167,38 @@ $(document).ready(function(){
             const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
             const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
             const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
+            const challanId = parseInt(row.querySelector('.rowNo[name^="challanId_"]').value);
+            var checkedRadio = $('.challanRadio:checked');
+
+            if (checkedRadio.length === 0) {
+                console.warn("No Challan selected.");
+                // $('#responseMessage').html('<span class="text-danger">Please select a Challan before calculating.</span>');
+                return;
+            }
+            var selectedRow = checkedRadio.closest('tr'); 
+            var productKey = selectedRow.find('.chalId').val()?.trim();
+            var challanBalQty = parseInt(selectedRow.find('.challanBalance').val()?.trim()) || 0;
+            var challanQty = parseInt(selectedRow.find('.challanQty').val()?.trim()) || 0;
+            console.log('productKey',productKey)
+            console.log('challanQty',challanQty)
+            console.log('challanId',challanId)
+
          
             // Get the values of quantity and rate
             const quantity = parseFloat(quantityInput.value);
+            if(challanId === productKey){
+                if(challanQty < quantity){
+                  quantityInput.value = challanQty;
+                }
+            }
+           
+
             const rate = parseFloat(customPriceInput.value);
             const tradeamount = parseFloat(saletreadInput.value)
             const splAmount = parseFloat(saleSplInput.value);
             const gst = parseFloat(gstValue.value);
+            console.log('quantity',quantity)
+
            
             // Calculate the amount for the current row
             const amount = quantity * rate;
