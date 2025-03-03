@@ -9677,48 +9677,6 @@ def product_transfer_to_warehouse_delete(request):
 
 
 
-def product_transfer_to_warehouse_ajax(request):
-    
-    delivery_challan_id = request.GET.get('deliveryChallan')
-
-    if delivery_challan_id:
-
-        print('in delivery_challan and godown_id')
-
-        try:
-
-            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('balance_qty')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty','id','balance_qty','delivery_challan__delivery_challan_no'))
-
-            if filtered_product:
-
-                dict_to_send = {}
-
-                for query in filtered_product:
-                    ref_no = query.get('product_name__Product__Product_Refrence_ID')
-                    p_sku = query.get('product_name__PProduct_SKU')
-                    product_name = query.get('product_name__Product__Product_Name')
-                    product_model_name = query.get('product_name__Product__Model_Name')
-                    color = query.get('product_name__PProduct_color__color_name')
-                    uom = query.get('product_name__Product__Product_UOM')
-                    qty = query.get('balance_qty')
-                    mrp = query.get('product_name__Product__Product_MRP')
-                    customer_price = query.get('product_name__Product__Product_SalePrice_CustomerPrice')
-                    gst = query.get('product_name__Product__Product_GST__gst_percentage')
-                    total_qty = query.get('total_qty')
-                    id = query.get('id')
-                    d_challan_no = query.get('delivery_challan__delivery_challan_no')
-
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id,d_challan_no]
-
-                print('dict_to_send = ',dict_to_send)
-
-                return JsonResponse({'filtered_product':dict_to_send})
-        
-        except Exception as e:
-            return JsonResponse({'error': 'No items found.'}, status=404)
-        
-
-    
 
     
 
@@ -15683,6 +15641,88 @@ def delivery_challan_process_for_sale_voucher(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+def product_transfer_to_warehouse_ajax(request):
+    
+    godown_id = request.GET.get('godown_id')
+    delivery_challan_id = request.GET.get('deliveryChallan')
+
+    
+    if delivery_challan_id:
+
+        print('in delivery_challan and godown_id')
+
+        try:
+
+            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('balance_qty')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty','id','balance_qty','delivery_challan__delivery_challan_no'))
+
+            if filtered_product:
+
+                dict_to_send = {}
+
+                for query in filtered_product:
+                    ref_no = query.get('product_name__Product__Product_Refrence_ID')
+                    p_sku = query.get('product_name__PProduct_SKU')
+                    product_name = query.get('product_name__Product__Product_Name')
+                    product_model_name = query.get('product_name__Product__Model_Name')
+                    color = query.get('product_name__PProduct_color__color_name')
+                    uom = query.get('product_name__Product__Product_UOM')
+                    qty = query.get('balance_qty')
+                    mrp = query.get('product_name__Product__Product_MRP')
+                    customer_price = query.get('product_name__Product__Product_SalePrice_CustomerPrice')
+                    gst = query.get('product_name__Product__Product_GST__gst_percentage')
+                    total_qty = query.get('total_qty')
+                    id = query.get('id')
+                    d_challan_no = query.get('delivery_challan__delivery_challan_no')
+
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id,d_challan_no]
+
+                print('dict_to_send = ',dict_to_send)
+
+                return JsonResponse({'filtered_product':dict_to_send})
+        
+        except Exception as e:
+            return JsonResponse({'error': 'No items found.'}, status=404)
+    else:
+
+        print('in godown_id')
+
+        try:
+            filtered_product = list(product_godown_quantity_through_table.objects.filter(
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice','product_color_name__Product__Product_GST__gst_percentage'))
+
+            if filtered_product:
+                dict_to_send = {}
+
+                for query in filtered_product:
+                    ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
+                    p_sku = query.get('product_color_name__PProduct_SKU')
+                    product_name = query.get('product_color_name__Product__Product_Name')
+                    product_model_name = query.get('product_color_name__Product__Model_Name')
+                    color = query.get('product_color_name__PProduct_color__color_name')
+                    uom = query.get('product_color_name__Product__Product_UOM')
+                    qty = query.get('quantity')
+                    mrp = query.get('product_color_name__Product__Product_MRP')
+                    customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
+                    gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
+                    
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst]
+                
+                return JsonResponse({'filtered_product':dict_to_send})
+            
+            else:
+                raise ObjectDoesNotExist('product not found')
+
+        except ObjectDoesNotExist as oe:
+            return JsonResponse({'error': 'No items found.'}, status=404)
+        
+        except Exception as e:
+            return JsonResponse({'error': 'No items found.'}, status=404)
+    
+
+
+
+
+
 
 @login_required(login_url='login')
 def salesvouchercreateupdate(request,s_id=None):
@@ -15694,41 +15734,47 @@ def salesvouchercreateupdate(request,s_id=None):
 
     if s_id:
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
+
         formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
 
         delivery_challan_formset = SalesVoucherDeliveryChallanFormsetupdate(request.POST or None, instance=voucher_instance)
 
-        for form in delivery_challan_formset:
-            challan = form.instance.delivery_challan
-            if challan:
-                total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0 
-                challan.total_qty = total_qty
-                balance_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(balance_qty=Sum('balance_qty'))['balance_qty'] or 0
-                challan.balance_qty = balance_qty
+        # for form in delivery_challan_formset:
+        #     challan = form.instance.delivery_challan
+        #     if challan:
+        #         total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0 
+        #         challan.total_qty = total_qty
+        #         balance_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(balance_qty=Sum('balance_qty'))['balance_qty'] or 0
+        #         challan.balance_qty = balance_qty
+
         page_name = 'Edit Sales Invoice'
-        godown_id = voucher_instance.selected_godown.id
 
-        filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
+        # godown_id = voucher_instance.selected_godown.id
+
+        # filtered_product = list(product_godown_quantity_through_table.objects.filter(
+        #     godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
         
-        if filtered_product:
-            dict_to_send = {}
+        # if filtered_product:
+        #     dict_to_send = {}
 
-            for query in filtered_product:
-                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
-                p_sku = query.get('product_color_name__PProduct_SKU')
-                product_name = query.get('product_color_name__Product__Product_Name')
-                product_model_name = query.get('product_color_name__Product__Model_Name')
-                color = query.get('product_color_name__PProduct_color__color_name')
-                uom = query.get('product_color_name__Product__Product_UOM')
-                qty = query.get('quantity')
-                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-                mrp = query.get('product_color_name__Product__Product_MRP')
-                customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
+        #     for query in filtered_product:
+        #         ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
+        #         p_sku = query.get('product_color_name__PProduct_SKU')
+        #         product_name = query.get('product_color_name__Product__Product_Name')
+        #         product_model_name = query.get('product_color_name__Product__Model_Name')
+        #         color = query.get('product_color_name__PProduct_color__color_name')
+        #         uom = query.get('product_color_name__Product__Product_UOM')
+        #         qty = query.get('quantity')
+        #         gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
+        #         mrp = query.get('product_color_name__Product__Product_MRP')
+        #         customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
 
 
-                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
+        #         dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
+
+
 
 
     else:
@@ -15744,6 +15790,7 @@ def salesvouchercreateupdate(request,s_id=None):
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
         delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
+
         # formset.forms = [form for form in formset.forms if form.has_changed()]
 
         if not master_form.is_valid():
@@ -15769,7 +15816,7 @@ def salesvouchercreateupdate(request,s_id=None):
                                 form_instance.sales_voucher = master_form_instance
                                 form_instance.save()
                     
-                    selected_godown = master_form_instance.selected_godown
+                    selected_godown = None
                     
                     print(selected_godown)
 
