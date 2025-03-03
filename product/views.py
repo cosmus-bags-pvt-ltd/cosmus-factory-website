@@ -15560,10 +15560,12 @@ def sale_return_list(request):
 def delivery_challan_product_ajax(request):
     try:
         product_name_typed = request.GET.get('nameValue')
-        godown_name = request.GET.get('nameValue')
+        godown_name = request.GET.get('selected_godown')
 
-        if not product_name_typed:
-            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+        print(godown_name)
+        
+        if not godown_name:
+            return JsonResponse({'error': 'Please select godown first'}, status=400)
 
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
 
