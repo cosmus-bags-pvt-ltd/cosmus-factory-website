@@ -9679,11 +9679,9 @@ def product_transfer_to_warehouse_delete(request):
 
 def product_transfer_to_warehouse_ajax(request):
     
-    godown_id = request.GET.get('godown_id')
     delivery_challan_id = request.GET.get('deliveryChallan')
 
-    
-    if delivery_challan_id and godown_id:
+    if delivery_challan_id:
 
         print('in delivery_challan and godown_id')
 
@@ -9718,41 +9716,8 @@ def product_transfer_to_warehouse_ajax(request):
         
         except Exception as e:
             return JsonResponse({'error': 'No items found.'}, status=404)
-    else:
-
-        print('in godown_id')
-
-        try:
-            filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice','product_color_name__Product__Product_GST__gst_percentage'))
-
-            if filtered_product:
-                dict_to_send = {}
-
-                for query in filtered_product:
-                    ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
-                    p_sku = query.get('product_color_name__PProduct_SKU')
-                    product_name = query.get('product_color_name__Product__Product_Name')
-                    product_model_name = query.get('product_color_name__Product__Model_Name')
-                    color = query.get('product_color_name__PProduct_color__color_name')
-                    uom = query.get('product_color_name__Product__Product_UOM')
-                    qty = query.get('quantity')
-                    mrp = query.get('product_color_name__Product__Product_MRP')
-                    customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
-                    gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-                    
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst]
-                
-                return JsonResponse({'filtered_product':dict_to_send})
-            
-            else:
-                raise ObjectDoesNotExist('product not found')
-
-        except ObjectDoesNotExist as oe:
-            return JsonResponse({'error': 'No items found.'}, status=404)
         
-        except Exception as e:
-            return JsonResponse({'error': 'No items found.'}, status=404)
+
     
 
     
