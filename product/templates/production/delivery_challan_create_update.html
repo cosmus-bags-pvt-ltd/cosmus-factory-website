@@ -19,6 +19,21 @@
 
             <div class="ms-2" >
                 <div class="mb-1">
+                    <label for="id_selected_godown" class="me-1">selected_godown :</label>
+                    <select name="selected_godown" class="item-select me-2" required id="id_selected_godown" class="item-selects">
+                        {% if master_form.instance.id %}
+                        <option value="{{ master_form.instance.selected_godown.id }}">{{ master_form.instance.selected_godown.godown_name_finished }}</option>
+                        {% elif not master_form.instance.id %}
+                        <option value="" selected disabled>selected_godown</option>
+                        {% for godown in godowns %}
+                          <option value="{{ godown.id }}">{{ godown.godown_name_finished }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+
+
+                <div class="mb-1">
                     <label for="id_party_name" class="me-1">Party name :</label>
                     <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
                         {% if master_form.instance.id %}

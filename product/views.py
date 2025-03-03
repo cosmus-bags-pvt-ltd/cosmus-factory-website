@@ -15603,6 +15603,7 @@ def delivery_challan_product_ajax(request):
 def delivery_challan_create_update(request, d_id=None):
 
     party_names = Ledger.objects.all()
+    godowns = Godown_finished_goods.objects.all()
     
     if d_id:
         d_instance = DeliveryChallanMaster.objects.get(id = d_id)
@@ -15678,7 +15679,7 @@ def delivery_challan_create_update(request, d_id=None):
             except Exception as e:
                 print(f"Error saving formset: {e}")
 
-    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names,'godowns':godowns})
 
 
 

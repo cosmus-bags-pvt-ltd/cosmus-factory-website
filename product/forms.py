@@ -1408,7 +1408,7 @@ sales_return_voucher_formset_update = inlineformset_factory(sales_return_voucher
 class DeliveryChallanMasterForm(forms.ModelForm):
     class Meta:
         model = DeliveryChallanMaster
-        fields = ['delivery_challan_no','party_name','shipping_address','vehicle_no','driver_name','dispatch_time','no_of_boxes','no_of_pcs','remark']
+        fields = ['delivery_challan_no','party_name','shipping_address','vehicle_no','driver_name','dispatch_time','no_of_boxes','no_of_pcs','remark','selected_godown']
 
 
 
@@ -1426,7 +1426,7 @@ DeliveryChallanProductsUpdateFormset = inlineformset_factory(DeliveryChallanMast
 class SalesVoucherDeliveryChallanForm(forms.ModelForm):
     class Meta:
         model = SalesVoucherDeliveryChallan
-        fields = ['delivery_challan']
+        fields = ['delivery_challan','total_qty','balance_qty']
 
 SalesVoucherDeliveryChallanFormset = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=1, can_delete=True)
 
