@@ -34,9 +34,9 @@
                 </div>
                 <div class="">
                     {% if master_form.instance.id %}
-                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1" cols="40" rows="2" id="id_party_address" readonly>{{ master_form.instance.party_name.address }}</textarea>
+                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1 " cols="40" rows="2" id="id_party_address" readonly>{{ master_form.instance.party_name.address }}</textarea>
                     {% elif not master_form.instance.id %}
-                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1" cols="40" rows="2" id="id_party_address" readonly></textarea>
+                    <textarea placeholder="Party Address.." name="party_address" class="form-control" cols="40" rows="2" id="id_party_address" readonly></textarea>
                     {% endif %}
                 </div>
                
@@ -46,7 +46,7 @@
                 {% if master_form.instance.id %}
                 <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 ps-1" cols="50" rows="2" required id="id_shipping_address">{{ master_form.instance.shipping_address }}</textarea>
                 {% elif not master_form.instance.id %}
-                <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 ps-1" cols="50" rows="2" required id="id_shipping_address"></textarea>
+                <textarea  placeholder="Shipping Address.." name="shipping_address" class="form-control" cols="50" rows="2" required id="id_shipping_address"></textarea>
                 {% endif %}
             </div>
         </div>

@@ -3005,438 +3005,6 @@ def purchasevoucherdelete(request,pk):
 
 
 
-@login_required(login_url='login')
-def delivery_challan_product_ajax(request):
-    try:
-        product_name_typed = request.GET.get('nameValue')
-
-        if not product_name_typed:
-            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
-
-        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
-
-        products = product_delivery_challan_quantity_through_table.objects.filter(
-            Q(product_name__Product__Model_Name__icontains = product_name_typed) |
-            Q(product_name__PProduct_color__color_name__icontains= product_name_typed) | 
-            Q(product_name__Product__Product_Refrence_ID__icontains=product_name_typed)
-            ).values(
-                'product_name__Product__Model_Name',
-                'product_name__PProduct_SKU',
-                'product_name__PProduct_color__color_name',
-                'quantity',
-                'product_name__Product__Product_Refrence_ID',
-                'product_name__PProduct_image'
-                )
-
-        print(products)
-
-        product_list = {}
-
-        for product in products:
-            sku = product['product_name__PProduct_SKU'] 
-            
-            product_list[sku] = [product['product_name__PProduct_color__color_name'],product['product_name__Product__Model_Name'],product['product_name__Product__Product_Refrence_ID'],product['product_name__PProduct_image'],product['quantity']]
-
-        return JsonResponse({'products': product_list}, safe=False)
-    
-
-    except Exception as e:
-        logger.error(f"Error in delivery_challan_product_ajax: {e}")
-        return JsonResponse({'error': 'An error occurred while fetching data.'}, status=500)
-
-
-
-@login_required(login_url='login')
-def delivery_challan_create_update(request, d_id=None):
-
-    party_names = Ledger.objects.all()
-    
-    if d_id:
-        d_instance = DeliveryChallanMaster.objects.get(id = d_id)
-        master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
-        formset = DeliveryChallanProductsUpdateFormset(request.POST or None,instance = d_instance)
-
-    else:
-        d_instance = None
-        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
-
-        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-
-            party_id = request.GET.get('partyName')
-
-            if party_id:
-                party_add = Ledger.objects.get(id = party_id)
-                
-                address = party_add.address
-
-                return JsonResponse({'address':address},status = 200)
-
-
-    if request.method == 'POST':
-        
-        print(request.POST)
-
-        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-
-        if d_id:
-            formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
-        else:
-            formset = DeliveryChallanProductsUpdateFormset(request.POST or None, instance = d_instance)
-
-        if master_form.is_valid() and formset.is_valid():
-
-            try:
-
-                with transaction.atomic():
-
-                    if not master_form.is_valid():
-                        print("Form Errors:", master_form.errors)
-                    
-                    master_form_instance = master_form.save(commit=False)
-                    master_form_instance.save()
-
-                    if not formset.is_valid():
-                        for form in formset:
-                            if not form.is_valid():
-                                print("Form Errors:", form.errors)
-
-                    formset.forms = [form for form in formset.forms if form.has_changed()]
-                    
-                    if formset.is_valid():
-                        for form in formset.deleted_forms:
-                            if form.instance.pk:
-                                form.instance.delete()   
-
-                    for form in formset:
-                        if not form.cleaned_data.get('DELETE'):
-                            instance = form.save(commit=False)
-                            instance.delivery_challan = master_form_instance
-
-                            obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
-
-                            obj.quantity -= instance.quantity
-                            obj.save()
-                                
-                            instance.save()
-
-                    return(redirect('delivery-challan-list'))
-                
-            except Exception as e:
-                print(f"Error saving formset: {e}")
-
-    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
-
-
-
-
-def delivery_challan_process_for_sale_voucher(request):
-    try:
-        d_challan_no = request.GET.get('challanNo')
-
-        if not d_challan_no:
-            return JsonResponse({"error": "challanNo parameter is required"}, status=400)
-
-        d_id = get_object_or_404(DeliveryChallanMaster, delivery_challan_no=d_challan_no)
-
-        d_challan_data = {
-            "delivery_challan_no": d_challan_no,
-            "id": d_id.id,
-            "total_qty": d_id.total_qty,
-            "balance_qty": d_id.balance_qty
-        }
-
-        return JsonResponse(d_challan_data)
-
-    except Exception as e:
-        print(f"Error in processing delivery challan: {e}")
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-@login_required(login_url='login')
-def salesvouchercreateupdate(request,s_id=None):
-
-    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-    godown_names = Godown_finished_goods.objects.all()
-
-    dict_to_send = None
-
-    if s_id:
-        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
-        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
-        
-        page_name = 'Edit Sales Invoice'
-        godown_id = voucher_instance.selected_godown.id
-
-        filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
-        
-        if filtered_product:
-            dict_to_send = {}
-
-            for query in filtered_product:
-                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
-                p_sku = query.get('product_color_name__PProduct_SKU')
-                product_name = query.get('product_color_name__Product__Product_Name')
-                product_model_name = query.get('product_color_name__Product__Model_Name')
-                color = query.get('product_color_name__PProduct_color__color_name')
-                uom = query.get('product_color_name__Product__Product_UOM')
-                qty = query.get('quantity')
-                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-                mrp = query.get('product_color_name__Product__Product_MRP')
-                customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
-
-
-                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
-
-
-    else:
-        voucher_instance = None
-        master_form = salesvouchermasterfinishGoodsForm()
-        formset = salesvouchercreateformset()
-        delivery_challan_formset = SalesVoucherDeliveryChallanFormset()
-        page_name = 'Create Sales Invoice'
-    
-
-    if request.method == "POST":
-        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        
-        # formset.forms = [form for form in formset.forms if form.has_changed()]
-
-        if not master_form.is_valid():
-            print("Form Errors:", master_form.errors)
-
-        if not formset.is_valid():
-            for form in formset:
-                if not form.is_valid():
-                    print("Form Errors:", form.errors)
-
-        
-
-        if master_form.is_valid() and formset.is_valid():
-            try:
-                with transaction.atomic():
-                    master_form_instance = master_form.save(commit=False)
-                    master_form_instance.save()
-                    
-                    selected_godown = master_form_instance.selected_godown
-                    
-                    print(selected_godown)
-
-                    for form in formset.deleted_forms:
-                        if form.instance.pk:
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-                            
-                            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                            godown_qty_value.quantity = godown_qty_value.quantity + product_qty
-                            godown_qty_value.save()
-                            
-                            form.instance.delete()
-
-
-                    for form in formset:
-                        if not form.cleaned_data.get('DELETE'):
-                            form_instance = form.save(commit=False)
-                            form_instance.sales_voucher_master = master_form_instance
-                            form_instance.save()
-
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-
-                            
-                            
-                            if form.has_changed():
-
-                                old_product_name = form.initial.get('product_name')
-                                old_product_quantity = form.initial.get('quantity')
-                                
-                                if old_product_quantity:
-                                    print("in single")
-                                    
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                                    difference =  product_qty - old_product_quantity
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity - difference
-                                    godown_qty_value.save()
-
-                            if form.has_changed() and 'product_name' in form.changed_data:
-
-                                if old_product_name and old_product_quantity:
-                                    print("in both")
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=old_product_name)
-
-                                    # difference =  product_qty - old_product_quantity
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity + old_product_quantity
-                                    godown_qty_value.save()
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity - old_product_quantity
-                                    godown_qty_value.save()
-                                
-
-                    return redirect('sales-voucher-list')
-            except Exception as e:
-                print(e)
-
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset})
-
-
-
-
-@login_required(login_url='login')
-def delivery_challan_list(request):
-
-    delivary_challan_list = DeliveryChallanMaster.objects.all()
-
-    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
-
-
-    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
-    
-
-    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
-
-
-    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
-
-    product_queryset = PProduct_Creation.objects.all().annotate(
-        total_qty = Sum('godown_colors__quantity'),
-        total_labour_workin_qty = Subquery(product_queryset_subquery),
-        total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),
-        total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
-        total_challan_qty = Subquery(delivery_challan_subquery)).filter(
-            Q(total_qty__gt=0) | 
-            Q(total_labour_workin_qty__gt=0) | 
-            Q(total_labour_workin_pending_qty__gt=0) | 
-            Q(total_labour_workin_approve_qty__gt=0) |  
-            Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
-    
-    
-    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
-
-
-@login_required(login_url='login')
-def delete_delivery_challan(request,pk):
-
-    logger.info('delete_delivery_challan function called')
-
-    try:
-        challan = get_object_or_404(DeliveryChallanMaster, pk=pk)
-
-        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no}')
-        
-        challan.delete()
-
-        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no} delete successfully')
-
-    except Exception as e:
-        logger.error(f'Error deleting Delivery Challan {pk}: {e}')
-
-    return redirect('delivery-challan-list')
-
-
-
-
-
-
-
-def sales_scan_product_dynamic_ajax(request):
-    
-    try:
-        
-        serialNo = request.GET.get('serialNo')
-        warhouseId = request.GET.get('warhouseId')
-
-        if not serialNo:
-            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
-
-        if sales_voucher_finish_Goods.objects.filter(unique_serial_no=serialNo).exists():
-            
-            return JsonResponse(
-                {'error': f'The serial number "{serialNo}" already exists. Please enter a different one.'},
-                status=400
-            )
-        
-        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_MRP','product__Product__Product_SalePrice_CustomerPrice','product__Product__Product_GST__gst_percentage'))
-
-
-        if filtered_product:
-            list_to_send = []
-
-            for query in filtered_product:
-                p_sku = query.get('product__PProduct_SKU')
-                serial_no = query.get('unique_serial_no')
-                product_model_name = query.get('product__Product__Model_Name')
-                color = query.get('product__PProduct_color__color_name')
-                gst = query.get('product__Product__Product_GST__gst_percentage')
-                mrp = query.get('product__Product__Product_MRP')
-                customer_price = query.get('product__Product__Product_SalePrice_CustomerPrice')
-
-
-                list_to_send.append([p_sku,product_model_name,color,serial_no,gst,mrp,customer_price])
-            
-            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
-        
-        return JsonResponse({'error': 'No items found.'}, status=404)
-    
-    except Exception as e:
-        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
-
-
-
-
-
-@login_required(login_url='login')
-def salesvoucherlist(request):
-    sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
-    return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
-
-
-
-
-
-
-
-
-@login_required(login_url='login')
-def salesvoucherdelete(request,pk):
-    sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
-    if sales_instance:
-        transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master = pk)
-
-        for i in transfer_records:
-            selected_godown = i.sales_voucher_master.selected_godown
-            selected_warehouse = i.sales_voucher_master.selected_warehouse
-            product_name = i.product_name
-            product_quantity = i.quantity
-            if selected_godown:
-                godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                godown_qty_value.quantity = godown_qty_value.quantity + product_quantity
-                godown_qty_value.save()
-            else:
-                pass
-
-    sales_instance.delete()
-    return redirect('sales-voucher-list')
-
-
-
-
-
-
-
-
-
 
 @login_required(login_url='login')
 def gst_create_update(request, pk = None):
@@ -10116,7 +9684,7 @@ def product_transfer_to_warehouse_ajax(request):
     delivery_challan_id = request.GET.get('deliveryChallan')
 
     
-    if delivery_challan_id == "true" and godown_id:
+    if delivery_challan_id and godown_id:
 
         print('in delivery_challan and godown_id')
 
@@ -15987,4 +15555,433 @@ def sale_return_list(request):
 
 
 
- 
+@login_required(login_url='login')
+def delivery_challan_product_ajax(request):
+    try:
+        product_name_typed = request.GET.get('nameValue')
+
+        if not product_name_typed:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+
+        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
+
+        products = product_delivery_challan_quantity_through_table.objects.filter(
+            Q(product_name__Product__Model_Name__icontains = product_name_typed) |
+            Q(product_name__PProduct_color__color_name__icontains= product_name_typed) | 
+            Q(product_name__Product__Product_Refrence_ID__icontains=product_name_typed)
+            ).values(
+                'product_name__Product__Model_Name',
+                'product_name__PProduct_SKU',
+                'product_name__PProduct_color__color_name',
+                'quantity',
+                'product_name__Product__Product_Refrence_ID',
+                'product_name__PProduct_image'
+                )
+
+        print(products)
+
+        product_list = {}
+
+        for product in products:
+            sku = product['product_name__PProduct_SKU'] 
+            
+            product_list[sku] = [product['product_name__PProduct_color__color_name'],product['product_name__Product__Model_Name'],product['product_name__Product__Product_Refrence_ID'],product['product_name__PProduct_image'],product['quantity']]
+
+        return JsonResponse({'products': product_list}, safe=False)
+    
+
+    except Exception as e:
+        logger.error(f"Error in delivery_challan_product_ajax: {e}")
+        return JsonResponse({'error': 'An error occurred while fetching data.'}, status=500)
+
+
+
+@login_required(login_url='login')
+def delivery_challan_create_update(request, d_id=None):
+
+    party_names = Ledger.objects.all()
+    
+    if d_id:
+        d_instance = DeliveryChallanMaster.objects.get(id = d_id)
+        master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
+        formset = DeliveryChallanProductsUpdateFormset(request.POST or None,instance = d_instance)
+
+    else:
+        d_instance = None
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+
+        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+
+            party_id = request.GET.get('partyName')
+
+            if party_id:
+                party_add = Ledger.objects.get(id = party_id)
+                
+                address = party_add.address
+
+                return JsonResponse({'address':address},status = 200)
+
+
+    if request.method == 'POST':
+        
+        print(request.POST)
+
+        master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
+
+        if d_id:
+            formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+        else:
+            formset = DeliveryChallanProductsUpdateFormset(request.POST or None, instance = d_instance)
+
+        if master_form.is_valid() and formset.is_valid():
+
+            try:
+
+                with transaction.atomic():
+
+                    if not master_form.is_valid():
+                        print("Form Errors:", master_form.errors)
+                    
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    if not formset.is_valid():
+                        for form in formset:
+                            if not form.is_valid():
+                                print("Form Errors:", form.errors)
+
+                    formset.forms = [form for form in formset.forms if form.has_changed()]
+                    
+                    if formset.is_valid():
+                        for form in formset.deleted_forms:
+                            if form.instance.pk:
+                                form.instance.delete()   
+
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            instance = form.save(commit=False)
+                            instance.delivery_challan = master_form_instance
+
+                            obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
+
+                            obj.quantity -= instance.quantity
+                            obj.save()
+                                
+                            instance.save()
+
+                    return(redirect('delivery-challan-list'))
+                
+            except Exception as e:
+                print(f"Error saving formset: {e}")
+
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
+
+
+
+
+def delivery_challan_process_for_sale_voucher(request):
+    try:
+        d_challan_no = request.GET.get('challanNo')
+
+        if not d_challan_no:
+            return JsonResponse({"error": "challanNo parameter is required"}, status=400)
+
+        d_id = get_object_or_404(DeliveryChallanMaster, delivery_challan_no=d_challan_no)
+
+        d_challan_data = {
+            "delivery_challan_no": d_challan_no,
+            "id": d_id.id,
+            "total_qty": d_id.total_qty,
+            "balance_qty": d_id.balance_qty
+        }
+
+        return JsonResponse(d_challan_data)
+
+    except Exception as e:
+        print(f"Error in processing delivery challan: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@login_required(login_url='login')
+def salesvouchercreateupdate(request,s_id=None):
+
+    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+    godown_names = Godown_finished_goods.objects.all()
+
+    dict_to_send = None
+
+    if s_id:
+        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
+        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
+        page_name = 'Edit Sales Invoice'
+        godown_id = voucher_instance.selected_godown.id
+
+        filtered_product = list(product_godown_quantity_through_table.objects.filter(
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
+        
+        if filtered_product:
+            dict_to_send = {}
+
+            for query in filtered_product:
+                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
+                p_sku = query.get('product_color_name__PProduct_SKU')
+                product_name = query.get('product_color_name__Product__Product_Name')
+                product_model_name = query.get('product_color_name__Product__Model_Name')
+                color = query.get('product_color_name__PProduct_color__color_name')
+                uom = query.get('product_color_name__Product__Product_UOM')
+                qty = query.get('quantity')
+                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
+                mrp = query.get('product_color_name__Product__Product_MRP')
+                customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
+
+
+                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
+
+
+    else:
+        voucher_instance = None
+        master_form = salesvouchermasterfinishGoodsForm()
+        formset = salesvouchercreateformset()
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset()
+        page_name = 'Create Sales Invoice'
+    
+
+    if request.method == "POST":
+        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
+        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
+        # formset.forms = [form for form in formset.forms if form.has_changed()]
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
+        
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    for form in delivery_challan_formset:
+                        if form.is_valid():
+                            if not form.cleaned_data.get('DELETE'):
+                                form_instance = form.save(commit=False)
+                                form_instance.sales_voucher = master_form_instance
+                                form_instance.save()
+                    
+                    selected_godown = master_form_instance.selected_godown
+                    
+                    print(selected_godown)
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+                            
+                            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                            godown_qty_value.quantity = godown_qty_value.quantity + product_qty
+                            godown_qty_value.save()
+                            
+                            form.instance.delete()
+
+
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+                            form_instance = form.save(commit=False)
+                            form_instance.sales_voucher_master = master_form_instance
+                            form_instance.save()
+
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+
+                            
+                            
+                            if form.has_changed():
+
+                                old_product_name = form.initial.get('product_name')
+                                old_product_quantity = form.initial.get('quantity')
+                                
+                                if old_product_quantity:
+                                    print("in single")
+                                    
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                                    difference =  product_qty - old_product_quantity
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity - difference
+                                    godown_qty_value.save()
+
+                            if form.has_changed() and 'product_name' in form.changed_data:
+
+                                if old_product_name and old_product_quantity:
+                                    print("in both")
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=old_product_name)
+
+                                    # difference =  product_qty - old_product_quantity
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity + old_product_quantity
+                                    godown_qty_value.save()
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity - old_product_quantity
+                                    godown_qty_value.save()
+                                
+
+                    return redirect('sales-voucher-list')
+            except Exception as e:
+                print(e)
+
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset})
+
+
+
+
+@login_required(login_url='login')
+def delivery_challan_list(request):
+
+    delivary_challan_list = DeliveryChallanMaster.objects.all()
+
+    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
+
+
+    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+    
+
+    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
+
+    product_queryset = PProduct_Creation.objects.all().annotate(
+        total_qty = Sum('godown_colors__quantity'),
+        total_labour_workin_qty = Subquery(product_queryset_subquery),
+        total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),
+        total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
+        total_challan_qty = Subquery(delivery_challan_subquery)).filter(
+            Q(total_qty__gt=0) | 
+            Q(total_labour_workin_qty__gt=0) | 
+            Q(total_labour_workin_pending_qty__gt=0) | 
+            Q(total_labour_workin_approve_qty__gt=0) |  
+            Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+    
+    
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
+
+
+@login_required(login_url='login')
+def delete_delivery_challan(request,pk):
+
+    logger.info('delete_delivery_challan function called')
+
+    try:
+        challan = get_object_or_404(DeliveryChallanMaster, pk=pk)
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no}')
+        
+        challan.delete()
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no} delete successfully')
+
+    except Exception as e:
+        logger.error(f'Error deleting Delivery Challan {pk}: {e}')
+
+    return redirect('delivery-challan-list')
+
+
+
+
+
+
+
+def sales_scan_product_dynamic_ajax(request):
+    
+    try:
+        
+        serialNo = request.GET.get('serialNo')
+        warhouseId = request.GET.get('warhouseId')
+
+        if not serialNo:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+
+        if sales_voucher_finish_Goods.objects.filter(unique_serial_no=serialNo).exists():
+            
+            return JsonResponse(
+                {'error': f'The serial number "{serialNo}" already exists. Please enter a different one.'},
+                status=400
+            )
+        
+        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_MRP','product__Product__Product_SalePrice_CustomerPrice','product__Product__Product_GST__gst_percentage'))
+
+
+        if filtered_product:
+            list_to_send = []
+
+            for query in filtered_product:
+                p_sku = query.get('product__PProduct_SKU')
+                serial_no = query.get('unique_serial_no')
+                product_model_name = query.get('product__Product__Model_Name')
+                color = query.get('product__PProduct_color__color_name')
+                gst = query.get('product__Product__Product_GST__gst_percentage')
+                mrp = query.get('product__Product__Product_MRP')
+                customer_price = query.get('product__Product__Product_SalePrice_CustomerPrice')
+
+
+                list_to_send.append([p_sku,product_model_name,color,serial_no,gst,mrp,customer_price])
+            
+            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
+        
+        return JsonResponse({'error': 'No items found.'}, status=404)
+    
+    except Exception as e:
+        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
+
+
+
+
+
+@login_required(login_url='login')
+def salesvoucherlist(request):
+    sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
+    return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
+
+
+
+
+
+
+
+
+@login_required(login_url='login')
+def salesvoucherdelete(request,pk):
+    sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
+    if sales_instance:
+        transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master = pk)
+
+        for i in transfer_records:
+            selected_godown = i.sales_voucher_master.selected_godown
+            selected_warehouse = i.sales_voucher_master.selected_warehouse
+            product_name = i.product_name
+            product_quantity = i.quantity
+            if selected_godown:
+                godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                godown_qty_value.quantity = godown_qty_value.quantity + product_quantity
+                godown_qty_value.save()
+            else:
+                pass
+
+    sales_instance.delete()
+    return redirect('sales-voucher-list')

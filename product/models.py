@@ -1272,7 +1272,7 @@ class sales_voucher_finish_Goods(models.Model):
 class SalesVoucherDeliveryChallan(models.Model):
     sales_voucher = models.ForeignKey(sales_voucher_master_finish_Goods, on_delete=models.CASCADE)
     delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
-    
+
     class Meta:
         unique_together = ('sales_voucher', 'delivery_challan')
 
