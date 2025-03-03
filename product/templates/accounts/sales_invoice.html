@@ -121,6 +121,7 @@
                   </td>
                   <td>
                     <input type="number" class="rowNo challanBalance" name="challanBalanceQty-{{forloop.counter0}}" id="id_challanBalanceQty-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
+                    <input type="hidden" class="rowNo challanBalancehidden" name="challanBalanceQtyhidden-{{forloop.counter0}}" id="id_challanBalanceQtyhidden-{{forloop.counter0}}" value="{{ form.instance.delivery_challan.balance_qty }}" readonly>
                   </td>
                   <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan"></td>
               </tr>
@@ -163,7 +164,7 @@
             <input type="hidden" class="" name="{{forms.prefix}}-challanId" id="id_{{forms.prefix}}-challanId" value="">
           </td>
           <td>
-            <input type="text" class="rowNo" name="challanValue_{{forloop.counter0}}" id="challanValue_{{forloop.counter0}}" value="" readonly>
+            <input type="number" class="purchase-mark" name="challanValue_{{forloop.counter0}}" id="challanValue_{{forloop.counter0}}" value="" readonly>
           </td>
           <td> 
             <div class="custom-dropdown-container">
@@ -186,10 +187,10 @@
           <td><input type="number" id="id_{{forms.prefix}}-sale_price" class="purchase-input sales_price" name="{{forms.prefix}}-sale_price" value="{{forms.instance.product_name.Product.Product_SalePrice_CustomerPrice}}" readonly></td>
 
 
-          <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-input sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" ></td>
+          <td><input type="number" id="id_{{forms.prefix}}-trade_disct" class="purchase-mark sales-trade_disct" name="{{forms.prefix}}-trade_disct" value="{{forms.instance.trade_disct | default_if_none:'' }}" ></td>
 
 
-          <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-input sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" ></td>
+          <td><input type="number" id="id_{{forms.prefix}}-spl_disct" class="purchase-mark sales-spl_disct" name="{{forms.prefix}}-spl_disct" value="{{forms.instance.spl_disct | default_if_none:'' }}" ></td>
           <td>
             <input type="number" id="id_{{forms.prefix}}-amount" class="purchase-amount total-amount" name="{{forms.prefix}}-amount" value="{{forms.instance.amount | default_if_none:''}}" readonly>
         </td>
@@ -212,7 +213,7 @@
         <tr>
             <td class="text-center fw-bold" ><span>Total</span></td>
             <td colspan="4"></td>
-            <td> <input type="number" class="purchase-input" style="border: 1px solid red;" name="grand_quantity" id ="id_grand_quantity" value="" maxlength="50" step=".01" readonly></td>
+            <td> <input type="number" class="purchase-mark" style="border: 1px solid red;" name="grand_quantity" id ="id_grand_quantity" value="" maxlength="50" step=".01" readonly></td>
             <td colspan="4"></td>
             <td><input type="number" class="purchase-amount" style="border: 1px solid red;"  name="grand_taxableAmount" id ="id_grand_taxableAmount" value="" maxlength="50" step=".01" readonly ></td>
             <td></td>
@@ -519,6 +520,7 @@ $(document).ready(function(){
         row.find('.chalId').val(response.delivery_challan_no);
         row.find('.challanQty').val(response.total_qty)
         row.find('.challanBalance').val(response.balance_qty);
+        row.find('.challanBalancehidden').val(response.balance_qty);
       };
 
     function addpickListRow() {
@@ -571,6 +573,12 @@ $(document).ready(function(){
             inputElement.value = "";
         }
 
+        const inputhiddenElement = lastRow.querySelector('input[name^="challanBalanceQtyhidden-"]');
+        if (inputhiddenElement) {
+          inputhiddenElement.id = `id_challanBalanceQtyhidden-${formIndex}`;
+          inputhiddenElement.name = `challanBalanceQtyhidden-${formIndex}`;
+          inputhiddenElement.value = "";
+        }
         const checkboxElement = lastRow.querySelector('input[name^="delivery_challan"]'); 
         if (checkboxElement) {
             checkboxElement.checked = false;
@@ -1163,7 +1171,9 @@ $(document).ready(function(){
             const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
             const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
             const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
-            const challanId = parseInt(row.querySelector('.rowNo[name^="challanId_"]').value);
+            const challanElement = row.querySelector('.rowNo[name^="challanValue_"]');
+            const challanId = challanElement ? parseInt(challanElement.value) || 0 : 0;
+
             var checkedRadio = $('.challanRadio:checked');
 
             if (checkedRadio.length === 0) {
@@ -1173,19 +1183,22 @@ $(document).ready(function(){
             }
             var selectedRow = checkedRadio.closest('tr'); 
             var productKey = selectedRow.find('.chalId').val()?.trim();
-            var challanBalQty = parseInt(selectedRow.find('.challanBalance').val()?.trim()) || 0;
-            var challanQty = parseInt(selectedRow.find('.challanQty').val()?.trim()) || 0;
-            console.log('productKey',productKey)
+            var challanBalQty = parseFloat(selectedRow.find('.challanBalancehidden').val()?.trim()) || 0;
+            var challanQty = parseFloat(selectedRow.find('.challanQty').val()?.trim()) || 0;
+            console.log('productKey',productKey,typeof(productKey))
             console.log('challanQty',challanQty)
             console.log('challanId',challanId)
 
          
             // Get the values of quantity and rate
-            const quantity = parseFloat(quantityInput.value);
+            let quantity = parseFloat(quantityInput.value);
             if(challanId === productKey){
                 if(challanQty < quantity){
-                  quantityInput.value = challanQty;
+                  quantity = challanQty;
                 }
+                var balance = challanBalQty - quantity;
+                console.log('balance',balance)
+                selectedRow.find('.challanBalance').val(balance)
             }
            
 
