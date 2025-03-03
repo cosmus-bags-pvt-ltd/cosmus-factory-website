@@ -188,6 +188,7 @@
         var enterPressed = false;
         var itemName;
         var purchaseValue;
+        var filterData;
         
         var formid = $('#id_deliverychallanproducts_set-0-id').val();
         if(formid === ''){
@@ -213,25 +214,6 @@
                 })
             })
         }
-        
-        $(document).on('change', 'select[name^="selected_godown"]', function () {
-
-        const selected_godown = $(this).val()
-        $.ajax({
-            url: '/deliverychallanproductajax/',
-            method: 'GET',
-            data: {
-                'selected_godown': selected_godown,
-            },
-            success: function (response) {
-            console.log(response)
-        
-            },
-            error: function (xhr, errmsg, err) {
-                console.log('Error sending value to the backend');
-            }
-        })
-        })
     
         $(document).on('click input keyup focus keydown', 'input[name$="-products"]', function () {
             itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
@@ -244,7 +226,8 @@
             var nameValue = $(this).val().trim();
             var selectNameValue = `select_product_name_${StockValue}`;
             var suggestionsContainer = $(`#${selectNameValue}`);
-            
+            const selected_godown = $('#id_selected_godown').val();
+            console.log('selected_godown',selected_godown)
             if (nameValue === 'None' || nameValue === '') {
             suggestionsContainer.css('display', 'none').empty();
                 $(this).attr('data-key', '');
@@ -263,6 +246,7 @@
                 method: 'GET',
                 data: {
                     'nameValue': nameValue,
+                    'selected_godown':selected_godown
                 },
                 success: function (response) {
                     // console.log(response.products);
