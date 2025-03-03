@@ -603,9 +603,9 @@ $(document).ready(function(){
     var itemName;
     var purchaseValue;
     var filterProducts;
-    var productWerhouseid = $('#id_sales_voucher_finish_goods_set-0-id').val(); 
+    //var productWerhouseid = $('#id_sales_voucher_finish_goods_set-0-id').val(); 
 
-    if(productWerhouseid === ''){
+    // if(productWerhouseid === ''){
       function handleGodownAndChallan() {
         const godown_id = $('#id_selected_godown').val() || "";
         const checkedRadio = $('.challanRadio:checked'); 
@@ -626,7 +626,7 @@ $(document).ready(function(){
       $(document).on('change', '#id_selected_godown', handleGodownAndChallan);
       $(document).on('click', '.challanRadio', handleGodownAndChallan);
 
-    }else{
+    // }else{
       // var productSaleDate = $('#productSaleDate').val();
       // if(productSaleDate !== "None"){
        
@@ -644,7 +644,7 @@ $(document).ready(function(){
            
       //   }
       // }
-    }
+    // }
 
     function handleGodownIdAjax(godown_id,deliveryChallan){
       if (!godown_id) return;
