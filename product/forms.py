@@ -1426,7 +1426,7 @@ DeliveryChallanProductsUpdateFormset = inlineformset_factory(DeliveryChallanMast
 class SalesVoucherDeliveryChallanForm(forms.ModelForm):
     class Meta:
         model = SalesVoucherDeliveryChallan
-        fields = ['delivery_challan']
+        fields = ['delivery_challan','total_qty','balance_qty']
 
 SalesVoucherDeliveryChallanFormset = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=1, can_delete=True)
 
