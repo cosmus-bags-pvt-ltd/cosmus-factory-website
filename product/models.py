@@ -1226,6 +1226,7 @@ class DeliveryChallanProducts(models.Model):
     delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
+    balance_qty = models.PositiveIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     
