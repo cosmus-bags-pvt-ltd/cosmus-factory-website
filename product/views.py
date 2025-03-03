@@ -15560,9 +15560,12 @@ def sale_return_list(request):
 def delivery_challan_product_ajax(request):
     try:
         product_name_typed = request.GET.get('nameValue')
+        godown_name = request.GET.get('selected_godown')
 
-        if not product_name_typed:
-            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+        print(godown_name)
+        
+        if not godown_name:
+            return JsonResponse({'error': 'Please select godown first'}, status=400)
 
         logger.info(f"Search initiated by {request.user}: {product_name_typed}")
 
@@ -15570,7 +15573,7 @@ def delivery_challan_product_ajax(request):
             Q(product_name__Product__Model_Name__icontains = product_name_typed) |
             Q(product_name__PProduct_color__color_name__icontains= product_name_typed) | 
             Q(product_name__Product__Product_Refrence_ID__icontains=product_name_typed)
-            ).values(
+            ).filter(godown_name = godown_name).values(
                 'product_name__Product__Model_Name',
                 'product_name__PProduct_SKU',
                 'product_name__PProduct_color__color_name',
@@ -15615,16 +15618,16 @@ def delivery_challan_create_update(request, d_id=None):
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
         formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
 
-        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        # if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
 
-            party_id = request.GET.get('partyName')
+        #     party_id = request.GET.get('partyName')
 
-            if party_id:
-                party_add = Ledger.objects.get(id = party_id)
+        #     if party_id:
+        #         party_add = Ledger.objects.get(id = party_id)
                 
-                address = party_add.address
+        #         address = party_add.address
 
-                return JsonResponse({'address':address},status = 200)
+        #         return JsonResponse({'address':address},status = 200)
 
 
     if request.method == 'POST':

@@ -1226,10 +1226,14 @@ class DeliveryChallanProducts(models.Model):
     delivery_challan = models.ForeignKey(DeliveryChallanMaster, on_delete=models.CASCADE)
     product_name = models.ForeignKey(PProduct_Creation, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
+    balance_qty = models.PositiveIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     
-
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.balance_qty = self.quantity
+        super().save(*args, **kwargs)
 
 class sales_voucher_master_finish_Goods(models.Model):
     sales_no = models.CharField(max_length = 100, unique = True, null = False, blank = False)
