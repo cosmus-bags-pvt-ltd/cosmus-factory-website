@@ -6,6 +6,8 @@
   <form class="mt-3" action="" method="POST" id="salesForm">
     {% csrf_token %}
     <div class="row">
+      <input type="hidden" id="salesupdateData" value="">
+      <input type="hidden" id="salesHiddenData" value="">
       <div class="col-lg-9">
         <div class="d-flex mb-3">
           <span class="me-1">Type :<span class="text-danger fw-bold">Finish Goods</span></span>
@@ -291,6 +293,31 @@
       </div>
     </div>
     </div>
+
+    <div>
+      <div class="row">
+          <div class="col-lg-6">
+              <h1 class="modal-title fs-5" id="staticBackdropLabel">Delivery Challan</h1>
+              <table class="table table-bordered table-warning" id="salesDeliveryTable">
+                  <thead class="name_absolute">
+                      <tr>
+                          <th>Model Name</th>
+                          <th>Sku</th>
+                          <th>Color</th>
+                          <th class="text-primary">Qty</th>
+                          <th class="text-success">Scan Qty</th>
+                          <th class="text-danger">Balance</th>
+                         
+                      </tr>
+                  </thead>
+                  <tbody class="mainTableList">
+          
+                  </tbody>
+              </table>
+          </div>
+      </div>
+      
+  </div>
   <button type="submit" class="ms-5 newProductCreateBtn" id="parentFormClick">Submit</button>
 
 
@@ -468,10 +495,39 @@ $(document).ready(function(){
             method: 'GET',
             data: { "challanNo": challanNo },
             success: function (response) {
-               var productPickList = response;
-               console.log('productPickList',productPickList)
+              var salesDelivery = $('#salesDeliveryTable .mainTableList tr');
+              salesDelivery.empty();
+               var productPickList = response.d_challan_data;
+               console.log('productPickList',response.products)
            
-                if (response.delivery_challan_no && response.total_qty !== null) {
+                if (productPickList && response.products  ) {
+                  var challanKey = Object.keys(response.products); 
+                  console.log('challanKey',challanKey)
+                    // var picklistData = response.picklistDict[picklistKey]; 
+                    // var hiddenData = $('#salesHiddenData').val();
+                    // var currentData = hiddenData ? JSON.parse(hiddenData) : {};
+
+                    // if (!Array.isArray(currentData[picklistKey])) {
+                    //     currentData[picklistKey] = []; 
+                    // }
+
+                    picklistData.forEach(item => {
+                        currentData[picklistKey].push({
+                            sku: item.sku,
+                            model_name: item.model_name,
+                            color: item.color,
+                            qty: item.qty
+                        });
+                    });
+
+                    $('#salesHiddenData').val(JSON.stringify(currentData));
+
+
+
+
+
+
+
 
                     var tables = $('#challanTable .mainTableList');
                     tables.find('tr').each(function () {
@@ -482,15 +538,16 @@ $(document).ready(function(){
                             return false;
                         }
                     });
-            
+                    
                     if (rowToPopulate) {
-                        populatePicklistRow(rowToPopulate, response);
+                        populatePicklistRow(rowToPopulate, productPickList);
                         
                     } else {
                         addpickListRow();
                         const newRow = tables.find('tr').last();
                         populatePicklistRow(newRow, response)
                     }
+                    
                 }
             },
             error: function (error) {
@@ -503,12 +560,12 @@ $(document).ready(function(){
         $('#id_challan_no').val('');
   })
 
-      function populatePicklistRow(row, response){
-        row.find('.challanId').val(response.id);
-        row.find('.chalId').val(response.delivery_challan_no);
-        row.find('.challanQty').val(response.total_qty)
-        row.find('.challanBalance').val(response.balance_qty);
-        row.find('.challanBalancehidden').val(response.balance_qty);
+      function populatePicklistRow(row, productPickList){
+        row.find('.challanId').val(productPickList.id);
+        row.find('.chalId').val(productPickList.delivery_challan_no);
+        row.find('.challanQty').val(productPickList.total_qty)
+        row.find('.challanBalance').val(productPickList.balance_qty);
+        row.find('.challanBalancehidden').val(productPickList.balance_qty);
       };
 
     function addpickListRow() {
