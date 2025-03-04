@@ -7,13 +7,13 @@
         {% csrf_token %}
             <div class="row ">
                 <div class="col-lg-7">
-                    <div class="d-flex ">
-                        {% if voucher_type == 'purchase' %}
-                    <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
+                    <div class="d-flex">
+                    {% if voucher_type == 'purchase' %}
+                    <input type="hidden"  value="{{voucher_type}}"  name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
                     <h6 class="fw-bold">Purchase No :<span class="text-danger ms-2">{{ purchase_number }}</span></h6>
                     {% elif voucher_type == 'transfer' %}
-                    <input type="hidden" value="transfer" name="voucher_type" id="id_voucher_type">
+                    <input type="hidden" value="{{voucher_type}}" name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
                     <h6 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h6>
         
@@ -328,8 +328,16 @@
                        const response = await sendSerialNumber(serialNo);
                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                    } catch (error) {
-                        //  const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                    //   $('#responseMessage').html('<span class="text-danger">Please Scan valid Serial Number.</span>');
+                    if (error.responseJSON && error.responseJSON.error) {
+                        const errorMessage = error.responseJSON.error;
+                        // console.log('errorMessage',errorMessage)
+                        $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    }
+                    $('#id_manualSerialNo').val('');
+                    $('#id_product').val('');
+                    $('#id_product_sku').val('');
+                    $('#id_product_color').val('');
+                    $('#productImgPreview').attr('src','')
                    }
                }
            }, 500); // Debounce delay
@@ -351,21 +359,25 @@
                 event.preventDefault();
                 const manualSerialNo = $('#id_manualSerialNo').val();
                 const responseMessage = $('#responseMessage'); // Response message container
+
+    
                     if (manualSerialNo) {
                         try {
                             const response = await sendSerialNumber(manualSerialNo);
-                            
                             $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                            
                         } catch (error) {
-                            // const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                            $('#responseMessage').html('<span class="text-danger">Please enter a valid Manual Serial Number.</span>');
+                            console.error('Error:', error);
+                            if (error.responseJSON && error.responseJSON.error) {
+                                const errorMessage = error.responseJSON.error;
+                                // console.log('errorMessage',errorMessage)
+                                $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                            }
                             $('#id_manualSerialNo').val('');
                             $('#id_product').val('');
                             $('#id_product_sku').val('');
                             $('#id_product_color').val('');
                             $('#productImgPreview').attr('src','')
-                         
                         }
                     } else {
                         $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
@@ -423,7 +435,7 @@
                     alert('SKU does not match!');
                     throw new Error('SKU mismatch'); // Prevent further execution and returning the response
                 }
-
+                console.log(response)
                 $('#id_product').val(response.model_name);
                 $('#id_product_sku').val(response.product_sku);
                 $('#id_product_color').val(response.product_color);
@@ -440,6 +452,11 @@
                 return response;
             } catch (error) {
                 console.error('Error:', error);
+                if (error.responseJSON && error.responseJSON.error) {
+                    const errorMessage = error.responseJSON.error;
+                    // console.log('errorMessage',errorMessage)
+                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                }
                 return null; // Optionally return null or handle the error further
             }
         }

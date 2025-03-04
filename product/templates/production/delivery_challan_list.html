@@ -24,8 +24,56 @@
   <div>
     <button class="mb-2 border-0 bg-c-blue rounded-1 px-2 py-1 "><a href="{% url 'delivery-challan-create' %}" class="text-light text-decoration-none">create</a></button>
   </div>
+
   
-  <table class="table table-striped table-hover table-bordered">
+  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challanAll_btn">Delivery Challan <span>T Rec As LWI = <span class="text-success" id="tRecLwiQty"></span></span> <span>Dely. Qty = <span class="text-warning" id="tDelyQtyValue"></span></span> <span>Bal Qty = <span class="text-danger" id="balanceQtyValue"></span></span><span class="labourworkoutChallanArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+  <div id="Delivery_challanAll_List" style="display: none;">
+    <table class="table table-hover table-bordered table-striped" id="allFinishGoodReportTable">
+      <thead class="sticky-top name_absolute">
+          <tr>
+              <th>No</th> 
+              <th>Img</th>
+              <th>Ref No</th>
+              <th>Mod. Name</th> 
+              <th>Color</th>
+              <th>SKU ID</th>
+              <th class="text-success">T Rec As LWI = <span class="text-success" id="tRecLwi"></span></th> 
+              <th class="text-danger">QC Pend PCs = <span class="text-danger" id="tQcPendQty"></span></th>
+              <th class="text-primary">T QC APP Qty = <span class="text-primary" id="tQcAppQty"></span></th>
+              <th class="text-warning">Dely. Qty = <span class="text-warning" id="tDelyQty"></span></th>
+              <th class="text-danger">Bal Qty = <span class="text-danger" id="balanceQty"></span></th>
+              <th>Due Day</th> 
+          </tr>
+      </thead>
+      <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
+          {% for query in product_queryset %}
+          <tr class="text-nowrap">
+              <td>{{forloop.counter}}</td>
+              <td>{% if query.PProduct_image.url is not None %}
+                  <img src=" {{query.PProduct_image.url}}" alt="Img" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
+                  {% endif %}
+              </td>
+              <td class="refrenceId">{{query.Product.Product_Refrence_ID}}</td>
+              <td>{{query.Product.Model_Name}}</td>
+              <td>{{query.PProduct_color}}</td>
+              <td>{{query.PProduct_SKU}}</td>
+              <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
+              <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
+              <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;"><span class="lwiapprQty">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</span></a></td>
+              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ffbb10; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
+              <td class=" text-center text-danger"><span class="balanceQty"></span></td>
+              <td class="text-center"></td>
+            
+          </tr>
+          {% endfor %}
+      </tbody>
+      
+  </table>
+  </div>
+
+  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challan_btn">Delivery Challan List <span>T Qty = <span id="total"></span></span> <span>Pend. Bill = <span id="pendingBill"></span></span><span class="labourworkoutChallanArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+  <div id="Delivery_challan_list" style="display: none;">
+    <table class="table table-striped table-hover table-bordered" id="deliveryChallanList">
       <thead class="name_absolute sticky-top">
           <tr>
               <th>No</th>
@@ -33,12 +81,12 @@
               <th>Party Name</th>
               <th>Shiping Address</th>
               <th>T Box</th>
-              <th>T Qty</th>
+              <th class="text-success">T Qty = <span id="totalQtys"></span></th>
               <th>Vehl No</th>
               <th>Driver Name</th>
-              <th>Pend. Bill</th>
+              <th class="text-danger">Pend. Bill = <span id="pendingBillQty"></span></th>
               <th>Edit</th>
-              <!-- <th>Delete</th> -->
+              <th>Delete</th>
           </tr>
       </thead>
       <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -49,19 +97,170 @@
           <td class="text-nowrap">{{ challan.party_name.name }}</td>
           <td>{{ challan.shipping_address }}</td>
           <td>{{ challan.no_of_boxes }}</td>
-          <td>{{ challan.no_of_pcs }}</td>
+          <td class="text-center text-success totalValue">{{ challan.no_of_pcs }}</td>
           <td class="text-nowrap">{{ challan.vehicle_no }}</td>
           <td>{{ challan.driver_name }}</td>
-          <td></td>
+          <td class="text-center text-danger pendingValue"></td>
           <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
-          <!-- <td><a href="">DEL</a></td> -->
+          <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ challan.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
         </tr>
         {% endfor %}
     
       </tbody>    
   </table>
+  </div>
+  
 </div>
 
+
+
+
+
+
+
+
+<div id="customModal" style="display:none; position:fixed; top:0; left:0; height:100%; background:rgba(34, 34, 34, 0.9); display:flex; align-items:center; justify-content:center;">
+  <img id="modalImg" style="max-width:60%; max-height:60%; cursor:pointer;">
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Deletion</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modal-body-text">
+        Are you sure you want to delete the Delivery Challan?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="add_btn rounded-2" data-bs-dismiss="modal">No</button>
+        <button type="button" class="modal-btn" id="confirmDeleteButton">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      function toggleVisible(toggleButtonId, dataContainerId) {
+        const toggleButton = document.getElementById(toggleButtonId);
+        const icon = toggleButton.querySelector(".arrowBtn");
+        const dataContainer = document.getElementById(dataContainerId);
+        toggleButton.addEventListener("click", function () {
+          // Toggle the visibility of the data container
+          if (dataContainer.style.display === "none") {
+            dataContainer.style.display = "block";
+            icon.classList.add("rotate"); // Add rotate class to the icon
+          } else {
+            dataContainer.style.display = "none";
+            icon.classList.remove("rotate"); // Remove rotate class from the icon
+          }
+        });
+      }
+      toggleVisible("Delivery_challan_btn", "Delivery_challan_list");
+      toggleVisible("Delivery_challanAll_btn", "Delivery_challanAll_List");
+
+    })
+
+    document.body.appendChild(document.getElementById('customModal'));
+    function showLargeImage(src) {
+        let modal = document.getElementById("customModal");
+        let modalImg = document.getElementById("modalImg");
+
+        modalImg.src = src;
+        modal.style.display = "flex";
+        modal.style.width = '100%'
+        // Clicking anywhere outside the image will close the modal
+        modal.onclick = function() {
+            modal.style.display = "none";
+        };
+ }
+
+
+    function totalValueCheck(){
+      var total = 0;
+      var pending = 0;
+      var  totalqty = document.querySelectorAll('#deliveryChallanList .mainTableList tr');
+        totalqty.forEach(row => {
+            var value = parseInt(row.querySelector('.totalValue').textContent) || 0;
+            var pendingBill = parseInt(row.querySelector('.pendingValue').textContent) || 0;
+            total += value;
+            pending += pendingBill;
+            document.getElementById('totalQtys').textContent = total;
+            document.getElementById('total').textContent = total;
+            document.getElementById('pendingBillQty').textContent = pending;
+            document.getElementById('pendingBill').textContent = pending;
+        });
+    }
+
+    function calculateAllTotalValue(){
+        let lwiqty = 0;
+        let lwipendingqty = 0;
+        let lwiapproveqty = 0;
+        let balanceqty = 0;
+        let totalqty = 0;
+        let delQty = 0;
+
+        const allFinishGoodTable = document.querySelectorAll('#allFinishGoodReportTable .mainTableList tr');
+        
+        allFinishGoodTable.forEach(function(row){
+            const lwiQty = parseInt(row.querySelector('.lwiQty').textContent) || 0;
+            const lwiPendingQty = parseInt(row.querySelector('.lwipendingQty').textContent) || 0;
+            const lwiApproveQty = parseInt(row.querySelector('.lwiapprQty').textContent) || 0;
+            const delvQty = parseInt(row.querySelector('.delQty').textContent) || 0;
+
+            lwiqty += lwiQty
+            lwipendingqty += lwiPendingQty;
+            lwiapproveqty += lwiApproveQty;
+            delQty += delvQty;
+            let balance = lwiApproveQty - delvQty;
+
+            balanceqty += balance
+            console.log('balance',delQty)
+            row.querySelector('.balanceQty').textContent = balance;
+           document.getElementById('tRecLwi').textContent = lwiqty;
+           document.getElementById('tRecLwiQty').textContent = lwiqty;
+           document.getElementById('tQcPendQty').textContent = lwipendingqty;
+           document.getElementById('tQcAppQty').textContent = lwiapproveqty;
+           document.getElementById('tRecLwiQty').textContent = lwiapproveqty;
+           document.getElementById('balanceQty').textContent = balanceqty;
+           document.getElementById('balanceQtyValue').textContent = balanceqty;
+           document.getElementById('tDelyQty').textContent = delQty;
+           document.getElementById('tDelyQtyValue').textContent = delQty;
+        })
+
+    }
+    calculateAllTotalValue();
+    totalValueCheck();
+
+
+    document.body.appendChild(document.getElementById('exampleModal'));
+
+  $(document).ready(function () {
+   
+    $('.delete-btn').click(function () {
+      var itemId = $(this).data('item-id');
+      var name = $(this).closest('tr').find('td').eq(2).text();
+      var coloredName = '<span class="color-name" style="color:' + name + ';">' + name + '</span>';
+      $('#modal-body-text').html('Are you sure you want to delete the Delivery challan is ' + coloredName + '?');
+      $('#confirmDeleteButton').attr('data-item-id', itemId); // Set the item id to the confirm button's data
+      $('#exampleModal').modal('show');
+
+
+    });
+
+    // Confirm delete button click event
+    $('#confirmDeleteButton').click(function () {
+      var itemId = $(this).data('item-id');
+  
+      // Redirect to delete view
+      window.location.href = '/deletedeliverychallan/' + itemId;
+    });
+  });
+</script>
 
 
 {% endblock body %}

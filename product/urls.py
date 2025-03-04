@@ -416,4 +416,6 @@ urlpatterns = [
     path('deliverychallanupdate/<int:d_id>/', views.delivery_challan_create_update, name='delivery-challan-update'),
     path('deliverychallanlist/', views.delivery_challan_list, name='delivery-challan-list'),
     path('deliverychallanproductajax/', views.delivery_challan_product_ajax, name='delivery-challan-product-ajax'),
+    path('deletedeliverychallan/<int:pk>/', views.delete_delivery_challan, name='delete-delivery-challan'),
+    path('deliverychallanprocessforsalevoucher/', views.delivery_challan_process_for_sale_voucher, name='delivery-challan-process-for-sale-voucher'),
 ]

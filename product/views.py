@@ -39,14 +39,11 @@ from openpyxl.styles import Border, Side
 import requests
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
-from django.contrib.auth.decorators import permission_required
-from django.core.exceptions import PermissionDenied
 
-
-from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, Fabric_Group_Model,
+from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, DeliveryChallanProducts, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
                     Item_Creation, Ledger, MainCategory, PProduct_Creation, Picklist_process_in_outward, Picklist_products_list, Picklist_voucher_master, Product,
-                    Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, Salesman_info, StockItem,
+                    Product2SubCategory, Product_bin_quantity_through_table, Product_warehouse_quantity_through_table,  ProductImage, RawStockTransferMaster, RawStockTrasferRecords, SalesVoucherDeliveryChallan, Salesman_info, StockItem,
                     SubCategory, Unit_Name_Create, account_credit_debit_master_table, bin_for_raw_material, cutting_room, factory_employee,
                     finished_goods_warehouse_racks, finished_goods_warehouse_zone, 
                     finished_product_warehouse_bin, finishedgoodsbinallocation, godown_item_report_for_cutting_room,
@@ -54,7 +51,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster
                     item_purchase_voucher_master, labour_work_in_master, labour_work_in_product_to_item,
                     labour_workin_approval_report, labour_workout_childs, labour_workout_cutting_items,
                     labour_workout_master, ledgerTypes, opening_shade_godown_quantity, outward_product_master, outward_products,
-                    packaging, product_2_item_through_table, product_godown_quantity_through_table, 
+                    packaging, product_2_item_through_table, product_delivery_challan_quantity_through_table, product_godown_quantity_through_table, 
                     product_purchase_voucher_items, product_purchase_voucher_master, product_to_item_labour_child_workout,
                     product_to_item_labour_workout, purchase_order, purchase_order_for_puchase_voucher_rm, 
                     purchase_order_for_raw_material, purchase_order_master_for_puchase_voucher_rm, 
@@ -88,7 +85,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset,DeliveryChallanProductsUpdateFormset,SalesVoucherDeliveryChallanFormset,SalesVoucherDeliveryChallanFormsetupdate)
     
 
 
@@ -110,15 +107,14 @@ def custom_404_view(request, exception):
 
 
 
-
+@login_required(login_url='login')
 def dashboard(request):
     return render(request,'misc/dashboard.html',{"page_name":"Dashboard"})
 
 
 
 
-
-
+@login_required(login_url='login')
 def edit_production_product(request,pk):
    
     gsts = gst.objects.all()
@@ -403,7 +399,7 @@ def edit_production_product(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def product2subcategoryproductajax(request):
     selected_main_cat = request.GET.get('p_main_cat')
     sub_cats = SubCategory.objects.filter(product_main_category = selected_main_cat)
@@ -421,7 +417,7 @@ def product2subcategoryproductajax(request):
 
 
 
-
+@login_required(login_url='login')
 def product_color_sku(request,ref_id = None):
     
     color = Color.objects.all()
@@ -476,7 +472,7 @@ def product_color_sku(request,ref_id = None):
 
 
 
-
+@login_required(login_url='login')
 def pproduct_list(request):
     
     queryset = Product.objects.all().order_by('Product_Name').select_related('Product_GST').prefetch_related('productdetails','productdetails__PProduct_color')
@@ -524,7 +520,7 @@ def pproduct_list(request):
 
 
 
-
+@login_required(login_url='login')
 def pproduct_delete(request, pk):
     try:
         product = get_object_or_404(Product,Product_Refrence_ID=pk)
@@ -537,7 +533,7 @@ def pproduct_delete(request, pk):
 
 
 
-
+@login_required(login_url='login')
 def add_product_images(request, pk):
     product = PProduct_Creation.objects.get(pk=pk)   
     formset = ProductImagesFormSet(instance=product)  
@@ -566,7 +562,7 @@ def add_product_images(request, pk):
 
 
 
-
+@login_required(login_url='login')
 def add_product_video_url(request,pk):
     
     product = PProduct_Creation.objects.get(pk=pk)   
@@ -593,13 +589,8 @@ def add_product_video_url(request,pk):
     return render(request, 'product/add_product_videourl.html', {'formset': formset, 'product': product})
 
 
+@login_required(login_url='login')
 def definemaincategoryproduct(request,pk=None):
-
-    user = request.user
-
-    # Check if the user has 'view_color' permission; otherwise, block access
-    # if not user.has_perm('product.view_maincategory'):
-    #     raise PermissionDenied("You do not have permission to view this page.")
 
     queryset = MainCategory.objects.all()
 
@@ -649,7 +640,7 @@ def definemaincategoryproduct(request,pk=None):
                                                                     'page_name':page_name})
 
 
-
+@login_required(login_url='login')
 def definemaincategoryproductdelete(request,pk):
     try:
         instance = MainCategory.objects.get(pk=pk)
@@ -661,7 +652,7 @@ def definemaincategoryproductdelete(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def definesubcategoryproduct(request, pk=None):
 
     if pk:
@@ -701,7 +692,7 @@ def definesubcategoryproduct(request, pk=None):
 
 
 
-
+@login_required(login_url='login')
 def assign_bin_to_product_ajax(request):
     formset = None
     rack_id = None
@@ -926,7 +917,7 @@ def subcategory_bin_list(request):
 
 
 
-
+@login_required(login_url='login')
 def definesubcategoryproductdelete(request, pk):
     try:
         instance = SubCategory.objects.get(pk=pk)
@@ -938,7 +929,7 @@ def definesubcategoryproductdelete(request, pk):
 
 
 
-
+@login_required(login_url='login')
 def product2subcategory(request):
     products = Product.objects.all()
     sub_category = SubCategory.objects.all()
@@ -1004,7 +995,7 @@ def product2subcategory(request):
 
 
 
-
+@login_required(login_url='login')
 def product2subcategoryajax(request):
 
     productid = request.GET.get('selected_product_id')
@@ -1023,7 +1014,7 @@ def product2subcategoryajax(request):
 
 
 
-
+@login_required(login_url='login')
 def create_update_rack_for_raw_material(request, r_id=None):
     try:
         rack_list = rack_for_raw_material.objects.all()
@@ -1054,7 +1045,7 @@ def create_update_rack_for_raw_material(request, r_id=None):
 
 
 
-
+@login_required(login_url='login')
 def delete_rack_for_raw_material(request,r_id):
     try:
         rack_instance = get_object_or_404(rack_for_raw_material, id=r_id)
@@ -1072,7 +1063,7 @@ def delete_rack_for_raw_material(request,r_id):
     return redirect('create-rack-for-raw-material')
 
 
-
+@login_required(login_url='login')
 def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
     try:
         bin_list = bin_for_raw_material.objects.filter(rack = r_id)
@@ -1105,7 +1096,7 @@ def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
     return render(request, 'product/create_update_bin_for_raw_material.html', {'form': form,'bin_list':bin_list,'rack_instance':rack_instance})
 
 
-
+@login_required(login_url='login')
 def delete_bin_for_raw_material(request,b_id):
 
     try:
@@ -1128,7 +1119,7 @@ def delete_bin_for_raw_material(request,b_id):
     return redirect('create-bin-for-raw-material', r_id=rack_id)
 
 
-
+@login_required(login_url='login')
 def item_create(request):
 
     gsts = gst.objects.all()
@@ -1174,7 +1165,7 @@ def item_create(request):
     return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material','racks':racks})
 
 
-
+@login_required(login_url='login')
 def item_edit(request,pk): 
     
     gsts = gst.objects.all()
@@ -1276,7 +1267,7 @@ def item_edit(request,pk):
     return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material",'racks':racks})
 
 
-
+@login_required(login_url='login')
 def item_clone_ajax(request):
     selected_item_name_value = int(request.GET.get('itemValue'))
     
@@ -1297,7 +1288,7 @@ def item_clone_ajax(request):
     return JsonResponse({'response_data':response_data})
 
 
-
+@login_required(login_url='login')
 def item_list(request):
     
     g_search = request.GET.get('item_search','')
@@ -1360,7 +1351,7 @@ def item_list(request):
 
 
 
-
+@login_required(login_url='login')
 def openingquantityformsetpopup(request,parent_row_id=None,primary_key=None):
     
     godowns =  Godown_raw_material.objects.all()
@@ -1454,7 +1445,7 @@ def openingquantityformsetpopup(request,parent_row_id=None,primary_key=None):
 
 
 
-
+@login_required(login_url='login')
 def openingquantityformsetpopupajax(request):
     itemValue_get = request.GET.get('itemValue')
     primary_key_id_get = request.GET.get('primary_key_id')        
@@ -1471,6 +1462,9 @@ def openingquantityformsetpopupajax(request):
     return JsonResponse({'popup_url':popup_url})
 
 
+
+
+@login_required(login_url='login')
 def item_delete(request, pk):
     
     try:
@@ -1487,14 +1481,14 @@ def item_delete(request, pk):
 
 
 
+
+
+
+
+
+
+@login_required(login_url='login')
 def color_create_update(request, pk=None):
-
-    user = request.user
-
-    # Check if the user has 'view_color' permission; otherwise, block access
-    if not user.has_perm('product.view_color'):
-        messages.error(request, "You do not have permission to view Colors")
-        return redirect('dashboard-main')  # Redirect to a safe page
 
     queryset = Color.objects.all()
     color_search = request.GET.get('color_search','')
@@ -1529,15 +1523,6 @@ def color_create_update(request, pk=None):
 
     form = ColorForm(instance=instance)
     if request.method == 'POST':
-        
-        # Check for add/update permissions only when modifying data
-        if instance and not user.has_perm('product.change_color'):
-            messages.error(request, "You do not have permission to update a color.")
-            return redirect('simplecolorlist')  # Redirect to a safe page
-        if not instance and not user.has_perm('product.add_color'):
-            messages.error(request, "You do not have permission to add a color.")
-            return redirect('simplecolorlist')  # Redirect to a safe page
-
 
         form = ColorForm(request.POST, instance=instance)
 
@@ -1568,11 +1553,10 @@ def color_create_update(request, pk=None):
 
 
 
-
-@permission_required('product.delete_color', raise_exception=True)
+@login_required(login_url='login')
 def color_delete(request, pk):
-    product_color = get_object_or_404(Color,pk=pk)
     try:
+        product_color = get_object_or_404(Color,pk=pk)
         product_color.delete()
         messages.success(request,f'Color {product_color.color_name} was deleted')
 
@@ -1587,6 +1571,9 @@ def color_delete(request, pk):
 
 
 
+
+
+@login_required(login_url='login')
 def item_fabric_group_create_update(request, pk = None):
     queryset = Fabric_Group_Model.objects.all()
 
@@ -1649,7 +1636,7 @@ def item_fabric_group_create_update(request, pk = None):
 
 
 
-
+@login_required(login_url='login')
 def item_fabric_group_delete(request,pk):
     try:
         item_fabric_pk = get_object_or_404(Fabric_Group_Model,pk=pk)
@@ -1668,10 +1655,7 @@ def item_fabric_group_delete(request,pk):
 
 
 
-
-@permission_required('product.add_unit_name_create', raise_exception=True)
-@permission_required('product.change_unit_name_create', raise_exception=True)
-@permission_required('product.view_unit_name_create', raise_exception=True)
+@login_required(login_url='login')
 def unit_name_create_update(request,pk=None):
     
     queryset = Unit_Name_Create.objects.all()
@@ -1736,6 +1720,7 @@ def unit_name_create_update(request,pk=None):
 
 
 
+@login_required(login_url='login')
 def unit_name_units_ajax(request):
     unit_name_pk = request.GET.get('unit_name_pk')
     if unit_name_pk is not None:
@@ -1745,7 +1730,8 @@ def unit_name_units_ajax(request):
         
 
 
-@permission_required('product.delete_unit_name_create', raise_exception=True)
+
+@login_required(login_url='login')
 def unit_name_delete(request,pk):
     try:
         unit_name_pk = get_object_or_404(Unit_Name_Create,pk=pk)
@@ -1765,7 +1751,7 @@ def unit_name_delete(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def account_sub_group_create_update(request, pk=None):
 
     groups = AccountSubGroup.objects.select_related('acc_grp').all()
@@ -1800,7 +1786,7 @@ def account_sub_group_create_update(request, pk=None):
 
 
 
-
+@login_required(login_url='login')
 def account_sub_group_delete(request, pk):  
     try:
         group = get_object_or_404(AccountSubGroup ,pk=pk)
@@ -1812,7 +1798,7 @@ def account_sub_group_delete(request, pk):
 
 
 
-
+@login_required(login_url='login')
 def stock_item_create_update(request,pk=None):
     
     if pk:
@@ -1881,7 +1867,7 @@ Static Choices: If the form fields can be populated with static choices or query
 
 
 
-
+@login_required(login_url='login')
 def stock_item_delete(request, pk):
     try:
         stock = get_object_or_404(StockItem ,pk=pk)
@@ -1893,7 +1879,7 @@ def stock_item_delete(request, pk):
 
 
 
-
+@login_required(login_url='login')
 @transaction.atomic
 def ledgercreate(request):
 
@@ -1940,7 +1926,7 @@ def ledgercreate(request):
 
 
 
-
+@login_required(login_url='login')
 @transaction.atomic
 def ledgerupdate(request,pk):
     under_groups = AccountSubGroup.objects.all()
@@ -1999,7 +1985,7 @@ def ledgerupdate(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def ledgerlist(request):
     ledgers = Ledger.objects.select_related('under_group').all()
     return render(request, 'accounts/ledger_list.html', {'ledgers':ledgers,'page_name':'Ledger List'})
@@ -2007,7 +1993,7 @@ def ledgerlist(request):
 
 
 
-
+@login_required(login_url='login')
 def ledgerdelete(request, pk):
     try:
         Ledger_pk = get_object_or_404(Ledger ,pk=pk)
@@ -2020,7 +2006,7 @@ def ledgerdelete(request, pk):
 
 
 
-
+@login_required(login_url='login')
 def ledgerTypes_create_update(request,pk=None):
 
     ledger_types = ledgerTypes.objects.all()
@@ -2055,7 +2041,7 @@ def ledgerTypes_create_update(request,pk=None):
 
 
 
-
+@login_required(login_url='login')
 def ledgerTypes_delete(request,pk):
     type_instance = get_object_or_404(ledgerTypes,pk=pk)
     if type_instance:
@@ -2070,7 +2056,7 @@ def ledgerTypes_delete(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def godowncreate(request):
     if request.method == 'POST':
        
@@ -2157,7 +2143,7 @@ def godowncreate(request):
 
 
     
-
+@login_required(login_url='login')
 def godownupdate(request,str,pk):
     if str == 'finished':
         godown_type = 'Finished Goods'
@@ -2208,7 +2194,7 @@ def godownupdate(request,str,pk):
 
 
 
-
+@login_required(login_url='login')
 def godownlist(request):
 
     godowns_raw = Godown_raw_material.objects.all()
@@ -2223,7 +2209,7 @@ def godownlist(request):
 
 
 
-
+@login_required(login_url='login')
 def godowndelete(request,str,pk):
     if str == 'finished':
         try:
@@ -2266,7 +2252,7 @@ def godowndelete(request,str,pk):
 
 
 
-
+@login_required(login_url='login')
 def stockTrasferRaw(request, pk=None):
     print(request.POST)
     godowns = Godown_raw_material.objects.all()
@@ -2418,7 +2404,7 @@ def stockTrasferRaw(request, pk=None):
 
 
 
-
+@login_required(login_url='login')
 def stockTrasferRawList(request):
 
     stocktrasferall = RawStockTransferMaster.objects.all().order_by('created_date')
@@ -2427,7 +2413,7 @@ def stockTrasferRawList(request):
 
 
 
-
+@login_required(login_url='login')
 def stockTrasferRawDelete(request,pk):
     stocktrasferinstance =  get_object_or_404(RawStockTransferMaster,pk = pk)
     stocktrasferinstance.delete()
@@ -2470,7 +2456,7 @@ def purchase_voucher_rm_with_po_ajax(request):
 
 
 
-
+@login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)  
 def purchasevouchercreateupdate(request, pk = None):
     
@@ -2602,7 +2588,7 @@ def purchasevouchercreateupdate(request, pk = None):
                     for form in items_formset:
                         
                         if form.is_valid():
-                           
+                            # *****************************
                             from_open_po = form.cleaned_data.get('from_open_po', None)
 
                             if from_open_po:
@@ -2881,13 +2867,17 @@ def purchasevoucherpopupupdate(popup_godown_data,shade_id,prefix_id,primarykey,o
                 
 
 
-
+@login_required(login_url='login')
 def purchasevoucherpopup(request,shade_id,prefix_id,unique_id=None,primarykey=None,item_rate=None):
     
     if item_rate != None:
         item_rate_value = decimal.Decimal(item_rate)
     else:
         item_rate_value = None
+    
+   
+    
+    
     
     
     if unique_id is not None:
@@ -2966,7 +2956,7 @@ def purchasevoucherpopup(request,shade_id,prefix_id,unique_id=None,primarykey=No
 
 
 
-
+@login_required(login_url='login')
 def purchasevouchercreategodownpopupurl(request):
     shade_id = request.GET.get('selected_shade')
     unique_id = request.GET.get('unique_invoice_row_id')
@@ -2998,7 +2988,7 @@ def purchasevouchercreategodownpopupurl(request):
 
 
 
-
+@login_required(login_url='login')
 def purchasevoucherlist(request):
     purchase_invoice_list = item_purchase_voucher_master.objects.all().order_by('created_date')
     return render(request,'accounts/purchase_invoice_list.html',{'purchase_invoice_list':purchase_invoice_list,'page_name':'Purchase List'})
@@ -3006,7 +2996,7 @@ def purchasevoucherlist(request):
 
 
 
-
+@login_required(login_url='login')
 def purchasevoucherdelete(request,pk):
     purchase_invoice_pk = get_object_or_404(item_purchase_voucher_master,pk=pk)
     purchase_invoice_pk.delete()
@@ -3016,245 +3006,7 @@ def purchasevoucherdelete(request,pk):
 
 
 
-
-
-
-
-
-
-def salesvouchercreateupdate(request,s_id=None):
-
-    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-    godown_names = Godown_finished_goods.objects.all()
-
-    dict_to_send = None
-
-    if s_id:
-        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
-        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
-        page_name = 'Edit Sales Invoice'
-        godown_id = voucher_instance.selected_godown.id
-
-        filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
-        
-        if filtered_product:
-            dict_to_send = {}
-
-            for query in filtered_product:
-                ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
-                p_sku = query.get('product_color_name__PProduct_SKU')
-                product_name = query.get('product_color_name__Product__Product_Name')
-                product_model_name = query.get('product_color_name__Product__Model_Name')
-                color = query.get('product_color_name__PProduct_color__color_name')
-                uom = query.get('product_color_name__Product__Product_UOM')
-                qty = query.get('quantity')
-                gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-                mrp = query.get('product_color_name__Product__Product_MRP')
-                customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
-
-
-                dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
-
-
-    else:
-        voucher_instance = None
-        master_form = salesvouchermasterfinishGoodsForm()
-        formset = salesvouchercreateformset()
-        page_name = 'Create Sales Invoice'
-    
-
-    if request.method == "POST":
-        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        
-        # formset.forms = [form for form in formset.forms if form.has_changed()]
-
-        if not master_form.is_valid():
-            print("Form Errors:", master_form.errors)
-
-        if not formset.is_valid():
-            for form in formset:
-                if not form.is_valid():
-                    print("Form Errors:", form.errors)
-
-        
-
-        if master_form.is_valid() and formset.is_valid():
-            try:
-                with transaction.atomic():
-                    master_form_instance = master_form.save(commit=False)
-                    master_form_instance.save()
-                    
-                    selected_godown = master_form_instance.selected_godown
-                    
-                    print(selected_godown)
-
-                    for form in formset.deleted_forms:
-                        if form.instance.pk:
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-                            
-                            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                            godown_qty_value.quantity = godown_qty_value.quantity + product_qty
-                            godown_qty_value.save()
-                            
-                            form.instance.delete()
-
-
-                    for form in formset:
-                        if not form.cleaned_data.get('DELETE'):
-                            form_instance = form.save(commit=False)
-                            form_instance.sales_voucher_master = master_form_instance
-                            form_instance.save()
-
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-
-                            
-                            
-                            if form.has_changed():
-
-                                old_product_name = form.initial.get('product_name')
-                                old_product_quantity = form.initial.get('quantity')
-                                
-                                if old_product_quantity:
-                                    print("in single")
-                                    
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                                    difference =  product_qty - old_product_quantity
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity - difference
-                                    godown_qty_value.save()
-
-                            if form.has_changed() and 'product_name' in form.changed_data:
-
-                                if old_product_name and old_product_quantity:
-                                    print("in both")
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=old_product_name)
-
-                                    # difference =  product_qty - old_product_quantity
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity + old_product_quantity
-                                    godown_qty_value.save()
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity - old_product_quantity
-                                    godown_qty_value.save()
-                                
-
-                    return redirect('sales-voucher-list')
-            except Exception as e:
-                print(e)
-
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send})
-
-
-
-
-
-
-
-
-
-
-
-def sales_scan_product_dynamic_ajax(request):
-    
-    try:
-        
-        serialNo = request.GET.get('serialNo')
-        warhouseId = request.GET.get('warhouseId')
-
-        if not serialNo:
-            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
-
-        if sales_voucher_finish_Goods.objects.filter(unique_serial_no=serialNo).exists():
-            
-            return JsonResponse(
-                {'error': f'The serial number "{serialNo}" already exists. Please enter a different one.'},
-                status=400
-            )
-        
-        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_MRP','product__Product__Product_SalePrice_CustomerPrice','product__Product__Product_GST__gst_percentage'))
-
-
-        if filtered_product:
-            list_to_send = []
-
-            for query in filtered_product:
-                p_sku = query.get('product__PProduct_SKU')
-                serial_no = query.get('unique_serial_no')
-                product_model_name = query.get('product__Product__Model_Name')
-                color = query.get('product__PProduct_color__color_name')
-                gst = query.get('product__Product__Product_GST__gst_percentage')
-                mrp = query.get('product__Product__Product_MRP')
-                customer_price = query.get('product__Product__Product_SalePrice_CustomerPrice')
-
-
-                list_to_send.append([p_sku,product_model_name,color,serial_no,gst,mrp,customer_price])
-            
-            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
-        
-        return JsonResponse({'error': 'No items found.'}, status=404)
-    
-    except Exception as e:
-        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
-
-
-
-
-
-
-def salesvoucherlist(request):
-    sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
-    return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
-
-
-
-
-
-
-
-
-
-def salesvoucherdelete(request,pk):
-    sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
-    if sales_instance:
-        transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master = pk)
-
-        for i in transfer_records:
-            selected_godown = i.sales_voucher_master.selected_godown
-            selected_warehouse = i.sales_voucher_master.selected_warehouse
-            product_name = i.product_name
-            product_quantity = i.quantity
-            if selected_godown:
-                godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                godown_qty_value.quantity = godown_qty_value.quantity + product_quantity
-                godown_qty_value.save()
-            else:
-                pass
-
-    sales_instance.delete()
-    return redirect('sales-voucher-list')
-
-
-
-
-
-
-
-
-
-
-
+@login_required(login_url='login')
 def gst_create_update(request, pk = None):
 
     queryset =  gst.objects.all()
@@ -3315,7 +3067,7 @@ def gst_create_update(request, pk = None):
 
 
 
-
+@login_required(login_url='login')
 def gst_delete(request,pk):
     gst_pk = gst.objects.get(pk=pk)
     gst_pk.delete()
@@ -3325,7 +3077,7 @@ def gst_delete(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def fabric_finishes_create_update(request, pk = None):
     queryset =  FabricFinishes.objects.all()
 
@@ -3385,7 +3137,7 @@ def fabric_finishes_create_update(request, pk = None):
 
 
 
-
+@login_required(login_url='login')
 def fabric_finishes_delete(request,pk):
     fabric_finish =  FabricFinishes.objects.get(pk=pk)
     fabric_finish.delete()
@@ -3394,7 +3146,7 @@ def fabric_finishes_delete(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def packaging_create_update(request, pk = None):
     
     queryset =  packaging.objects.all()
@@ -3453,7 +3205,7 @@ def packaging_create_update(request, pk = None):
 
 
 
-
+@login_required(login_url='login')
 def packaging_delete(request,pk):
     packaging_pk =  packaging.objects.get(pk=pk)
     packaging_pk.delete()
@@ -3469,7 +3221,7 @@ def packaging_delete(request,pk):
 
 
 
-# 
+# @login_required(login_url='login')
 # def product2item(request,product_refrence_id):
     
 #     try:
@@ -3718,7 +3470,7 @@ def packaging_delete(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def product2item(request,product_refrence_id):
     
     try:
@@ -3976,7 +3728,7 @@ def product2item(request,product_refrence_id):
 
 
 
-
+@login_required(login_url='login')
 def export_Product2Item_excel(request,product_ref_id):
     
     try:
@@ -4131,7 +3883,7 @@ def export_Product2Item_excel(request,product_ref_id):
 
 
 
-
+@login_required(login_url='login')
 def viewproduct2items_configs(request, product_sku):
 
     try:
@@ -4159,7 +3911,7 @@ def viewproduct2items_configs(request, product_sku):
         return HttpResponseServerError(f'An unexpected error occurred: {e}')
     
 
-
+@login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def purchaseordercreateupdate(request,pk=None):
     
@@ -4278,14 +4030,14 @@ def purchaseordercreateupdate(request,pk=None):
 
 
 
-
+@login_required(login_url='login')
 def purchaseorderlist(request):
     purchase_orders = purchase_order.objects.all().select_related('ledger_party_name','product_reference_number').prefetch_related('raw_materials').order_by('created_date')
     return render(request,'production/purchaseorderlist.html',{'purchase_orders': purchase_orders,'page_name':'Order List'})
 
 
 
-
+@login_required(login_url='login')
 def purchaseorderdelete(request,pk):
 
     try:
@@ -5344,7 +5096,7 @@ def purchaseorderrawmaterial(request ,p_o_pk, prod_ref_no):
 
 
 
-
+@login_required(login_url='login')
 def purchase_order_for_raw_material_list(request):
     
     purchase_orders_pending = purchase_order.objects.annotate(raw_material_count=Count('raw_materials')).filter(raw_material_count__lt=1, purchase_order_to_product_saved=True).order_by('created_date')
@@ -5355,7 +5107,7 @@ def purchase_order_for_raw_material_list(request):
 
 
 
-
+@login_required(login_url='login')
 def purchase_order_for_raw_material_delete(request,pk):
 
     try:
@@ -5379,6 +5131,12 @@ def purchase_order_for_raw_material_delete(request,pk):
 
 
 
+
+
+
+
+
+@login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
 
@@ -5654,6 +5412,12 @@ def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
         else:
             
             
+            
+
+            
+            
+
+
             return render(request,'production/purchase_order_cutting.html',{'form':form,'labour_all':labour_all,'purchase_order_cutting_form':purchase_order_cutting_form,'p_o_pk':p_o_pk,
                                                                     'purchase_order_to_product_formset_form':purchase_order_to_product_formset_form,
                                                                      'purchase_order_for_raw_material_cutting_items_formset_form':purchase_order_for_raw_material_cutting_items_formset_form,'page_name':'Cutting Order View'})
@@ -5666,7 +5430,7 @@ def purchaseordercuttingcreateupdate(request,p_o_pk,prod_ref_no,pk=None):
 
 
 
-
+@login_required(login_url='login')
 def purchaseordercuttinglistall(request):
 
     current_date = datetime.date.today
@@ -5718,7 +5482,7 @@ def purchaseordercuttinglistall(request):
 
 
 
-
+@login_required(login_url='login')
 def purchaseordercuttinglist(request,p_o_pk,prod_ref_no):
     p_o_cutting_order_all = purchase_order_raw_material_cutting.objects.filter(
         purchase_order_id = p_o_pk).select_related('purchase_order_id__ledger_party_name',
@@ -5730,7 +5494,7 @@ def purchaseordercuttinglist(request,p_o_pk,prod_ref_no):
 
 
 
-
+@login_required(login_url='login')
 def purchaseordercuttingapprovalcheckajax(request):
     
     cutting_pk_no = request.GET.get('cutting_pk_no')
@@ -5777,7 +5541,7 @@ def purchaseordercuttingapprovalcheckajax(request):
 
 
 
-
+@login_required(login_url='login')
 def pendingapprovall(request):
     pending_approval_query = purchase_order_raw_material_cutting.objects.exclude(processed_qty = F('approved_qty')).order_by('created_date') 
     return render(request,'production/cuttingapprovallistall.html', {'pending_approval_query': pending_approval_query,'page_name':'Cutting Appr Pending List'})
@@ -5797,6 +5561,8 @@ def purchaseordercuttingpopup(request, cutting_id):
     formset = purchase_order_cutting_approval_formset(request.POST or None, instance = cutting_order_instance)
 
 
+
+
     if request.method == 'POST':
         if formset.is_valid():
             
@@ -5806,7 +5572,9 @@ def purchaseordercuttingpopup(request, cutting_id):
                 
                 raw_material_cutting_instance = purchase_order_raw_material_cutting.objects.get(raw_material_cutting_id=cutting_id)
 
+                
                 old_total_approved_qty_total = raw_material_cutting_instance.approved_qty
+
                 
                 labour_workout_master_instance = labour_workout_master.objects.create(purchase_order_cutting_master=raw_material_cutting_instance)
 
@@ -5850,7 +5618,7 @@ def purchaseordercuttingpopup(request, cutting_id):
 
 
 
-
+@login_required(login_url='login')
 def purchaseordercuttingmastercancelajax(request):
 
     if request.method == 'POST':
@@ -5924,7 +5692,7 @@ def purchaseordercuttingmastercancelajax(request):
         return JsonResponse({'status': 'Invalid request method.'}, status=405)
 
 
-
+@login_required(login_url='login')
 def labourworkoutlistall(request):
     labour_workout_pending = labour_workout_master.objects.all().annotate(total_processed_qty = Sum('labour_workout_childs__total_process_pcs')).filter(total_pending_pcs__gt=0).order_by('created_date')
     
@@ -5934,14 +5702,11 @@ def labourworkoutlistall(request):
 
     current_date = datetime.date.today
 
-
-    return render(request,'production/labourworkoutlistall.html', {'labour_workout_pending':labour_workout_pending,
-                            'labour_workout_completed':labour_workout_completed,
-                            'current_date':current_date, 'page_name':'Labour WorkOut List','labour_workout_instance_all':labour_workout_instance_all})
+    return render(request,'production/labourworkoutlistall.html', {'labour_workout_pending':labour_workout_pending, 'labour_workout_completed':labour_workout_completed, 'current_date':current_date, 'page_name':'Labour WorkOut List', 'labour_workout_instance_all':labour_workout_instance_all})
 
 
 
-
+@login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def labourworkoutsingle(request, labour_workout_child_pk=None, pk=None):
 
@@ -6180,7 +5945,7 @@ def labourworkoutsingle(request, labour_workout_child_pk=None, pk=None):
 
 
 
-
+@login_required(login_url='login')
 def labour_workout_child_list(request, labour_master_pk):
     labour_work_out_master = labour_workout_master.objects.get(id=labour_master_pk)
     labour_workout_child_instances = labour_workout_childs.objects.filter(labour_workout_master_instance = labour_master_pk).order_by('created_date')
@@ -6193,7 +5958,7 @@ def labour_workout_child_list(request, labour_master_pk):
 
 
 
-
+@login_required(login_url='login')
 def labourworkoutsingledeleteajax(request):
     
     if request.method == 'POST':
@@ -6267,7 +6032,7 @@ def labourworkoutsingledeleteajax(request):
 
 
 
-
+@login_required(login_url='login')
 def cuttingroomqty(request):
     cutting_room_items = purchase_order_for_raw_material_cutting_items.objects.filter(total_comsumption_in_cutting__gt=0)
 
@@ -6276,7 +6041,7 @@ def cuttingroomqty(request):
 
 
 
-
+@login_required(login_url='login')
 def labourworkincreatelist(request,l_w_o_id):
 
     labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
@@ -6294,6 +6059,9 @@ def labourworkincreatelist(request,l_w_o_id):
 
 
 
+
+
+@login_required(login_url='login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
     
@@ -6384,6 +6152,9 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                         'total_balance_pcs' : labour_workout_child_instance.labour_workin_pending_pcs,
                         }
 
+                    print('master_initial_data = ',master_initial_data)
+
+
                     product_to_item_l_w_in_instance = product_to_item_labour_child_workout.objects.filter(labour_workout=labour_workout_child_instance)
  
                     formset_initial_data = []
@@ -6403,6 +6174,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                         formset_initial_data.append(initial_data_dict)
                 
+
                 return JsonResponse({'vendor_name_dict':vendor_name_dict,
                                      'labour_workout_instance_dict':labour_workout_instance_dict,
                                      'master_initial_data':master_initial_data,
@@ -6526,7 +6298,9 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                     labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + labour_workin_qty
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
+
                     labour_workout_child_instance.save()
+
                     parent_form.save()
 
                     for form in product_to_item_formset:
@@ -6558,8 +6332,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
 
                 else:
-                    print(master_form.errors)
-                    print(product_to_item_formset.errors)
+                    
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
                     
                 
@@ -6581,7 +6354,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
 
 
-
+@login_required(login_url='login')
 def labourworkinlistall(request):
 
     current_date = datetime.date.today
@@ -6652,7 +6425,7 @@ def labourworkinlistall(request):
 
 
 
-
+@login_required(login_url='login')
 def labourworkinpurchaseorderlist(request ,p_o_no):
     purchase_order_instance = purchase_order.objects.get(id = p_o_no)
 
@@ -6677,7 +6450,7 @@ def labourworkinpurchaseorderlist(request ,p_o_no):
 
 
 
-
+@login_required(login_url='login')
 def labourworkinsingledeleteajax(request):
     
     if request.method == 'POST':
@@ -6725,7 +6498,7 @@ def labourworkinsingledeleteajax(request):
         return JsonResponse({'status': 'Invalid request method.'}, status=405)
 
 
-
+@login_required(login_url='login')
 def goods_return_pending_list(request):
     current_date = datetime.date.today
     labour_workin_instances = labour_work_in_master.objects.annotate(total_approved_pcs=Sum('l_w_in_products__approved_qty'),pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval')).filter(pending_for_approval_pcs__gt=0)
@@ -6734,7 +6507,7 @@ def goods_return_pending_list(request):
 
 
 
-
+@login_required(login_url='login')
 def goods_return_popup(request,pk):
 
     if pk:
@@ -6759,6 +6532,7 @@ def goods_return_popup(request,pk):
                             selected_product = PProduct_Creation.objects.get(PProduct_SKU = form_instance.product_sku)
                             obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown_instance, product_color_name = selected_product)
 
+                            delivery_challan_obj, created = product_delivery_challan_quantity_through_table.objects.get_or_create(godown_name = godown_instance,product_name = selected_product)
 
                             quantity_to_add = obj.quantity if not created else 0
                             
@@ -6770,8 +6544,10 @@ def goods_return_popup(request,pk):
                                 approved_qty_differ = form_instance.approved_qty
 
                             obj.quantity = quantity_to_add + approved_qty_differ  
+                            delivery_challan_obj.quantity = quantity_to_add + approved_qty_differ
                             
                             obj.save()
+                            delivery_challan_obj.save()
 
                             form_instance.save()
 
@@ -7023,14 +6799,15 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
 
         report_data_sorted = sorted(queryset_list, key = itemgetter('date'), reverse=False)
         
-        
-  
+
         total_sku_qty = {}
        
         for i in report_data_sorted:
-            sku_qty = i['sku_qty']
-            for key, value in sku_qty.items():
-                total_sku_qty[key] = total_sku_qty.get(key, 0) + value
+            for key, value in i['sku_qty'].items():
+                if key in total_sku_qty:
+                    total_sku_qty[key] += value
+                else:
+                    total_sku_qty[key] = value
         
         final_dict = {key : labour_workout_p_2_i.get(key, 0) - total_sku_qty.get(key, 0) for key in total_sku_qty.keys()}
 
@@ -7038,10 +6815,7 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
         lwo_date = total_labour_workout.created_date 
         lwo_id = challan_no
 
-        return render(request,'production/finishedgoodsvendormodelwisereport.html',{'report_data_sorted':report_data_sorted, 'reference_no':reference_no, 
-                                                                                    'product_instance':product_instance,'total_labour_workout':total_labour_workout,
-                                                                                    'labour_workout_p_2_i':labour_workout_p_2_i, 'SKU_List':SKU_List,'result_dict':final_dict,
-                                                                                    'lwo_total_qty':lwo_total_qty, 'lwo_date':lwo_date , 'lwo_id': lwo_id  })
+        return render(request,'production/finishedgoodsvendormodelwisereport.html',{'report_data_sorted':report_data_sorted,'reference_no':reference_no,'product_instance':product_instance,'total_labour_workout':total_labour_workout,'labour_workout_p_2_i':labour_workout_p_2_i, 'SKU_List':SKU_List,'result_dict':final_dict,'lwo_total_qty':lwo_total_qty, 'lwo_date':lwo_date , 'lwo_id': lwo_id, 'total_sku_qty':total_sku_qty})
 
 
 
@@ -9382,7 +9156,7 @@ def raw_material_estimation_calculate_excel_download(request):
 
 
 
-
+@login_required(login_url='login')
 def factory_employee_create_update_list(request ,pk=None):
 
     if request.path == '/factory_emp_create/':
@@ -9418,7 +9192,7 @@ def factory_employee_create_update_list(request ,pk=None):
 
 
 
-
+@login_required(login_url='login')
 def salesman_create_update(request,e_id=None):
     salesman_list = Salesman_info.objects.all()
 
@@ -9442,7 +9216,7 @@ def salesman_create_update(request,e_id=None):
 
 
 
-
+@login_required(login_url='login')
 def delete_salesman(request,e_id):
     try:
         instance = get_object_or_404(Salesman_info,pk=e_id)
@@ -9455,7 +9229,7 @@ def delete_salesman(request,e_id):
 
 
 
-
+@login_required(login_url='login')
 def factoryempdelete(request,pk=None): 
     try:
         instance = get_object_or_404(factory_employee,pk=pk)
@@ -9467,7 +9241,7 @@ def factoryempdelete(request,pk=None):
     return redirect('factory-emp-create')
 
 
-
+@login_required(login_url='login')
 def cutting_room_create_update_list(request, pk=None):
     if request.path == '/cutting_room_create/':
         page_name = "Create Cutting Room"
@@ -9498,7 +9272,7 @@ def cutting_room_create_update_list(request, pk=None):
 
 
 
-
+@login_required(login_url='login')
 def cuttingroomdelete(request,pk):
     instance = cutting_room.objects.get(pk=pk)
     instance.delete()
@@ -9507,7 +9281,7 @@ def cuttingroomdelete(request,pk):
 
 
 
-
+@login_required(login_url='login')
 def product_purchase_voucher_create_update(request, pk=None):
 
     products = PProduct_Creation.objects.all()
@@ -9646,7 +9420,7 @@ def product_purchase_voucher_create_update(request, pk=None):
 
 
 
-
+@login_required(login_url='login')
 def product_purchase_voucher_list(request):
 
     product_purchase_voucher_all = product_purchase_voucher_master.objects.all().annotate(check_diff_qty = Sum('product_purchase_voucher_items__qc_recieved_qty'),total_qty = Sum('product_purchase_voucher_items__quantity_total')).order_by('created_date')
@@ -9656,7 +9430,7 @@ def product_purchase_voucher_list(request):
 
 
 
-
+@login_required(login_url='login')
 def product_purchase_voucher_delete(request,pk):
     if pk:
         product_purchase_voucher_instance = get_object_or_404(product_purchase_voucher_master,pk=pk)
@@ -9665,9 +9439,7 @@ def product_purchase_voucher_delete(request,pk):
     
 
 
-
-
-
+@login_required(login_url = 'login')
 def warehouse_product_transfer_create_and_update(request,pk=None):
     
     products = PProduct_Creation.objects.all()
@@ -9686,6 +9458,7 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
             godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage'))
         
         if filtered_product:
+            
             dict_to_send = {}
 
             for query in filtered_product:
@@ -9698,7 +9471,6 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
                 qty = query.get('quantity')
                 gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
                 
-                
                 dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst]
 
     else:
@@ -9709,8 +9481,6 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 
     
     if request.method == 'POST':
-
-        print(request.POST)
 
         form = Finished_goods_Stock_TransferMaster_form(request.POST,instance=voucher_instance)
 
@@ -9740,22 +9510,123 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
                     selected_warehouse = first_form_instance.destination_warehouse
 
                     for form in formset.deleted_forms:
+
                         if form.instance.pk:
+            
+                            old_product = form.instance.product
+                            old_quantity = form.instance.product_quantity_transfer
+
+                            godown_qty_revert_obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name = old_product)
+
+                            if godown_qty_revert_obj:
+                                godown_qty_revert_obj.quantity += old_quantity
+                                godown_qty_revert_obj.save()
+
+                            warehouse_obj,created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse, product = old_product)
+
+                            if warehouse_obj:
+                                warehouse_obj.quantity = max(0,warehouse_obj.quantity - old_quantity)
+                                warehouse_obj.save()
+
                             form.instance.delete()
 
+                    
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
                             form_instance.Finished_goods_Stock_TransferMasterinstance = first_form_instance
                             form_instance.diffrence_qty = form_instance.product_quantity_transfer
+                            
+
+                            old_product_name = form.initial.get('product')
+                            old_product_quantity = form.initial.get('product_quantity_transfer')
+                            
+                            #if both has change
+                            if pk and form.has_changed() and 'product' and 'product_quantity_transfer' in form.changed_data:
+
+                                print(" IN BOTH ")
+
+                                print("old godown")
+                                old_godown_qty, _ = product_godown_quantity_through_table.objects.get_or_create(godown_name=selected_godown, product_color_name=old_product_name)
+
+                                old_godown_qty.quantity += old_product_quantity
+                                old_godown_qty.save()
+
+                                print("new godown")
+                                new_godown_qty, _ = product_godown_quantity_through_table.objects.get_or_create(godown_name=selected_godown, product_color_name=form_instance.product)
+
+                                new_godown_qty.quantity -= form_instance.product_quantity_transfer
+                                new_godown_qty.save()
+
+                                
+                                print("old warehouse")
+                                old_warehouse_qty, _ = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse, product = old_product_name)
+
+                                old_warehouse_qty.quantity = max(0, old_warehouse_qty.quantity - old_product_quantity)
+                                old_warehouse_qty.save()
+
+                                
+                                print("new warehouse")
+                                new_warehouse_qty, _ = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse, product=form_instance.product)
+
+                                new_warehouse_qty.quantity += form_instance.product_quantity_transfer
+                                new_warehouse_qty.save()
+                            
+                            
+                            #if any quantity has change
+                            elif pk and form.has_changed() and 'product_quantity_transfer' in form.changed_data:
+                                print(" ONLY QTY ")
+
+                                warehouse_obj , created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse,product=form_instance.product)
+
+                                difference =  form_instance.product_quantity_transfer - old_product_quantity
+                                warehouse_obj.quantity =  warehouse_obj.quantity + difference
+                                warehouse_obj.save()
+
+                                godown_qty_update_obj_through_quantity, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name = old_product_name)
+                            
+                                godown_qty_update_obj_through_quantity.quantity -= difference
+                                godown_qty_update_obj_through_quantity.save()
+
+                            
+
+                            #if any product has change
+                            elif pk and form.has_changed() and 'product' in form.changed_data:
+
+                                print(" ONLY PRODUCT ")
+
+                                print("old godown")
+                                godown_qty_update_obj_through_old_product, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name = old_product_name)
+
+                                godown_qty_update_obj_through_old_product.quantity += old_product_quantity
+                                godown_qty_update_obj_through_old_product.save()
+
+                                print("new godown")
+                                godown_qty_update_obj_through_new_product, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name = form_instance.product)
+
+                                godown_qty_update_obj_through_new_product.quantity -= form_instance.product_quantity_transfer
+                                godown_qty_update_obj_through_new_product.save()
+                                
+                                print("old warehouse")
+                                warehouse_qty_update_obj_through_old_product, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse = selected_warehouse,product = old_product_name)
+
+                                warehouse_qty_update_obj_through_old_product.quantity -= old_product_quantity
+                                warehouse_qty_update_obj_through_old_product.save()
+                                
+                                print("new warehouse")
+                                warehouse_qty_update_obj_through_new_product, created = Product_warehouse_quantity_through_table.objects.get_or_create(warehouse=selected_warehouse, product=form_instance.product)
+
+                                warehouse_qty_update_obj_through_new_product.quantity += old_product_quantity
+                                warehouse_qty_update_obj_through_new_product.save()
+
                             form_instance.save()
 
                     return redirect('all-product-transfer-to-warehouse')
             
             except Exception as e:
                 print(e)
-    return render(request,'finished_product/product_transfer_to_warehouse.html',{'form':form,'formset':formset,'godowns':godowns,'voucher_instance':voucher_instance,
-                                                                                'warehouses':warehouses,'dict_to_send':dict_to_send})
+
+    return render(request,'finished_product/product_transfer_to_warehouse.html',{'form':form,'formset':formset,'godowns':godowns,'voucher_instance':voucher_instance,'warehouses':warehouses,'dict_to_send':dict_to_send})
 
 
 
@@ -9765,6 +9636,9 @@ def warehouse_product_transfer_create_and_update(request,pk=None):
 
 
 
+
+
+@login_required(login_url='login')
 def product_transfer_to_warehouse_list(request):
 
     warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('created_date')
@@ -9777,7 +9651,7 @@ def product_transfer_to_warehouse_list(request):
 
 
 
-
+@login_required(login_url='login')
 def product_transfer_to_warehouse_delete(request):
     id = request.POST.get('ProductId')
     
@@ -9804,45 +9678,6 @@ def product_transfer_to_warehouse_delete(request):
 
 
 
-def product_transfer_to_warehouse_ajax(request):
-    
-    godown_id = request.GET.get('godown_id')
-
-
-    if godown_id:
-
-        try:
-            filtered_product = list(product_godown_quantity_through_table.objects.filter(
-            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice','product_color_name__Product__Product_GST__gst_percentage'))
-
-            if filtered_product:
-                dict_to_send = {}
-
-                for query in filtered_product:
-                    ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
-                    p_sku = query.get('product_color_name__PProduct_SKU')
-                    product_name = query.get('product_color_name__Product__Product_Name')
-                    product_model_name = query.get('product_color_name__Product__Model_Name')
-                    color = query.get('product_color_name__PProduct_color__color_name')
-                    uom = query.get('product_color_name__Product__Product_UOM')
-                    qty = query.get('quantity')
-                    mrp = query.get('product_color_name__Product__Product_MRP')
-                    customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
-                    gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-                    
-                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst]
-                
-                return JsonResponse({'filtered_product':dict_to_send})
-            
-            else:
-                raise ObjectDoesNotExist('product not found')
-
-        except ObjectDoesNotExist as oe:
-            return JsonResponse({'error': 'No items found.'}, status=404)
-        
-        except Exception as e:
-            return JsonResponse({'error': 'No items found.'}, status=404)
-    
 
     
 
@@ -9853,10 +9688,6 @@ def product_transfer_to_warehouse_ajax(request):
 
 
 def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
-
-    last_selected_bin_id = request.session.get('last_selected_bin_id')
-    if last_selected_bin_id:
-        del request.session['last_selected_bin_id']
     
     try:
         if voucher_type == 'transfer':
@@ -9965,7 +9796,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                     
                                     if form.instance.product_name.PProduct_SKU == scanned_sku:
                                         if form.instance.quantity_total >= form.instance.qc_recieved_qty:
-                                            messages.success(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
+                                            messages.error(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
                                             return redirect(reverse('stock-transfer-instance-list-popup', args=[id, selected_voucher_type]))
                                 
                             
@@ -10016,7 +9847,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
                                     if form.instance.product.PProduct_SKU == scanned_sku:
                                         if form.instance.product_quantity_transfer >= form.instance.qc_recieved_qty:
-                                            messages.success(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
+                                            messages.error(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
                                             return redirect(reverse('stock-transfer-instance-list-popup', args=[id, selected_voucher_type]))
                                     
                         if form_present == False:
@@ -10055,7 +9886,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
 
 
-
+@login_required(login_url='login')
 def delete_sigle_entries(request, e_id, voucher_type):
     try:
         delete_instance = finishedgoodsbinallocation.objects.get(pk=e_id)
@@ -10085,7 +9916,7 @@ def delete_sigle_entries(request, e_id, voucher_type):
 
 
 
-
+@login_required(login_url='login')
 def scan_product_qty_list(request):
 
     product_purchase_voucher = product_purchase_voucher_items.objects.filter(qc_recieved_qty__gt = 0).select_related( 'product_purchase_master', 'product_name').values('id','product_purchase_master__ledger_type','product_name__PProduct_SKU','product_name__Product__Product_Refrence_ID','product_name__Product__Model_Name','product_name__PProduct_color__color_name','product_name__PProduct_image','quantity_total','qc_recieved_qty','diffrence_qty','created_date')
@@ -10103,7 +9934,7 @@ def scan_product_qty_list(request):
 
 
 from django.utils import timezone
-
+@login_required(login_url='login')
 def scan_product_list(request,pk,v_type):
 
     instance_entries_all = []
@@ -10185,7 +10016,7 @@ def scan_product_list(request,pk,v_type):
 
 
 
-
+@login_required(login_url='login')
 def warehouse_stock(request):
 
     purchase_sales_quantity_subquery = sales_voucher_outward_scan.objects.filter(product_name__PProduct_SKU=OuterRef('product_name__PProduct_SKU')).values('product_name__PProduct_SKU').annotate(sales_quantity=Sum('quantity')).values('sales_quantity')
@@ -10254,7 +10085,7 @@ def warehouse_stock(request):
 
 
 
-
+@login_required(login_url='login')
 def scan_single_product_list(request,sku):
     instance_entries = finishedgoodsbinallocation.objects.filter(product__PProduct_SKU = sku).values(
         'related_purchase_item__product_purchase_master__purchase_number' or None,
@@ -10283,7 +10114,7 @@ def scan_single_product_list(request,sku):
 
 
 
-
+@login_required(login_url='login')
 def model_name_wise_purchase_transfer_sales_report(request,sku):
     purchase_instance = product_purchase_voucher_items.objects.filter(product_name__PProduct_SKU = sku)
 
@@ -10371,7 +10202,7 @@ def model_name_wise_purchase_transfer_sales_report(request,sku):
 
 
 
-
+@login_required(login_url='login')
 def product_wise_sales_report(request,sku):
     sales_voucher_queryset = sales_voucher_outward_scan.objects.filter(product_name = sku).select_related(
         'sales_voucher_master'
@@ -10393,7 +10224,7 @@ def product_wise_sales_report(request,sku):
 
 
 
-
+@login_required(login_url='login')
 def product_wise_sales_return_report(request,sku):
     sales_voucher_queryset = sales_return_voucher.objects.filter(product_name = sku).select_related(
         'sales_return_master'
@@ -10401,6 +10232,7 @@ def product_wise_sales_return_report(request,sku):
             'created_date',
             'product_name__PProduct_image',
             'sales_return_master__sales_voucher_master__sale_no',
+            'sales_return_master__sales_return_inward_instance__sales_return_no',
             'sales_return_master__salesman__salesman_name',
             'sales_return_master__party_name__name',
             'product_name__Product__Product_Refrence_ID',
@@ -10477,16 +10309,42 @@ def process_serial_no(request):
     
     if request.method == 'POST':
         serial_no = request.POST.get('serialNo')
+        voucher_type = request.POST.get('instance_type_post')
+        voucher_no = request.POST.get('instance_number_post')
+        
         print(serial_no)
 
         if serial_no:
+
             try:
-                # Check if serial number is already processed
+                
                 if finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).exists():
                     return JsonResponse({'message': 'This Serial Number has already been processed.'}, status=400)
 
             except IntegrityError:
                 return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
+
+
+            try:
+                
+                exists = finishedgoodsbinallocation.objects.filter(
+                    Q(
+                        Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) &
+                        Q(related_purchase_item__diffrence_qty=0)
+                    ) |
+                    Q(
+                        Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no) &
+                        Q(related_transfer_record__diffrence_qty=0)
+                    )
+                ).exists()
+                                                                                                       
+                if exists:
+                    print("Scan complete")
+                    return JsonResponse({'error':'Scaning Completed (All Product Scan Sucessfully Thank you).'}, status=400)
+
+            except Exception:
+                return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
+
 
             try:
                 # Call external API
@@ -10510,13 +10368,14 @@ def process_serial_no(request):
                     product_main_cats = product_instance.Product.product_cats.all()
                     main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
 
-                    # Retrieve last selected bin from session
-                    last_selected_bin_id = request.session.get('last_selected_bin_id')
+                    # # Retrieve last selected bin from table
+                    last_selected_bin_id = finishedgoodsbinallocation.objects.filter(Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) |Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no)).order_by('-created_date').first()
 
                     bins_related_to_product = []
 
                     # Fetch all bins related to the product
                     for bin_obj in finished_product_warehouse_bin.objects.filter(sub_catergory_id__in=main_cats_all):
+
                         product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False).count()
 
                         bins_related_to_product.append({
@@ -10525,11 +10384,11 @@ def process_serial_no(request):
                             'bin_size': bin_obj.product_size_in_bin,
                             'products_in_bin': product_count
                         })
+
                     
-                    print('last_selected_bin_id == ',last_selected_bin_id)
                     # Sort bins: Show last selected bin first
                     if last_selected_bin_id:
-                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id)
+                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id.bin_number.id)
 
                     return JsonResponse({
                         'model_name': model_name,
@@ -10557,7 +10416,8 @@ def process_serial_no(request):
             return JsonResponse({'message': 'Invalid Serial No.'}, status=400)
 
     return JsonResponse({'message': 'Invalid Request Method.'}, status=405)
-        
+
+
 
 
 
@@ -10684,6 +10544,8 @@ def delete_bin_in_rack(request,bin_id):
     bin = get_object_or_404(finished_product_warehouse_bin,id=bin_id)
     bin.delete()
     return redirect('add-bin-in-rack', rack_id = rack_id.id)
+
+
 
 
 
@@ -12882,7 +12744,7 @@ def excel_download_for_purchase_order(request,p_id):
 
 
 
-
+@login_required(login_url='login')
 def itemdynamicsearchajax(request):
     
     try:
@@ -12934,7 +12796,7 @@ def itemdynamicsearchajax(request):
 
 
 
-
+@login_required(login_url='login')
 def productdynamicsearchajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
@@ -13088,7 +12950,7 @@ def UniqueValidCheckAjax(request):
 
 
 
-
+@login_required(login_url='login')
 def session_data_test(request):
         
     session_data = request.session
@@ -13171,7 +13033,7 @@ def product_2_item_ajax(request):
 
 
 
-
+@login_required(login_url='login')
 def creditdebitreport(request):
     all_reports = account_credit_debit_master_table.objects.all()
 
@@ -13182,7 +13044,7 @@ def creditdebitreport(request):
 
 
 
-
+@login_required(login_url='login')
 def godown_stock_raw_material_report_fab_grp(request,g_id,fab_id=None):
     
     
@@ -13275,7 +13137,7 @@ def godown_stock_raw_material_report_fab_grp(request,g_id,fab_id=None):
 
 
 
-
+@login_required(login_url='login')
 def godown_item_report(request, shade_id,g_id=None):
 
     """
@@ -13542,7 +13404,7 @@ def godown_item_report(request, shade_id,g_id=None):
 
 
 
-
+@login_required(login_url='login')
 def allrawmaterialstockreport(request):
     queryset = item_color_shade.objects.all().annotate(total_qty = Sum(
         'godown_shades__quantity')).order_by('items__item_name').prefetch_related(
@@ -13555,7 +13417,7 @@ def allrawmaterialstockreport(request):
 
 
 
-
+@login_required(login_url='login')
 def allfinishedgoodsstockreport(request,action=None):
 
     if action == 'All_Record':
@@ -13602,7 +13464,7 @@ def allfinishedgoodsstockreport(request,action=None):
 
 
 
-
+@login_required(login_url='login')
 def qc_approved_model_wise_report(request,ref_id):
     
     if ref_id:
@@ -13680,7 +13542,7 @@ def qc_approved_model_wise_report(request,ref_id):
 
 
 
-
+@login_required(login_url='login')
 def raw_material_excel_download(request):
 
     wb = Workbook()
@@ -13707,7 +13569,7 @@ def raw_material_excel_download(request):
 
 
 
-
+@login_required(login_url='login')
 def raw_material_excel_upload(request):
     
     if request.method == "POST":
@@ -13841,7 +13703,7 @@ def raw_material_excel_upload(request):
         
 
 
-
+@login_required(login_url='login')
 def finished_goods_model_wise_report(request,ref_id):
     
     if ref_id:
@@ -13875,7 +13737,7 @@ def finished_goods_model_wise_report(request,ref_id):
     return render(request, 'reports/finishedgoodsmodelwisereport.html',{'data_list':initial_sorted_data , 'product_instance':product_instance})
 
 
-
+@login_required(login_url='login')
 def lwo_and_lwi_report_vendor_wise(request):
 
     vendor_name = request.POST.get("vendor_name")
@@ -13916,7 +13778,7 @@ def lwo_and_lwi_report_vendor_wise(request):
 
 
 
-
+@login_required(login_url='login')
 def finished_goods_sorting_list(request):
     
     finished_goods_purchase_voucher_instances = product_purchase_voucher_master.objects.all().annotate(
@@ -13945,7 +13807,7 @@ def finished_goods_sorting_list(request):
 
 
 
-
+@login_required(login_url='login')
 def warehouse_navigator(request):
     warehouses = Finished_goods_warehouse.objects.prefetch_related('warehouses__zones__racks').all()
     return render(request,'finished_product/warehouse_navigator.html',{'warehouses':warehouses})
@@ -13959,6 +13821,9 @@ def warehouse_navigator(request):
 
 
 
+
+
+@login_required(login_url='login')
 def picklist_product_ajax(request):
     try:
         product_name_typed = request.GET.get('productnamevalue')
@@ -14036,8 +13901,7 @@ def picklist_product_ajax(request):
 
 
 
-
-
+@login_required(login_url='login')
 def bin_quantity_ajax(request):
     logger.info('Temp bin quantity function called using sessions')
 
@@ -14100,7 +13964,7 @@ def bin_quantity_ajax(request):
         return JsonResponse({"status": "error", "message": "An error occurred while processing the request."}, status=500)
 
 
-
+@login_required(login_url='login')
 def create_update_picklist(request, p_id=None):
     
     if 'temp_bins' in request.session:
@@ -14186,7 +14050,7 @@ def create_update_picklist(request, p_id=None):
 
 
 
-
+@login_required(login_url='login')
 def delete_form_quantity_revert(request):
     """
     Handles reverting bin quantity when a product is deleted from the picklist.
@@ -14232,7 +14096,7 @@ def delete_form_quantity_revert(request):
 
 
 
-
+@login_required(login_url='login')
 def deletepicklist(request,pl_id):
     picklist = Picklist_voucher_master.objects.get(pk=pl_id)
 
@@ -14250,7 +14114,7 @@ def deletepicklist(request,pl_id):
 
 
 
-
+@login_required(login_url='login')
 def all_picklists_list(request):
     all_picklists = Picklist_voucher_master.objects.all().annotate(scanned_qty=Sum("picklist_process_in_outward__balance_qty")).order_by('created_date')
     return render(request,'finished_product/allpicklists.html',{'all_picklists':all_picklists})
@@ -14258,7 +14122,7 @@ def all_picklists_list(request):
 
 
 
-
+@login_required(login_url='login')
 def picklist_view(request,pl_id):
     picklist_number=get_object_or_404(Picklist_voucher_master,pk=pl_id)
     picklist_data = Picklist_products_list.objects.filter(picklist_master_instance=pl_id)
@@ -14267,7 +14131,7 @@ def picklist_view(request,pl_id):
 
 
 
-
+@login_required(login_url='login')
 def download_picklist_pdf(request,pl_id):
  # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14311,7 +14175,7 @@ def download_picklist_pdf(request,pl_id):
 
 
 
-
+@login_required(login_url='login')
 def download_picklist_excel(request,pl_id):
     # Get the Picklist_voucher_master instance
     picklist = get_object_or_404(Picklist_voucher_master, id=pl_id)
@@ -14361,7 +14225,7 @@ def download_picklist_excel(request,pl_id):
     return response
 
 
-
+@login_required(login_url='login')
 def outward_picklist_no_ajax(request):
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
@@ -14414,7 +14278,7 @@ def outward_picklist_no_ajax(request):
             return JsonResponse({"error": f"An error occurred while processing the request: {str(e)}"}, status=500)
 
 
-
+@login_required(login_url='login')
 def outward_scan_serial_no_process(request):
     print("in scan def")
     try:
@@ -14468,6 +14332,7 @@ def decimal_to_float(obj):
 
 from urllib.parse import urlencode
 
+@login_required(login_url='login')
 def outward_scan_product_create(request,o_id=None):
     
     if 'products_data' in request.session:
@@ -14694,25 +14559,15 @@ def outward_scan_product_create(request,o_id=None):
 
 
 
-def outward_scan_product_list(request):
-
-    sale_qty_subqeury = sales_voucher_master_outward_scan.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_sale_qty=Sum('sales_voucher_outward_scan__quantity')).values('total_sale_qty')
-    
-    picklist_qty_subqeury = Picklist_process_in_outward.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_qty = Sum('picklist__picklist_products_list__product_quantity')).values('total_qty')
-
-    outward_list = outward_product_master.objects.all().annotate(
-        total_qty=Sum('outward_product__quantity'),
-        picklist_total_qty=Subquery(picklist_qty_subqeury),
-        remaining_qty=F('picklist_total_qty') - F('total_qty'),
-        sale_total_qty=Subquery(sale_qty_subqeury)).order_by('created_date')
-    
-
-    return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
 
 
+@login_required(login_url='login')
+def sales_voucher_create_update_for_warehouse(request, s_id=None, action=None):
 
-def sales_voucher_create_update_for_warehouse(request, s_id=None):
-    print("in sale")
+    outward_number = None
+
+    product_list = None
+
     party_name = Ledger.objects.filter(under_group__account_sub_group='Sundry Debtors')
 
     warehouse_names = Finished_goods_warehouse.objects.all()
@@ -14922,6 +14777,26 @@ def sales_voucher_create_update_for_warehouse(request, s_id=None):
 
 
 
+
+@login_required(login_url='login')
+def outward_scan_product_list(request):
+
+    sale_qty_subqeury = sales_voucher_master_outward_scan.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_sale_qty=Sum('sales_voucher_outward_scan__quantity')).values('total_sale_qty')
+    
+    picklist_qty_subqeury = Picklist_process_in_outward.objects.filter(outward_no=OuterRef('pk')).values('outward_no').annotate(total_qty = Sum('picklist__picklist_products_list__product_quantity')).values('total_qty')
+
+    outward_list = outward_product_master.objects.all().annotate(
+        total_qty=Sum('outward_product__quantity'),
+        picklist_total_qty=Subquery(picklist_qty_subqeury),
+        remaining_qty=F('picklist_total_qty') - F('total_qty'),
+        sale_total_qty=Subquery(sale_qty_subqeury)).order_by('created_date')
+    
+
+    return render(request,'finished_product/outward_scan_product_list.html',{'outward_list':outward_list})
+
+
+
+@login_required(login_url='login')
 def salesvoucherlistwarehouse(request):
 
     if 'products_data' in request.session:
@@ -14975,7 +14850,7 @@ def salesvoucherlistwarehouse(request):
     return render(request,'accounts/sales_list_warehouse.html',{'final_list':final_list})
 
 
-
+@login_required(login_url='login')
 def sales_voucher_view_sort_with_salesman(request,id):
 
     sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(salesman__id = id).select_related(
@@ -15011,7 +14886,7 @@ def sales_voucher_view_sort_with_salesman(request,id):
     return render(request,'accounts/sales_voucher_view_sort_with_salesman.html',{'final_list':final_list,})
 
 
-
+@login_required(login_url='login')
 def sales_voucher_view_sort_with_partyname(request,id):
 
     sales_vouchers_queryset = sales_voucher_master_outward_scan.objects.filter(party_name__id = id).select_related(
@@ -15047,7 +14922,7 @@ def sales_voucher_view_sort_with_partyname(request,id):
 
 
 
-
+@login_required(login_url='login')
 def ref_no_search_ajax(request):
     try:
         ref_no_typed = request.GET.get('productnamevalue')
@@ -15080,7 +14955,7 @@ def ref_no_search_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-
+@login_required(login_url='login')
 def party_name_search_ajax(request):
     try:
         party_name_typed = request.GET.get('productnamevalue')
@@ -15112,12 +14987,15 @@ def party_name_search_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-
+@login_required(login_url='login')
 def otward_data_for_sale_return_ajax(request):
     try:
         sale_no = request.GET.get('saleNo')
 
         print('sale_no = ', sale_no)
+
+        if sales_return_inward.objects.filter(sales_voucher_master__sale_no=sale_no).exists():
+            return JsonResponse({"error": f"Sales return already exists for sale no {sale_no}."},status=400)
 
         outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no','party_name__name'
         )
@@ -15159,7 +15037,7 @@ def otward_data_for_sale_return_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-
+@login_required(login_url='login')
 def process_serial_no_for_return_sales_ajax(request):
     try:
         serial_no = request.GET.get('serialNo')
@@ -15232,7 +15110,7 @@ def process_serial_no_for_return_sales_ajax(request):
         return JsonResponse({"error": "An error occurred while processing the request."}, status=500)
 
 
-
+@login_required(login_url='login')
 def return_product_with_bin_ajax(request):
     try:
         product_sku = request.GET.get('productSku')
@@ -15276,7 +15154,7 @@ def return_product_with_bin_ajax(request):
 
 
 
-
+@login_required(login_url='login')
 def sales_return_inward_to_bin(request, r_id=None):
 
     for key in ['bin_data', 'product_data']:
@@ -15434,7 +15312,7 @@ def sales_return_inward_to_bin(request, r_id=None):
 
 
 
-
+@login_required(login_url='login')
 def sales_return_voucher_create_update(request,s_id=None, sr_id=None, sv_id=None, action=None):
 
     master_form_data = get_object_or_404(sales_return_inward, id=sr_id)
@@ -15616,7 +15494,7 @@ def sales_return_voucher_create_update(request,s_id=None, sr_id=None, sv_id=None
 
 
 
-
+@login_required(login_url='login')
 def sale_return_list(request):
 
     total_sale_qty_subquery = sales_voucher_outward_scan.objects.filter(sales_voucher_master=OuterRef('sales_voucher_master')).values('sales_voucher_master').annotate(total_sale_qty=Sum('quantity')).values('total_sale_qty')
@@ -15630,37 +15508,67 @@ def sale_return_list(request):
 
 
 
-
+@login_required(login_url='login')
 def delivery_challan_product_ajax(request):
-    pass
+    try:
+        product_name_typed = request.GET.get('nameValue')
+        godown_name = request.GET.get('selected_godown')
+
+        print(godown_name)
+
+        if not godown_name:
+            return JsonResponse({'error': 'Please select godown first'}, status=400)
+
+        logger.info(f"Search initiated by {request.user}: {product_name_typed}")
+
+        products = product_delivery_challan_quantity_through_table.objects.filter(
+            Q(product_name__Product__Model_Name__icontains = product_name_typed) |
+            Q(product_name__PProduct_color__color_name__icontains= product_name_typed) | 
+            Q(product_name__Product__Product_Refrence_ID__icontains=product_name_typed)
+            ).filter(godown_name = godown_name).values(
+                'product_name__Product__Model_Name',
+                'product_name__PProduct_SKU',
+                'product_name__PProduct_color__color_name',
+                'quantity',
+                'product_name__Product__Product_Refrence_ID',
+                'product_name__PProduct_image'
+                ).exclude(quantity=0)
+
+        print(products)
+
+        product_list = {}
+
+        for product in products:
+            sku = product['product_name__PProduct_SKU'] 
+            
+            product_list[sku] = [product['product_name__PProduct_color__color_name'],product['product_name__Product__Model_Name'],product['product_name__Product__Product_Refrence_ID'],product['product_name__PProduct_image'],product['quantity']]
+
+        return JsonResponse({'products': product_list}, safe=False)
+    
+
+    except Exception as e:
+        logger.error(f"Error in delivery_challan_product_ajax: {e}")
+        return JsonResponse({'error': 'An error occurred while fetching data.'}, status=500)
 
 
 
 
+
+@login_required(login_url='login')
 def delivery_challan_create_update(request, d_id=None):
 
     party_names = Ledger.objects.all()
+    godowns = Godown_finished_goods.objects.all()
     
     if d_id:
         d_instance = DeliveryChallanMaster.objects.get(id = d_id)
         master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None,instance = d_instance)
+        formset = DeliveryChallanProductsUpdateFormset(instance = d_instance)
+
     else:
         d_instance = None
-        
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
-
-        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-
-            party_id = request.GET.get('partyName')
-
-            if party_id:
-                party_add = Ledger.objects.get(id = party_id)
-                
-                address = party_add.address
-
-                return JsonResponse({'address':address},status = 200)
+        formset = DeliveryChallanProductsCreateFormset()
 
 
     if request.method == 'POST':
@@ -15668,7 +15576,11 @@ def delivery_challan_create_update(request, d_id=None):
         print(request.POST)
 
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+
+        if d_id:
+            formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
+        else:
+            formset = DeliveryChallanProductsUpdateFormset(request.POST or None)
 
         if master_form.is_valid() and formset.is_valid():
 
@@ -15687,29 +15599,446 @@ def delivery_challan_create_update(request, d_id=None):
                             if not form.is_valid():
                                 print("Form Errors:", form.errors)
 
+                    
+                    
                     if formset.is_valid():
                         for form in formset.deleted_forms:
                             if form.instance.pk:
-                                form.instance.delete()
+
+                                product_name = form.instance.product_name
+                                product_qty = form.instance.quantity
+
+                                del_obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = product_name)
+
+                                del_obj.quantity += product_qty
+                                del_obj.save()
+
+                                form.instance.delete()   
 
                         formset.forms = [form for form in formset.forms if form.has_changed()]
 
                         for form in formset:
-                            instance = form.save(commit=False)
-                            instance.delivery_challan = master_form_instance
-                            instance.save()
+                            if not form.cleaned_data.get('DELETE'):
+                                instance = form.save(commit=False)
+                                instance.delivery_challan = master_form_instance
+
+                                obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
+
+                                obj.quantity -= instance.quantity
+                                obj.save()
+                    
+                                instance.save()
+
+                    
+
+
 
                     return(redirect('delivery-challan-list'))
                 
             except Exception as e:
                 print(f"Error saving formset: {e}")
 
-    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names})
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names,'godowns':godowns})
+
+
+
+@login_required(login_url='login')
+def delivery_challan_process_for_sale_voucher(request):
+    
+    try:
+        d_challan_no = request.GET.get('challanNo')
+
+        if not d_challan_no:
+            return JsonResponse({"error": "challanNo parameter is required"}, status=400)
+
+        d_id = get_object_or_404(DeliveryChallanMaster, delivery_challan_no=d_challan_no)
+
+        total_data = DeliveryChallanProducts.objects.filter(delivery_challan=d_id).aggregate(
+            total_qty=Sum('quantity'),
+            total_balance=Sum('balance_qty')
+        )
+
+        d_challan_data = {
+            "delivery_challan_no": d_challan_no,
+            "id": d_id.id,
+            "godown_id":d_id.selected_godown.id,
+            "godown_name":d_id.selected_godown.godown_name_finished,
+            "total_qty": total_data['total_qty'] or 0,
+            "balance_qty": total_data['total_balance'] or 0
+        }
+
+        total_product_data = DeliveryChallanProducts.objects.filter(delivery_challan=d_id)
+
+        d_challan_product_data = {}
+
+        for i in total_product_data:
+            challan_no = i.delivery_challan.delivery_challan_no
+
+            if challan_no not in d_challan_product_data:
+                d_challan_product_data[challan_no] = []
+
+            d_challan_product_data[challan_no].append({
+                'product_name': i.product_name.Product.Model_Name,
+                'product_sku': i.product_name.PProduct_SKU,
+                'color': i.product_name.PProduct_color.color_name,
+                'qty': i.quantity,
+                'balance_qty': i.balance_qty
+            })
+
+        print(d_challan_product_data)
+        return JsonResponse({"d_challan_data":d_challan_data,"products": d_challan_product_data},status=200)
+
+    except Exception as e:
+        print(f"Error in processing delivery challan: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 
 
 
+def product_transfer_to_warehouse_ajax(request):
+    
+    godown_id = request.GET.get('godown_id')
+    delivery_challan_id = request.GET.get('deliveryChallan')
+
+    
+    if delivery_challan_id:
+
+        print('in delivery_challan and godown_id')
+
+        try:
+
+            filtered_product = list(DeliveryChallanProducts.objects.filter(delivery_challan = delivery_challan_id).annotate(total_qty = Sum('balance_qty')).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','total_qty','id','balance_qty','delivery_challan__delivery_challan_no'))
+
+            if filtered_product:
+
+                dict_to_send = {}
+
+                for query in filtered_product:
+                    ref_no = query.get('product_name__Product__Product_Refrence_ID')
+                    p_sku = query.get('product_name__PProduct_SKU')
+                    product_name = query.get('product_name__Product__Product_Name')
+                    product_model_name = query.get('product_name__Product__Model_Name')
+                    color = query.get('product_name__PProduct_color__color_name')
+                    uom = query.get('product_name__Product__Product_UOM')
+                    qty = query.get('balance_qty')
+                    mrp = query.get('product_name__Product__Product_MRP')
+                    customer_price = query.get('product_name__Product__Product_SalePrice_CustomerPrice')
+                    gst = query.get('product_name__Product__Product_GST__gst_percentage')
+                    total_qty = query.get('total_qty')
+                    id = query.get('id')
+                    d_challan_no = query.get('delivery_challan__delivery_challan_no')
+
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst,total_qty,id,d_challan_no]
+
+                print('dict_to_send = ',dict_to_send)
+
+                return JsonResponse({'filtered_product':dict_to_send})
+        
+        except Exception as e:
+            return JsonResponse({'error': 'No items found.'}, status=404)
+    else:
+
+        print('in godown_id')
+
+        try:
+            filtered_product = list(product_godown_quantity_through_table.objects.filter(
+            godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice','product_color_name__Product__Product_GST__gst_percentage'))
+
+            if filtered_product:
+                dict_to_send = {}
+
+                for query in filtered_product:
+                    ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
+                    p_sku = query.get('product_color_name__PProduct_SKU')
+                    product_name = query.get('product_color_name__Product__Product_Name')
+                    product_model_name = query.get('product_color_name__Product__Model_Name')
+                    color = query.get('product_color_name__PProduct_color__color_name')
+                    uom = query.get('product_color_name__Product__Product_UOM')
+                    qty = query.get('quantity')
+                    mrp = query.get('product_color_name__Product__Product_MRP')
+                    customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
+                    gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
+                    
+                    dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,mrp,customer_price,gst]
+                
+                return JsonResponse({'filtered_product':dict_to_send})
+            
+            else:
+                raise ObjectDoesNotExist('product not found')
+
+        except ObjectDoesNotExist as oe:
+            return JsonResponse({'error': 'No items found.'}, status=404)
+        
+        except Exception as e:
+            return JsonResponse({'error': 'No items found.'}, status=404)
+    
+
+
+
+
+
+
+@login_required(login_url='login')
+def salesvouchercreateupdate(request,s_id=None):
+
+    party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
+    godown_names = Godown_finished_goods.objects.all()
+
+    dict_to_send = None
+
+    if s_id:
+        voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+
+        master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
+
+        formset = salesvoucherupdateformset(request.POST or None,instance=voucher_instance)
+
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormsetupdate(request.POST or None, instance=voucher_instance)
+
+        page_name = 'Edit Sales Invoice'
+
+        total_product_data = SalesVoucherDeliveryChallan.objects.filter(sales_voucher=s_id)
+
+        d_challan_product_data = []
+
+        for i in total_product_data:
+            for j in i.delivery_challan.deliverychallanproducts_set.all():
+                d_challan_product_data.append({'product_name':j.product_name.Product.Model_Name,'product_sku':j.product_name.PProduct_SKU,'color':j.product_name.PProduct_color.color_name,'qty':j.quantity,'balance_qty':j.balance_qty})
+
+        print(d_challan_product_data)
+
+    else:
+        voucher_instance = None
+        master_form = salesvouchermasterfinishGoodsForm()
+        formset = salesvouchercreateformset()
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST or None,queryset=SalesVoucherDeliveryChallan.objects.none())
+        page_name = 'Create Sales Invoice'
+
+        
+    
+
+    if request.method == "POST":
+        print(request.POST)
+        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
+        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
+
+        # formset.forms = [form for form in formset.forms if form.has_changed()]
+
+        if not master_form.is_valid():
+            print("Form Errors:", master_form.errors)
+
+        if not formset.is_valid():
+            for form in formset:
+                if not form.is_valid():
+                    print("Form Errors:", form.errors)
+
+        
+
+        if master_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    master_form_instance = master_form.save(commit=False)
+                    master_form_instance.save()
+
+                    for form in delivery_challan_formset:
+                        if form.is_valid():
+                            if not form.cleaned_data.get('DELETE'):
+                                form_instance = form.save(commit=False)
+                                form_instance.sales_voucher = master_form_instance
+                                form_instance.save()
+                    
+                    selected_godown = None
+                    
+                    print(selected_godown)
+
+                    for form in formset.deleted_forms:
+                        if form.instance.pk:
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+                            
+                            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                            godown_qty_value.quantity = godown_qty_value.quantity + product_qty
+                            godown_qty_value.save()
+                            
+                            form.instance.delete()
+
+
+                    for form in formset:
+                        if not form.cleaned_data.get('DELETE'):
+
+                            form_instance = form.save(commit=False)
+                            form_instance.sales_voucher_master = master_form_instance
+                            form_instance.save()
+                            product_name = form.instance.product_name
+                            product_qty = form.instance.quantity
+
+                        
+                            if form.has_changed():
+
+                                old_product_name = form.initial.get('product_name')
+                                old_product_quantity = form.initial.get('quantity')
+                                
+                                if old_product_quantity:
+                                    print("in single")
+                                    
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                                    difference =  product_qty - old_product_quantity
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity - difference
+                                    godown_qty_value.save()
+
+                            if form.has_changed() and 'product_name' in form.changed_data:
+
+                                if old_product_name and old_product_quantity:
+                                    print("in both")
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=old_product_name)
+
+                                    # difference =  product_qty - old_product_quantity
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity + old_product_quantity
+                                    godown_qty_value.save()
+
+                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                                    godown_qty_value.quantity = godown_qty_value.quantity - old_product_quantity
+                                    godown_qty_value.save()
+                                
+
+                    return redirect('sales-voucher-list')
+            except Exception as e:
+                print(e) 
+
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset})
+
+
+
+
+@login_required(login_url='login')
 def delivery_challan_list(request):
+
     delivary_challan_list = DeliveryChallanMaster.objects.all()
-    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list})
+
+    product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
+
+
+    product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
+    
+
+    product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
+
+
+    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
+
+    product_queryset = PProduct_Creation.objects.all().annotate(
+        total_qty = Sum('godown_colors__quantity'),
+        total_labour_workin_qty = Subquery(product_queryset_subquery),
+        total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),
+        total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
+        total_challan_qty = Subquery(delivery_challan_subquery)).filter(
+            Q(total_qty__gt=0) | 
+            Q(total_labour_workin_qty__gt=0) | 
+            Q(total_labour_workin_pending_qty__gt=0) | 
+            Q(total_labour_workin_approve_qty__gt=0) |  
+            Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
+    
+    
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
+
+
+@login_required(login_url='login')
+def delete_delivery_challan(request,pk):
+
+    logger.info('delete_delivery_challan function called')
+
+    try:
+        challan = get_object_or_404(DeliveryChallanMaster, pk=pk)
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no}')
+        
+        challan.delete()
+
+        logger.info(f'delete_delivery_challan object {challan.delivery_challan_no} delete successfully')
+
+    except Exception as e:
+        logger.error(f'Error deleting Delivery Challan {pk}: {e}')
+
+    return redirect('delivery-challan-list')
+
+
+def sales_scan_product_dynamic_ajax(request):
+    
+    try:
+        
+        serialNo = request.GET.get('serialNo')
+        warhouseId = request.GET.get('warhouseId')
+
+        if not serialNo:
+            return JsonResponse({'error': 'Please enter a search term.'}, status=400)
+
+        if sales_voucher_finish_Goods.objects.filter(unique_serial_no=serialNo).exists():
+            
+            return JsonResponse(
+                {'error': f'The serial number "{serialNo}" already exists. Please enter a different one.'},
+                status=400
+            )
+        
+        filtered_product = list(finishedgoodsbinallocation.objects.filter(unique_serial_no = serialNo).values('product__Product__Model_Name','product__PProduct_color__color_name','product__PProduct_SKU','unique_serial_no','product__Product__Product_MRP','product__Product__Product_SalePrice_CustomerPrice','product__Product__Product_GST__gst_percentage'))
+
+
+        if filtered_product:
+            list_to_send = []
+
+            for query in filtered_product:
+                p_sku = query.get('product__PProduct_SKU')
+                serial_no = query.get('unique_serial_no')
+                product_model_name = query.get('product__Product__Model_Name')
+                color = query.get('product__PProduct_color__color_name')
+                gst = query.get('product__Product__Product_GST__gst_percentage')
+                mrp = query.get('product__Product__Product_MRP')
+                customer_price = query.get('product__Product__Product_SalePrice_CustomerPrice')
+
+
+                list_to_send.append([p_sku,product_model_name,color,serial_no,gst,mrp,customer_price])
+            
+            return JsonResponse({'products': list_to_send,'message':f"{serialNo} added successfully"}, status=200)
+        
+        return JsonResponse({'error': 'No items found.'}, status=404)
+    
+    except Exception as e:
+        return JsonResponse({'error': f"An error occurred: {str(e)}"}, status=500)
+
+
+@login_required(login_url='login')
+def salesvoucherlist(request):
+    sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
+    return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
+
+
+
+@login_required(login_url='login')
+def salesvoucherdelete(request,pk):
+    sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
+    if sales_instance:
+        transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master = pk)
+
+        for i in transfer_records:
+            selected_godown = i.sales_voucher_master.selected_godown
+            selected_warehouse = i.sales_voucher_master.selected_warehouse
+            product_name = i.product_name
+            product_quantity = i.quantity
+            if selected_godown:
+                godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+
+                godown_qty_value.quantity = godown_qty_value.quantity + product_quantity
+                godown_qty_value.save()
+            else:
+                pass
+
+    sales_instance.delete()
+    return redirect('sales-voucher-list')

@@ -7,41 +7,73 @@
 
     <div class="mt-3">
         <div class="mb-2 d-flex">
+
             <div class="d-flex">
                 <label for="id_delivery_challan_no" class="me-1">Challan no :</label>
+                {% if master_form.instance.id %}
+                <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no" value="{{ master_form.instance.delivery_challan_no }}" readonly>
+                {% elif not master_form.instance.id %}
                 <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no">
+                {% endif %}
             </div>
-            <div class="ms-2" >
-                <div class="mb-1">
-                    <label for="id_party_name" class="me-1">Party name :</label>
-                    <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
-                        <option value="" selected disabled>select party name</option>
-                        {% if master_form.instance.id %}
-                        <option value="{{ name.id }}">{{ name.name }}</option>
-                        {% elif not master_form.instance.id %}
-                        {% for name in party_names %}
-                          <option value="{{ name.id }}">{{ name.name }}</option>
-                        {% endfor %}
-                        {% endif %}
-                    </select>
-                </div>
-                
-                <div class="">
-                    <textarea placeholder="Party Address.." name="party_address" class="border-1 rounded-1 ps-1" cols="40" rows="2" id="id_party_address" readonly></textarea>
-                </div>
-               
-            </div>
-
-            
-            
-            <label for="id_shipping_address" class="me-1">Shipping address :</label>
             <div>
-                <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 ps-1" cols="50" rows="2" required id="id_shipping_address"></textarea>
-                
+                <div class="d-flex" >
+                    <div class="mb-1">
+                        <label for="id_selected_godown" class="me-1">Godown :</label>
+                        <select name="selected_godown" class="item-select " required id="id_selected_godown" class="item-selects">
+                            {% if master_form.instance.id %}
+                            <option value="{{ master_form.instance.selected_godown.id }}">{{ master_form.instance.selected_godown.godown_name_finished }}</option>
+                            {% elif not master_form.instance.id %}
+                            <option value="" selected disabled>selected_godown</option>
+                            {% for godown in godowns %}
+                              <option value="{{ godown.id }}">{{ godown.godown_name_finished }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+    
+    
+                    <div class="mb-1 ms-2">
+                        <label for="id_party_name" class="me-1">Party name :</label>
+                        <select name="party_name" class="item-select me-2" required id="id_party_name" class="item-selects">
+                            {% if master_form.instance.id %}
+                            
+                            <option value="{{ master_form.instance.party_name.id }}">{{ master_form.instance.party_name.name }}</option>
+                            {% elif not master_form.instance.id %}
+                            <option value="" selected disabled>select party name</option>
+                            {% for name in party_names %}
+                              <option value="{{ name.id }}">{{ name.name }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                       
+                    </div>
+                    <label for="id_shipping_address" class="me-1">Address :</label>
+                <div>
+                    {% if master_form.instance.id %}
+                    <textarea  placeholder="Shipping Address.." name="shipping_address" class="border-1 rounded-1 ps-1" cols="35" rows="2" required id="id_shipping_address">{{ master_form.instance.shipping_address }}</textarea>
+                    {% elif not master_form.instance.id %}
+                    <textarea  placeholder="Shipping Address.." name="shipping_address" class="form-control" cols="35" rows="2" required id="id_shipping_address"></textarea>
+                    {% endif %}
+                </div>
+                   
             </div>
+                
+
+            </div>
+            <!-- <div>
+                {% if master_form.instance.id %}
+            <p name="party_address" class="border-1 rounded-1 ps-1 " id="id_party_address" readonly >{{ master_form.instance.party_name.address }}</p>
+            {% elif not master_form.instance.id %}
+            <p name="party_address" class="border-1 rounded-1 ps-1" id="id_party_address" readonly>test</p>
+            {% endif %}
+            </div> -->
+            
+           
         </div>
+   
         <div>
-            <table class="table table-striped table-hover table-bordered" id="deliveryChallanTable">
+            <table class="table table-striped table-hover table-bordered table-primary"  id="deliveryChallanTable">
                 <thead class="name_absolute sticky-top">
                     <tr>
                         <th>No</th>
@@ -60,26 +92,30 @@
                     {{form.id}}
                     <tr>
                         <td><input type="number" class="rowNo purchase-mark bg-transparent border-0" name="rowNo_{{forloop.counter0}}" id="rowNo_{{forloop.counter0}}" value="{{forloop.counter}}" readonly></td>
-                        <td><input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="" readonly></td>
+
+                        <td><input type="text" name="{{form.prefix}}-product_RefNo" id="id_{{form.prefix}}-product_RefNo" class=" purchase-amount" value="{{ form.instance.product_name.Product.Product_Refrence_ID }}" readonly></td>
+
                         <td>
                             <div class="custom-dropdown-container">
-                                
-                                <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value=""> 
+                                <input type="text" name="{{form.prefix}}-products" id="id_{{form.prefix}}-products" class="productpurchaseInvoice search-input stock_product_name"  placeholder="Product Name" autocomplete="off" value="{{ form.instance.product_name.Product.Model_Name }}">
+
                                 <div name="select_product_name_{{forloop.counter0}}" class="productpurchaseInvoice stock_input_name s-suggestion-container item-select_input" id="select_product_name_{{forloop.counter0}}" style="display: none; height:auto;" dir="auto" spellcheck="false" tabindex="0" aria-label="Product Name" >
-    
                                 </div>
                             </div> 
-                         
                         </td>
-                        <td>
-                            <input type="text" value="" name="stock_color_{{forloop.counter0}}" id="id_stock_color_{{forloop.counter0}}" class="purchase-amount stock_color" readonly style="outline: none;">
+
+                        <td><input type="text" name="stock_color_{{forloop.counter0}}" id="id_stock_color_{{forloop.counter0}}" class="purchase-amount stock_color" value="{{ form.instance.product_name.PProduct_color.color_name }}" readonly style="outline: none;"></td>
+
+                        <td><input type="number" class="purchase-amount stock_color" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="{{ form.instance.product_name.PProduct_SKU }}" style="outline: none;" readonly>
+                            <input type="hidden" class="purchase-amount " name="productSku-{{forloop.counter0}}" id="id_productSku-{{forloop.counter0}}" value=""  readonly>
                         </td>
-                        <td><input type="number" class="purchase-amount stock_color" name="{{form.prefix}}-product_name" id="id_{{form.prefix}}-product_name" value="" style="outline: none;" readonly> </td>
-                        <td>
-                            <input type="text" value="" class="purchase-amount stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity">
+
+                        <td><input type="text" class="product_remark stock_qty" name="{{form.prefix}}-quantity" maxlength="200" id="id_{{form.prefix}}-quantity" value="{{ form.instance.quantity | default_if_none:'' }}">
+                            <input type="hidden" class="purchase-vNo" name="quantity-{{forloop.counter0}}" maxlength="200" id="id_quantity-{{forloop.counter0}}" value="">
                         </td>
+
                         <td>
-                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input disabled type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
+                            <span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="stock_deleteId px-2" style="display: none;" name="{{form.prefix}}-DELETE" id="id_{{form.prefix}}-DELETE" value="" readonly></i></span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -87,7 +123,8 @@
                 </tbody>
                 <tr>
                     <td colspan="5">Total :</td>
-                    <td><input type="text" value="" class="purchase-amount stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
+                    <td><input type="text" value="" class="product_remark  border-0 stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
+                    <td></td>
                 </tr>
             </table>
             <input  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
@@ -95,23 +132,47 @@
         </div>
 
         <div class="mb-2">
+            {% if master_form.instance.id %}
+
             <div class="mb-2">
                 <label for="id_vehicle_no" class="me-1">Vehicle no :</label>
-                <input type="text" class="item-selects me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no">
+                <input type="text" class="purchase-itemName me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no" value="{{ master_form.instance.vehicle_no}}">
                 <label for="id_driver_name" class="me-1">Driver name :</label>
-                <input type="text" class="item-selects me-3" name="driver_name" maxlength="100" required id="id_driver_name">
+                <input type="text" class="purchase-itemName me-3" name="driver_name" maxlength="100" required id="id_driver_name" value="{{ master_form.instance.driver_name}}">
                 <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
-                <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time">
+                <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time" value="{{ master_form.instance.dispatch_time|time:'H:i' }}"> 
+                <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
+                <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes" value="{{ master_form.instance.no_of_boxes}}">
+                <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
+                <input type="number" class="me-1 product_remark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly value="{{ master_form.instance.no_of_pcs}}">
             </div>
             <div class="mb-2">
+                
+                <label for="id_remark" class="me-1">Remark :</label>
+                <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark" value="{{ master_form.instance.remark}}">
+            </div>
+
+            {% elif not master_form.instance.id %}
+
+            <div class="mb-2">
+                <label for="id_vehicle_no" class="me-1">Vehicle no :</label>
+                <input type="text" class="purchase-itemName me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no">
+                <label for="id_driver_name" class="me-1">Driver name :</label>
+                <input type="text" class="purchase-itemName me-3" name="driver_name" maxlength="100" required id="id_driver_name">
+                <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
+                <input type="time" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time"> 
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
-                <input type="number" class="me-1 purchase-mark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
+                <input type="number" class="me-1 product_remark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
+            </div>
+            <div class="mb-2">
+               
                 <label for="id_remark" class="me-1">Remark :</label>
                 <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark">
             </div>
-            
+
+            {% endif %}
         </div>
 
         </div>
@@ -119,35 +180,40 @@
     <button type="submit" id="submitButtonStockTransfer" class="create-btn mt-4" name="save" value="Save">Submit</button>
 </form>
 
+
+
 <script>
     $(document).ready(function () {
         var searchedItemNameDict;
         var enterPressed = false;
         var itemName;
         var purchaseValue;
-   
+        var filterData;
         
-        $(document).on('change','#id_party_name',function(){
-            var partyName = $(this).val();
-            console.log('partyName',partyName)
-            $.ajax({
-                url:"/deliverychallancreate/",
-                method: 'GET',
-                data: {
-                    'partyName': partyName,
-                    
-                },
-                success: function (response) {
-                    console.log(response.address)
-                    $('#id_party_address').val(response.address)
-                },
-                error: function (error) {   
-                    console.log(error);
-                }
+        var formid = $('#id_deliverychallanproducts_set-0-id').val();
+        if(formid === ''){
+            $(document).on('change','#id_party_name',function(){
+                var partyName = $(this).val();
+                console.log('partyName',partyName)
+                $.ajax({
+                    url:"/deliverychallancreate/",
+                    method: 'GET',
+                    data: {
+                        'partyName': partyName,
+                        
+                    },
+                    success: function (response) {
+                        console.log(response.address)
+                        $('#id_party_address').text(response.address)
+                    },
+                    error: function (error) {   
+                        console.log(error);
+                    }
 
 
+                })
             })
-        })
+        }
     
         $(document).on('click input keyup focus keydown', 'input[name$="-products"]', function () {
             itemName = $(this).closest('tr').find('input[name$="-quantity"]').attr('name');
@@ -160,7 +226,8 @@
             var nameValue = $(this).val().trim();
             var selectNameValue = `select_product_name_${StockValue}`;
             var suggestionsContainer = $(`#${selectNameValue}`);
-            
+            const selected_godown = $('#id_selected_godown').val();
+            console.log('selected_godown',selected_godown)
             if (nameValue === 'None' || nameValue === '') {
             suggestionsContainer.css('display', 'none').empty();
                 $(this).attr('data-key', '');
@@ -179,11 +246,12 @@
                 method: 'GET',
                 data: {
                     'nameValue': nameValue,
+                    'selected_godown':selected_godown
                 },
                 success: function (response) {
                     // console.log(response.products);
                     searchedProductNameDic = response.products; 
-                    console.log('searchedProductNameDic',searchedProductNameDic)
+                    // console.log('searchedProductNameDic',searchedProductNameDic)
                     const searchQuery = nameValue.toLowerCase();
                     const searchTerms = searchQuery.split(/\s+/);
                     const convertStringData = searchTerms.toString();
@@ -236,8 +304,9 @@
                         suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
                     }
                 },
-                error: function (error) {   
-                    console.log(error);
+                error: function (response) {   
+                    console.log(response);
+                    alert("Please select Godown!!")
                 }
 
 
@@ -248,7 +317,7 @@
                 var item_value = $(this).data('key');
                 var itemNamevaluesCheck = $(this).text().trim();
                 
-                // $(this).closest('.custom-dropdown-container').find('.search-input').val(newNameValue);
+        
                 
                 $(this).addClass('selected').siblings().removeClass('selected');
 
@@ -260,12 +329,33 @@
                     const productColor = selectedValue[0];
                     const productRef = selectedValue[2]
                     var newNameValue = namevalueCheck + '                             '+ productQty;
-            
+                    console.log('productQty',productQty)
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
+                    $(`input[name^=quantity-${purchaseValue}]`).val(productQty);
+                    $(`input[name^=productSku-${purchaseValue}]`).val(item_value);
+
+                    let totalExistingQuantity = 0;
+                
+                    // $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
+                    //     var rowProductValue = parseInt($(this).val());
+                    //     var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
+                    //     console.log('rowProductValue',rowProductValue ,typeof(item_value))
+                    //     console.log('item_value',item_value)
+                    //     if (rowProductValue === item_value) {
+                    //         var rowQuantity = parseInt($(`.stock_qty[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
+                    //         console.log('rowQuantity',rowQuantity)
+                    //         totalExistingQuantity += rowQuantity;
+                    //         console.log('rowIndex',totalExistingQuantity)
+                    //         // $(`input[name^=quantity-${rowIndex}]`).val(totalExistingQuantity)
+                    //     }else{
+                    //         // $(`input[name^=quantity-${rowIndex}]`).val(productQty)
+                    //     }
+            
+                    // })
                 }
             
                 suggestionsContainer.css('display', 'none');
@@ -273,8 +363,42 @@
             })
 
         })
-        
+   
+        $(document).on('input', 'input[name$="-quantity"]', function (e) {  
     
+            let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
+            let productValue = parseInt($(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val()) || 0;
+            let sku = $(`#id_deliverychallanproducts_set-${rowIndex}-product_name`).val();
+            let Qty =  $(`input[name^=quantity-${rowIndex}]`).val();
+
+            console.log('productValue',productValue)
+            console.log('Qty',Qty)
+
+            if (productValue > Qty) {
+                $(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val(Qty);
+            }
+
+            var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
+            .filter(row => row.style.display !== 'none');
+
+            var value = 0;
+    
+            tables.forEach(function(row) {
+                var inputField = row.querySelector('[name$="-quantity"]');
+                if (inputField) {
+                    var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
+                    value += qty;
+                }
+            });
+
+            document.getElementById('id_total-quantity').value = value;
+            document.getElementById('id_no_of_pcs').value = value;
+
+            
+
+        });
+        
+
         var index = 0; // Declare index outside of the event listener
         var indexbool = true;
 
@@ -372,24 +496,37 @@
                 index = 0;
                 indexbool = false;
                 if (item_value !== undefined) {
-                var selectedValue = searchedProductNameDic[item_value];
+                    var selectedValue = searchedProductNameDic[item_value];
+                    
+                    var namevalueCheck = selectedValue[1];
+                    const productQty = selectedValue[4];
+                    const productColor = selectedValue[0];
+                    const productRef = selectedValue[2];
                 
-                var namevalueCheck = selectedValue[1];
-                const productQty = selectedValue[4];
-                const productColor = selectedValue[0];
-                const productRef = selectedValue[2]
-                var newNameValue = namevalueCheck + '                             '+ productQty;
+                    var newNameValue = namevalueCheck + '                             '+ productQty;
         
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-products"]`).val(newNameValue);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-quantity"]`).focus();
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_name"]`).val(item_value)
                     $(`input[name="stock_color_${purchaseValue}"]`).val(productColor);
                     $(`input[name="deliverychallanproducts_set-${purchaseValue}-product_RefNo"]`).val(productRef);
-
+                    $(`input[name^=quantity-${purchaseValue}]`).val(productQty)
                     
+            //         let totalExistingQuantity = 0;
+                
+            //     $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
+            //     var rowProductValue = parseInt($(this).val());
+            //     var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
+              
+            //     if (rowProductValue === item_value) {
+            //         var rowQuantity = parseInt($(`input[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
+            //         totalExistingQuantity += rowQuantity;
+    
+            //         $(`input[name^=quantity-${purchaseValue}]`).val(totalExistingQuantity)
+            //     }
+      
+            // })
                 }
-
-
                 enterPressed = true;
                 hiddenValue.css("display" ,"none");
                 $inputField.blur();
@@ -399,12 +536,12 @@
             return true; // Allow default Tab behavior
             }
         })
-    
+        
+        
     })
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function () {
-  
+        document.getElementById('id_delivery_challan_no').focus()
         const addRowButton = document.getElementById('addRowButton');
         const mainTable = document.querySelector('.mainTableList');
 
@@ -460,6 +597,10 @@
                     selectElement.name = `select_product_name_${newFormCount}`;
                     selectElement.innerHTML = '';
 
+                    const selectSkuElement = newTable.querySelector('input[name^="productSku-"]');
+                    selectSkuElement.id = `id_productSku-${newFormCount}`;
+                    selectSkuElement.name = `productSku-${newFormCount}`;
+                    selectSkuElement.value = '';
 
                     const itemColorElement = newTable.querySelector('input[name^="stock_color_"]');
                     itemColorElement.id = `id_stock_color_${newFormCount}`;
@@ -470,6 +611,11 @@
                     itemQuantityElement.id = `id_deliverychallanproducts_set-${newFormCount}-quantity`;
                     itemQuantityElement.name = `deliverychallanproducts_set-${newFormCount}-quantity`;
                     itemQuantityElement.value = "";
+
+                    const QuantityElement = newTable.querySelector('input[name^="quantity-"]');
+                    QuantityElement.id = `id_quantity-${newFormCount}`;
+                    QuantityElement.name = `quantity-${newFormCount}`;
+                    QuantityElement.value = "";
 
 
                     const deleteElement = newTable.querySelector('.stock_deleteId[name^="deliverychallanproducts_set-"][name$="-DELETE"]');
@@ -485,7 +631,7 @@
                     document.getElementById('id_productRow').value = '1';
                         deleteRow();
                         
-                        // inputCheck();
+                        inputCheck();
                     
                 } else {
                     console.error("No visible rows found to clone.");
@@ -517,7 +663,7 @@
                             checkRow.value = 'true'; // Set the value to 'true'
 
                             row.style.display = 'none';
-                        
+                            calculateTotal()
                         } else {
                             console.error("Checkbox for deletion not found in this row");
                         }
@@ -529,34 +675,228 @@
                 });
             });
         };
+
+
+        function calculateTotal() {
+            var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
+            .filter(row => row.style.display !== 'none');
+
+            var value = 0;
+    
+            tables.forEach(function(row) {
+                var inputField = row.querySelector('[name$="-quantity"]');
+                if (inputField) {
+                    var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
+                    value += qty;
+                }
+            });
+
+            document.getElementById('id_total-quantity').value = value;
+            document.getElementById('id_no_of_pcs').value = value;
+        }
+
+        document.querySelector('[name$="-quantity"]').addEventListener('input', function() {
+
+            calculateTotal();
+        });
+
+    calculateTotal()
     deleteRow();
 
-    function calculateTotal() {
-        var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
-        .filter(row => row.style.display !== 'none');
 
-        var value = 0;
-    
-    tables.forEach(function(row) {
-        var inputField = row.querySelector('[name$="-quantity"]');
-        if (inputField) {
-            var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
-            value += qty;
+    inputCheck()
+   
+});
+
+
+function inputCheck() {
+    const itemNameInputs = document.querySelectorAll('[name$="-products"]');
+    const productInvoiceId = document.getElementById('id_deliverychallanproducts_set-0-id').value;
+    const challanNo = document.getElementById('id_delivery_challan_no');
+    const partyName = document.getElementById('id_party_name');
+    const shipping_address = document.getElementById('id_shipping_address');
+    const vehicelNo = document.getElementById('id_vehicle_no');
+    const driverName = document.getElementById('id_driver_name');
+    const dispatchTime = document.getElementById('id_dispatch_time');
+    const noBox = document.getElementById('id_no_of_boxes');
+    const remark = document.getElementById('id_remark');
+    var AddElement = document.getElementById('addRowButton');
+    var tableRows = document.querySelectorAll('#deliveryChallanTable .mainTableList tr');
+
+    challanNo.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(challanNo.value === ''){
+                challanNo.focus();
+                return;
+            }else{
+                partyName.focus()
+            }
+        }
+    })
+    partyName.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(partyName.value === ''){
+                partyName.focus();
+                return;
+            }else{
+                shipping_address.focus()
+            }
+        }
+    })
+    shipping_address.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(shipping_address.value === ''){
+                shipping_address.focus();
+                return;
+            }else{
+                var tableRow = document.querySelectorAll('#deliveryChallanTable .mainTableList tr');
+                for (let row of tableRow) {
+                    var itemInput = row.querySelector('[name$="products"]');
+                    var qtyInput = row.querySelector('[name$="-quantity"]');
+
+                    if (itemInput && itemInput.value === '') {
+                        itemInput.focus();
+                        return; 
+                    } 
+                    // Check if quantity is empty, then focus on it
+                    else if (qtyInput && qtyInput.value === '') {
+                        qtyInput.focus();
+                        return; 
+                    }
+                }
+            }
+        }
+    })
+    itemNameInputs.forEach((input, index) => {
+        if (input) {
+            input.addEventListener("keydown", function (event) {
+                const closestRow = input.closest('tr');
+                const qtyInput = closestRow.querySelector('[name$="-quantity"]');
+
+                if (productInvoiceId === 'None') {
+                  
+                    if (event.key === "Tab" || event.key === "Enter") {
+                        event.preventDefault(); 
+
+                        if (input.value.trim() !== "") {
+                            if (qtyInput) {
+                                qtyInput.focus(); 
+                            }
+                        } else {
+                            input.focus(); 
+                        }
+                    }
+                }
+            });
         }
     });
 
-    document.getElementById('id_total-quantity').value = value;
-    document.getElementById('id_no_of_pcs').value = value;
+    tableRows.forEach(function(row ,index){
+        var qty = row.querySelector('[name$="-quantity"]');
+        if(qty){
+            qty.addEventListener('keydown', function (event) {
+                if (event.key === "Tab") {
+                    event.preventDefault();
+
+                    if (qty.value === '') {
+                       
+                        qty.focus();
+                    } else {
+                        var nextRow = tableRows[index + 1];;
+                
+                        if (nextRow) {
+                            var nextItemInput = nextRow.querySelector('[name$="-products"]');
+                            console.log('nextRow',nextItemInput)
+                            if (nextItemInput && nextItemInput.value === '') {
+                                nextItemInput.focus();
+                            } else {
+                                var nextQtyInput = nextRow.querySelector('[name$="-quantity"]');
+                                if (nextQtyInput) {
+                                    nextQtyInput.focus();
+                                }
+                            }
+                        } else {
+                        
+                            
+                            if (AddElement) {
+                              AddElement.focus();
+                                
+                               
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    })
+    AddElement.addEventListener('keydown', function (event) {
+        if (event.key === "Tab") {
+            event.preventDefault();
+            vehicelNo.focus()
+        }
+
+    })
+    vehicelNo.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(vehicelNo.value === ''){
+                vehicelNo.focus();
+                return;
+            }else{
+                driverName.focus()
+            }
+        }
+    })
+    driverName.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(driverName.value === ''){
+                driverName.focus();
+                return;
+            }else{
+                dispatchTime.focus()
+            }
+        }
+    })
+    dispatchTime.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(dispatchTime.value === ''){
+                dispatchTime.focus();
+                return;
+            }else{
+                noBox.focus()
+            }
+        }
+    })
+    noBox.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(noBox.value === ''){
+                noBox.focus();
+                return;
+            }else{
+                remark.focus()
+            }
+        }
+    })
+    remark.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(remark.value === ''){
+                remark.focus();
+                return;
+            }else{
+                document.getElementById('submitButtonStockTransfer').focus()
+            }
+        }
+    })
 }
 
-// Event delegation for dynamically added rows
-document.getElementById('deliveryChallanTable').addEventListener('input', function(event) {
-    if (event.target.matches('[name$="-quantity"]')) {
-        calculateTotal();
-    }
-});
-
-});
+inputCheck()
 </script>
 
 {% endblock body %}

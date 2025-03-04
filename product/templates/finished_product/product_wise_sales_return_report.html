@@ -9,6 +9,7 @@
                 <th>No</th>
                 <th>Date</th>
                 <th>Image</th>
+                <th class="table-danger">Sales No</th>
                 <th class="table-danger">Sales Return No</th>
                 <th>Salesman</th>
                 <th>Party Name</th>
@@ -32,6 +33,8 @@
                 <td><img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ data.product_name__PProduct_image }}" alt="Product" style="width: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
 
                 <td class="text-center table-danger">{{data.sales_return_master__sales_voucher_master__sale_no}}</td>
+
+                <td class="text-center table-danger">{{data.sales_return_master__sales_return_inward_instance__sales_return_no}}</td>
                 
                 <td>{{data.sales_return_master__salesman__salesman_name}}</td>
                 

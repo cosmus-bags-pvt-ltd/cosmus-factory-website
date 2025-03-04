@@ -2,7 +2,7 @@
 {% load static %}
 {% load custom_filters %}
 {% block body %}
-<div class="mt-2 mb-4" style="padding-left: 250px;">
+<div class="mt-2 mb-4" style="padding-left: 160px;">
   
     <a href="{% url 'purchase-order-list' %}" class="bg-c-red border-0 py-1 px-2 rounded-4 text-decoration-none text-dark d-inline-block">New Order</a> ->
     <a href="{% url 'purchase-order-raw-material-list' %}" class="bg-c-yellow border-0 py-1 px-3 rounded-4 text-decoration-none text-dark d-inline-block"> Purchase Order</a> ->
@@ -45,7 +45,7 @@
                         <tr>
                             <td>{{forloop.counter}}</td>
                             <td class="text-nowrap">{{record.created_date}}</td>
-                            <td><a href="{% url 'purchase-order-update' record.purchase_order_cutting_master.purchase_order_id.id %}">{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
+                            <td class="text-center"><a href="{% url 'purchase-order-update' record.purchase_order_cutting_master.purchase_order_id.id %}"  class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ff1084; text-decoration: none;" >{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
                             <td>{{record.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</td>
                             <td class="text-center"><a href="{% url 'edit_production_product' record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a></td>
                             <td class="text-nowrap">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name}}</td>
@@ -111,7 +111,7 @@
                             <tr>
                                 <td>{{forloop.counter}}</td>
                                 <td class="text-nowrap">{{record.created_date}}</td>
-                                <td><a href="{% url 'purchase-order-update' record.purchase_order_cutting_master.purchase_order_id.id %}">{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
+                                <td class="text-center"><a href="{% url 'purchase-order-update' record.purchase_order_cutting_master.purchase_order_id.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ff1084; text-decoration: none;">{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
                                 <td>{{record.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</td>
                                 <td class="text-center"><a href="{% url 'edit_production_product' record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a></td>
                                 <td class="text-nowrap">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name}}</td>
@@ -158,7 +158,7 @@
             <th>View</th>
           </tr>
         </thead>
-        <tbody class="mainTableList">
+        <tbody class="mainTableList ">
           {% for instance in labour_workout_instance_all %}
           <tr>
             <td>{{forloop.counter}}</td>
@@ -171,7 +171,7 @@
             <td class="text-center"><a href="{% url 'edit_production_product' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;"> {{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}} </a> </td>
             <td>{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name}}</td>
             <td>{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</td>
-            <td class="text-center"><a href="{% url 'purchase-order-update' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.id %}">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
+            <td class="text-center"><a href="{% url 'purchase-order-update' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ff1084; text-decoration: none;">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
 
             <td class="text-center">{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces}}</td>
             <td>Entry By</td>
