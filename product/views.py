@@ -15664,7 +15664,12 @@ def delivery_challan_process_for_sale_voucher(request):
             "balance_qty": total_data['total_balance'] or 0
         }
 
-        return JsonResponse(d_challan_data, status=200)
+        total_product_data = DeliveryChallanProducts.objects.filter(delivery_challan=d_id)
+
+        d_challan_product_data = [
+            {'product_name':i.product_name.Product.Model_Name,'product_sku':i.product_name.PProduct_SKU,'qty':i.quantity,'balance_qty':i.balance_qty} for i in total_product_data]
+
+        return JsonResponse({"d_challan_data":d_challan_data,"products": d_challan_product_data},status=200)
 
     except Exception as e:
         print(f"Error in processing delivery challan: {e}")
