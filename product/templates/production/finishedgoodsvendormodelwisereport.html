@@ -128,17 +128,15 @@
     balancevalue.forEach((row)=>{
         var value = parseInt(row.textContent)
         
-        total += value
-        console.log('total',total)
+        total += value;
     
         document.querySelector('.totalBalance').textContent = total;
     })
 
     totalValue.forEach((row)=>{
         var qty = parseInt(row.textContent)
-        
+
         actualQty += qty
-        console.log('actualQty',actualQty)
     
         document.querySelector('.total').textContent = actualQty;
     })
