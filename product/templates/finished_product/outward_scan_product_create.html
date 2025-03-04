@@ -309,7 +309,7 @@ $(document).ready(function () {
             data: { "picklistNo": picklistNo },
             success: function (response) {
                 var productPickList = response.picklistDict;
-        
+                console.log('productPickList',productPickList)
                 if (response.picklistDict && response.picklisQty !== null) {
                     var picklistKey = Object.keys(response.picklistDict)[0]; 
                     var picklistData = response.picklistDict[picklistKey]; 

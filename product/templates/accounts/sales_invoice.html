@@ -498,21 +498,21 @@ $(document).ready(function(){
               var salesDelivery = $('#salesDeliveryTable .mainTableList tr');
               salesDelivery.empty();
                var productPickList = response.d_challan_data;
-               console.log('productPickList',response.products)
+               console.log('productPickList',response)
            
                 if (productPickList && response.products  ) {
-                  var challanKey = Object.keys(response.products); 
+                  var challanKey = productPickList.delivery_challan_no; 
                   console.log('challanKey',challanKey)
-                    // var picklistData = response.picklistDict[picklistKey]; 
-                    // var hiddenData = $('#salesHiddenData').val();
-                    // var currentData = hiddenData ? JSON.parse(hiddenData) : {};
+                    var challanData = response.products[challanKey]; 
+                    var hiddenData = $('#salesHiddenData').val();
+                    var currentData = hiddenData ? JSON.parse(hiddenData) : {};
 
-                    // if (!Array.isArray(currentData[picklistKey])) {
-                    //     currentData[picklistKey] = []; 
-                    // }
+                    if (!Array.isArray(currentData[challanKey])) {
+                      currentData[challanKey] = [];
+                  }
 
-                    picklistData.forEach(item => {
-                        currentData[picklistKey].push({
+                  challanData.forEach(item => {
+                        currentData[challanKey].push({
                             sku: item.sku,
                             model_name: item.model_name,
                             color: item.color,
