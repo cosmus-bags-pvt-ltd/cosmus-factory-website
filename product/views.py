@@ -15803,14 +15803,14 @@ def salesvouchercreateupdate(request,s_id=None):
         d_challan_product_data = {}
 
         for i in total_product_data:
-            challan_id = i.delivery_challan.id
-            if challan_id not in d_challan_product_data:
-                d_challan_product_data[challan_id] = []
+            challan_no = i.delivery_challan.delivery_challan_no
+            if challan_no not in d_challan_product_data:
+                d_challan_product_data[challan_no] = []
             
             challan_products = i.delivery_challan.deliverychallanproducts_set.all()
             
             for j in challan_products:
-                d_challan_product_data[challan_id].append({
+                d_challan_product_data[challan_no].append({
                     'product_name': j.product_name.Product.Model_Name,
                     'product_sku': j.product_name.PProduct_SKU,
                     'color': j.product_name.PProduct_color.color_name,
