@@ -361,18 +361,15 @@
                     if (manualSerialNo) {
                         try {
                             const response = await sendSerialNumber(manualSerialNo);
-                            
                             $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                            
                         } catch (error) {
-                            // const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                             $('#responseMessage').html('<span class="text-danger">' + error.responseJSON + '</span>');
+                            $('#responseMessage').html('<span class="text-danger">Please enter valid a Manual Serial Number.</span>');
                             $('#id_manualSerialNo').val('');
                             $('#id_product').val('');
                             $('#id_product_sku').val('');
                             $('#id_product_color').val('');
                             $('#productImgPreview').attr('src','')
-                         
                         }
                     } else {
                         $('#responseMessage').html('<span class="text-danger">Please enter a Manual Serial Number.</span>');
@@ -447,6 +444,11 @@
                 return response;
             } catch (error) {
                 console.error('Error:', error);
+                if (error.responseJSON && error.responseJSON.error) {
+                    const errorMessage = error.responseJSON.error;
+                    // console.log('errorMessage',errorMessage)
+                    $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                }
                 return null; // Optionally return null or handle the error further
             }
         }
