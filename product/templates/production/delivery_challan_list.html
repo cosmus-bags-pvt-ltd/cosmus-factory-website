@@ -97,10 +97,10 @@
           <td class="text-nowrap">{{ challan.party_name.name }}</td>
           <td>{{ challan.shipping_address }}</td>
           <td>{{ challan.no_of_boxes }}</td>
-          <td class="text-center text-success totalValue">{{ challan.no_of_pcs }}</td>
+          <td class="text-center text-success totalValue">{{ challan.total_qty }}</td>
           <td class="text-nowrap">{{ challan.vehicle_no }}</td>
           <td>{{ challan.driver_name }}</td>
-          <td class="text-center text-danger pendingValue"></td>
+          <td class="text-center text-danger pendingValue">{{ challan.total_balance_qty }}</td>
           <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
           <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ challan.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
         </tr>
