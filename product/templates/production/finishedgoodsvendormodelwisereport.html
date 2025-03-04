@@ -51,6 +51,12 @@
                     {% endfor %}
                 </tbody>
                 <tbody class="mainTableList">
+                    <tr class="totalRow">
+                        <td  colspan="3" class="text-end" style="color: #f628eb;"><b>Total LWI Qty = <span class="total"></span></b></td>
+                        {% for key, val in result_dict.items %}
+                        <td ><span class="fw-bold totalValue rounded px-2" style="color:white; background-color: #f6288c; "></span></td>  
+                        {% endfor %}
+                    </tr>
                     <tr class="balanceRow">
                         <td  colspan="3" class="text-end" style="color: #f628eb;"><b>Balance for LWI = <span class="totalBalance"></span></b></td>
                         {% for key, val in result_dict.items %}
@@ -88,8 +94,10 @@
     var rows = document.querySelectorAll('.finshgoodRow');
     var headers = document.querySelectorAll('.finshHeader');
     var lwoElements = document.querySelectorAll('.finishLwo');
-    var balancevalue = document.querySelectorAll('.balance')
+    var balancevalue = document.querySelectorAll('.balance');
+    var totalValue = document.querySelectorAll('.totalValue');
     var total = 0;
+    var actualQty = 0;
   
     headers.forEach(function(header, index) {
         if (index % 2 === 0) {
@@ -106,12 +114,14 @@
         
     
         finishLwiElements.forEach(function(finishLwi, index) {
-           
+           var lwiValue = finishLwi.textContent;
+           console.log('lwiValue',lwiValue)
             if (index % 2 === 0) {
                 finishLwi.style.backgroundColor = 'rgb(141, 228, 211)';
             } else {
                 finishLwi.style.backgroundColor = 'rgb(233, 130, 127)';
             }
+
         });
     });
   
@@ -119,8 +129,18 @@
         var value = parseInt(row.textContent)
         
         total += value
+        console.log('total',total)
     
         document.querySelector('.totalBalance').textContent = total;
+    })
+
+    totalValue.forEach((row)=>{
+        var qty = parseInt(row.textContent)
+        
+        actualQty += qty
+        console.log('actualQty',actualQty)
+    
+        document.querySelector('.total').textContent = actualQty;
     })
    
 }

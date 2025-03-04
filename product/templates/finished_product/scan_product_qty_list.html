@@ -18,9 +18,9 @@
                 <th>Model Name</th>
                 <th>Color</th>
                 <th>SKU</th>
-                <th>Qty</th>
-                <th>QC Reci QTY</th>
-                <th>Diffe Qty</th>
+                <th class="text-primary">Qty</th>
+                <th class="text-success">QC Reci QTY</th>
+                <th class="text-danger">Diffe Qty</th>
                 <!-- <th>Inventory Age</th> -->
             </tr>
         </thead>
@@ -38,9 +38,9 @@
                     <td>{{ data.product_name__Product__Model_Name }}</td>
                     <td>{{ data.product_name__PProduct_color__color_name }}</td>
                     <td >{{ data.product_name__PProduct_SKU }}</td>
-                    <td class="text-center">{{ data.quantity_total }}</td>
-                    <td class="text-center">{{ data.qc_recieved_qty }}</td>
-                    <td class="text-center">{{ data.diffrence_qty }}</td>
+                    <td class="text-center text-primary">{{ data.quantity_total }}</td>
+                    <td class="text-center text-success">{{ data.qc_recieved_qty }}</td>
+                    <td class="text-center text-danger">{{ data.diffrence_qty }}</td>
                 {% else %}
                     <input type="hidden" class="pro_id" value="{{ data.id }}">
                     <input type="hidden" class="ledger_type" value="transfer">
@@ -49,9 +49,9 @@
                     <td>{{ data.product__Product__Model_Name }}</td>
                     <td>{{ data.product__PProduct_color__color_name }}</td>
                     <td >{{ data.product__PProduct_SKU }}</td>
-                    <td class="text-center">{{ data.product_quantity_transfer }}</td>
-                    <td class="text-center">{{ data.qc_recieved_qty }}</td>
-                    <td class="text-center">{{ data.diffrence_qty }}</td>
+                    <td class="text-center text-primary">{{ data.product_quantity_transfer }}</td>
+                    <td class="text-center text-success">{{ data.qc_recieved_qty }}</td>
+                    <td class="text-center text-danger">{{ data.diffrence_qty }}</td>
                 {% endif %}
                 
             

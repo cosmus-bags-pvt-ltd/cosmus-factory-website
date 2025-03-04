@@ -9799,7 +9799,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
                                     
                                     if form.instance.product_name.PProduct_SKU == scanned_sku:
                                         if form.instance.quantity_total >= form.instance.qc_recieved_qty:
-                                            messages.success(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
+                                            messages.error(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
                                             return redirect(reverse('stock-transfer-instance-list-popup', args=[id, selected_voucher_type]))
                                 
                             
