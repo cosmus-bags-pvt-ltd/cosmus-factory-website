@@ -328,13 +328,16 @@
                        const response = await sendSerialNumber(serialNo);
                        $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                    } catch (error) {
-                        //  const errorMessage = error.responseJSON?.message || 'An unexpected error occurred.';
-                    //   $('#responseMessage').html('<span class="text-danger">Please Scan valid Serial Number.</span>');
+                    if (error.responseJSON && error.responseJSON.error) {
+                        const errorMessage = error.responseJSON.error;
+                        // console.log('errorMessage',errorMessage)
+                        $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                    }
                     $('#id_manualSerialNo').val('');
-                            $('#id_product').val('');
-                            $('#id_product_sku').val('');
-                            $('#id_product_color').val('');
-                            $('#productImgPreview').attr('src','')
+                    $('#id_product').val('');
+                    $('#id_product_sku').val('');
+                    $('#id_product_color').val('');
+                    $('#productImgPreview').attr('src','')
                    }
                }
            }, 500); // Debounce delay
@@ -364,7 +367,12 @@
                             $('#responseMessage').html('<span class="text-success">' + response.message + '</span>');
                            
                         } catch (error) {
-                            $('#responseMessage').html('<span class="text-danger">Please enter valid a Manual Serial Number.</span>');
+                            console.error('Error:', error);
+                            if (error.responseJSON && error.responseJSON.error) {
+                                const errorMessage = error.responseJSON.error;
+                                // console.log('errorMessage',errorMessage)
+                                $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                            }
                             $('#id_manualSerialNo').val('');
                             $('#id_product').val('');
                             $('#id_product_sku').val('');
