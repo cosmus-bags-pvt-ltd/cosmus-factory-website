@@ -15821,6 +15821,7 @@ def salesvouchercreateupdate(request,s_id=None):
         print(d_challan_product_data)
 
     else:
+        d_challan_product_data = None
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
         formset = salesvouchercreateformset()
