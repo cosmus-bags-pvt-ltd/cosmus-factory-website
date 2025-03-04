@@ -15666,9 +15666,23 @@ def delivery_challan_process_for_sale_voucher(request):
 
         total_product_data = DeliveryChallanProducts.objects.filter(delivery_challan=d_id)
 
-        d_challan_product_data = [
-            {'product_name':i.product_name.Product.Model_Name,'product_sku':i.product_name.PProduct_SKU,'color':i.product_name.PProduct_color.color_name,'qty':i.quantity,'balance_qty':i.balance_qty} for i in total_product_data]
+        d_challan_product_data = {}
 
+        for i in total_product_data:
+            challan_id = i.delivery_challan.id
+
+            if challan_id not in d_challan_product_data:
+                d_challan_product_data[challan_id] = []
+
+            d_challan_product_data[challan_id].append({
+                'product_name': i.product_name.Product.Model_Name,
+                'product_sku': i.product_name.PProduct_SKU,
+                'color': i.product_name.PProduct_color.color_name,
+                'qty': i.quantity,
+                'balance_qty': i.balance_qty
+            })
+
+        print(d_challan_product_data)
         return JsonResponse({"d_challan_data":d_challan_data,"products": d_challan_product_data},status=200)
 
     except Exception as e:
@@ -15781,12 +15795,24 @@ def salesvouchercreateupdate(request,s_id=None):
 
         page_name = 'Edit Sales Invoice'
 
+        total_product_data = SalesVoucherDeliveryChallan.objects.filter(sales_voucher=s_id)
+
+        d_challan_product_data = []
+
+        for i in total_product_data:
+            for j in i.delivery_challan.deliverychallanproducts_set.all():
+                d_challan_product_data.append({'product_name':j.product_name.Product.Model_Name,'product_sku':j.product_name.PProduct_SKU,'color':j.product_name.PProduct_color.color_name,'qty':j.quantity,'balance_qty':j.balance_qty})
+
+        print(d_challan_product_data)
+
     else:
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
         formset = salesvouchercreateformset()
         delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST or None,queryset=SalesVoucherDeliveryChallan.objects.none())
         page_name = 'Create Sales Invoice'
+
+        
     
 
     if request.method == "POST":
