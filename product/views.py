@@ -6297,7 +6297,6 @@ def labourworkincreatelist(request,l_w_o_id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
     
-    print(l_w_o_id)
     template_name = 'production/labourworkincreate.html'
     
     labour_workin_all = None
@@ -6497,7 +6496,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                 form.initial['total_recieved_qty'] = instance.processed_pcs - instance.labour_w_in_pending
 
     if request.method == 'POST':
-        print(request.POST)
+          
         labour_workout_child_i = request.POST.get('labour_workout_child_instance_id')
 
         if labour_workout_child_i:
@@ -6505,30 +6504,30 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
         master_form = labour_workin_master_form(request.POST, instance = labour_workin_master_instance)
 
+        old_return_qty =  master_form.instance.total_return_pcs
+
         product_to_item_formset = labour_work_in_product_to_item_formset(request.POST,instance = labour_workin_master_instance)
 
         try:
             with transaction.atomic():
                 if master_form.is_valid() and product_to_item_formset.is_valid():
-
+                    print(request.POST)
                     parent_form = master_form.save(commit = False)
-
+                    
                     parent_form.labour_voucher_number = labour_workout_child_instance
-
-                    if l_w_o_id is None:
-                        diffrence_qty = parent_form.total_return_pcs
-
-                    else:
-                        finalReceivedQty =  int(request.POST.get('finalReceivedQty'))
-                        finalReturnQty = int(request.POST.get('finalReturnQty'))
-                        diffrence_qty = finalReturnQty - finalReceivedQty 
+                    
+                    
+                    if master_form.instance.id:
+                        labour_workin_qty = parent_form.total_return_pcs - old_return_qty 
                         
-                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + diffrence_qty
+                    else:
+                        labour_workin_qty = parent_form.total_return_pcs
+                    
+
+                    labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + labour_workin_qty
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
                     labour_workout_child_instance.save()
                     parent_form.save()
-
-                    
 
                     for form in product_to_item_formset:
 
