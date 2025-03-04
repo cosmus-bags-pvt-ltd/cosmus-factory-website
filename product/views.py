@@ -15926,7 +15926,7 @@ def salesvouchercreateupdate(request,s_id=None):
             except Exception as e:
                 print(e) 
 
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset})
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset,'d_challan_product_data':d_challan_product_data})
 
 
 
