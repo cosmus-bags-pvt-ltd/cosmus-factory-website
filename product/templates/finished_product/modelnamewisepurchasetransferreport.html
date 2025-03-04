@@ -3,10 +3,8 @@
 {% block body %}
 
 <div class="row mt-3">
-    
-    
-    
-      <div class="d-flex mb-3">
+
+    <div class="d-flex mb-3">
         {% for product in product_data %}
         <label class="fw-bold">Ref No :</label><span class="text-danger fw-bold ms-2 me-3">{{ product.Product__Product_Refrence_ID }}</span>
 
@@ -18,7 +16,7 @@
         <label class="fw-bold">IMG :</label>
         <img src="{{MEDIA_URL}}{{ product.PProduct_image }}" alt="img" class=" ms-2 me-3" style="width: 30px;">
         {% endfor %}
-      </div>
+    </div>
 
 
 
