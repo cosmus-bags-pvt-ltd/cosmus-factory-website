@@ -7,7 +7,7 @@
         {% csrf_token %}
             <div class="row ">
                 <div class="col-lg-7">
-                    <div class="d-flex ">
+                    <div class="d-flex">
                     {% if voucher_type == 'purchase' %}
                     <input type="hidden"  value="{{voucher_type}}"  name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">

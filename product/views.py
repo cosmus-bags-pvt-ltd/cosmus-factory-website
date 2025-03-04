@@ -6796,9 +6796,7 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
 
         report_data_sorted = sorted(queryset_list, key = itemgetter('date'), reverse=False)
         
-        
-        
-  
+
         total_sku_qty = {}
        
         for i in report_data_sorted:
@@ -6807,12 +6805,8 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
                     total_sku_qty[key] += value
                 else:
                     total_sku_qty[key] = value
-
-        print('total_sku_qty = ', total_sku_qty)
         
         final_dict = {key : labour_workout_p_2_i.get(key, 0) - total_sku_qty.get(key, 0) for key in total_sku_qty.keys()}
-
-        print('final_dict = ',final_dict)
 
         lwo_total_qty = total_labour_workout.total_process_pcs,
         lwo_date = total_labour_workout.created_date 
@@ -9691,10 +9685,6 @@ def product_transfer_to_warehouse_delete(request):
 
 
 def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
-
-    last_selected_bin_id = request.session.get('last_selected_bin_id')
-    if last_selected_bin_id:
-        del request.session['last_selected_bin_id']
     
     try:
         if voucher_type == 'transfer':
@@ -9854,7 +9844,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
                                     if form.instance.product.PProduct_SKU == scanned_sku:
                                         if form.instance.product_quantity_transfer >= form.instance.qc_recieved_qty:
-                                            messages.success(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
+                                            messages.error(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
                                             return redirect(reverse('stock-transfer-instance-list-popup', args=[id, selected_voucher_type]))
                                     
                         if form_present == False:
@@ -10315,16 +10305,42 @@ def process_serial_no(request):
     
     if request.method == 'POST':
         serial_no = request.POST.get('serialNo')
+        voucher_type = request.POST.get('instance_type_post')
+        voucher_no = request.POST.get('instance_number_post')
+        
         print(serial_no)
 
         if serial_no:
+
             try:
-                # Check if serial number is already processed
+                
                 if finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).exists():
                     return JsonResponse({'message': 'This Serial Number has already been processed.'}, status=400)
 
             except IntegrityError:
                 return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
+
+
+            try:
+                
+                exists = finishedgoodsbinallocation.objects.filter(
+                    Q(
+                        Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) &
+                        Q(related_purchase_item__diffrence_qty=0)
+                    ) |
+                    Q(
+                        Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no) &
+                        Q(related_transfer_record__diffrence_qty=0)
+                    )
+                ).exists()
+                                                                                                       
+                if exists:
+                    print("Scan complete")
+                    return JsonResponse({'message':'Scaning Completed (All Product Scan Sucessfully Thank you).'}, status=400)
+
+            except IntegrityError:
+                return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
+
 
             try:
                 # Call external API
@@ -10348,8 +10364,8 @@ def process_serial_no(request):
                     product_main_cats = product_instance.Product.product_cats.all()
                     main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
 
-                    # Retrieve last selected bin from session
-                    last_selected_bin_id = request.session.get('last_selected_bin_id')
+                    # # Retrieve last selected bin from table
+                    last_selected_bin_id = finishedgoodsbinallocation.objects.filter(Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) |Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no)).order_by('-created_date').first()
 
                     bins_related_to_product = []
 
@@ -10364,13 +10380,11 @@ def process_serial_no(request):
                             'bin_size': bin_obj.product_size_in_bin,
                             'products_in_bin': product_count
                         })
-                    
-                    print('last_selected_bin_id == ',last_selected_bin_id)
 
                     
                     # Sort bins: Show last selected bin first
                     if last_selected_bin_id:
-                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id)
+                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id.bin_number.id)
 
                     return JsonResponse({
                         'model_name': model_name,
@@ -10398,7 +10412,8 @@ def process_serial_no(request):
             return JsonResponse({'message': 'Invalid Serial No.'}, status=400)
 
     return JsonResponse({'message': 'Invalid Request Method.'}, status=405)
-        
+
+
 
 
 
