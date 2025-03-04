@@ -15800,11 +15800,23 @@ def salesvouchercreateupdate(request,s_id=None):
 
         total_product_data = SalesVoucherDeliveryChallan.objects.filter(sales_voucher=s_id)
 
-        d_challan_product_data = []
+        d_challan_product_data = {}
 
         for i in total_product_data:
-            for j in i.delivery_challan.deliverychallanproducts_set.all():
-                d_challan_product_data.append({'product_name':j.product_name.Product.Model_Name,'product_sku':j.product_name.PProduct_SKU,'color':j.product_name.PProduct_color.color_name,'qty':j.quantity,'balance_qty':j.balance_qty})
+            challan_id = i.delivery_challan.id
+            if challan_id not in d_challan_product_data:
+                d_challan_product_data[challan_id] = []
+            
+            challan_products = i.delivery_challan.deliverychallanproducts_set.all()
+            
+            for j in challan_products:
+                d_challan_product_data[challan_id].append({
+                    'product_name': j.product_name.Product.Model_Name,
+                    'product_sku': j.product_name.PProduct_SKU,
+                    'color': j.product_name.PProduct_color.color_name,
+                    'qty': j.quantity,
+                    'balance_qty': j.balance_qty
+                })
 
         print(d_challan_product_data)
 
@@ -15922,7 +15934,9 @@ def salesvouchercreateupdate(request,s_id=None):
 @login_required(login_url='login')
 def delivery_challan_list(request):
 
-    delivary_challan_list = DeliveryChallanMaster.objects.all()
+    delivary_challan_list = DeliveryChallanMaster.objects.annotate(
+    total_qty=Sum('deliverychallanproducts__quantity'),
+    total_balance_qty=Sum('deliverychallanproducts__balance_qty'))
 
     product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
 
@@ -15933,7 +15947,7 @@ def delivery_challan_list(request):
     product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
 
 
-    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
+    delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity'),total_challan_bal_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
 
     product_queryset = PProduct_Creation.objects.all().annotate(
         total_qty = Sum('godown_colors__quantity'),
