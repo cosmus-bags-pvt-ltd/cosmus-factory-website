@@ -10229,6 +10229,7 @@ def product_wise_sales_return_report(request,sku):
             'created_date',
             'product_name__PProduct_image',
             'sales_return_master__sales_voucher_master__sale_no',
+            'sales_return_master__sales_return_inward_instance__sales_return_no',
             'sales_return_master__salesman__salesman_name',
             'sales_return_master__party_name__name',
             'product_name__Product__Product_Refrence_ID',
@@ -14990,6 +14991,9 @@ def otward_data_for_sale_return_ajax(request):
 
         print('sale_no = ', sale_no)
 
+        if sales_return_inward.objects.filter(sales_voucher_master__sale_no=sale_no).exists():
+            return JsonResponse({"error": f"Sales return already exists for sale no {sale_no}."},status=400)
+
         outward_queryset = sales_voucher_master_outward_scan.objects.filter(sale_no = sale_no).values('outward_no__outward_product__product__PProduct_SKU','outward_no__outward_product__product__PProduct_image','outward_no__outward_product__product__Product__Product_Refrence_ID','outward_no__outward_product__product__PProduct_color__color_name','outward_no__outward_product__product__Product__Model_Name','outward_no__outward_product__bin_number__bin_name','outward_no__outward_product__quantity','outward_no__outward_product__unique_serial_no','party_name__name'
         )
 
@@ -15556,23 +15560,12 @@ def delivery_challan_create_update(request, d_id=None):
     if d_id:
         d_instance = DeliveryChallanMaster.objects.get(id = d_id)
         master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
-        formset = DeliveryChallanProductsUpdateFormset(request.POST or None,instance = d_instance)
+        formset = DeliveryChallanProductsUpdateFormset(instance = d_instance)
 
     else:
         d_instance = None
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
-        formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
-
-        # if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-
-        #     party_id = request.GET.get('partyName')
-
-        #     if party_id:
-        #         party_add = Ledger.objects.get(id = party_id)
-                
-        #         address = party_add.address
-
-        #         return JsonResponse({'address':address},status = 200)
+        formset = DeliveryChallanProductsCreateFormset()
 
 
     if request.method == 'POST':
@@ -15584,7 +15577,7 @@ def delivery_challan_create_update(request, d_id=None):
         if d_id:
             formset = DeliveryChallanProductsCreateFormset(request.POST or None, instance = d_instance)
         else:
-            formset = DeliveryChallanProductsUpdateFormset(request.POST or None, instance = d_instance)
+            formset = DeliveryChallanProductsUpdateFormset(request.POST or None)
 
         if master_form.is_valid() and formset.is_valid():
 
@@ -15603,24 +15596,39 @@ def delivery_challan_create_update(request, d_id=None):
                             if not form.is_valid():
                                 print("Form Errors:", form.errors)
 
-                    formset.forms = [form for form in formset.forms if form.has_changed()]
+                    
                     
                     if formset.is_valid():
                         for form in formset.deleted_forms:
                             if form.instance.pk:
+
+                                product_name = form.instance.product_name
+                                product_qty = form.instance.quantity
+
+                                del_obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = product_name)
+
+                                del_obj.quantity += product_qty
+                                del_obj.save()
+
                                 form.instance.delete()   
 
-                    for form in formset:
-                        if not form.cleaned_data.get('DELETE'):
-                            instance = form.save(commit=False)
-                            instance.delivery_challan = master_form_instance
+                        formset.forms = [form for form in formset.forms if form.has_changed()]
 
-                            obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
+                        for form in formset:
+                            if not form.cleaned_data.get('DELETE'):
+                                instance = form.save(commit=False)
+                                instance.delivery_challan = master_form_instance
 
-                            obj.quantity -= instance.quantity
-                            obj.save()
-                                
-                            instance.save()
+                                obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
+
+                                obj.quantity -= instance.quantity
+                                obj.save()
+                    
+                                instance.save()
+
+                    
+
+
 
                     return(redirect('delivery-challan-list'))
                 
@@ -15661,6 +15669,9 @@ def delivery_challan_process_for_sale_voucher(request):
     except Exception as e:
         print(f"Error in processing delivery challan: {e}")
         return JsonResponse({"error": str(e)}, status=500)
+
+
+
 
 
 def product_transfer_to_warehouse_ajax(request):
