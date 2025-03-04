@@ -6,7 +6,7 @@
   <form class="mt-3" action="" method="POST" id="salesForm">
     {% csrf_token %}
     <div class="row">
-      <input type="hidden" id="salesupdateData" value="">
+      <input type="hidden" id="salesupdateData" value="{{ d_challan_product_data }}">
       <input type="hidden" id="salesHiddenData" value="">
       <div class="col-lg-9">
         <div class="d-flex mb-3">
@@ -501,33 +501,34 @@ $(document).ready(function(){
                console.log('productPickList',response)
            
                 if (productPickList && response.products  ) {
-                  var challanKey = productPickList.delivery_challan_no; 
-                  console.log('challanKey',challanKey)
-                    var challanData = response.products[challanKey]; 
-                    var hiddenData = $('#salesHiddenData').val();
+                  var hiddenData = $('#salesHiddenData').val();
                     var currentData = hiddenData ? JSON.parse(hiddenData) : {};
 
-                    if (!Array.isArray(currentData[challanKey])) {
-                      currentData[challanKey] = [];
-                  }
+                    // Loop through each challan in response.products
+                    Object.keys(response.products).forEach(challanNo => {
+                        var picklistData = response.products[challanNo];  // Get products for the challan
 
-                  challanData.forEach(item => {
-                        currentData[challanKey].push({
-                            sku: item.sku,
-                            model_name: item.model_name,
-                            color: item.color,
-                            qty: item.qty
+                        // Ensure challanNo exists in currentData and is an array
+                        if (!Array.isArray(currentData[challanNo])) {
+                            currentData[challanNo] = [];
+                        }
+
+                        // Store product details in challanNo key
+                        picklistData.forEach(item => {
+                            currentData[challanNo].push({
+                                sku: item.product_sku,  
+                                model_name: item.product_name,
+                                color: item.color,
+                                qty: item.qty,
+                                balance_qty: item.balance_qty  
+                            });
                         });
                     });
 
+                    // Save updated data to the hidden input field
                     $('#salesHiddenData').val(JSON.stringify(currentData));
 
-
-
-
-
-
-
+                    console.log('Updated currentData:', currentData);
 
                     var tables = $('#challanTable .mainTableList');
                     tables.find('tr').each(function () {
@@ -633,7 +634,123 @@ $(document).ready(function(){
         tableBody.appendChild(lastRow);
     }
 
-    
+    function safeParseJSON(jsonString) {
+            try {
+                if (!jsonString || jsonString.trim().toLowerCase() === "none") return {};
+                return JSON.parse(jsonString);
+            } catch (error) {
+                console.error("Invalid JSON format:", jsonString, error);
+                return {};
+            }
+        }
+
+      function processOutwardPicking () {
+        var productTable = $('#salesDeliveryTable .mainTableList');
+        productTable.empty();
+
+       
+        var checkedRadio = $('.challanRadio:checked');
+
+        if (checkedRadio.length === 0) {
+            console.warn("No Challan selected.");
+            $('#responseMessage').html('<span class="text-danger">Please select a challan before calculating.</span>');
+            return;
+        }
+        var selectedRow = checkedRadio.closest('tr'); 
+        var productKey = selectedRow.find('.chalId').val()?.trim()
+
+
+        var storedData = $('#salesHiddenData').val();
+        var updateValue = $('#salesupdateData').val();
+
+        if (updateValue) {
+            var latestUpdate = updateValue.replace(/'/g, '"');
+            latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
+        }
+
+        var parsedData = safeParseJSON(storedData);
+        var parsedUpdateData = safeParseJSON(latestUpdate);
+
+        if ($.isEmptyObject(parsedData) && $.isEmptyObject(parsedUpdateData)) {
+            console.log("No Challan data found.");
+            return;
+        }
+
+        var mergedData = (!$.isEmptyObject(parsedData) && !$.isEmptyObject(parsedUpdateData))
+            ? { ...parsedData, ...parsedUpdateData }
+            : (!$.isEmptyObject(parsedData) ? parsedData : parsedUpdateData);
+
+        if (!mergedData.hasOwnProperty(productKey)) {
+            console.warn("No data found for this challanNo:", productKey);
+            return;
+        }
+
+        var totalQty = {};
+        var challanSelected = false;
+
+        $('[name$="-product_name"]').each(function () {
+            let row = $(this).closest('tr');
+            if (row.css('display') === 'none') return; 
+            var skuElement = row.find('[name$="-product_name"]').val()?.trim();
+            if (!skuElement) return; 
+
+            let sku = String(skuElement).trim();
+            var challanNos = row.find('[name$="-challanValue"]').val()?.trim();
+            var qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
+            var checkboxChecked = $('.challanRadio:checked');
+            
+            if (checkboxChecked) challanSelected = true;
+            if (!challanNos || challanNos !== productKey) return;
+        
+            if (!totalQty[challanNos]) totalQty[challanNos] = {};
+            if (!totalQty[challanNos][sku]) totalQty[challanNos][sku] = 0;
+
+            totalQty[challanNos][sku] += qty; 
+        });
+
+        if (!Array.isArray(mergedData[productKey])) {
+            console.warn("Invalid or missing challan data for productKey:", productKey);
+            return;
+        }
+
+        mergedData[productKey].forEach(item => {
+            let balanceQty;
+            let sku = String(item.sku).trim();
+            let qty = item.qty;
+            let balQty = item.balance_qty;
+         
+            let outwardQty = challanSelected ? (totalQty[productKey]?.[sku] || 0) : 0;
+            
+            if(outwardQty > qty){
+                $('#responseMessage').html('<span class="text-danger">challan quantity exceeds available quantity.</span>');
+                return;
+            }else{
+                balanceQty = challanSelected ? Math.max(0, item.balance_qty - outwardQty) : item.balance_qty;
+        
+            }
+            var newRow = $(`
+                <tr class="challanRow" data-sku="${sku}" datachallanno="${productKey}">
+                    <td><span class="modelName">${item.model_name || "N/A"}</span></td>
+                    <td><span class="sku">${sku}</span></td>
+                    <td><span class="color">${item.color || "N/A"}</span></td>
+                    <td class="text-center"><span class="qty text-center text-primary">${qty}</span></td>
+                    <td class="text-center"><span class=" text-success scanQty">${outwardQty}</span></td>
+                    <td class="text-center"><span class="balanceqty text-danger">${balanceQty}</span></td> 
+                </tr>
+            `);
+
+            productTable.append(newRow);
+        });
+        
+
+    };
+    $(document).on('click', 'input.outwardChallan-btn', function () {
+        processOutwardPicking()
+    })
+
+    $(document).on('input', '[name$="-quantity"]', function () {
+        processOutwardPicking()
+    })
 })
 </script>
 <script>
