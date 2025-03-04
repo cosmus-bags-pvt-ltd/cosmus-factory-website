@@ -6796,14 +6796,15 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
 
         report_data_sorted = sorted(queryset_list, key = itemgetter('date'), reverse=False)
         
-        
-  
+
         total_sku_qty = {}
        
         for i in report_data_sorted:
-            sku_qty = i['sku_qty']
-            for key, value in sku_qty.items():
-                total_sku_qty[key] = total_sku_qty.get(key, 0) + value
+            for key, value in i['sku_qty'].items():
+                if key in total_sku_qty:
+                    total_sku_qty[key] += value
+                else:
+                    total_sku_qty[key] = value
         
         final_dict = {key : labour_workout_p_2_i.get(key, 0) - total_sku_qty.get(key, 0) for key in total_sku_qty.keys()}
 
@@ -6811,10 +6812,7 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
         lwo_date = total_labour_workout.created_date 
         lwo_id = challan_no
 
-        return render(request,'production/finishedgoodsvendormodelwisereport.html',{'report_data_sorted':report_data_sorted, 'reference_no':reference_no, 
-                                                                                    'product_instance':product_instance,'total_labour_workout':total_labour_workout,
-                                                                                    'labour_workout_p_2_i':labour_workout_p_2_i, 'SKU_List':SKU_List,'result_dict':final_dict,
-                                                                                    'lwo_total_qty':lwo_total_qty, 'lwo_date':lwo_date , 'lwo_id': lwo_id  })
+        return render(request,'production/finishedgoodsvendormodelwisereport.html',{'report_data_sorted':report_data_sorted,'reference_no':reference_no,'product_instance':product_instance,'total_labour_workout':total_labour_workout,'labour_workout_p_2_i':labour_workout_p_2_i, 'SKU_List':SKU_List,'result_dict':final_dict,'lwo_total_qty':lwo_total_qty, 'lwo_date':lwo_date , 'lwo_id': lwo_id, 'total_sku_qty':total_sku_qty})
 
 
 
@@ -9687,10 +9685,6 @@ def product_transfer_to_warehouse_delete(request):
 
 
 def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
-
-    last_selected_bin_id = request.session.get('last_selected_bin_id')
-    if last_selected_bin_id:
-        del request.session['last_selected_bin_id']
     
     try:
         if voucher_type == 'transfer':
@@ -9850,7 +9844,7 @@ def stock_transfer_instance_list_and_recieve(request,id,voucher_type):
 
                                     if form.instance.product.PProduct_SKU == scanned_sku:
                                         if form.instance.product_quantity_transfer >= form.instance.qc_recieved_qty:
-                                            messages.success(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
+                                            messages.error(request, f' Scaning Completed ( All Product Scan Sucessfully Thank you)')
                                             return redirect(reverse('stock-transfer-instance-list-popup', args=[id, selected_voucher_type]))
                                     
                         if form_present == False:
@@ -10311,16 +10305,42 @@ def process_serial_no(request):
     
     if request.method == 'POST':
         serial_no = request.POST.get('serialNo')
+        voucher_type = request.POST.get('instance_type_post')
+        voucher_no = request.POST.get('instance_number_post')
+        
         print(serial_no)
 
         if serial_no:
+
             try:
-                # Check if serial number is already processed
+                
                 if finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).exists():
                     return JsonResponse({'message': 'This Serial Number has already been processed.'}, status=400)
 
             except IntegrityError:
                 return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
+
+
+            try:
+                
+                exists = finishedgoodsbinallocation.objects.filter(
+                    Q(
+                        Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) &
+                        Q(related_purchase_item__diffrence_qty=0)
+                    ) |
+                    Q(
+                        Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no) &
+                        Q(related_transfer_record__diffrence_qty=0)
+                    )
+                ).exists()
+                                                                                                       
+                if exists:
+                    print("Scan complete")
+                    return JsonResponse({'message':'Scaning Completed (All Product Scan Sucessfully Thank you).'}, status=400)
+
+            except IntegrityError:
+                return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
+
 
             try:
                 # Call external API
@@ -10344,13 +10364,14 @@ def process_serial_no(request):
                     product_main_cats = product_instance.Product.product_cats.all()
                     main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
 
-                    # Retrieve last selected bin from session
-                    last_selected_bin_id = request.session.get('last_selected_bin_id')
+                    # # Retrieve last selected bin from table
+                    last_selected_bin_id = finishedgoodsbinallocation.objects.filter(Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) |Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no)).order_by('-created_date').first()
 
                     bins_related_to_product = []
 
                     # Fetch all bins related to the product
                     for bin_obj in finished_product_warehouse_bin.objects.filter(sub_catergory_id__in=main_cats_all):
+
                         product_count = finishedgoodsbinallocation.objects.filter(bin_number=bin_obj, outward_done=False).count()
 
                         bins_related_to_product.append({
@@ -10359,11 +10380,11 @@ def process_serial_no(request):
                             'bin_size': bin_obj.product_size_in_bin,
                             'products_in_bin': product_count
                         })
+
                     
-                    print('last_selected_bin_id == ',last_selected_bin_id)
                     # Sort bins: Show last selected bin first
                     if last_selected_bin_id:
-                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id)
+                        bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id.bin_number.id)
 
                     return JsonResponse({
                         'model_name': model_name,
@@ -10391,7 +10412,8 @@ def process_serial_no(request):
             return JsonResponse({'message': 'Invalid Serial No.'}, status=400)
 
     return JsonResponse({'message': 'Invalid Request Method.'}, status=405)
-        
+
+
 
 
 
@@ -15741,41 +15763,7 @@ def salesvouchercreateupdate(request,s_id=None):
 
         delivery_challan_formset = SalesVoucherDeliveryChallanFormsetupdate(request.POST or None, instance=voucher_instance)
 
-        # for form in delivery_challan_formset:
-        #     challan = form.instance.delivery_challan
-        #     if challan:
-        #         total_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0 
-        #         challan.total_qty = total_qty
-        #         balance_qty = DeliveryChallanProducts.objects.filter(delivery_challan=challan).aggregate(balance_qty=Sum('balance_qty'))['balance_qty'] or 0
-        #         challan.balance_qty = balance_qty
-
         page_name = 'Edit Sales Invoice'
-
-        # godown_id = voucher_instance.selected_godown.id
-
-        # filtered_product = list(product_godown_quantity_through_table.objects.filter(
-        #     godown_name__id = godown_id).values('product_color_name__Product__Product_Name','product_color_name__PProduct_SKU','product_color_name__PProduct_color__color_name','quantity','product_color_name__Product__Model_Name','product_color_name__Product__Product_Refrence_ID','product_color_name__Product__Product_UOM','product_color_name__Product__Product_GST__gst_percentage','product_color_name__Product__Product_MRP','product_color_name__Product__Product_SalePrice_CustomerPrice'))
-        
-        # if filtered_product:
-        #     dict_to_send = {}
-
-        #     for query in filtered_product:
-        #         ref_no = query.get('product_color_name__Product__Product_Refrence_ID')
-        #         p_sku = query.get('product_color_name__PProduct_SKU')
-        #         product_name = query.get('product_color_name__Product__Product_Name')
-        #         product_model_name = query.get('product_color_name__Product__Model_Name')
-        #         color = query.get('product_color_name__PProduct_color__color_name')
-        #         uom = query.get('product_color_name__Product__Product_UOM')
-        #         qty = query.get('quantity')
-        #         gst = query.get('product_color_name__Product__Product_GST__gst_percentage')
-        #         mrp = query.get('product_color_name__Product__Product_MRP')
-        #         customer_price = query.get('product_color_name__Product__Product_SalePrice_CustomerPrice')
-
-
-        #         dict_to_send[p_sku] = [product_name,color,qty,product_model_name,ref_no,uom,gst,mrp,customer_price]
-
-
-
 
     else:
         voucher_instance = None
@@ -15839,13 +15827,10 @@ def salesvouchercreateupdate(request,s_id=None):
                             form_instance = form.save(commit=False)
                             form_instance.sales_voucher_master = master_form_instance
                             form_instance.save()
-                            challan = form.cleaned_data.get('challanId')
-                            print('challan = ',challan)
                             product_name = form.instance.product_name
                             product_qty = form.instance.quantity
 
-                            
-                            
+                        
                             if form.has_changed():
 
                                 old_product_name = form.initial.get('product_name')

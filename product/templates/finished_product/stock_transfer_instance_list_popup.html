@@ -7,13 +7,13 @@
         {% csrf_token %}
             <div class="row ">
                 <div class="col-lg-7">
-                    <div class="d-flex ">
-                        {% if voucher_type == 'purchase' %}
-                    <input type="hidden"  value="purchase"  name="voucher_type" id="id_voucher_type">
+                    <div class="d-flex">
+                    {% if voucher_type == 'purchase' %}
+                    <input type="hidden"  value="{{voucher_type}}"  name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
                     <h6 class="fw-bold">Purchase No :<span class="text-danger ms-2">{{ purchase_number }}</span></h6>
                     {% elif voucher_type == 'transfer' %}
-                    <input type="hidden" value="transfer" name="voucher_type" id="id_voucher_type">
+                    <input type="hidden" value="{{voucher_type}}" name="voucher_type" id="id_voucher_type">
                     <input type="hidden" id="id_voucher_no" name="id_voucher_no" value="{{ purchase_number }}">
                     <h6 class="fw-bold">Transfer No :<span class="text-danger ms-2">{{ purchase_number }}</span></h6>
         
