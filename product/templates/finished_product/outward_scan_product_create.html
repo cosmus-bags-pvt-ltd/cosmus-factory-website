@@ -458,8 +458,7 @@ $(document).ready(function () {
                 return;
             }else{
                 balanceQty = picklistSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
-                
-            
+        
             }
             var newRow = $(`
                 <tr class="picklistRow" data-sku="${sku}" data-picklistno="${productKey}">

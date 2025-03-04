@@ -302,6 +302,7 @@
                         'saleNo':saleNo,
                     },
                     success: function(response){
+                        console.log(response)
                         let counter = 1;
                         var salesOutward = $('#sales_retrun_outwardTable .mainTableList');
                         salesOutward.empty(); // Clear previous data
@@ -311,7 +312,7 @@
                         $("#id_party_name_value").val(response.list_to_send_for_sales_voucher_data[0].party_name_value)
                         $('#id_selected_warehouse').val(response.list_to_send_for_sales_voucher_data[0].warehouse)
                         $('#id_selected_warehouse_Name').val(response.list_to_send_for_sales_voucher_data[0].warehouse_value)
-                
+                      
                         response.list_to_sent.forEach(item => {
                             var newRow = $(`
                                 <tr>
@@ -329,10 +330,15 @@
                             salesOutward.append(newRow);
                             counter++;
                         });
-                        },
-                        error:function(error){
-                        console.log(error)
-                    }
+                    },
+                    error:function(error){
+                    console.log(error)
+                    if (error.responseJSON && error.responseJSON.error) {
+                            const errorMessage = error.responseJSON.error;
+                            // console.log('errorMessage',errorMessage)
+                            $('#responseMessage').html('<span class="text-danger">' + errorMessage + '</span>');
+                        }
+                            }
                     }) 
                 }else{
                     $(this).focus()

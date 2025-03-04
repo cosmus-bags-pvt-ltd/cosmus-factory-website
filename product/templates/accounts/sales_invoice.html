@@ -317,10 +317,7 @@
       $('body').addClass('popup-open');
       $('body').append('<div class="popup-overlay"></div>');
 
-
       popUpNewWindow = window.open(path, '_blank', 'width=' + minWidth + ', height=' + minHeight + ', resizable=yes');
-
-      
         window.addEventListener('message', function(event){
             if (event.data.message === 'close') {
                     $('body').removeClass('popup-open');
@@ -472,6 +469,7 @@ $(document).ready(function(){
             data: { "challanNo": challanNo },
             success: function (response) {
                var productPickList = response;
+               console.log('productPickList',productPickList)
            
                 if (response.delivery_challan_no && response.total_qty !== null) {
 
@@ -497,7 +495,7 @@ $(document).ready(function(){
             },
             error: function (error) {
                 console.log(error);
-                // $('#responseMessage').html('<span class="text-danger">Please select a Challan.</span>');
+                
                 
             }
         });
@@ -590,16 +588,13 @@ $(document).ready(function(){
     var filterProducts;
   
       function handleGodownAndChallan() {
-        // const godown_id = $('#id_selected_godown').val() || "";
+
         const checkedRadio = $('.challanRadio:checked'); 
         
         if (checkedRadio.length === 0) return; 
 
         const selectedRow = checkedRadio.closest('tr'); 
         const deliveryChallan = selectedRow.find('.challanId').val()?.trim() || "";
-
-        // console.log('Selected Godown:', godown_id);
-        console.log('Selected Delivery Challan:', deliveryChallan);
 
           if ( deliveryChallan) {
               handleGodownIdAjax( deliveryChallan);
@@ -611,9 +606,6 @@ $(document).ready(function(){
 
  
     function handleGodownIdAjax(deliveryChallan){
-      // if (!godown_id) return;
-  
-      // resetInputs();
       $.ajax({
           url:'/producttransfertowarehouseajax/',
           method: "GET",

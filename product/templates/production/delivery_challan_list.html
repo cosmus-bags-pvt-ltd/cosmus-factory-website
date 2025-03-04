@@ -27,7 +27,7 @@
   </div>
 
   
-  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challanAll_btn"><span class="text-start">Delivery Challan</span><span class="bg-c-red ms-4 px-2 py-1 rounded">QC Pend PCs = <span class="" id=""></span></span>
+  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challanAll_btn"><span class="text-start">Delivery Challan</span><span class="bg-c-red ms-4 px-2 py-1 rounded">QC Pend PCs = <span class="" id="pendingQty"></span></span>
     <span class="bg-c-green ms-4 px-2 py-1 rounded">T QC APP Qty = <span class="" id="tRecLwiQty"></span></span> <span class="bg-c-voilet ms-4 px-2 py-1 rounded">Dely. Qty = <span class="" id="tDelyQtyValue"></span></span> <span class="bg-c-red ms-4 px-2 py-1 rounded">Bal Qty = <span class="" id="balanceQtyValue"></span></span><span class="challanArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
   <div id="Delivery_challanAll_List" style="display: none;">
     <table class="table table-hover table-bordered table-striped" id="allFinishGoodReportTable">
@@ -64,6 +64,7 @@
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;"><span class="lwiapprQty">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</span></a></td>
               <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ffbb10; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
+              <td class=" text-center text-danger"><span class="TRFQty">0</span</td>
               <td class=" text-center text-danger"><span class="balanceQty"></span></td>
               <td class="text-center"></td>
             
@@ -227,6 +228,7 @@
            document.getElementById('tRecLwi').textContent = lwiqty;
            document.getElementById('tRecLwiQty').textContent = lwiqty;
            document.getElementById('tQcPendQty').textContent = lwipendingqty;
+           document.getElementById('pendingQty').textContent = lwipendingqty;
            document.getElementById('tQcAppQty').textContent = lwiapproveqty;
            document.getElementById('tRecLwiQty').textContent = lwiapproveqty;
            document.getElementById('balanceQty').textContent = balanceqty;
