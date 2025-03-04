@@ -10336,10 +10336,10 @@ def process_serial_no(request):
                                                                                                        
                 if exists:
                     print("Scan complete")
-                    return JsonResponse({'message':'Scaning Completed (All Product Scan Sucessfully Thank you).'}, status=400)
+                    return JsonResponse({'error':'Scaning Completed (All Product Scan Sucessfully Thank you).'}, status=400)
 
-            except IntegrityError:
-                return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
+            except Exception:
+                return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
 
 
             try:
