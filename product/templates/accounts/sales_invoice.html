@@ -448,19 +448,19 @@ $(document).ready(function(){
   
   $(document).on('blur','#id_challan_no',function(event){
     var challanNo = parseInt($(this).val(), 10);
-    console.log('challanNo',challanNo)
-    var challanable = $('#challantTable .mainTableList tr');
+    var challanable = $('#challanTable .mainTableList tr');
     var challanExists = false; 
     let rowToPopulate = null;
-        
+
     challanable.each(function () {
-        var challanId = $(this).find('.challId').val()?.trim();
-        if (challanId == challanNo) {
-          challanExists = true;
-            return false; 
+        var challanId = parseInt($(this).find('.chalId').val()?.trim(), 10) || 0;
+        console.log('challanId:', challanId, typeof challanId);
+        
+        if (challanId === challanNo) {
+            challanExists = true;
+            return false; // Break loop
         }
     });
-
     if (challanExists) {
         alert('Challan already used');
         $('#id_challan_no').val('');
@@ -472,7 +472,7 @@ $(document).ready(function(){
             data: { "challanNo": challanNo },
             success: function (response) {
                var productPickList = response;
-              console.log('productPickList',productPickList)
+           
                 if (response.delivery_challan_no && response.total_qty !== null) {
 
                     var tables = $('#challanTable .mainTableList');
@@ -484,14 +484,7 @@ $(document).ready(function(){
                             return false;
                         }
                     });
-                //     if ($('#id_selected_godown option[value="' + response.godown_id + '"]').length === 0) {
-                //     $('#id_selected_godown').append(
-                //         $('<option>', { value: response.godown_id, text: response.godown_name })
-                //     );
-                // }
-                // $('#id_selected_godown').val(response.godown_id).trigger('change');
-
-    
+            
                     if (rowToPopulate) {
                         populatePicklistRow(rowToPopulate, response);
                         

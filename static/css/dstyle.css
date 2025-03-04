@@ -1870,6 +1870,9 @@ table>:not(caption)>*>*{
 .labourInGRNArrow{
     padding-left: 556px;  
 }
+.challanArrow{
+    padding-left: 150px;  
+}
 .goodsRetutnArrow{
     padding-left: 300px;
 }

@@ -366,13 +366,13 @@
    
         $(document).on('input', 'input[name$="-quantity"]', function (e) {  
     
-            let rowIndex = $(this).attr("id").match(/\d+/)[0]; // Extract row index
+            let rowIndex = $(this).attr("id").match(/\d+/)[0]; 
             let productValue = parseInt($(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val()) || 0;
             let sku = $(`#id_deliverychallanproducts_set-${rowIndex}-product_name`).val();
             let Qty =  $(`input[name^=quantity-${rowIndex}]`).val();
 
-            console.log('productValue',productValue)
-            console.log('Qty',Qty)
+            // console.log('productValue',productValue)
+            // console.log('Qty',Qty)
 
             if (productValue > Qty) {
                 $(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val(Qty);
