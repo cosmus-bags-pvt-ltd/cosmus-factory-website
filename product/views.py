@@ -15669,12 +15669,12 @@ def delivery_challan_process_for_sale_voucher(request):
         d_challan_product_data = {}
 
         for i in total_product_data:
-            challan_id = i.delivery_challan.id
+            challan_no = i.delivery_challan.delivery_challan_no
 
-            if challan_id not in d_challan_product_data:
-                d_challan_product_data[challan_id] = []
+            if challan_no not in d_challan_product_data:
+                d_challan_product_data[challan_no] = []
 
-            d_challan_product_data[challan_id].append({
+            d_challan_product_data[challan_no].append({
                 'product_name': i.product_name.Product.Model_Name,
                 'product_sku': i.product_name.PProduct_SKU,
                 'color': i.product_name.PProduct_color.color_name,
