@@ -39,6 +39,8 @@ from openpyxl.styles import Border, Side
 import requests
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
+from django.db.models.functions import Cast
+from django.db.models import CharField
 
 from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, DeliveryChallanProducts, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
@@ -15561,10 +15563,22 @@ def delivery_challan_create_update(request, d_id=None):
         master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
         formset = DeliveryChallanProductsUpdateFormset(instance = d_instance)
 
+        products = product_godown_quantity_through_table.objects.all().values(
+                'product_color_name__PProduct_SKU',
+                'quantity').exclude(quantity=0)
+    
+        product_list = {}
+
+        for product in products:
+            sku = product['product_color_name__PProduct_SKU'] 
+            product_list[sku] = product['quantity']
+
     else:
         d_instance = None
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
         formset = DeliveryChallanProductsCreateFormset()
+
+        
 
 
     if request.method == 'POST':
@@ -15655,7 +15669,9 @@ def delivery_challan_create_update(request, d_id=None):
             except Exception as e:
                 print(f"Error saving formset: {e}")
 
-    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names,'godowns':godowns})
+    return render(request,'production/delivery_challan_create_update.html',{'master_form':master_form,'formset':formset,'party_names':party_names,'godowns':godowns,'product_list':product_list})
+
+
 
 
 
@@ -15790,9 +15806,6 @@ def product_transfer_to_warehouse_ajax(request):
         except Exception as e:
             return JsonResponse({'error': 'No items found.'}, status=404)
     
-
-
-
 
 
 
@@ -15948,8 +15961,7 @@ def salesvouchercreateupdate(request,s_id=None):
 
 
 
-from django.db.models.functions import Cast
-from django.db.models import CharField
+
 @login_required(login_url='login')
 def delivery_challan_list(request):
 
@@ -15968,9 +15980,15 @@ def delivery_challan_list(request):
     # delivery challan total qty (subquery)
     delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity'),total_challan_bal_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
 
+    # lwo processed pcs total qty (subquery)
     total_lwo_queryset_subquery = product_to_item_labour_child_workout.objects.filter(
     product_sku=Cast(OuterRef('PProduct_SKU'), output_field=CharField())).values('product_sku').annotate(total_processed_qty=Sum('processed_pcs')).values('total_processed_qty')
 
+    #pending for lwi (subquery)
+    total_lwi_balance_queryset_subquery = product_to_item_labour_child_workout.objects.filter(
+    product_sku=Cast(OuterRef('PProduct_SKU'), output_field=CharField())).values('product_sku').annotate(total_bal_qty=Sum('labour_w_in_pending')).values('total_bal_qty')
+
+    # stock transfer qty (subquery)
     total_stock_trf_queryset_subquery = Finished_goods_transfer_records.objects.filter(product__PProduct_SKU = OuterRef('PProduct_SKU')).values('product__PProduct_SKU').annotate(total_trf_qty = Sum('product_quantity_transfer')).values('total_trf_qty')
 
     product_queryset = PProduct_Creation.objects.all().annotate(
@@ -15980,7 +15998,8 @@ def delivery_challan_list(request):
         total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
         total_challan_qty = Subquery(delivery_challan_subquery),
         total_lwo_qty = Subquery(total_lwo_queryset_subquery),
-        total_trf_qty = Subquery(total_stock_trf_queryset_subquery)).filter(
+        total_trf_qty = Subquery(total_stock_trf_queryset_subquery),
+        total_bal_for_lwi = Subquery(total_lwi_balance_queryset_subquery)).filter(
             Q(total_qty__gt=0) | 
             Q(total_labour_workin_qty__gt=0) | 
             Q(total_labour_workin_pending_qty__gt=0) | 
