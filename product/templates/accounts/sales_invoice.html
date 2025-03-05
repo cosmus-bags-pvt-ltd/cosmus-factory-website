@@ -650,21 +650,19 @@ $(document).ready(function(){
             }
         }
 
-      function processOutwardPicking () {
+      function processchallanPicking () {
         var productTable = $('#salesDeliveryTable .mainTableList');
         productTable.empty();
 
-       
         var checkedRadio = $('.challanRadio:checked');
 
         if (checkedRadio.length === 0) {
-            console.warn("No Challan selected.");
-            $('#responseMessage').html('<span class="text-danger">Please select a challan before calculating.</span>');
-            return;
+          console.warn("No Challan selected.");
+          $('#responseMessage').html('<span class="text-danger">Please select a challan before calculating.</span>');
+          return;
         }
         var selectedRow = checkedRadio.closest('tr'); 
-        var productKey = selectedRow.find('.chalId').val()?.trim()
-
+        var productKey = selectedRow.find('.chalId').val()?.trim();
 
         var storedData = $('#salesHiddenData').val();
         var updateValue = $('#salesupdateData').val();
@@ -674,8 +672,12 @@ $(document).ready(function(){
             latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
         }
 
+
         var parsedData = safeParseJSON(storedData);
         var parsedUpdateData = safeParseJSON(latestUpdate);
+
+        console.log('parsedData',parsedData)
+        console.log('parsedUpdateData',parsedUpdateData)
 
         if ($.isEmptyObject(parsedData) && $.isEmptyObject(parsedUpdateData)) {
             console.log("No Challan data found.");
@@ -729,7 +731,7 @@ $(document).ready(function(){
             
             if(outwardQty > balQty){
                 $('#responseMessage').html('<span class="text-danger">challan quantity exceeds available quantity.</span>');
-                return false;
+                return;
             }else{
                 balanceQty = challanSelected ? Math.max(0, item.balance_qty - outwardQty) : item.balance_qty;
         
@@ -751,12 +753,12 @@ $(document).ready(function(){
 
     };
     $(document).on('click', 'input.outwardChallan-btn', function () {
-        processOutwardPicking();
+        processchallanPicking();
 
     })
 
     $(document).on('input', '[name$="-quantity"]', function () {
-        processOutwardPicking()
+      processchallanPicking()
 
     })
 })
