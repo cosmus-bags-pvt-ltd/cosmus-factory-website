@@ -15623,14 +15623,25 @@ def delivery_challan_create_update(request, d_id=None):
                                 instance.delivery_challan = master_form_instance
 
                                 obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
-
-                                obj.quantity -= instance.quantity
-                                obj.save()
+                                if created:
+                                    obj.quantity -= instance.quantity
+                                    obj.save()
                     
                                 instance.save()
 
-                    
 
+                            if d_id and form.has_changed() and form.cleaned_data['quantity']:
+                                
+                                print('IN ONLY QTY')
+
+                                old_qty = form.initial.get('quantity',0)
+                                new_qty = form.cleaned_data['quantity']
+                                
+                                obj,created = product_delivery_challan_quantity_through_table.objects.get_or_create(product_name = instance.product_name)
+                                if not created:
+                                    obj.quantity += old_qty
+                                    obj.quantity -= new_qty
+                                    obj.save()
 
 
                     return(redirect('delivery-challan-list'))
@@ -15695,7 +15706,7 @@ def delivery_challan_process_for_sale_voucher(request):
 
 
 
-
+@login_required(login_url='login')
 def product_transfer_to_warehouse_ajax(request):
     
     godown_id = request.GET.get('godown_id')
@@ -15931,31 +15942,39 @@ def salesvouchercreateupdate(request,s_id=None):
 
 
 
-
+from django.db.models.functions import Cast
+from django.db.models import CharField
 @login_required(login_url='login')
 def delivery_challan_list(request):
 
-    delivary_challan_list = DeliveryChallanMaster.objects.annotate(
-    total_qty=Sum('deliverychallanproducts__quantity'),
-    total_balance_qty=Sum('deliverychallanproducts__balance_qty'))
+    #Delivery challan total_qty and balance_qty
+    delivary_challan_list = DeliveryChallanMaster.objects.annotate(total_qty=Sum('deliverychallanproducts__quantity'),total_balance_qty=Sum('deliverychallanproducts__balance_qty'))
 
+    #Labour workin create qty (subquery)
     product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
 
-
+    #Labour workin pending for approval(subquery)
     product_pending_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_pen_qty_sum = Coalesce(Sum('pending_for_approval'), 0)).values('total_labour_workin_pen_qty_sum')
     
-
+    #Labour workin total approve qty (subquery)
     product_approve_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_aprv_qty_sum = Coalesce(Sum('approved_qty'), 0)).values('total_labour_workin_aprv_qty_sum')
 
-
+    # delivery challan total qty (subquery)
     delivery_challan_subquery = DeliveryChallanProducts.objects.filter(product_name__PProduct_SKU = OuterRef('PProduct_SKU')).values('product_name__PProduct_SKU').annotate(total_challan_qty_sum = Sum('quantity'),total_challan_bal_qty_sum = Sum('quantity')).values('total_challan_qty_sum')
+
+    total_lwo_queryset_subquery = product_to_item_labour_child_workout.objects.filter(
+    product_sku=Cast(OuterRef('PProduct_SKU'), output_field=CharField())).values('product_sku').annotate(total_processed_qty=Sum('processed_pcs')).values('total_processed_qty')
+
+    total_stock_trf_queryset_subquery = Finished_goods_transfer_records.objects.filter(product__PProduct_SKU = OuterRef('PProduct_SKU')).values('product__PProduct_SKU').annotate(total_trf_qty = Sum('product_quantity_transfer')).values('total_trf_qty')
 
     product_queryset = PProduct_Creation.objects.all().annotate(
         total_qty = Sum('godown_colors__quantity'),
         total_labour_workin_qty = Subquery(product_queryset_subquery),
         total_labour_workin_pending_qty = Subquery(product_pending_queryset_subquery),
         total_labour_workin_approve_qty = Subquery(product_approve_queryset_subquery),
-        total_challan_qty = Subquery(delivery_challan_subquery)).filter(
+        total_challan_qty = Subquery(delivery_challan_subquery),
+        total_lwo_qty = Subquery(total_lwo_queryset_subquery),
+        total_trf_qty = Subquery(total_stock_trf_queryset_subquery)).filter(
             Q(total_qty__gt=0) | 
             Q(total_labour_workin_qty__gt=0) | 
             Q(total_labour_workin_pending_qty__gt=0) | 

@@ -305,7 +305,7 @@
                           <th>Sku</th>
                           <th>Color</th>
                           <th class="text-primary">Qty</th>
-                          <th class="text-success">Scan Qty</th>
+                          <th class="text-success">Sales Qty</th>
                           <th class="text-danger">Balance</th>
                          
                       </tr>
@@ -497,10 +497,10 @@ $(document).ready(function(){
             success: function (response) {
               var salesDelivery = $('#salesDeliveryTable .mainTableList tr');
               salesDelivery.empty();
-               var productPickList = response.d_challan_data;
-               console.log('productPickList',response)
+               var productChallan = response.d_challan_data;
+               console.log('productChallan',response)
            
-                if (productPickList && response.products  ) {
+                if (productChallan && response.products  ) {
                   var hiddenData = $('#salesHiddenData').val();
                     var currentData = hiddenData ? JSON.parse(hiddenData) : {};
 
@@ -541,12 +541,12 @@ $(document).ready(function(){
                     });
                     
                     if (rowToPopulate) {
-                        populatePicklistRow(rowToPopulate, productPickList);
+                        populateChallanRow(rowToPopulate, productChallan);
                         
                     } else {
-                        addpickListRow();
+                        addChallanRow();
                         const newRow = tables.find('tr').last();
-                        populatePicklistRow(newRow, response)
+                        populateChallanRow(newRow, productChallan)
                     }
                     
                 }
@@ -561,15 +561,15 @@ $(document).ready(function(){
         $('#id_challan_no').val('');
   })
 
-      function populatePicklistRow(row, productPickList){
-        row.find('.challanId').val(productPickList.id);
-        row.find('.chalId').val(productPickList.delivery_challan_no);
-        row.find('.challanQty').val(productPickList.total_qty)
-        row.find('.challanBalance').val(productPickList.balance_qty);
-        row.find('.challanBalancehidden').val(productPickList.balance_qty);
+      function populateChallanRow(row, productChallan){
+        row.find('.challanId').val(productChallan.id);
+        row.find('.chalId').val(productChallan.delivery_challan_no);
+        row.find('.challanQty').val(productChallan.total_qty)
+        row.find('.challanBalance').val(productChallan.balance_qty);
+        row.find('.challanBalancehidden').val(productChallan.balance_qty);
       };
 
-    function addpickListRow() {
+    function addChallanRow() {
         const tableBody = document.querySelector('#challanTable .mainTableList');
         let lastVisibleRow = null;
         tableBody.querySelectorAll('tr').forEach(row => {
@@ -1040,12 +1040,12 @@ $(document).ready(function(){
           $dropdownOptions.css('display', 'none');
 
           if (item_value !== undefined) {
-            var itemcolorinput = document.querySelector('#product_color_' + purchasedata);
-            var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-gst');
-            var productSku = document.getElementById('product_Sku_'+purchasedata)
-            var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-mrp') ;
-            var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-sale_price')
-            var qty = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-quantity')
+              var itemcolorinput = document.querySelector('#product_color_' + purchasedata);
+              var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-gst');
+              var productSku = document.getElementById('product_Sku_'+purchasedata)
+              var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-mrp') ;
+              var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-sale_price')
+              var qty = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-quantity')
               var selectedValue = searchedProductNameDic[item_value];
               var namevalueCheck = selectedValue[3];
               var productQty = selectedValue[2];
@@ -1302,6 +1302,16 @@ $(document).ready(function(){
  
   };
 
+  function safeParseJSON(jsonString) {
+      try {
+          if (!jsonString || jsonString.trim().toLowerCase() === "none") return {};
+          return JSON.parse(jsonString);
+      } catch (error) {
+          console.error("Invalid JSON format:", jsonString, error);
+          return {};
+      }
+  }
+
   function calculateTotalAmount() {
         let total = 0; 
         let totalQty = 0;
@@ -1330,39 +1340,91 @@ $(document).ready(function(){
             const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
             const challanElement = row.querySelector('input[name$="-challanValue"]');
             const challanId = challanElement ? parseInt(challanElement.value) || 0 : 0;
-
+            const skuId = row.querySelector('[name^="product_Sku_"]').value
             var checkedRadio = $('.challanRadio:checked');
 
             // if (checkedRadio.length === 0) {
             //     console.warn("No Challan selected.");
             //     return;
             // }
+
+            console.log('skuId',skuId,typeof(skuId))
+
             var selectedRow = checkedRadio.closest('tr'); 
             var productKey = parseInt(selectedRow.find('.chalId').val()) || 0
-            var challanBalQty = parseFloat(selectedRow.find('.challanBalancehidden').val()?.trim()) || 0;
-            var challanQty = parseFloat(selectedRow.find('.challanQty').val()?.trim()) || 0;
-            // console.log('productKey',productKey,typeof(productKey))
-            // console.log('challanQty',challanQty)
-            // console.log('challanBalQty',challanBalQty)
+            var storedData = $('#salesHiddenData').val();
+            var updateValue = $('#salesupdateData').val();
+            
 
-         
-            // Get the values of quantity and rate
-            let quantity = parseFloat(quantityInput.value);
-            if(challanId === productKey){
-                if(challanQty < quantity){
-                  quantity = challanQty;
-                }
-                var balance = challanBalQty - quantity;
-                console.log('balance',balance)
-                selectedRow.find('.challanBalance').val(balance)
-            }
-           
+          if (updateValue) {
+              var latestUpdate = updateValue.replace(/'/g, '"');
+              latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
+          }
+
+          var parsedData = safeParseJSON(storedData);
+          var parsedUpdateData = safeParseJSON(latestUpdate);
+
+          if ($.isEmptyObject(parsedData) && $.isEmptyObject(parsedUpdateData)) {
+              console.log("No Challan data found.");
+              return;
+          }
+
+          var mergedData = (!$.isEmptyObject(parsedData) && !$.isEmptyObject(parsedUpdateData))
+              ? { ...parsedData, ...parsedUpdateData }
+              : (!$.isEmptyObject(parsedData) ? parsedData : parsedUpdateData);
+
+          if (!mergedData.hasOwnProperty(productKey)) {
+              console.warn("No data found for this challanNo:", productKey);
+              return;
+          }
+          
+          if (!Array.isArray(mergedData[productKey])) {
+              console.warn("Invalid or missing challan data for productKey:", productKey);
+              return;
+          }
+
+
+
+          let quantity = parseInt(quantityInput.value) || 0;
+
+          if (challanId === productKey) {
+              mergedData[productKey].forEach(item => {
+                  let sku = String(item.sku).trim();
+                  let balQty = parseFloat(item.balance_qty) || 0;
+
+                  console.log('sku:', sku);
+                  console.log('balQty:', balQty, typeof balQty);
+
+                  if (sku === skuId) {
+                      // Limit quantity to available balance_qty
+                      quantity = Math.min(quantity, balQty);
+                  }
+              });
+
+              // Update input field with the adjusted quantity
+              quantityInput.value = quantity;
+          }
+        
+              var challanQty = parseFloat(selectedRow.find('.challanQty').val()?.trim()) || 0;
+              var challanBalanceHidden = parseFloat(selectedRow.find('.challanBalancehidden').val()?.trim()) || 0;
+              var challanBalance = parseFloat(selectedRow.find('.challanBalance').val()?.trim()) || 0;
+            
+              console.log('challanBalanceHidden', challanBalanceHidden);
+              console.log('challanBalance', challanBalance);
+              // var challanBalQty = (challanBalance  < challanBalanceHidden) ? challanBalanceHidden : challanBalance;
+
+            
+              // var balance = challanBalQty - quantity;
+              // console.log('balance', balance);
+              // selectedRow.find('.challanBalance').val(balance);
+          
+                    
 
             const rate = parseFloat(customPriceInput.value);
             const tradeamount = parseFloat(saletreadInput.value)
             const splAmount = parseFloat(saleSplInput.value);
             const gst = parseFloat(gstValue.value);
-            console.log('quantity',quantity)
+          
 
            
             // Calculate the amount for the current row

@@ -1231,8 +1231,7 @@ class DeliveryChallanProducts(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
     
     def save(self, *args, **kwargs):
-        if not self.pk:
-            self.balance_qty = self.quantity
+        self.balance_qty = self.quantity
         super().save(*args, **kwargs)
 
 class sales_voucher_master_finish_Goods(models.Model):
