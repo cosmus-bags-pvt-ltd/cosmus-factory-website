@@ -39,6 +39,7 @@
               <th>Mod. Name</th> 
               <th>Color</th>
               <th>SKU ID</th>
+              <th>T LWO =</th>
               <th class="text-success">T Rec As LWI = <span class="text-success" id="tRecLwi"></span></th> 
               <th class="text-danger">QC Pend PCs = <span class="text-danger" id="tQcPendQty"></span></th>
               <th class="text-primary">T QC APP Qty = <span class="text-primary" id="tQcAppQty"></span></th>
@@ -60,11 +61,12 @@
               <td>{{query.Product.Model_Name}}</td>
               <td>{{query.PProduct_color}}</td>
               <td>{{query.PProduct_SKU}}</td>
+              <td>{{query.total_lwo_qty}}</td>
               <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;"><span class="lwiapprQty">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</span></a></td>
               <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ffbb10; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
-              <td class=" text-center text-danger"><span class="TRFQty">0</span</td>
+              <td class=" text-center text-danger"><span class="TRFQty">{{query.total_trf_qty}}</span</td>
               <td class=" text-center text-danger"><span class="balanceQty"></span></td>
               <td class="text-center"></td>
             
