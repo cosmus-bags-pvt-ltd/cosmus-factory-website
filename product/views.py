@@ -15550,8 +15550,6 @@ def delivery_challan_product_ajax(request):
 
 
 
-
-
 @login_required(login_url='login')
 def delivery_challan_create_update(request, d_id=None):
 
@@ -15575,11 +15573,9 @@ def delivery_challan_create_update(request, d_id=None):
 
     else:
         d_instance = None
+        product_list=None
         master_form = DeliveryChallanMasterForm(request.POST or None, instance = d_instance)
         formset = DeliveryChallanProductsCreateFormset()
-
-        
-
 
     if request.method == 'POST':
         
@@ -15609,8 +15605,6 @@ def delivery_challan_create_update(request, d_id=None):
                             if not form.is_valid():
                                 print("Form Errors:", form.errors)
 
-                    
-                    
                     if formset.is_valid():
                         for form in formset.deleted_forms:
                             if form.instance.pk:
@@ -15618,7 +15612,7 @@ def delivery_challan_create_update(request, d_id=None):
                                 is_linked = sales_voucher_finish_Goods.objects.filter(challan=form.instance).exists()
 
                                 if is_linked:
-                                    messages.error(request, f"Cannot delete product '{form.instance.product_name}' as it is linked to a sales voucher.")
+                                    messages.error(request, f"Cannot delete product {form.instance.product_name.Product.Model_Name} as it is linked to a sales voucher.")
                                     continue
 
                                 product_name = form.instance.product_name
@@ -15631,38 +15625,24 @@ def delivery_challan_create_update(request, d_id=None):
 
                                 form.instance.delete()  
 
-
-                        formset.forms = [form for form in formset.forms if form.has_changed()]
-
                         for form in formset:
                             if not form.cleaned_data.get('DELETE'):
-                                instance = form.save(commit=False)
-                                instance.delivery_challan = master_form_instance
-
-                                is_update = instance.pk is not None
-
                                 if form.has_changed():
-                                    obj, created = product_godown_quantity_through_table.objects.get_or_create(
-                                        product_color_name=instance.product_name
-                                    )
+                                    instance = form.save(commit=False)
+                                    instance.delivery_challan = master_form_instance
+                                    instance.balance_qty = form.cleaned_data['quantity']
 
-                                    if is_update:
-                                        # Handle old quantity adjustment on edit
+                                    if form.has_changed() and 'quantity' in form.changed_data:
+                                        obj, created = product_godown_quantity_through_table.objects.get_or_create(product_color_name=instance.product_name)
+
                                         old_qty = form.initial.get('quantity', 0)
                                         new_qty = form.cleaned_data['quantity']
                                         
-                                        obj.quantity += old_qty  # Revert the old qty
-                                        obj.quantity -= new_qty  # Subtract the new qty
-                                        obj.save()
-                                        
-                                        print('IN ONLY QTY (Edit existing instance)')
-                                    else:
-                                        # Handle new instance
-                                        obj.quantity -= instance.quantity
+                                        obj.quantity += old_qty
+                                        obj.quantity -= new_qty  
                                         obj.save()
 
-                                instance.save()
-
+                                    instance.save()
 
                     return(redirect('delivery-challan-list'))
                 
@@ -15691,6 +15671,8 @@ def delivery_challan_process_for_sale_voucher(request):
             total_balance=Sum('balance_qty')
         )
 
+        # print('total_data = ',total_data)
+
         d_challan_data = {
             "delivery_challan_no": d_challan_no,
             "id": d_id.id,
@@ -15699,6 +15681,8 @@ def delivery_challan_process_for_sale_voucher(request):
             "total_qty": total_data['total_qty'] or 0,
             "balance_qty": total_data['total_balance'] or 0
         }
+
+        # print('d_challan_data = ',d_challan_data)
 
         total_product_data = DeliveryChallanProducts.objects.filter(delivery_challan=d_id)
 
@@ -15718,7 +15702,8 @@ def delivery_challan_process_for_sale_voucher(request):
                 'balance_qty': i.balance_qty
             })
 
-        print(d_challan_product_data)
+        # print(d_challan_product_data)
+
         return JsonResponse({"d_challan_data":d_challan_data,"products": d_challan_product_data},status=200)
 
     except Exception as e:
@@ -15813,7 +15798,7 @@ def product_transfer_to_warehouse_ajax(request):
 def salesvouchercreateupdate(request,s_id=None):
 
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-    godown_names = Godown_finished_goods.objects.all()
+    
 
     dict_to_send = None
 
@@ -15858,16 +15843,14 @@ def salesvouchercreateupdate(request,s_id=None):
         delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST or None,queryset=SalesVoucherDeliveryChallan.objects.none())
         page_name = 'Create Sales Invoice'
 
-        
-    
 
     if request.method == "POST":
         print(request.POST)
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST, instance=voucher_instance)
 
-        # formset.forms = [form for form in formset.forms if form.has_changed()]
+        formset.forms = [form for form in formset.forms if form.has_changed()]
 
         if not master_form.is_valid():
             print("Form Errors:", master_form.errors)
@@ -15891,73 +15874,49 @@ def salesvouchercreateupdate(request,s_id=None):
                                 form_instance = form.save(commit=False)
                                 form_instance.sales_voucher = master_form_instance
                                 form_instance.save()
-                    
-                    selected_godown = None
-                    
-                    print(selected_godown)
+
 
                     for form in formset.deleted_forms:
                         if form.instance.pk:
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-                            
-                            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
+                            product = form.instance.product_name
+                            product_qty = form.instance.quantity   
+                            delivery_challan_master = form.cleaned_data.get('challan')
 
-                            godown_qty_value.quantity = godown_qty_value.quantity + product_qty
-                            godown_qty_value.save()
+                            challan_product_entry = DeliveryChallanProducts.objects.get(delivery_challan=delivery_challan_master.delivery_challan,product_name=product)
+
+                            if challan_product_entry:
+                                challan_product_entry.balance_qty += product_qty
+                                challan_product_entry.save()
                             
                             form.instance.delete()
 
 
                     for form in formset:
                         if not form.cleaned_data.get('DELETE'):
-
                             form_instance = form.save(commit=False)
                             form_instance.sales_voucher_master = master_form_instance
+
+                            if form.has_changed() and 'quantity' in form.changed_data:
+                                
+                                old_quantity = form.initial.get('quantity')
+                                new_quantity = form.cleaned_data.get('quantity')
+                                product = form.cleaned_data.get('product_name')
+                                delivery_challan_master = form.cleaned_data.get('challan')
+
+                                challan_product_entry = DeliveryChallanProducts.objects.get(delivery_challan=delivery_challan_master.delivery_challan,product_name=product)
+
+                                if challan_product_entry:
+                                    challan_product_entry.balance_qty += old_quantity
+                                    challan_product_entry.balance_qty -= new_quantity
+                                    challan_product_entry.save()
+
                             form_instance.save()
-                            product_name = form.instance.product_name
-                            product_qty = form.instance.quantity
-
-                        
-                            if form.has_changed():
-
-                                old_product_name = form.initial.get('product_name')
-                                old_product_quantity = form.initial.get('quantity')
-                                
-                                if old_product_quantity:
-                                    print("in single")
-                                    
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                                    difference =  product_qty - old_product_quantity
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity - difference
-                                    godown_qty_value.save()
-
-                            if form.has_changed() and 'product_name' in form.changed_data:
-
-                                if old_product_name and old_product_quantity:
-                                    print("in both")
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=old_product_name)
-
-                                    # difference =  product_qty - old_product_quantity
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity + old_product_quantity
-                                    godown_qty_value.save()
-
-                                    godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
-
-                                    godown_qty_value.quantity = godown_qty_value.quantity - old_product_quantity
-                                    godown_qty_value.save()
-                                
-
+                            
                     return redirect('sales-voucher-list')
             except Exception as e:
                 print(e) 
 
-    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'godown_names':godown_names,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset,'d_challan_product_data':d_challan_product_data})
+    return render(request,'accounts/sales_invoice.html',{'master_form':master_form,'formset':formset,'page_name':page_name,'party_name':party_name,'dict_to_send':dict_to_send,'delivery_challan_formset':delivery_challan_formset,'d_challan_product_data':d_challan_product_data})
 
 
 
@@ -16007,7 +15966,7 @@ def delivery_challan_list(request):
             Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
     
     
-    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset})
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset,'page_name':'Delivery challan'})
 
 
 @login_required(login_url='login')
@@ -16087,7 +16046,7 @@ def sales_scan_product_dynamic_ajax(request):
 @login_required(login_url='login')
 def salesvoucherlist(request):
     sales_list = sales_voucher_master_finish_Goods.objects.all().order_by('created_date')
-    return render(request,'accounts/sales_list.html',{'sales_list':sales_list})
+    return render(request,'accounts/sales_list.html',{'sales_list':sales_list,'page_name':'Sales list'})
 
 
 

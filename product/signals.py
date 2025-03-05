@@ -495,6 +495,23 @@ def create_update_warehouse_stock_transfer(sender, instance, created, **kwargs):
 
 
 
+@receiver(post_save, sender=DeliveryChallanProducts)
+def sales_voucher_stock_minus(sender, instance, created, **kwargs):
+    product = instance.product_name
+    quantity = instance.quantity
+
+    delivery_challan_master = instance.delivery_challan
+    godown = delivery_challan_master.selected_godown
+
+    if created:
+        godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown,product_color_name=product)
+        godown_qty_value.quantity = godown_qty_value.quantity - quantity
+        godown_qty_value.save()
+    else:
+        print("No DeliveryChallanProducts entry found!")
+
+
+
 
 
 @receiver(post_save, sender=sales_voucher_finish_Goods)
@@ -506,11 +523,16 @@ def sales_voucher_stock_minus(sender, instance, created, **kwargs):
     delivery_challan_master = challan_product.delivery_challan
 
     if created:
-        challan_product_entry, created = DeliveryChallanProducts.objects.get_or_create(delivery_challan=delivery_challan_master,product_name=product)
-        challan_product_entry.balance_qty = challan_product_entry.balance_qty - quantity
-        challan_product_entry.save()
-    else:
-        pass
+        print("SIGNAL TRIGGERED")
+        challan_product_entry = DeliveryChallanProducts.objects.filter(delivery_challan=delivery_challan_master,product_name=product).first()
+
+        if challan_product_entry:
+            print(f"Before Update: {challan_product_entry.balance_qty}")
+            challan_product_entry.balance_qty -= quantity
+            challan_product_entry.save()
+            print(f"After Update: {challan_product_entry.balance_qty}")
+        else:
+            print("No DeliveryChallanProducts entry found!")
 
 
 
