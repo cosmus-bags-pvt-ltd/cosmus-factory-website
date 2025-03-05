@@ -42,7 +42,7 @@
               <th class="text-success">T Rec As LWI = <span class="text-success" id="tRecLwi"></span></th> 
               <th class="text-danger">QC Pend PCs = <span class="text-danger" id="tQcPendQty"></span></th>
               <th class="text-primary">T QC APP Qty = <span class="text-primary" id="tQcAppQty"></span></th>
-              <th class="text-warning">Dely. Qty = <span class="text-warning" id="tDelyQty"></span></th>
+              <th style="color: #ff7e53;">Dely. Qty = <span style="color: #ff7e53;" id="tDelyQty"></span></th>
               <th class="text-warning">G. TRF Qty = <span class="text-info" id="tStockTransQty"></span></th>
               <th class="text-danger">Bal Qty = <span class="text-danger" id="balanceQty"></span></th>
               <th>Due Day</th> 
@@ -60,10 +60,10 @@
               <td>{{query.Product.Model_Name}}</td>
               <td>{{query.PProduct_color}}</td>
               <td>{{query.PProduct_SKU}}</td>
-              <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
-              <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
+              <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: green; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
+              <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: red; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;"><span class="lwiapprQty">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</span></a></td>
-              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ffbb10; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
+              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff7e53; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
               <td class=" text-center text-danger"><span class="TRFQty">0</span</td>
               <td class=" text-center text-danger"><span class="balanceQty"></span></td>
               <td class="text-center"></td>
@@ -75,7 +75,7 @@
   </table>
   </div>
 
-  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challan_btn"><span class="text-start">Delivery Challan List</span><span class="bg-c-blue ms-4 px-2 py-1 rounded">T Qty = <span id="total"></span></span> <span class="bg-c-red ms-4 px-2 py-1 rounded">Pend. Bill = <span id="pendingBill"></span></span><span class="purchaseOrderCuttingVouchareArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+  <button type="button" class="edit_btn w-100 mb-3 text-start" id="Delivery_challan_btn"><a href="{% url 'sales-voucher-create' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #8c10ff; text-decoration: none;">Create Sales +</a><span class="text-start" style="margin-left: 160px;">Delivery Challan List</span><span class="bg-c-blue ms-4 px-2 py-1 rounded">T Qty = <span id="total"></span></span> <span class="bg-c-red ms-4 px-2 py-1 rounded">Pend. Bill = <span id="pendingBill"></span></span><span class="purchaseOrderCuttingVouchareArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
   <div id="Delivery_challan_list" style="display: none;">
     <table class="table table-striped table-hover table-bordered" id="deliveryChallanList">
       <thead class="name_absolute sticky-top">

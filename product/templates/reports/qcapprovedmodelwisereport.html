@@ -33,7 +33,7 @@
             <th colspan="5"></th>
             <th style="color: darkblue;">Approved</th>
             {% for key,value in consolidated_approval_dict.items %}
-            <th><button class="border-0 rounded  mb-1 px-2" style="color:white; background-color: #6400f9;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workin-approval-split' product_instance.Product_Refrence_ID %}"> <span  class="productApprove">{{ value }}</span></a></button></th>
+            <th class="text-center"><button class="border-0 rounded  mb-1 px-2" style="color:white; background-color: #6400f9;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workin-approval-split' product_instance.Product_Refrence_ID %}"> <span  class="productApprove">{{ value }}</span></a></button></th>
             {% endfor %}
             <th style="color: darkblue;"><span class="totalApprovedValueCheck"></span></th>
         </tr>
@@ -48,20 +48,30 @@
             <td >{{record.total_lwo}}</td>
             <td class="text-danger fw-bold">{{record.desc}}</td>
             {% for key,val in record.SKUS.items %}
-            <td ><span class="lwiValues"> {{val}}</span></td>
+            <td class="text-center"><span class="lwiValues"> {{val}}</span></td>
             {% endfor %} 
             <td class="totalCalculation text-danger fw-bold" ></td>
          </tr>
         {% endfor %}
         <tr>
             <td colspan="3"></td>
-            <td colspan="3"><span class="fw-bold text-end" style="color: #f628eb;">Total Appr Pending = </span><span class="totalApprPendingTotal fw-bold rounded-1"></span> </td>
+            <td colspan="3"><span class="fw-bold text-end" style="color: #f628eb ;">Total LWI Qty = </span><span style="color: #f628eb ;" class="totalLwi fw-bold rounded-1"></span> </td>
             {% for x in all_sku %}
-            <td><button class="border-0 rounded  mb-1 px-2" style="color:white; background-color: #f628eb;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workin-pending-split' ref_id %}"><span class="totalApprovalPending fw-bold"></span></a></button> </td>
+            <td class="text-center"><button class="border-0 rounded  mb-1 px-2" style="color:white; background-color: #f628eb;"><span class="totalLwiQty fw-bold"></span></button> </td>
       
             {% endfor %}
           
             <td ><span class="grandTotalValue text-danger fw-bold"></span></td>
+        </tr>
+        <tr>
+            <td colspan="3"></td>
+            <td colspan="3"><span class="fw-bold text-end" style="color: #f6286d;">Total Appr Pending = </span><span class="totalApprPendingTotal fw-bold rounded-1"></span> </td>
+            {% for x in all_sku %}
+            <td class="text-center"><button class="border-0 rounded  mb-1 px-2" style="color:white; background-color: #f6286d;"><a style="color:white; text-decoration: none;" href="{% url 'labour-workin-pending-split' ref_id %}"><span class="totalApprovalPending fw-bold"></span></a></button> </td>
+      
+            {% endfor %}
+          
+            <td ><span class="text-danger fw-bold"></span></td>
         </tr>
    </tbody>
 </table>
@@ -91,6 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize column totals
     const columnTotals = new Array(columnCount).fill(0);
     let totalAppr = 0;
+
     // Calculate row-wise totals
     tableRows.forEach(row => {
         const lwiValues = row.querySelectorAll(".lwiValues");
@@ -98,31 +109,52 @@ document.addEventListener("DOMContentLoaded", function () {
         lwiValues.forEach(cell => {
             const value = parseInt(cell.textContent.trim()) || 0;
             rowTotal += value;
+            
         });
-
+ 
         const totalCell = row.querySelector(".totalCalculation");
         if (totalCell) {
             totalCell.textContent = rowTotal;
         }
     });
+    let columnTotalss = [];
 
-    // Calculate column-wise totals
     tableRows.forEach(row => {
+           // Calculate column-wise totals
         const cells = row.querySelectorAll(".lwiValues");
         cells.forEach((cell, index) => {
             const value = parseInt(cell.textContent.trim()) || 0;
             columnTotals[index] += value;
         });
+            // Calculate row-wise totals
+        cells.forEach((cell, colIndex) => {
+            const value = parseInt(cell.textContent.trim()) || 0;
+
+            if (!columnTotalss[colIndex]) {
+                columnTotalss[colIndex] = 0;
+            }
+            columnTotalss[colIndex] += value;
+        });
+        
     });
 
+    // Display column totals in the corresponding `.totalLwiQty` span elements
+    document.querySelectorAll(".totalLwiQty").forEach((element, index) => {
+        element.textContent = columnTotalss[index] || 0;
+    });
+
+    console.log("Column Totals:", columnTotalss);
+
+    
     // Calculate and display pending approvals
     totalApprovalPendingCells.forEach((cell, index) => {
        
         const currentTotal = parseInt(cell.textContent.trim()) || 0;
+        
         const newTotal = (columnTotals[index] || 0) - currentTotal;
 
         const totalCell = document.querySelectorAll(".totalApprovalPending")[index];
-        console.log('newTotal',newTotal)
+
         if (totalCell) {
             totalCell.textContent = newTotal;
             totalAppr += newTotal;
@@ -139,10 +171,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalApproveData = parseInt(document.querySelector('.totalApprovedValueCheck').textContent) || 0;
     const grandTotal = newValue - totalApproveData;
     document.querySelector('.grandTotalValue').textContent = grandTotal;
+    document.querySelector('.totalLwi').textContent = grandTotal;
 
     // Call calculateValues to ensure totals are updated
     calculateValues();
+    calculateQty()
 });
+
+function calculateQty(){
+    var totalValue =0;
+    document.querySelectorAll(".totalLwiQty").forEach(cell =>{
+        var qty = parseInt(cell.textContent) || 0 ;
+        totalValue += qty
+        console.log('totalValue',totalValue)
+    })
+    
+}
 
     </script>
     
