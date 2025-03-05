@@ -501,20 +501,14 @@ def create_update_warehouse_stock_transfer(sender, instance, created, **kwargs):
 def sales_voucher_stock_minus(sender, instance, created, **kwargs):
     product = instance.product_name
     quantity = instance.quantity
+
     challan_product = instance.challan
     delivery_challan_master = challan_product.delivery_challan
 
-    godown = challan_product.delivery_challan.selected_godown if challan_product.delivery_challan.selected_godown else None
-
     if created:
-        if godown:
-            godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = godown,product_color_name = product)
-            godown_qty_value.quantity = godown_qty_value.quantity - quantity
-            godown_qty_value.save()
-
-            challan_product_entry, created = DeliveryChallanProducts.objects.get_or_create(delivery_challan=delivery_challan_master,product_name=product)
-            challan_product_entry.balance_qty = challan_product_entry.balance_qty - quantity
-            challan_product_entry.save()
+        challan_product_entry, created = DeliveryChallanProducts.objects.get_or_create(delivery_challan=delivery_challan_master,product_name=product)
+        challan_product_entry.balance_qty = challan_product_entry.balance_qty - quantity
+        challan_product_entry.save()
     else:
         pass
 
