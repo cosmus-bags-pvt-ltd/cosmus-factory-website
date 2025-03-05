@@ -15895,20 +15895,23 @@ def salesvouchercreateupdate(request,s_id=None):
                         if not form.cleaned_data.get('DELETE'):
                             form_instance = form.save(commit=False)
                             form_instance.sales_voucher_master = master_form_instance
+                            
+
 
                             if form.has_changed() and 'quantity' in form.changed_data:
-                                
                                 old_quantity = form.initial.get('quantity')
                                 new_quantity = form.cleaned_data.get('quantity')
                                 product = form.cleaned_data.get('product_name')
                                 delivery_challan_master = form.cleaned_data.get('challan')
 
-                                challan_product_entry = DeliveryChallanProducts.objects.get(delivery_challan=delivery_challan_master.delivery_challan,product_name=product)
+                                if old_quantity:
+                                    
+                                    challan_product_entry = DeliveryChallanProducts.objects.get(delivery_challan=delivery_challan_master.delivery_challan,product_name=product)
 
-                                if challan_product_entry:
-                                    challan_product_entry.balance_qty += old_quantity
-                                    challan_product_entry.balance_qty -= new_quantity
-                                    challan_product_entry.save()
+                                    if challan_product_entry:
+                                        challan_product_entry.balance_qty += old_quantity
+                                        challan_product_entry.balance_qty -= new_quantity
+                                        challan_product_entry.save()
 
                             form_instance.save()
                             

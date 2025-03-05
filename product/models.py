@@ -21,22 +21,16 @@ class CompanyBaseModel(models.Model):
     """
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT, null = True, blank=True)
-    
     class Meta:
-        abstract = True  
+        abstract = True
+
 
     def save(self, *args, **kwargs):
-        
         if self.c_user and not self.c_user.is_superuser:
-            
             if not self.company:
                 self.company = self.c_user.company
-
-        
-        
         if not self.company:
             raise ValidationError('Company must be specified.')
-
         super().save(*args, **kwargs)
 
 
