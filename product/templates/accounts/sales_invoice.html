@@ -10,8 +10,10 @@
       <input type="hidden" id="salesHiddenData" value="">
       <div class="col-lg-9">
         <div class="d-flex mb-3">
+          
           <span class="me-1">Type :<span class="text-danger fw-bold">Finish Goods</span></span>
           <span id="purchaseError" class="error-messages"></span>
+          <span id="responseMessage" class="ms-1 fw-bold"></span>
           <div class="d-flex ms-2">
             <label for="id_challan_no" class="fw-bold">Add Chall+ :</label>
             <input type="text" name="challan_no" class="purchase-mark me-1" id="id_challan_no">
@@ -80,9 +82,7 @@
                   readonly required>
               </div>
             </div>
-            <div>
-              <span id="responseMessage" class="ms-1 fw-bold"></span>
-            </div>
+            
           
           </div>
       </div>
@@ -172,7 +172,9 @@
 
           <td><input type="text" name="product_Sku_{{forloop.counter0}}" id="product_Sku_{{forloop.counter0}}" value="{{forms.instance.product_name.PProduct_SKU}}" class="purchase-amount" readonly></td>
 
-          <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-mark sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" ></td>
+          <td><input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-mark sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.instance.quantity | default_if_none:'' }}" >
+            <input type="hidden" id="id_{{forms.prefix}}-dummy_quantity" class="purchase-mark sales-qunatity" name="{{forms.prefix}}-dummy_quantity" value="{{forms.instance.quantity | default_if_none:'' }}" readonly>
+          </td>
 
           <td><input type="number" id="id_{{forms.prefix}}-mrp" class="purchase-input sales-mrp" name="{{forms.prefix}}-mrp" value="{{forms.instance.product_name.Product.Product_MRP}}" readonly></td>
 
@@ -219,66 +221,70 @@
     
     <div class="row">
       <div class="col-lg-9">
+        <div class="d-flex">
+          
+        </div>
           <div class="ms-2">
               <input type="number" class="product_row" name="productRow" id="id_productRow" value="1">
-              <button type="button" class="item-btn mb-3" id="addRowButton">Add +</button>
+              <button type="button" class="item-btn mb-2" id="addRowButton">Add +</button>
+              <div class="row">
+                <div class="col-lg-10">
+                  <label class="fw-bold text-dark">Tax Summary :</label>
+                  <table class="table table-striped table-hover table-bordered table-responsive" id="taxSummary">
+                    <thead class="name_absolute">
+                      <tr>
+                        <th>Taxable Value</th>
+                        <th colspan="2">CGST</th>
+                        <th colspan="2">SGST/IGST</th>
+                        <th></th>
+                      </tr>
+                    <tr>
+                      <th></th>
+                      <th>Rate</th>
+                      <th>Amount</th>
+                      <th>Rate</th>
+                      <th>Amount</th>
+                      <th>TOTAL AMT</th>
+                    </tr>
+                    </thead>
+                    <tbody class="mainTableList">
+                      <tr>
+                    
+                      </tr>
+                      <tr class="Total">
+                       
+                      </tr>
+                    </tbody>
+        
+                  </table>
+                </div>
+               
+              </div>
           </div>
-          <div class="row">
-            <div class="col-lg-10">
-              <label class="fw-bold text-dark">Tax Summary :</label>
-              <table class="table table-striped table-hover table-bordered table-responsive" id="taxSummary">
-                <thead class="name_absolute">
-                  <tr>
-                    <th>Taxable Value</th>
-                    <th colspan="2">CGST</th>
-                    <th colspan="2">SGST/IGST</th>
-                    <th></th>
-                  </tr>
-                <tr>
-                  <th></th>
-                  <th>Rate</th>
-                  <th>Amount</th>
-                  <th>Rate</th>
-                  <th>Amount</th>
-                  <th>TOTAL AMT</th>
-                </tr>
-                </thead>
-                <tbody class="mainTableList">
-                  <tr>
-                
-                  </tr>
-                  <tr class="Total">
-                   
-                  </tr>
-                </tbody>
-    
-              </table>
-            </div>
-           
-          </div>
+          
          
       </div>
     <div class="col-lg-3" id="saleTotal">
       <div class="mb-4">
-          <div class=" mb-3">
+          <div class=" mb-2">
               <label  class="purchase-lable fw-bold">Gross total</label>
               <span class="purchase-span">
                   <input type="number" class="purchaseTableLabel-Gtotal  purchase-amounts" name="gross_total" id ="id_gross_total" value="{{master_form.instance.gross_total | default_if_none:''}}" maxlength="50" step=".01" readonly >
               </span>           
           </div>
-          <div class=" mb-3">
+          <div class=" mb-2">
             <label class="purchase-lable fw-bold">Cash Disct <input type="number" name="cash_disct" class="product_row" id="id_cash_disct" value="{{ master_form.instance.cash_disct | default_if_none:'0'}}" maxlength="50" step=".01">% </label>
             <span class="purchase-span">
                 <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="cash_disct_value" id ="id_cash_disct_value" value="" maxlength="50" step=".01" readonly >
             </span>
         </div>
-          <div class=" mb-3">
+          <div class=" mb-2">
               <label class="purchase-lable fw-bold">Fright & Transport</label>
               <span class="purchase-span">
                   <input type="number" class="purchaseTableLabel-transport  purchase-amounts" name="fright_transport" id ="id_fright_transport" value="{{master_form.instance.fright_transport | default_if_none:'0'}}" maxlength="50" step=".01" required >
               </span>
           </div>
-          <div class=" mb-3">
+          <div class=" mb-2">
               <input type="hidden" id="temp_grand_total" value="">
               <label class="purchase-lable fw-bold">Round Of </label>
               <span class="purchase-span">
@@ -286,7 +292,7 @@
               </span> 
           </div>
       
-          <div class=" mb-3">
+          <div class=" mb-2">
               <label class="purchase-lable fw-bold">Grand total</label>
               <span class="purchase-span"><input type="number" class="purchaseTableLabel-total purchase-amounts" name="grand_total" value="{{master_form.instance.grand_total | default_if_none:''}}" id="id_grand_total" step=".01" readonly required></span> 
           </div>
@@ -305,7 +311,7 @@
                           <th>Sku</th>
                           <th>Color</th>
                           <th class="text-primary">Qty</th>
-                          <th class="text-success">Scan Qty</th>
+                          <th class="text-success">Sales Qty</th>
                           <th class="text-danger">Balance</th>
                          
                       </tr>
@@ -375,7 +381,7 @@
 
     window.addEventListener('message', function(event) {
         const data = event.data;
-        console.log(data.ledger_labour);
+        // console.log(data.ledger_labour);
         if (data.ledger_labour) {
             populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
         }
@@ -478,7 +484,7 @@ $(document).ready(function(){
 
     challanable.each(function () {
         var challanId = parseInt($(this).find('.chalId').val()?.trim(), 10) || 0;
-        console.log('challanId:', challanId, typeof challanId);
+        // console.log('challanId:', challanId, typeof challanId);
         
         if (challanId === challanNo) {
             challanExists = true;
@@ -497,10 +503,10 @@ $(document).ready(function(){
             success: function (response) {
               var salesDelivery = $('#salesDeliveryTable .mainTableList tr');
               salesDelivery.empty();
-               var productPickList = response.d_challan_data;
-               console.log('productPickList',response)
+               var productChallan = response.d_challan_data;
+              //  console.log('productChallan',response)
            
-                if (productPickList && response.products  ) {
+                if (productChallan && response.products  ) {
                   var hiddenData = $('#salesHiddenData').val();
                     var currentData = hiddenData ? JSON.parse(hiddenData) : {};
 
@@ -528,7 +534,7 @@ $(document).ready(function(){
                     // Save updated data to the hidden input field
                     $('#salesHiddenData').val(JSON.stringify(currentData));
 
-                    console.log('Updated currentData:', currentData);
+                    // console.log('Updated currentData:', currentData);
 
                     var tables = $('#challanTable .mainTableList');
                     tables.find('tr').each(function () {
@@ -541,12 +547,12 @@ $(document).ready(function(){
                     });
                     
                     if (rowToPopulate) {
-                        populatePicklistRow(rowToPopulate, productPickList);
+                        populateChallanRow(rowToPopulate, productChallan);
                         
                     } else {
-                        addpickListRow();
+                        addChallanRow();
                         const newRow = tables.find('tr').last();
-                        populatePicklistRow(newRow, response)
+                        populateChallanRow(newRow, productChallan)
                     }
                     
                 }
@@ -561,15 +567,15 @@ $(document).ready(function(){
         $('#id_challan_no').val('');
   })
 
-      function populatePicklistRow(row, productPickList){
-        row.find('.challanId').val(productPickList.id);
-        row.find('.chalId').val(productPickList.delivery_challan_no);
-        row.find('.challanQty').val(productPickList.total_qty)
-        row.find('.challanBalance').val(productPickList.balance_qty);
-        row.find('.challanBalancehidden').val(productPickList.balance_qty);
+      function populateChallanRow(row, productChallan){
+        row.find('.challanId').val(productChallan.id);
+        row.find('.chalId').val(productChallan.delivery_challan_no);
+        row.find('.challanQty').val(productChallan.total_qty)
+        row.find('.challanBalance').val(productChallan.balance_qty);
+        row.find('.challanBalancehidden').val(productChallan.balance_qty);
       };
 
-    function addpickListRow() {
+    function addChallanRow() {
         const tableBody = document.querySelector('#challanTable .mainTableList');
         let lastVisibleRow = null;
         tableBody.querySelectorAll('tr').forEach(row => {
@@ -721,9 +727,9 @@ $(document).ready(function(){
          
             let outwardQty = challanSelected ? (totalQty[productKey]?.[sku] || 0) : 0;
             
-            if(outwardQty > qty){
+            if(outwardQty > balQty){
                 $('#responseMessage').html('<span class="text-danger">challan quantity exceeds available quantity.</span>');
-                return;
+                return false;
             }else{
                 balanceQty = challanSelected ? Math.max(0, item.balance_qty - outwardQty) : item.balance_qty;
         
@@ -745,11 +751,13 @@ $(document).ready(function(){
 
     };
     $(document).on('click', 'input.outwardChallan-btn', function () {
-        processOutwardPicking()
+        processOutwardPicking();
+
     })
 
     $(document).on('input', '[name$="-quantity"]', function () {
         processOutwardPicking()
+
     })
 })
 </script>
@@ -788,7 +796,7 @@ $(document).ready(function(){
             'deliveryChallan':deliveryChallan
           },
           success: function(response){
-            console.log(response)
+            // console.log(response)
             filterProducts = {}
             filterProducts = response.filtered_product;
             handleSalesProduct(filterProducts)
@@ -1040,12 +1048,12 @@ $(document).ready(function(){
           $dropdownOptions.css('display', 'none');
 
           if (item_value !== undefined) {
-            var itemcolorinput = document.querySelector('#product_color_' + purchasedata);
-            var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-gst');
-            var productSku = document.getElementById('product_Sku_'+purchasedata)
-            var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-mrp') ;
-            var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-sale_price')
-            var qty = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-quantity')
+              var itemcolorinput = document.querySelector('#product_color_' + purchasedata);
+              var itemgstinputs = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-gst');
+              var productSku = document.getElementById('product_Sku_'+purchasedata)
+              var mrp = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-mrp') ;
+              var customPrice = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-sale_price')
+              var qty = document.getElementById('id_sales_voucher_finish_goods_set-' + purchasedata + '-quantity')
               var selectedValue = searchedProductNameDic[item_value];
               var namevalueCheck = selectedValue[3];
               var productQty = selectedValue[2];
@@ -1161,6 +1169,11 @@ $(document).ready(function(){
                     qunatityInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-quantity`;
                     qunatityInputElement.value="";
 
+                    const qunatitydummyInputElement = lastRow.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-dummy_quantity"]');
+                    qunatitydummyInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-dummy_quantity`;
+                    qunatitydummyInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-dummy_quantity`;
+                    qunatitydummyInputElement.value="";
+
                     const mrpInputElement = lastRow.querySelector('.sales-mrp[name^="sales_voucher_finish_goods_set-"][name$="-mrp"]');
                     mrpInputElement.id = `id_sales_voucher_finish_goods_set-${formIndex}-mrp`;
                     mrpInputElement.name = `sales_voucher_finish_goods_set-${formIndex}-mrp`;
@@ -1266,7 +1279,7 @@ $(document).ready(function(){
     button.addEventListener('click', function () {
         // Find all rows in the table
         const rows =  getVisibleRows();
-        console.log(rows)
+        // console.log(rows)
         // Check if more than one row exists
         if (rows.length > 1) {
             // Find the row containing the clicked delete button
@@ -1302,7 +1315,54 @@ $(document).ready(function(){
  
   };
 
-  function calculateTotalAmount() {
+
+      let timeout = null;
+      $(document).on('input', '.sales-qunatity[name$="-quantity"]', function () {
+        clearTimeout(timeout); 
+        var row = $(this).closest('tr'); // Get the current row where input changed
+        var checkedRadio = $('.challanRadio:checked');
+
+        if (checkedRadio.length === 0) {
+            console.warn("No Challan selected.");
+            $('#responseMessage').html('<span class="text-danger">Please select a challan before calculating.</span>');
+            return;
+        }
+
+        var selectedRow = checkedRadio.closest('tr');
+        var productKey = parseInt(selectedRow.find('.chalId').val()) || 0;
+        var challanBalanceHidden = parseFloat(selectedRow.find('.challanBalancehidden').val()?.trim()) || 0;
+        var challanBalance = parseFloat(selectedRow.find('.challanBalance').val()?.trim()) || 0;
+        var dummyQTy = parseInt(row.find('input[name$="-dummy_quantity"]').val()) || 0;
+        let qty = parseInt(row.find('.sales-qunatity[name$="-quantity"]').val()) || 0;
+        // console.log('challanBalanceHidden:', challanBalanceHidden);
+        // console.log('challanBalance:', challanBalance);
+        // console.log('dummyQTy:', dummyQTy);
+        var challanBalQty = (challanBalance === challanBalanceHidden) ? challanBalanceHidden : challanBalance;
+
+        // console.log('challanBalQty:', challanBalQty);
+        var newQty = challanBalQty + dummyQTy
+        timeout = setTimeout(() => {
+        
+          var balance = newQty - qty;
+        // console.log('balance:', balance);
+        
+        // Update the balance only in the current row
+        selectedRow.find('.challanBalance').val(balance);
+        row.find('.sales-qunatity[name$="-dummy_quantity"]').val(qty)
+        },100)
+        
+      });
+      function safeParseJSON(jsonString) {
+            try {
+                if (!jsonString || jsonString.trim().toLowerCase() === "none") return {};
+                return JSON.parse(jsonString);
+            } catch (error) {
+                console.error("Invalid JSON format:", jsonString, error);
+                return {};
+            }
+        }
+
+    function calculateTotalAmount() {
         let total = 0; 
         let totalQty = 0;
         let newGst =0;
@@ -1318,51 +1378,74 @@ $(document).ready(function(){
         .filter(row => row.style.display !== 'none');
       
         rows.forEach(function(row) {
-            // Find the quantity, rate, and amount input fields for the current row
-            const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
-            const customPriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');
-            const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_finish_goods_set-"][name$="-trade_disct"]');
-            const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_finish_goods_set-"][name$="-spl_disct"]');
-            const amountInput = row.querySelector('.total-amount[name^="sales_voucher_finish_goods_set-"][name$="-amount"]');
-            const gstValue = row.querySelector('.purchase-gst[name^="sales_voucher_finish_goods_set-"][name$="-gst"]');
-            const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
-            const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
-            const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
-            const challanElement = row.querySelector('input[name$="-challanValue"]');
-            const challanId = challanElement ? parseInt(challanElement.value) || 0 : 0;
+          // Find the quantity, rate, and amount input fields for the current row
+          const quantityInput = row.querySelector('.sales-qunatity[name^="sales_voucher_finish_goods_set-"][name$="-quantity"]');
+          const customPriceInput = row.querySelector('.sales_price[name^="sales_voucher_finish_goods_set-"][name$="-sale_price"]');
+          const saletreadInput = row.querySelector('.sales-trade_disct[name^="sales_voucher_finish_goods_set-"][name$="-trade_disct"]');
+          const saleSplInput = row.querySelector('.sales-spl_disct[name^="sales_voucher_finish_goods_set-"][name$="-spl_disct"]');
+          const amountInput = row.querySelector('.total-amount[name^="sales_voucher_finish_goods_set-"][name$="-amount"]');
+          const gstValue = row.querySelector('.purchase-gst[name^="sales_voucher_finish_goods_set-"][name$="-gst"]');
+          const cgstValue= row.querySelector('.purchase-cgst[name^="sales_voucher_finish_goods_set-"][name$="-cgst"]');
+          const sgstValue= row.querySelector('.purchase-sgst[name^="sales_voucher_finish_goods_set-"][name$="-sgst"]');
+          const totalAmountInput = row.querySelector('.purchase-total[name^="sales_voucher_finish_goods_set-"][name$="-total_amount"]');
+          const challanElement = row.querySelector('input[name$="-challanValue"]');
+          const challanId = challanElement ? parseInt(challanElement.value) || 0 : 0;
+          const skuId = row.querySelector('[name^="product_Sku_"]').value
+          var checkedRadio = $('.challanRadio:checked');
+          var selectedRow = checkedRadio.closest('tr'); 
+          var productKey = parseInt(selectedRow.find('.chalId').val()) || 0
+          var storedData = $('#salesHiddenData').val();
+          var updateValue = $('#salesupdateData').val();
+            
+          if (updateValue) {
+              var latestUpdate = updateValue.replace(/'/g, '"');
+              latestUpdate = latestUpdate.replace(/(\d+):/g, '"$1":');  
+          }
 
-            var checkedRadio = $('.challanRadio:checked');
+          var parsedData = safeParseJSON(storedData);
+          var parsedUpdateData = safeParseJSON(latestUpdate);
 
-            // if (checkedRadio.length === 0) {
-            //     console.warn("No Challan selected.");
-            //     return;
-            // }
-            var selectedRow = checkedRadio.closest('tr'); 
-            var productKey = parseInt(selectedRow.find('.chalId').val()) || 0
-            var challanBalQty = parseFloat(selectedRow.find('.challanBalancehidden').val()?.trim()) || 0;
-            var challanQty = parseFloat(selectedRow.find('.challanQty').val()?.trim()) || 0;
-            // console.log('productKey',productKey,typeof(productKey))
-            // console.log('challanQty',challanQty)
-            // console.log('challanBalQty',challanBalQty)
+          if ($.isEmptyObject(parsedData) && $.isEmptyObject(parsedUpdateData)) {
+              console.log("No Challan data found.");
+              return;
+          }
 
-         
-            // Get the values of quantity and rate
-            let quantity = parseFloat(quantityInput.value);
-            if(challanId === productKey){
-                if(challanQty < quantity){
-                  quantity = challanQty;
+          var mergedData = (!$.isEmptyObject(parsedData) && !$.isEmptyObject(parsedUpdateData))
+              ? { ...parsedData, ...parsedUpdateData }
+              : (!$.isEmptyObject(parsedData) ? parsedData : parsedUpdateData);
+
+          if (!mergedData.hasOwnProperty(productKey)) {
+              console.warn("No data found for this challanNo:", productKey);
+              return;
+          }
+          
+          if (!Array.isArray(mergedData[productKey])) {
+              console.warn("Invalid or missing challan data for productKey:", productKey);
+              return;
+          }
+
+          let quantity = parseInt(quantityInput.value) || 0;
+          let balanceQty = 0;
+          if (challanId === productKey) {
+              mergedData[productKey].forEach(item => {
+                
+                let sku = String(item.sku).trim();
+                let balQty = parseFloat(item.balance_qty) || 0;
+              
+                if (sku === skuId) {
+                    quantity = Math.min(quantity, balQty);
                 }
-                var balance = challanBalQty - quantity;
-                console.log('balance',balance)
-                selectedRow.find('.challanBalance').val(balance)
-            }
-           
-
+               
+              });
+              quantityInput.value = quantity;
+             
+          }
+         
             const rate = parseFloat(customPriceInput.value);
             const tradeamount = parseFloat(saletreadInput.value)
             const splAmount = parseFloat(saleSplInput.value);
             const gst = parseFloat(gstValue.value);
-            console.log('quantity',quantity)
+          
 
            
             // Calculate the amount for the current row
@@ -1549,14 +1632,14 @@ $(document).ready(function(){
 
 
     document.addEventListener("DOMContentLoaded", function () {
-      calculateTaxSummary()
-      document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
-        input.addEventListener('input', function(){
-          calculateTotalAmount();
-          calculateOtherTotal();
-          inputCheck()
+        calculateTaxSummary()
+        document.querySelectorAll('[name$="-quantity"], [name$="-sale_price"],[name$="-trade_disct"],[name$="-spl_disct"]').forEach(input => {
+          input.addEventListener('input', function(){
+            calculateTotalAmount();
+            calculateOtherTotal();
+            inputCheck()
+          });
         });
-      });
         document.querySelectorAll('[name$="-spl_disct"]').forEach(input => {
         input.addEventListener('input', function(){
           calculateTaxSummary();
@@ -1565,7 +1648,7 @@ $(document).ready(function(){
         });
 
         const table = document.getElementById("salesTable");
-      const salesTotal = document.getElementById('saleTotal');
+        const salesTotal = document.getElementById('saleTotal');
 
       // Prevent Enter key from submitting the form inside table inputs
       table.addEventListener("keydown", function (event) {
@@ -1581,201 +1664,195 @@ $(document).ready(function(){
 
           }
       });
-     
-
       document.getElementById("id_sales_no").focus();
    
       inputCheck()
     })
     
     
-    calculateTaxSummary()
+   
+    function inputCheck(){
+      const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
+      const buyerNo = document.getElementById('id_buyer_inv_no')
+      // const godownSelect = document.getElementById('id_selected_godown')
+      var tableRows = document.querySelectorAll('#salesbody tr');
+      var partyName = document.getElementById('id_party_name')
+
+      itemNameInputsid.forEach((input, index) => {
+        input.addEventListener("keydown", function (event) {
+
+            const closestRow = input.closest('tr');
+            const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
+            const qtyInput = closestRow.querySelector('[name$="-quantity"]');
+                if(allInputsInRow === ''){
+                    if (event.key === "Tab") {
+                        event.preventDefault(); 
+                      
+                        if (input.value.trim() !== "") {
+                              if (qtyInput) {
+                                  qtyInput.focus();
+                              }
+                          } else {
+                              input.focus(); // Refocus on the current input if empty
+                          }
+                      }
+                      if (event.key === 'Enter') {
+                          event.preventDefault();
+                          const currentTd = input.closest('tr');
+                            
+                          if (currentTd) {
+                              const nextTd = currentTd.nextElementSibling;
+
+                              // Check if next <td> exists and contains an input
+                              if (nextTd) {
+                                  const nextInput = nextTd.querySelector('[name$="-quantity"]');
+                                  if (nextInput) {
+                                      nextInput.focus(); // Move focus to the next input
+                                  }
+                              }
+                          }
+                      }
+                }
+      
+            
+        });
+      });
+
+      if(buyerNo){
+        buyerNo.addEventListener('keydown', function(event) {
+          if (event.key === "Tab") {
+            event.preventDefault();
+            if (buyerNo.value === '') {
+              buyerNo.focus();
+              return;
+            }else{
+              partyName.focus();
+            }
+          }
+        })
+      }
+    
+      
+      
+      
+      if(partyName){
+        partyName.addEventListener('keydown',function(){
+          if (event.key === "Tab") {
+            event.preventDefault();
+            if(partyName.value === ''){
+              partyName.focus();
+              return;
+            }else{
+              var tableRow = document.querySelectorAll('#salesbody tr');
+              for (let row of tableRow) {
+                  var itemInput = row.querySelector('[name$="product_name_value"]');
+                  var qtyInput = row.querySelector('[name$="-quantity"]');
+
+                  if (itemInput && itemInput.value === '') {
+                      itemInput.focus();
+                      return; 
+                  } 
+                  // Check if quantity is empty, then focus on it
+                  else if (qtyInput && qtyInput.value === '') {
+                      qtyInput.focus();
+                      return; 
+                  }
+              }
+            }
+          }
+      })
+      }
+      
+
+    
+      tableRows.forEach(function (row,index) {
+          const rate = row.querySelector('[name$="-spl_disct"]');
+          const qty = row.querySelector('[name$="-quantity"]')
+          const tredDisc = row.querySelector('[name$="-trade_disct"]')
+        
+          if(qty){
+              qty.addEventListener('keydown', function (event) {
+                  if (event.key === "Tab") {
+                      event.preventDefault();
+                      if (qty.value === '') {
+              
+                          qty.focus();
+                          return;
+                      } else if(tredDisc) {
+                        
+                        tredDisc.focus();
+                        return;
+                        
+                          
+                      }
+                  }
+              });
+          }
+          if(tredDisc){
+            tredDisc.addEventListener('keydown', function (event) {
+                  if (event.key === "Tab") {
+                      event.preventDefault();
+                      if (tredDisc.value === '') {
+                        tredDisc.focus();
+                        return;
+                      } else if(rate) {
+                        
+                        rate.focus();
+                        return;
+                          
+                      }
+                  }
+              });
+          }
+          if (rate) {
+              // Add keydown event listener regardless of whether rate is empty or not
+              rate.addEventListener('keydown', function (event) {
+                  if (event.key === "Tab") {
+                      event.preventDefault(); // Prevent default tabbing behavior
+
+                      if (rate.value === '') {
+                          // If rate is empty, focus on the rate field itself
+                          rate.focus();
+                          return;
+                      } else {
+                          var nextRow = tableRows[index + 1];;
+                          // console.log('nextRow',nextRow)
+                          if (nextRow) {
+                              var nextItemInput = nextRow.querySelector('[name$="product_name_value"]');
+                              // console.log('nextRow',nextItemInput)
+                              if (nextItemInput && nextItemInput.value === '') {
+                                  nextItemInput.focus();
+                              } else {
+                                  var nextQtyInput = nextRow.querySelector('[name$="-quantity"]');
+                                  if (nextQtyInput) {
+                                      nextQtyInput.focus();
+                                      return;
+                                  }
+                              }
+                          } else {
+                          
+                              var AddElement = document.getElementById('addRowButton');
+                              if (AddElement) {
+                                AddElement.focus();
+                                return;
+                                
+                              }
+                          }
+                      }
+                  }
+              });
+          }
+
+      });
+
+
+    }
+
+inputCheck()
+calculateTaxSummary()
      calculateTotalAmount();
     calculateOtherTotal();
     deleteRowData()
-  function inputCheck(){
-    const itemNameInputsid = document.querySelectorAll('[name$="-product_name_value"]');
-    const buyerNo = document.getElementById('id_buyer_inv_no')
-    // const godownSelect = document.getElementById('id_selected_godown')
-    var tableRows = document.querySelectorAll('#salesbody tr');
-    var partyName = document.getElementById('id_party_name')
-  
-
-
-
-
-
-    itemNameInputsid.forEach((input, index) => {
-      input.addEventListener("keydown", function (event) {
-
-          const closestRow = input.closest('tr');
-          const allInputsInRow = closestRow.querySelector('[name$="-product_name_value"]').value;
-          const qtyInput = closestRow.querySelector('[name$="-quantity"]');
-              if(allInputsInRow === ''){
-                  if (event.key === "Tab") {
-                      event.preventDefault(); 
-                    
-                      if (input.value.trim() !== "") {
-                            if (qtyInput) {
-                                qtyInput.focus();
-                            }
-                        } else {
-                            input.focus(); // Refocus on the current input if empty
-                        }
-                    }
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        const currentTd = input.closest('tr');
-                          
-                        if (currentTd) {
-                            const nextTd = currentTd.nextElementSibling;
-
-                            // Check if next <td> exists and contains an input
-                            if (nextTd) {
-                                const nextInput = nextTd.querySelector('[name$="-quantity"]');
-                                if (nextInput) {
-                                    nextInput.focus(); // Move focus to the next input
-                                }
-                            }
-                        }
-                    }
-              }
-    
-          
-      });
-    });
-
-    if(buyerNo){
-      buyerNo.addEventListener('keydown', function(event) {
-        if (event.key === "Tab") {
-          event.preventDefault();
-          if (buyerNo.value === '') {
-            buyerNo.focus();
-            return;
-          }else{
-            partyName.focus();
-          }
-        }
-      })
-    }
-   
-    
-    
-    
-    if(partyName){
-      partyName.addEventListener('keydown',function(){
-        if (event.key === "Tab") {
-          event.preventDefault();
-          if(partyName.value === ''){
-            partyName.focus();
-            return;
-          }else{
-            var tableRow = document.querySelectorAll('#salesbody tr');
-            for (let row of tableRow) {
-                var itemInput = row.querySelector('[name$="product_name_value"]');
-                var qtyInput = row.querySelector('[name$="-quantity"]');
-
-                if (itemInput && itemInput.value === '') {
-                    itemInput.focus();
-                    return; 
-                } 
-                // Check if quantity is empty, then focus on it
-                else if (qtyInput && qtyInput.value === '') {
-                    qtyInput.focus();
-                    return; 
-                }
-            }
-          }
-        }
-    })
-    }
-    
-
-   
-    tableRows.forEach(function (row,index) {
-        const rate = row.querySelector('[name$="-spl_disct"]');
-        const qty = row.querySelector('[name$="-quantity"]')
-        const tredDisc = row.querySelector('[name$="-trade_disct"]')
-       
-        if(qty){
-            qty.addEventListener('keydown', function (event) {
-                if (event.key === "Tab") {
-                    event.preventDefault();
-                    if (qty.value === '') {
-             
-                        qty.focus();
-                        return;
-                    } else if(tredDisc) {
-                       
-                      tredDisc.focus();
-                      return;
-                      
-                        
-                    }
-                }
-            });
-        }
-        if(tredDisc){
-          tredDisc.addEventListener('keydown', function (event) {
-                if (event.key === "Tab") {
-                    event.preventDefault();
-                    if (tredDisc.value === '') {
-                      tredDisc.focus();
-                      return;
-                    } else if(rate) {
-                       
-                      rate.focus();
-                      return;
-                        
-                    }
-                }
-            });
-        }
-        if (rate) {
-            // Add keydown event listener regardless of whether rate is empty or not
-            rate.addEventListener('keydown', function (event) {
-                if (event.key === "Tab") {
-                    event.preventDefault(); // Prevent default tabbing behavior
-
-                    if (rate.value === '') {
-                        // If rate is empty, focus on the rate field itself
-                        rate.focus();
-                        return;
-                    } else {
-                        var nextRow = tableRows[index + 1];;
-                        // console.log('nextRow',nextRow)
-                        if (nextRow) {
-                            var nextItemInput = nextRow.querySelector('[name$="product_name_value"]');
-                            console.log('nextRow',nextItemInput)
-                            if (nextItemInput && nextItemInput.value === '') {
-                                nextItemInput.focus();
-                            } else {
-                                var nextQtyInput = nextRow.querySelector('[name$="-quantity"]');
-                                if (nextQtyInput) {
-                                    nextQtyInput.focus();
-                                    return;
-                                }
-                            }
-                        } else {
-                        
-                            var AddElement = document.getElementById('addRowButton');
-                            if (AddElement) {
-                              AddElement.focus();
-                              return;
-                               
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-    });
-
-
-  }
-
-inputCheck()
 
 </script>
 {% endblock body %}

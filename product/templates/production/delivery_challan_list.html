@@ -39,13 +39,13 @@
               <th>Mod. Name</th> 
               <th>Color</th>
               <th>SKU ID</th>
-              <th>T LWO =</th>
-              <th>Bal For LWI =</th>
+              <th style="color: blue;">T LWO = <span style="color: blue;" id="tLwo"></th>
               <th class="text-success">T Rec As LWI = <span class="text-success" id="tRecLwi"></span></th> 
-              <th class="text-danger">QC Pend PCs = <span class="text-danger" id="tQcPendQty"></span></th>
+              <th style="color: rgb(255, 0, 0);">Bal For LWI = <span class="text-danger" id="tLwiBal"></span></th>
+              <th style="color: rgb(255, 64, 0);">QC Pend PCs = <span class="text-danger" id="tQcPendQty"></span></th>
               <th class="text-primary">T QC APP Qty = <span class="text-primary" id="tQcAppQty"></span></th>
-              <th class="text-warning">Dely. Qty = <span class="text-warning" id="tDelyQty"></span></th>
-              <th class="text-warning">G. TRF Qty = <span class="text-info" id="tStockTransQty"></span></th>
+              <th style="color: #ff7e53;">Dely. Qty = <span style="color: #ff7e53;" id="tDelyQty"></span></th>
+              <th style="color: #ecca1b;">G. TRF Qty = <span style="color: #ecca1b;" id="tStockTransQty"></span></th>
               <th class="text-danger">Bal Qty = <span class="text-danger" id="balanceQty"></span></th>
               <th>Due Day</th> 
           </tr>
@@ -62,13 +62,13 @@
               <td>{{query.Product.Model_Name}}</td>
               <td>{{query.PProduct_color}}</td>
               <td>{{query.PProduct_SKU}}</td>
-              <td>{{query.total_lwo_qty}}</td>
-              <td>{{query.total_bal_for_lwi}}</td>
-              <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
-              <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ecca1b; text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
+              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1030ff; text-decoration: none;"><span class="lwoQty">{{ query.total_lwo_qty | default_if_none:0 }}</span></a></td>
+              <td class="text-center"><a href="{% url 'finished-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: green; text-decoration: none;"><span class="lwiQty">{{ query.total_labour_workin_qty | default_if_none:0 }}</span></a></td>     
+              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: rgb(255, 0, 0); text-decoration: none;"><span class="lwiBalQty"></span>{{query.total_bal_for_lwi}}</span></a></td>
+              <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}"class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: rgb(255, 64, 0); text-decoration: none;"><span class="lwipendingQty">{{ query.total_labour_workin_pending_qty | default_if_none:0 }}</span> </a></td>
               <td class="text-center"><a href="{% url 'qc_approved-goods-model-wise-report' query.Product.Product_Refrence_ID %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #10a7ff; text-decoration: none;"><span class="lwiapprQty">{{ query.total_labour_workin_approve_qty | default_if_none:0 }}</span></a></td>
-              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ffbb10; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
-              <td class=" text-center text-danger"><span class="TRFQty">{{query.total_trf_qty}}</span</td>
+              <td class="text-center"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff7e53; text-decoration: none;"><span class="delQty">{{ query.total_challan_qty | default_if_none:0 }}</span></a></td>
+              <td class=" text-center text-danger"><a href="" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color:#ecca1b; text-decoration: none;"><span class="TRFQty">{{query.total_trf_qty |default_if_none:0}}</span></a></td>
               <td class=" text-center text-danger"><span class="balanceQty"></span></td>
               <td class="text-center"></td>
             
@@ -79,7 +79,7 @@
   </table>
   </div>
 
-  <button type="button" class="edit_btn w-100 mb-3" id="Delivery_challan_btn"><span class="text-start">Delivery Challan List</span><span class="bg-c-blue ms-4 px-2 py-1 rounded">T Qty = <span id="total"></span></span> <span class="bg-c-red ms-4 px-2 py-1 rounded">Pend. Bill = <span id="pendingBill"></span></span><span class="purchaseOrderCuttingVouchareArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+  <button type="button" class="edit_btn w-100 mb-3 text-start" id="Delivery_challan_btn"><a href="{% url 'sales-voucher-create' %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #8c10ff; text-decoration: none;">Create Sales +</a><span class="text-start" style="margin-left: 160px;">Delivery Challan List</span><span class="bg-c-blue ms-4 px-2 py-1 rounded">T Qty = <span id="total"></span></span> <span class="bg-c-red ms-4 px-2 py-1 rounded">Pend. Bill = <span id="pendingBill"></span></span><span class="purchaseOrderCuttingVouchareArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
   <div id="Delivery_challan_list" style="display: none;">
     <table class="table table-striped table-hover table-bordered" id="deliveryChallanList">
       <thead class="name_absolute sticky-top">
@@ -205,12 +205,15 @@
     }
 
     function calculateAllTotalValue(){
+        let lwoQty = 0
+        let lwibalQty = 0;
         let lwiqty = 0;
         let lwipendingqty = 0;
         let lwiapproveqty = 0;
         let balanceqty = 0;
         let totalqty = 0;
         let delQty = 0;
+        let trfQty = 0
 
         const allFinishGoodTable = document.querySelectorAll('#allFinishGoodReportTable .mainTableList tr');
         
@@ -219,11 +222,17 @@
             const lwiPendingQty = parseInt(row.querySelector('.lwipendingQty').textContent) || 0;
             const lwiApproveQty = parseInt(row.querySelector('.lwiapprQty').textContent) || 0;
             const delvQty = parseInt(row.querySelector('.delQty').textContent) || 0;
+            const lwoqty = parseInt(row.querySelector('.lwoQty').textContent) || 0 ;
+            const StockTransfer = parseInt(row.querySelector('.TRFQty').textContent) || 0 ;
+            const lWiBalanceQty = parseInt(row.querySelector('.lwiBalQty').textContent) || 0;
 
-            lwiqty += lwiQty
+            lwoQty += lwoqty;
+            lwiqty += lwiQty;
+            lwibalQty += lWiBalanceQty;
             lwipendingqty += lwiPendingQty;
             lwiapproveqty += lwiApproveQty;
             delQty += delvQty;
+            trfQty += StockTransfer;
             let balance = lwiApproveQty - delvQty;
 
             balanceqty += balance
@@ -239,6 +248,9 @@
            document.getElementById('balanceQtyValue').textContent = balanceqty;
            document.getElementById('tDelyQty').textContent = delQty;
            document.getElementById('tDelyQtyValue').textContent = delQty;
+           document.getElementById('tLwo').textContent = lwoQty;
+           document.getElementById('tStockTransQty').textContent = trfQty;
+           document.getElementById('tLwiBal').textContent = lwibalQty;
         })
 
     }
