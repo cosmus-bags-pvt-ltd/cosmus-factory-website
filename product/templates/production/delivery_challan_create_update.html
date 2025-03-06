@@ -4,10 +4,10 @@
 
 <form method="POST">
     {% csrf_token %}
-    {{ product_list }}
+    
     <div class="mt-3">
         <div class="mb-2 d-flex">
-
+            <input type="hidden" id="hiddenDeliveryChallan" value="{{ product_list }}">
             <div class="d-flex">
                 <label for="id_delivery_challan_no" class="me-1">Challan no :</label>
                 {% if master_form.instance.id %}
@@ -711,6 +711,7 @@
 
 function inputCheck() {
     const itemNameInputs = document.querySelectorAll('[name$="-products"]');
+    const godown = document.getElementById('id_selected_godown')
     const productInvoiceId = document.getElementById('id_deliverychallanproducts_set-0-id').value;
     const challanNo = document.getElementById('id_delivery_challan_no');
     const partyName = document.getElementById('id_party_name');
@@ -728,6 +729,17 @@ function inputCheck() {
             event.preventDefault();
             if(challanNo.value === ''){
                 challanNo.focus();
+                return;
+            }else{
+                godown.focus()
+            }
+        }
+    })
+    godown.addEventListener('keydown',function(event){
+        if(event.key === 'Tab'){
+            event.preventDefault();
+            if(godown.value === ''){
+                godown.focus();
                 return;
             }else{
                 partyName.focus()
