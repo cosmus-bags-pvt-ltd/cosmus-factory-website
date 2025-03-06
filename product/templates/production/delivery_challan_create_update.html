@@ -8,6 +8,7 @@
     <div class="mt-3">
         <div class="mb-2 d-flex">
             <input type="hidden" id="hiddenDeliveryChallan" value="{{ product_list }}">
+            <input type="hidden" id="hiddencreateDeliveryChallan" value="">
             <div class="d-flex">
                 <label for="id_delivery_challan_no" class="me-1">Challan no :</label>
                 {% if master_form.instance.id %}
@@ -338,24 +339,15 @@
                     $(`input[name^=quantity-${purchaseValue}]`).val(productQty);
                     $(`input[name^=productSku-${purchaseValue}]`).val(item_value);
 
-                    let totalExistingQuantity = 0;
-                
-                    // $('input[name^="deliverychallanproducts_set-"][name$="-product_name"]').each(function () {
-                    //     var rowProductValue = parseInt($(this).val());
-                    //     var rowIndex = $(this).attr('name').match(/\d+/)[0]; // Extract index
-                    //     console.log('rowProductValue',rowProductValue ,typeof(item_value))
-                    //     console.log('item_value',item_value)
-                    //     if (rowProductValue === item_value) {
-                    //         var rowQuantity = parseInt($(`.stock_qty[name="deliverychallanproducts_set-${rowIndex}-quantity"]`).val()) || 0;
-                    //         console.log('rowQuantity',rowQuantity)
-                    //         totalExistingQuantity += rowQuantity;
-                    //         console.log('rowIndex',totalExistingQuantity)
-                    //         // $(`input[name^=quantity-${rowIndex}]`).val(totalExistingQuantity)
-                    //     }else{
-                    //         // $(`input[name^=quantity-${rowIndex}]`).val(productQty)
-                    //     }
+                    var hiddenData = $('#hiddencreateDeliveryChallan').val();
+                    var currentData = hiddenData && hiddenData.trim().toLowerCase() !== "none" ? JSON.parse(hiddenData) : {};
+
+                    // ✅ Store SKU with Quantity (Overwrites if SKU already exists)
+                    currentData[item_value] = productQty;
+
+                    // Save updated data to the hidden input field
+                    $('#hiddencreateDeliveryChallan').val(JSON.stringify(currentData));
             
-                    // })
                 }
             
                 suggestionsContainer.css('display', 'none');
@@ -363,41 +355,105 @@
             })
 
         })
+        function safeParseJSON(jsonString) {
+            try {
+                if (!jsonString || jsonString.trim().toLowerCase() === "none") return {};
+                return JSON.parse(jsonString);
+            } catch (error) {
+                console.error("Invalid JSON format:", jsonString, error);
+                return {};
+            }
+        }
+
    
         $(document).on('input', 'input[name$="-quantity"]', function (e) {  
-    
             let rowIndex = $(this).attr("id").match(/\d+/)[0]; 
             let productValue = parseInt($(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val()) || 0;
-            let sku = $(`#id_deliverychallanproducts_set-${rowIndex}-product_name`).val();
-            let Qty =  $(`input[name^=quantity-${rowIndex}]`).val();
+            let inputSku = $(`#id_deliverychallanproducts_set-${rowIndex}-product_name`).val();
+            let productData = $('#hiddenDeliveryChallan').val();
+            let hiddenValueData = $('#hiddencreateDeliveryChallan').val();
 
-            // console.log('productValue',productValue)
-            // console.log('Qty',Qty)
-
-            if (productValue > Qty) {
-                $(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val(Qty);
+            if (!inputSku) {
+                // console.log("❌ No SKU entered");
+                return;
             }
 
-            var tables = Array.from(document.querySelectorAll('#deliveryChallanTable .mainTableList tr'))
-            .filter(row => row.style.display !== 'none');
+            // console.log("Raw productData:", productData);
+            // console.log("Raw hiddenValueData:", hiddenValueData);
 
-            var value = 0;
-    
-            tables.forEach(function(row) {
-                var inputField = row.querySelector('[name$="-quantity"]');
-                if (inputField) {
-                    var qty = parseInt(inputField.value) || 0; // Default to 0 if NaN
-                    value += qty;
+            // Handle "None" values or empty strings
+            if (!productData || productData.trim() === "None") productData = "{}";
+            if (!hiddenValueData || hiddenValueData.trim() === "None") hiddenValueData = "{}";
+
+            function cleanJsonString(jsonString) {
+                try {
+                    return jsonString
+                        .replace(/'/g, '"')  // Convert single quotes to double quotes
+                        .replace(/(\w+):/g, '"$1":')  // Ensure property names are quoted
+                        .replace(/None/g, 'null');  // Replace 'None' with 'null'
+                } catch (err) {
+                    console.error("❌ Error cleaning JSON string:", err);
+                    return "{}"; // Return empty object in case of failure
+                }
+            }
+
+            let parsedProductData = {};
+            let parsedHiddenValueData = {};
+
+            try {
+                parsedProductData = JSON.parse(cleanJsonString(productData));
+            } catch (error) {
+                console.error("❌ Error parsing productData:", error);
+                parsedProductData = {}; // Set empty object to avoid further errors
+            }
+
+            try {
+                parsedHiddenValueData = JSON.parse(cleanJsonString(hiddenValueData));
+            } catch (error) {
+                console.error("❌ Error parsing hiddenValueData:", error);
+                parsedHiddenValueData = {}; // Set empty object to avoid further errors
+            }
+
+            // console.log("Parsed productData:", parsedProductData);
+            // console.log("Parsed hiddenValueData:", parsedHiddenValueData);
+
+            // Merge both objects
+            let mergedData = { ...parsedHiddenValueData, ...parsedProductData };
+
+            // console.log("Merged Data:", mergedData);
+
+            if ($.isEmptyObject(mergedData)) {
+                console.warn("⚠️ No valid product data found, assuming empty object.");
+                return;
+            }
+
+            // Check if SKU exists in mergedData
+            if (!(inputSku in mergedData)) {
+                console.log(`❌ SKU ${inputSku} not found in mergedData.`);
+                return;
+            }
+
+            let availableQty = parseInt(mergedData[inputSku]) || 0; // Retrieve available quantity
+
+            // console.log(`🔹 SKU: ${inputSku} | Entered Qty: ${productValue} | Available Qty: ${availableQty}`);
+
+            // Restrict input if entered quantity exceeds available quantity
+            if (productValue > availableQty) {
+                // console.log(`❌ Entered quantity ${productValue} exceeds available stock (${availableQty}).`);
+                $(`#id_deliverychallanproducts_set-${rowIndex}-quantity`).val(availableQty);
+            }
+
+            // Calculate total quantity from the table
+            let totalQty = 0;
+            $('#deliveryChallanTable .mainTableList tr').each(function () {
+                if ($(this).css('display') !== 'none') {
+                    let qty = parseInt($(this).find('input[name$="-quantity"]').val()) || 0;
+                    totalQty += qty;
                 }
             });
 
-            document.getElementById('id_total-quantity').value = value;
-            document.getElementById('id_no_of_pcs').value = value;
-
-            
-
+            $('#id_total-quantity, #id_no_of_pcs').val(totalQty);
         });
-        
 
         var index = 0; // Declare index outside of the event listener
         var indexbool = true;
