@@ -15600,6 +15600,8 @@ def delivery_challan_create_update(request, d_id=None):
                     master_form_instance = master_form.save(commit=False)
                     master_form_instance.save()
 
+                    selected_godown = master_form_instance.selected_godown
+
                     if not formset.is_valid():
                         for form in formset:
                             if not form.is_valid():
@@ -15618,7 +15620,7 @@ def delivery_challan_create_update(request, d_id=None):
                                 product_name = form.instance.product_name
                                 product_qty = form.instance.quantity
 
-                                del_obj, created = product_godown_quantity_through_table.objects.get_or_create(product_color_name=product_name)
+                                del_obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
 
                                 del_obj.quantity += product_qty
                                 del_obj.save()
@@ -15633,7 +15635,7 @@ def delivery_challan_create_update(request, d_id=None):
                                     instance.balance_qty = form.cleaned_data['quantity']
 
                                     if form.has_changed() and 'quantity' in form.changed_data:
-                                        obj, created = product_godown_quantity_through_table.objects.get_or_create(product_color_name=instance.product_name)
+                                        obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=instance.product_name)
 
                                         old_qty = form.initial.get('quantity', 0)
                                         new_qty = form.cleaned_data['quantity']
@@ -16053,24 +16055,24 @@ def salesvoucherlist(request):
 
 
 
+
 @login_required(login_url='login')
 def salesvoucherdelete(request,pk):
+
     sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
+
     if sales_instance:
         transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master = pk)
 
         for i in transfer_records:
-            selected_godown = i.sales_voucher_master.selected_godown
-            selected_warehouse = i.sales_voucher_master.selected_warehouse
+            challan = i.challan.delivery_challan
             product_name = i.product_name
             product_quantity = i.quantity
-            if selected_godown:
-                godown_qty_value, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product_name)
 
-                godown_qty_value.quantity = godown_qty_value.quantity + product_quantity
-                godown_qty_value.save()
-            else:
-                pass
+            if challan:
+                challan_qty_value = DeliveryChallanProducts.objects.get(delivery_challan = challan,product_name=product_name)
+                challan_qty_value.balance_qty += product_quantity
+                challan_qty_value.save()
+        sales_instance.delete()
 
-    sales_instance.delete()
     return redirect('sales-voucher-list')
