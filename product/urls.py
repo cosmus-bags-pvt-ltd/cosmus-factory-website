@@ -154,7 +154,8 @@ urlpatterns = [
 
     #SalesVoucher
     path('salesvouchercreateupdate/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
-    path('salesvouchercreateupdate/<int:s_id>/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
+    path('salesvouchercreateupdate/<int:s_id>/<int:dc_id>/', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
+    # path('salesvouchercreateupdate//', views.salesvouchercreateupdate, name = 'sales-voucher-create'),
     path('salesvoucherlist/', views.salesvoucherlist, name = 'sales-voucher-list'),
     
     path('salesvoucherdelete/<int:pk>/', views.salesvoucherdelete, name = 'sales-voucher-delete'),
@@ -418,4 +419,5 @@ urlpatterns = [
     path('deliverychallanproductajax/', views.delivery_challan_product_ajax, name='delivery-challan-product-ajax'),
     path('deletedeliverychallan/<int:pk>/', views.delete_delivery_challan, name='delete-delivery-challan'),
     path('deliverychallanprocessforsalevoucher/', views.delivery_challan_process_for_sale_voucher, name='delivery-challan-process-for-sale-voucher'),
+    path('downloaddeliverychallanpdf/<int:dc_id>',views.download_delivery_challan_pdf , name = 'download-delivery-challan-pdf'),
 ]
