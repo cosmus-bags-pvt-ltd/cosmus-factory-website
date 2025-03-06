@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Challan</title>
+    <style>
+
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        th, td{
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+        
+        .header{
+            text-align: center; 
+        }
+        .logo{
+            width: 150px;
+        }
+        .signature{
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h4 class="">Delivery Challan</h4>
+        {% if logo_base64 %}
+            <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" class="logo">
+        {% endif %}
+        <small>Mfg. of All Types of Hard and Soft luggage, Business Gifts,<br>
+        Leather Articles and All Corporate Gifts</small>
+    </div>
+
+    <table class="no-border">
+        <tr>
+            <td><strong>Party Name:</strong> {{ challan.party_name.name }}</td>
+            <td><strong>Shipping Address:</strong> {{ challan.shipping_address }}</td>
+            <td><strong>Delivery Challan No.:</strong> {{ challan.delivery_challan_no }}<br>
+                <strong>Date:</strong> {{ challan.delivery_challan_date }}</td>
+        </tr>
+    </table>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Sr No</th>
+                <th>Ref No</th>
+                <th>Model No</th>
+                <th>Description</th>
+                <th>QTY</th>
+                <th>Remark</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in products_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.ref_no }}</td>
+                <td>{{ item.product }}</td>
+                <td></td>
+                <td>{{ item.product_quantity }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="no-border">
+        <tr>
+            <td><strong>Vehicle No.:</strong> {{ challan.vehicle_no }}</td>
+            <td><strong>Driver Name:</strong> {{ challan.driver_name }}</td>
+            <td><strong>Dispatch Time:</strong> {{ challan.dispatch_time }}</td>
+        </tr>
+    </table>
+
+    <table class="no-border">
+        <tr>
+            <td><strong>No of Box:</strong> {{ challan.no_of_boxes }}</td>
+            <td><strong>No of Pcs:</strong> {{ challan.no_of_pcs }}</td>
+            <td><strong>Remark:</strong> {{ challan.remark }}</td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 50px;">
+        <div style="float: left;">
+            <strong>Receiver's Signature</strong>
+        </div>
+        <div style="float: right; text-align: right;">
+            <strong>E. & O.E.</strong><br>
+            {% if signature_base64 %}
+                <img src="data:image/png;base64,{{ signature_base64 }}" alt="Signature" class="signature"><br>
+            {% endif %}
+            <small>For COSMUS Lifestyle Pvt. Ltd.<br>Authorized Signature</small>
+        </div>
+    </div>
+
+</body>
+</html>

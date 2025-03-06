@@ -42,6 +42,9 @@ from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 from django.db.models.functions import Cast
 from django.db.models import CharField
+import base64
+from django.contrib.staticfiles import finders
+
 
 from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster, DeliveryChallanProducts, Fabric_Group_Model,
                     FabricFinishes, Finished_goods_Stock_TransferMaster, Finished_goods_transfer_records, Finished_goods_warehouse, Godown_finished_goods, Godown_raw_material,
@@ -67,7 +70,7 @@ from .models import (AccountGroup, AccountSubGroup, Color, DeliveryChallanMaster
 
 from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, ColorForm, 
                     CustomPProductaddFormSet, Finished_goods_Stock_TransferMaster_form, Outwardproductmasterform, PicklistProcessInOutwardFormsetupdate, Picklistvouchermasterform, ProductCreateSkuFormsetCreate,
-                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesmaninfoForm, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, bin_for_raw_material_form, cutting_room_form,
+                    ProductCreateSkuFormsetUpdate, Purchaseorderforpuchasevoucherrmform, Purchaseordermasterforpuchasevoucherrmform, SalesVoucherDeliveryChallanForm, SalesmaninfoForm, Salesvouchermasteroutwardscanform, SalesvoucheroutwardscanForm, bin_for_raw_material_form, cutting_room_form,
                     factory_employee_form, finished_goods_warehouse_racks_form, finished_goods_warehouse_zone_form, finished_product_warehouse_bin_form, 
                     labour_work_in_product_to_item_approval_formset, labour_work_in_product_to_item_form, labour_workin_master_form, labour_workout_child_form, 
                     labour_workout_cutting_items_form, ledger_types_form, product_purchase_voucher_master_form, purchase_order_for_raw_material_cutting_items_form, 
@@ -80,7 +83,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     gst_form, item_purchase_voucher_master_form,
                     packaging_form, product_main_category_form,  Product2ItemFormsetExtraForm,Product2CommonItemFormSetExtraForm,
                     product_sub_category_form, purchase_voucher_items_formset,raw_material_product_estimation_formset_update,
-                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, sales_return_voucher_form, sales_return_voucher_master_form, salesreturninwardmasterform,
+                    purchase_voucher_items_godown_formset, purchase_voucher_items_formset_update, raw_material_stock_trasfer_master_form, sales_return_voucher_form, sales_return_voucher_master_form, salesreturninwardmasterform, salesvoucherfinishGoodsForm,
                     shade_godown_items_temporary_table_formset,shade_godown_items_temporary_table_formset_update,
                     Product2ItemFormset,Product2CommonItemFormSet,purchase_order_product_qty_formset,
                     purchase_order_raw_product_qty_formset,purchase_order_raw_product_qty_cutting_formset,product_purchase_voucher_items_formset_update,
@@ -14174,6 +14177,59 @@ def download_picklist_pdf(request,pl_id):
 
 
 
+def download_delivery_challan_pdf(request,dc_id):
+
+    challan = get_object_or_404(DeliveryChallanMaster, id=dc_id)
+
+    products_list = challan.deliverychallanproducts_set.all()
+
+    
+    logo_file_path = finders.find('images/NAME.png')
+    signature_file_path = finders.find('images/SIGN.png')
+
+    logo_base64 = ''
+    signature_base64 = ''
+
+    if logo_file_path:
+        with open(logo_file_path, 'rb') as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
+    if signature_file_path:
+        with open(signature_file_path, 'rb') as image_file:
+            signature_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
+    context = {
+        'challan': challan,
+        'products_list': [],
+        'logo_base64': logo_base64,
+        'signature_base64': signature_base64,
+    }
+
+    for data in products_list:
+        context['products_list'].append({
+            'product': data.product_name.Product.Model_Name,
+            'ref_no':data.product_name.Product.Product_Refrence_ID,
+            'product_quantity': data.quantity,
+        })
+
+    # Render the HTML template for the PDF
+    html = render_to_string('production/delivery_challan_pdf_template.html', context)
+
+    # Create a response object to serve the PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="delivery_challan_no_{challan.delivery_challan_no}.pdf"'
+
+    # Generate the PDF from the HTML
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    # Check if the PDF was successfully created
+    if pisa_status.err:
+        return HttpResponse('Error generating PDF', status=500)
+    
+    return response
+
+
+
 @login_required(login_url='login')
 def download_picklist_excel(request,pl_id):
     # Get the Picklist_voucher_master instance
@@ -15800,14 +15856,80 @@ def product_transfer_to_warehouse_ajax(request):
 
 
 @login_required(login_url='login')
-def salesvouchercreateupdate(request,s_id=None):
+def salesvouchercreateupdate(request,s_id=None,dc_id=None):
+    
+    if dc_id == 0:
+        dc_id = None
+    
+    if s_id == 0:
+        s_id = None
+
+    salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=1, can_delete=True)
+
+    SalesVoucherDeliveryChallanFormset = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=1, can_delete=True)
 
     party_name = Ledger.objects.filter(under_group__account_sub_group = 'Sundry Debtors')
-    
 
     dict_to_send = None
 
-    if s_id:
+
+    if dc_id:
+
+        print("IN DC ")
+
+        challan_product_queryset = DeliveryChallanProducts.objects.filter(delivery_challan = dc_id).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','id','balance_qty','delivery_challan__delivery_challan_no','delivery_challan__id')
+
+        product_initial_data = []
+
+        for product in challan_product_queryset:
+            product_initial_data.append({
+                'challan': product['delivery_challan__id'],
+                'challanValue': product['delivery_challan__delivery_challan_no'],
+                'product_name_value': product['product_name__Product__Model_Name'],
+                'color':product['product_name__PProduct_color__color_name'],
+                'sku':product['product_name__PProduct_SKU'],
+                'quantity': product['quantity'],
+                'mrp': product['product_name__Product__Product_MRP'],
+                'c_price':product['product_name__Product__Product_SalePrice_CustomerPrice'],
+                'gst':product['product_name__Product__Product_GST__gst_percentage'],
+            })
+        
+        d_challan_product_data = None
+        voucher_instance = None
+
+        master_form = salesvouchermasterfinishGoodsForm()
+
+        salesvouchercreateformset = inlineformset_factory(sales_voucher_master_finish_Goods,sales_voucher_finish_Goods,form = salesvoucherfinishGoodsForm,extra=len(product_initial_data), can_delete=True)
+
+        formset = salesvouchercreateformset(initial = product_initial_data)
+        
+
+        total_data = DeliveryChallanProducts.objects.filter(delivery_challan=dc_id).aggregate(total_qty=Sum('quantity'),total_balance=Sum('balance_qty'))
+
+        d_id = get_object_or_404(DeliveryChallanMaster, id=dc_id)
+
+        d_challan_initial_data = []
+
+        d_challan_initial_data.append({
+            "delivery_challan_no": d_id.delivery_challan_no,
+            "id": dc_id,
+            "total_qty": total_data['total_qty'] or 0,
+            "balance_qty": total_data['total_balance'] or 0
+        })
+
+        print(d_challan_initial_data)
+        
+        SalesVoucherDeliveryChallanFormset = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=len(d_challan_initial_data), can_delete=True)
+
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(initial = d_challan_initial_data)
+
+        page_name = 'Create Sales Invoice'
+
+
+    elif s_id:
+
+        print("IN s_id ")
+
         voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
 
         master_form = salesvouchermasterfinishGoodsForm(request.POST or None,instance=voucher_instance)
@@ -15838,14 +15960,13 @@ def salesvouchercreateupdate(request,s_id=None):
                     'balance_qty': j.balance_qty
                 })
 
-        print(d_challan_product_data)
-
     else:
+        ("IN ELSE ")
         d_challan_product_data = None
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
         formset = salesvouchercreateformset()
-        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST or None,queryset=SalesVoucherDeliveryChallan.objects.none())
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset()
         page_name = 'Create Sales Invoice'
 
 
@@ -16069,7 +16190,7 @@ def salesvoucherdelete(request, pk):
             sales_instance = get_object_or_404(sales_voucher_master_finish_Goods, pk=pk)
 
             transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master=pk)
-            
+
             for record in transfer_records:
 
                 challan = record.challan.delivery_challan
