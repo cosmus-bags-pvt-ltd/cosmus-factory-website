@@ -13,7 +13,7 @@
                 {% if master_form.instance.id %}
                 <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no" value="{{ master_form.instance.delivery_challan_no }}" readonly>
                 {% elif not master_form.instance.id %}
-                <input type="text" class="purchase-mark me-2" name="delivery_challan_no" maxlength="252" required id="id_delivery_challan_no">
+                <input type="text" class="purchase-mark me-2" name="delivery_challan_no" value="{{ master_form.delivery_challan_no.initial }}" maxlength="252" required id="id_delivery_challan_no">
                 {% endif %}
             </div>
             <div>

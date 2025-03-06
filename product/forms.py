@@ -1376,6 +1376,16 @@ class salesreturninwardmasterform(forms.ModelForm):
         model = sales_return_inward
         fields = ['sales_voucher_master','sales_return_no','party_name','selected_warehouse']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        last_item = sales_return_inward.objects.order_by('id').last()
+
+        if last_item:
+            self.fields['sales_return_no'].initial = last_item.id + 1
+        else:
+            self.fields['sales_return_no'].initial = 1
+        
 
 class sales_return_product_form(forms.ModelForm):
     class Meta:
@@ -1405,10 +1415,24 @@ sales_return_voucher_formset_create = inlineformset_factory(sales_return_voucher
 sales_return_voucher_formset_update = inlineformset_factory(sales_return_voucher_master, sales_return_voucher, form = sales_return_voucher_form,extra=0, can_delete=True)
 
 
+
+
+
 class DeliveryChallanMasterForm(forms.ModelForm):
     class Meta:
         model = DeliveryChallanMaster
         fields = ['delivery_challan_no','party_name','shipping_address','vehicle_no','driver_name','dispatch_time','no_of_boxes','no_of_pcs','remark','selected_godown']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        last_item = DeliveryChallanMaster.objects.order_by('id').last()
+
+        if last_item:
+            self.fields['delivery_challan_no'].initial = last_item.id + 1
+        else:
+            self.fields['delivery_challan_no'].initial = 1
+
 
 
 
@@ -1420,6 +1444,7 @@ class DeliveryChallanProductsForm(forms.ModelForm):
 DeliveryChallanProductsCreateFormset = inlineformset_factory(DeliveryChallanMaster, DeliveryChallanProducts, form = DeliveryChallanProductsForm, extra=1, can_delete = True)
 
 DeliveryChallanProductsUpdateFormset = inlineformset_factory(DeliveryChallanMaster, DeliveryChallanProducts, form = DeliveryChallanProductsForm, extra=0, can_delete = True)
+
 
 
 
