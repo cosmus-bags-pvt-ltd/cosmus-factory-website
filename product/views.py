@@ -6,6 +6,7 @@ from io import BytesIO
 from itertools import chain
 from operator import attrgetter, itemgetter
 import os
+import select
 from sys import prefix
 import uuid
 from django.conf import Settings, settings
@@ -15561,15 +15562,14 @@ def delivery_challan_create_update(request, d_id=None):
         master_form = DeliveryChallanMasterForm(request.POST or None,instance = d_instance)
         formset = DeliveryChallanProductsUpdateFormset(instance = d_instance)
 
-        products = product_godown_quantity_through_table.objects.all().values(
-                'product_color_name__PProduct_SKU',
-                'quantity').exclude(quantity=0)
+        products = product_godown_quantity_through_table.objects.all().values('product_color_name__PProduct_SKU','quantity')
     
-        product_list = {}
+        product_list = []
 
         for product in products:
-            sku = product['product_color_name__PProduct_SKU'] 
-            product_list[sku] = product['quantity']
+            sku = product['product_color_name__PProduct_SKU']
+            product_list.append({sku : product['quantity']})
+            
 
     else:
         d_instance = None
@@ -15633,16 +15633,19 @@ def delivery_challan_create_update(request, d_id=None):
                                     instance = form.save(commit=False)
                                     instance.delivery_challan = master_form_instance
                                     instance.balance_qty = form.cleaned_data['quantity']
+                                    
+                                    old_qty = form.initial.get('quantity', 0)
+                                    new_qty = form.cleaned_data['quantity']
 
                                     if form.has_changed() and 'quantity' in form.changed_data:
-                                        obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=instance.product_name)
 
-                                        old_qty = form.initial.get('quantity', 0)
-                                        new_qty = form.cleaned_data['quantity']
-                                        
-                                        obj.quantity += old_qty
-                                        obj.quantity -= new_qty  
-                                        obj.save()
+                                        if old_qty:
+
+                                            obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=instance.product_name)
+
+                                            obj.quantity += old_qty
+                                            obj.quantity -= new_qty  
+                                            obj.save()
 
                                     instance.save()
 
@@ -15987,14 +15990,17 @@ def delete_delivery_challan(request, pk):
         challan = get_object_or_404(DeliveryChallanMaster, pk=pk)
         logger.info(f'delete_delivery_challan object {challan.delivery_challan_no}')
 
+        selected_godown = challan.selected_godown
+
         related_products = challan.deliverychallanproducts_set.all()
         for product in related_products:
-            obj, created = product_godown_quantity_through_table.objects.get_or_create(product_color_name=product.product_name)
+            obj, created = product_godown_quantity_through_table.objects.get_or_create(godown_name = selected_godown,product_color_name=product.product_name)
             obj.quantity += product.quantity
             obj.save()
 
         
         challan.delete()
+
         messages.success(request, "Delivery Challan deleted successfully.")
         logger.info(f"delete_delivery_challan object {challan.delivery_challan_no} deleted successfully")
 
@@ -16057,22 +16063,34 @@ def salesvoucherlist(request):
 
 
 @login_required(login_url='login')
-def salesvoucherdelete(request,pk):
+def salesvoucherdelete(request, pk):
+    try:
+        with transaction.atomic():
+            sales_instance = get_object_or_404(sales_voucher_master_finish_Goods, pk=pk)
 
-    sales_instance = sales_voucher_master_finish_Goods.objects.get(pk=pk)
+            transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master=pk)
+            
+            for record in transfer_records:
 
-    if sales_instance:
-        transfer_records = sales_voucher_finish_Goods.objects.filter(sales_voucher_master = pk)
+                challan = record.challan.delivery_challan
+                product_name = record.product_name
+                product_quantity = record.quantity
 
-        for i in transfer_records:
-            challan = i.challan.delivery_challan
-            product_name = i.product_name
-            product_quantity = i.quantity
+                if challan:
+                    challan_qty_value = DeliveryChallanProducts.objects.filter(
+                        delivery_challan=challan, product_name=product_name
+                    ).first()
+                    if challan_qty_value:
+                        challan_qty_value.balance_qty += product_quantity
+                        challan_qty_value.save()
 
-            if challan:
-                challan_qty_value = DeliveryChallanProducts.objects.get(delivery_challan = challan,product_name=product_name)
-                challan_qty_value.balance_qty += product_quantity
-                challan_qty_value.save()
-        sales_instance.delete()
+            sales_instance.delete()
+
+            SalesVoucherDeliveryChallan.objects.filter(sales_voucher=pk).delete()
+
+    except Exception as e:
+        print(f"Error during deletion: {e}")
+        messages.error(request, "Error deleting the sales voucher.")
+        
 
     return redirect('sales-voucher-list')
