@@ -9,11 +9,12 @@
       <input type="hidden" id="salesupdateData" value="{{ d_challan_product_data }}">
       <input type="hidden" id="salesHiddenData" value="">
       <div class="col-lg-9">
+        <span id="responseMessage" class=" fw-bold"></span>
         <div class="d-flex mb-3">
           
           <span class="me-1">Type :<span class="text-danger fw-bold">Finish Goods</span></span>
           <span id="purchaseError" class="error-messages"></span>
-          <span id="responseMessage" class="ms-1 fw-bold"></span>
+          
           <div class="d-flex ms-2">
             <label for="id_challan_no" class="fw-bold">Add Chall+ :</label>
             <input type="text" name="challan_no" class="purchase-mark me-1" id="id_challan_no">
@@ -531,10 +532,9 @@ $(document).ready(function(){
                         });
                     });
 
-                    // Save updated data to the hidden input field
                     $('#salesHiddenData').val(JSON.stringify(currentData));
 
-                    // console.log('Updated currentData:', currentData);
+                  
 
                     var tables = $('#challanTable .mainTableList');
                     tables.find('tr').each(function () {
@@ -563,7 +563,7 @@ $(document).ready(function(){
                 
             }
         });
-
+        $('#responseMessage').html('');
         $('#id_challan_no').val('');
   })
 
@@ -696,7 +696,11 @@ $(document).ready(function(){
 
         const checkedRadio = $('.challanRadio:checked'); 
         
-        if (checkedRadio.length === 0) return; 
+        if (checkedRadio.length === 0) {
+            console.warn("No Challan selected.");
+            $('#responseMessage').html('<span class="text-danger">Please Add a challan before product Enter.</span>');
+            return;
+        }
 
         const selectedRow = checkedRadio.closest('tr'); 
         const deliveryChallan = selectedRow.find('.challanId').val()?.trim() || "";
@@ -706,7 +710,7 @@ $(document).ready(function(){
           }
       }
 
-      // $(document).on('change', '#id_selected_godown', handleGodownAndChallan);
+       $(document).on('input', 'input[name$="-product_name_value"]', handleGodownAndChallan);
       $(document).on('click', '.challanRadio', handleGodownAndChallan);
 
  
@@ -754,12 +758,13 @@ $(document).ready(function(){
           var selectNameValue = `select_product_name_${purchaseValue}`;
           var suggestionsContainer = $(`#${selectNameValue}`);
           suggestionsContainer.empty();
-
+         
           if (productnamevalue === 'None' || productnamevalue === '') {
               var selectNameValue = $(this).closest('tr').find('[name^="select_product_name_"]');
                   
               selectNameValue.css('display', 'none').empty();
               $(this).attr('data-key', '');
+              $('#responseMessage').html('');
               return;
           }
 
@@ -820,6 +825,7 @@ $(document).ready(function(){
             suggestionsContainer.show();
             suggestionsContainer.empty();
             suggestionsContainer.append(`<div" class="itemName-div itemName-div-suggestion ">No item found</div>`);
+            $('#responseMessage').html('');
           }
           suggestionsContainer.on('click', '.itemName-div', function(e) {
             var item_value = $(this).data('key');
@@ -885,6 +891,7 @@ $(document).ready(function(){
       const hiddenValue = $inputField.closest('.custom-dropdown-container').find(`#select_item_name_${purchaseValue}`);
       if (searchText === '') {
           index = 0;
+          $('#responseMessage').html('');
           return;
       }
       const newHeight = $inputField.offset();
@@ -1230,7 +1237,7 @@ $(document).ready(function(){
                 var challanBalQty = parseInt(selectedRow.find('.challanBalance').val().trim(), 10) || 0; 
                 var challanBalHiddenQty = parseInt(selectedRow.find('.challanBalancehidden').val().trim(), 10) || 0; 
 
-                recalculateChallanBalances(selectedRow,challanNo ,challanQty);
+                recalculateChallanBalances(selectedRow,challanNo ,challanQty,challanBalQty,challanBalHiddenQty,mainQty);
                 calculateTotalAmount();
                 calculateOtherTotal();
                 inputCheck();
@@ -1247,7 +1254,7 @@ $(document).ready(function(){
     });
   };
 
-    function recalculateChallanBalances(selectedRow,challanNo ,challanQty){
+    function recalculateChallanBalances(selectedRow,challanNo ,challanQty,challanBalQty,challanBalHiddenQty,mainQty){
       var productTable = $('#salesDeliveryTable .mainTableList');
       productTable.empty();
       let storedData = $('#salesHiddenData').val();
@@ -1285,8 +1292,8 @@ $(document).ready(function(){
         let sku = String(row.find('[name$="-product_name"]').val()).trim();
         let challanNos = parseInt(row.find('[name$="-challanValue"]').val()?.trim());
         let qty = parseInt(row.find('[name$="-quantity"]').val()) || 0;
-        let dummyqty = parseInt(row.find('[name$="-dummy_quantity"]').val()) || 0;
-        console.log('dummyqty',dummyqty)
+        // let dummyqty = parseInt(row.find('[name$="-dummy_quantity"]').val()) || 0;
+        // console.log('dummyqty',dummyqty)
         if (challanNo === challanNos) {
           if (mergedData.hasOwnProperty(challanNo)) {
               let challanItems = mergedData[challanNo];
@@ -1308,11 +1315,12 @@ $(document).ready(function(){
           return;
       }
        
-       
-      // console.log('challanBalQty',challanBalQty)
-      // console.log('challanBalHiddenQty',challanBalHiddenQty)
-      // console.log('total',total)   
-      // console.log('mainQty',mainQty)
+       console.log('mainQty',mainQty)
+      console.log('challanQty',challanQty)  
+      console.log('challanBalQty',challanBalQty)
+      console.log('challanBalHiddenQty',challanBalHiddenQty)
+      console.log('total',total)   
+   
 
       var chalBal = challanQty - total;
 
@@ -1435,7 +1443,7 @@ $(document).ready(function(){
                 $('#responseMessage').html('<span class="text-danger">challan quantity exceeds available quantity.</span>');
                 return;
             }else{
-              if(balQty === 0){
+              if(outwardQty === 0){
                 balanceQty = challanSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
               }else{
                 balanceQty = challanSelected ? Math.max(0, item.balance_qty - outwardQty) : item.balance_qty;
