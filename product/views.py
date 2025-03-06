@@ -15877,18 +15877,21 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
 
         print("IN DC ")
 
-        challan_product_queryset = DeliveryChallanProducts.objects.filter(delivery_challan = dc_id).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','id','balance_qty','delivery_challan__delivery_challan_no','delivery_challan__id')
+        challan_product_queryset = DeliveryChallanProducts.objects.filter(delivery_challan = dc_id).values('product_name__Product__Product_Name','product_name__PProduct_SKU','product_name__PProduct_color__color_name','quantity','product_name__Product__Model_Name','product_name__Product__Product_Refrence_ID','product_name__Product__Product_UOM','product_name__Product__Product_MRP','product_name__Product__Product_SalePrice_CustomerPrice','product_name__Product__Product_GST__gst_percentage','id','balance_qty','delivery_challan__delivery_challan_no','id')
+
+        print("challan_product_queryset = ",challan_product_queryset)
 
         product_initial_data = []
 
         for product in challan_product_queryset:
+            
             product_initial_data.append({
-                'challan': product['delivery_challan__id'],
+                'challan': product['id'],
                 'challanValue': product['delivery_challan__delivery_challan_no'],
                 'product_name_value': product['product_name__Product__Model_Name'],
                 'color':product['product_name__PProduct_color__color_name'],
                 'sku':product['product_name__PProduct_SKU'],
-                'quantity': product['quantity'],
+                'quantity': product['balance_qty'],
                 'mrp': product['product_name__Product__Product_MRP'],
                 'c_price':product['product_name__Product__Product_SalePrice_CustomerPrice'],
                 'gst':product['product_name__Product__Product_GST__gst_percentage'],
@@ -15912,9 +15915,9 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
 
         d_challan_initial_data.append({
             "delivery_challan_no": d_id.delivery_challan_no,
-            "id": dc_id,
+            "challan_id": d_id.id,
             "total_qty": total_data['total_qty'] or 0,
-            "balance_qty": total_data['total_balance'] or 0
+            "balance_qty": 0
         })
 
         print(d_challan_initial_data)
@@ -15971,10 +15974,12 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
 
 
     if request.method == "POST":
+
         print(request.POST)
+
         master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
         formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST, instance=voucher_instance)
+        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST,instance=voucher_instance)
 
         formset.forms = [form for form in formset.forms if form.has_changed()]
 
@@ -16054,7 +16059,7 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
 def delivery_challan_list(request):
 
     #Delivery challan total_qty and balance_qty
-    delivary_challan_list = DeliveryChallanMaster.objects.annotate(total_qty=Sum('deliverychallanproducts__quantity'),total_balance_qty=Sum('deliverychallanproducts__balance_qty'))
+    delivary_challan_list = DeliveryChallanMaster.objects.annotate(total_qty=Sum('deliverychallanproducts__quantity'),total_balance_qty=Sum('deliverychallanproducts__balance_qty')).order_by('created_date')
 
     #Labour workin create qty (subquery)
     product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')

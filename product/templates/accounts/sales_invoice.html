@@ -119,7 +119,7 @@
                 {% elif not form.instance.id %}
                   <tr>
                     <td>
-                      <input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{{ form.initial.id }}" readonly>
+                      <input type="hidden" class="rowNo challanId" name="{{form.prefix}}-delivery_challan" id="id_{{form.prefix}}-delivery_challan" value="{{ form.initial.challan_id }}" readonly>
 
                       <input type="number" class="rowNo chalId" name="{{form.prefix}}-delivery_challan_value" id="id_{{form.prefix}}-delivery_challan_value" value="{{ form.initial.delivery_challan_no }}" readonly>
                     </td>
@@ -134,7 +134,7 @@
                       <input type="hidden" class="rowNo challanBalancehidden" name="challanBalanceQtyhidden-{{forloop.counter0}}" id="id_challanBalanceQtyhidden-{{forloop.counter0}}" value="{{ form.initial.balance_qty }}" readonly>
                     </td>
 
-                    <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan" {% if form.initial.balance_qty %}checked{% endif %}></td>
+                    <td><input type="radio" class="challanRadio outwardChallan-btn" name="delivery_challan" {% if form.initial.total_qty %}checked{% endif %}></td>
                   </tr>
                   {% endif %}
                 {% endfor %}
@@ -257,7 +257,7 @@
           </td>
 
           <td>
-            <input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-mark sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'' }}" >
+            <input type="number" id="id_{{forms.prefix}}-quantity" class="purchase-mark sales-qunatity" name="{{forms.prefix}}-quantity" value="{{forms.initial.quantity | default_if_none:'' }}" {% if forms.initial.quantity%}readonly{% endif %} >
 
             <input type="hidden" id="id_{{forms.prefix}}-dummy_quantity" class="purchase-mark sales-qunatity" name="{{forms.prefix}}-dummy_quantity" value="{{forms.initial.quantity | default_if_none:'' }}" readonly>
           </td>

@@ -95,7 +95,8 @@
               <th class="text-danger">Pend. Bill = <span id="pendingBillQty"></span></th>
               <th>Edit</th>
               <th>Delete</th>
-              <th></th>
+              <th>PDF</th>
+              <th>SALE</th>
           </tr>
       </thead>
       <tbody class="mainTableList" style="max-height: 450px; overflow-y: auto;">
@@ -112,8 +113,13 @@
           <td class="text-center text-danger pendingValue">{{ challan.total_balance_qty }}</td>
           <td><a href="{% url 'delivery-challan-update' challan.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
           <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ challan.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
-          <td><a href="{% url 'download-delivery-challan-pdf' challan.id %}">pdf</a></td>
-          <td><a href="{% url 'sales-voucher-create' 0 challan.id %}">sale</a></td>
+          <td><a href="{% url 'download-delivery-challan-pdf' challan.id %}"><img src="../../../static/images/icons8-pdf-40.png" width="25px" class="me-2"></a></td>
+          {% if challan.total_balance_qty == 0 %}
+          <td></td>
+          {% else%}
+          <td><a href="{% url 'sales-voucher-create' 0 challan.id %}"><i class="fa-solid fa-circle-plus px-2"></i></a></td>
+          {% endif %}
+          
         </tr>
         {% endfor %}
     
