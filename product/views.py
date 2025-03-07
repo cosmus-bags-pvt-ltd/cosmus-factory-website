@@ -91,7 +91,7 @@ from .forms import( Basepurchase_order_for_raw_material_cutting_items_form, Colo
                     purchase_order_raw_product_sheet_form,purchase_order_raw_material_cutting_form,
                     raw_material_product_estimation_formset, Finished_goods_transfer_records_formset_update,
                     stock_transfer_instance_formset_only_for_update,product_purchase_voucher_items_instance_formset_only_for_update, subcat_and_bin_form,
-                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset,DeliveryChallanProductsUpdateFormset,SalesVoucherDeliveryChallanFormset,SalesVoucherDeliveryChallanFormsetupdate)
+                    transfer_product_to_bin_formset, purchase_product_to_bin_formset,FinishedProductWarehouseBinFormSet,Purchaseorderforpuchasevoucherrmformset,Purchaseorderforpuchasevoucherrmformsetupdate,sub_category_and_bin_formset,picklistcreateformset,picklistcreateformsetupdate,salesvouchermasterfinishGoodsForm,salesvouchercreateformset,salesvoucherupdateformset,OutwardProductcreateFormSet,OutwardProductupdateFormSet,salesvoucherfromscanupdateformset,PicklistProcessInOutwardFormset,sales_return_product_formset,sales_return_product_formset_update,DeliveryChallanMasterForm,DeliveryChallanProductsCreateFormset,DeliveryChallanProductsUpdateFormset,SalesVoucherDeliveryChallanFormsetupdate)
     
 
 
@@ -6052,15 +6052,16 @@ def labourworkincreatelist(request,l_w_o_id):
 
     labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
 
-    labour_workin_instances = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(approved_Qty_total=Sum('l_w_in_products__approved_qty'),total_approved_pcs = Sum('l_w_in_products__approved_qty'),pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval')).order_by('created_date')
+    labour_workin_instances = labour_work_in_master.objects.filter(
+        labour_voucher_number=labour_workout_child_instance
+        ).annotate(
+            approved_Qty_total=Sum('l_w_in_products__approved_qty'),
+            total_approved_pcs = Sum('l_w_in_products__approved_qty'),
+            pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval'),
+            total_balance_qty = Sum('l_w_in_products__dummy_balance_qty')
+            ).order_by('created_date')
 
-    
-
-    return render(request,'production/labour_work_in_list.html',{
-                                            'labour_workout_child_instance':labour_workout_child_instance,
-                                            'labour_workin_instances':labour_workin_instances,
-                                            'page_name':'Purchase Order Wise'
-                                            })
+    return render(request,'production/labour_work_in_list.html',{'labour_workout_child_instance':labour_workout_child_instance,'labour_workin_instances':labour_workin_instances,'page_name':'Purchase Order Wise'})
 
 
 
@@ -6200,12 +6201,13 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
     
     elif l_w_o_id is not None and pk is None:
+        
+        print("********* IN CREATE MODE **********")
 
         labour_workin_master_instance = None
         labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
 
         labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))  
-
 
         initial_data = {
             'labour_name': labour_workout_child_instance.labour_name.name,
@@ -6236,7 +6238,8 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                 'total_recieved_qty' : instances.processed_pcs - instances.labour_w_in_pending,
                 'return_pcs' : '0',
                 'qty_to_compare':  instances.labour_w_in_pending,
-                'cur_bal_plus_return_qty': instances.labour_w_in_pending
+                'cur_bal_plus_return_qty': instances.labour_w_in_pending,
+                'dummy_balance_qty': instances.processed_pcs - instances.labour_w_in_pending
                 }
             
             formset_initial_data.append(initial_data_dict)
@@ -6249,7 +6252,9 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
     
     elif l_w_o_id is not None and pk is not None:
-    
+        
+        print("********* IN EDIT MODE **********")
+
         labour_workout_child_instance = labour_workout_childs.objects.get(id = l_w_o_id)
 
         labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))
@@ -15964,7 +15969,7 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
                 })
 
     else:
-        ("IN ELSE ")
+        ("IN ELSE")
         d_challan_product_data = None
         voucher_instance = None
         master_form = salesvouchermasterfinishGoodsForm()
@@ -15977,9 +15982,16 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
 
         print(request.POST)
 
-        master_form = salesvouchermasterfinishGoodsForm(request.POST,instance=voucher_instance)
-        formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
-        delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST,instance=voucher_instance)
+        if s_id:
+            voucher_instance = sales_voucher_master_finish_Goods.objects.get(id=s_id)
+            master_form = salesvouchermasterfinishGoodsForm(request.POST, instance=voucher_instance)
+            formset = salesvoucherupdateformset(request.POST, instance=voucher_instance)
+            delivery_challan_formset = SalesVoucherDeliveryChallanFormsetupdate(request.POST, instance=voucher_instance)
+        else:
+            voucher_instance = None
+            master_form = salesvouchermasterfinishGoodsForm(request.POST)
+            formset = salesvouchercreateformset(request.POST)
+            delivery_challan_formset = SalesVoucherDeliveryChallanFormset(request.POST)
 
         formset.forms = [form for form in formset.forms if form.has_changed()]
 
@@ -15999,12 +16011,16 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
                     master_form_instance = master_form.save(commit=False)
                     master_form_instance.save()
 
-                    for form in delivery_challan_formset:
-                        if form.is_valid():
-                            if not form.cleaned_data.get('DELETE'):
-                                form_instance = form.save(commit=False)
-                                form_instance.sales_voucher = master_form_instance
-                                form_instance.save()
+                    if delivery_challan_formset.is_valid():
+                        for form in delivery_challan_formset:
+                            if form.is_valid():
+                                if not form.cleaned_data.get('DELETE'):
+                                    form_instance = form.save(commit=False)
+                                    form_instance.sales_voucher = master_form_instance
+                                    form_instance.save()
+                    else:
+                        print("Delivery Challan Formset Errors:", delivery_challan_formset.errors)
+
 
 
                     for form in formset.deleted_forms:

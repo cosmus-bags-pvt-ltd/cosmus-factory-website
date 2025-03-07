@@ -407,7 +407,7 @@ class Item_Creation(models.Model):
 
 
     
-#This
+
 class item_color_shade(models.Model):
     c_user = models.ForeignKey(CustomUserModel, on_delete=models.PROTECT, blank=True, null=True)
     items = models.ForeignKey(Item_Creation, on_delete = models.CASCADE, related_name = 'shades')
@@ -428,7 +428,7 @@ class item_color_shade(models.Model):
 
 
 
-#This
+
 class opening_shade_godown_quantity(models.Model):
     opening_purchase_voucher_godown_item = models.ForeignKey(item_color_shade, on_delete = models.CASCADE)
     opening_godown_id = models.ForeignKey('Godown_raw_material', on_delete = models.PROTECT)
@@ -548,7 +548,7 @@ class Godown_raw_material(models.Model):
 
 
 
-#This
+
 class item_shades_godown_report(models.Model):  
 
     inward_outward = [
@@ -640,7 +640,7 @@ class item_purchase_voucher_master(models.Model):
 
 
 
-#This
+
 class purchase_voucher_items(models.Model):
     item_purchase_master = models.ForeignKey(item_purchase_voucher_master, on_delete = models.CASCADE)
     item_shade = models.ForeignKey(item_color_shade, on_delete = models.PROTECT)
@@ -670,7 +670,7 @@ class shade_godown_items_temporary_table(models.Model):
     rate = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     amount = models.DecimalField(max_digits=10, decimal_places=DECIMAL_PLACE_CONSTANT)
     
-#This
+
 class item_godown_quantity_through_table(models.Model):
     godown_name = models.ForeignKey(Godown_raw_material, on_delete = models.PROTECT, related_name= 'raw_godown_names')
     Item_shade_name = models.ForeignKey(item_color_shade, related_name = 'godown_shades', on_delete = models.PROTECT)
@@ -879,7 +879,7 @@ class product_to_item_labour_workout(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 
-
+#This
 class labour_workout_childs(models.Model):
     labour_workout_master_instance = models.ForeignKey(labour_workout_master, on_delete=models.PROTECT)
     challan_no = models.CharField(unique=True, null=False, blank=False)
@@ -927,7 +927,7 @@ class labour_workout_cutting_items(models.Model):
     Remark = models.CharField(max_length = 50, null=False, blank=False)
     pcs = models.IntegerField(default = 0)
 
-
+#This
 class labour_work_in_master(models.Model):
     labour_voucher_number = models.ForeignKey(labour_workout_childs ,on_delete=models.PROTECT)
     voucher_number = models.IntegerField(unique=True, null = False, blank = False)
@@ -951,6 +951,7 @@ class labour_work_in_product_to_item(models.Model):
     return_pcs = models.IntegerField()
     pending_to_return_pcs = models.IntegerField()
     pending_for_approval =  models.IntegerField()
+    dummy_balance_qty = models.IntegerField(default = 0)
     approved_qty = models.IntegerField(default = 0)
     
 
