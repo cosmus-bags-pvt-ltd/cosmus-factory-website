@@ -6052,14 +6052,17 @@ def labourworkincreatelist(request,l_w_o_id):
 
     labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
 
-    labour_workin_instances = labour_work_in_master.objects.filter(
-        labour_voucher_number=labour_workout_child_instance
+    labour_workin_instances = list(
+        labour_work_in_master.objects.filter(
+            labour_voucher_number=labour_workout_child_instance
         ).annotate(
             approved_Qty_total=Sum('l_w_in_products__approved_qty'),
-            total_approved_pcs = Sum('l_w_in_products__approved_qty'),
-            pending_for_approval_pcs = Sum('l_w_in_products__pending_for_approval'),
-            total_balance_qty = Sum('l_w_in_products__dummy_balance_qty')
-            ).order_by('created_date')
+            total_approved_pcs=Sum('l_w_in_products__approved_qty'),
+            pending_for_approval_pcs=Sum('l_w_in_products__pending_for_approval'),
+            total_balance_qty=Sum('l_w_in_products__dummy_balance_qty')
+        ).order_by('modified_date')
+    )
+
 
     return render(request,'production/labour_work_in_list.html',{'labour_workout_child_instance':labour_workout_child_instance,'labour_workin_instances':labour_workin_instances,'page_name':'Purchase Order Wise'})
 
@@ -6239,7 +6242,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                 'return_pcs' : '0',
                 'qty_to_compare':  instances.labour_w_in_pending,
                 'cur_bal_plus_return_qty': instances.labour_w_in_pending,
-                'dummy_balance_qty': instances.processed_pcs - instances.labour_w_in_pending
+                'dummy_balance_qty': instances.processed_pcs - instances.labour_w_in_pending,
                 }
             
             formset_initial_data.append(initial_data_dict)
@@ -6294,25 +6297,26 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         try:
             with transaction.atomic():
                 if master_form.is_valid() and product_to_item_formset.is_valid():
-                    print(request.POST)
+                    
+                    #save master form 
                     parent_form = master_form.save(commit = False)
                     
                     parent_form.labour_voucher_number = labour_workout_child_instance
                     
-                    
                     if master_form.instance.id:
                         labour_workin_qty = parent_form.total_return_pcs - old_return_qty 
-                        
                     else:
                         labour_workin_qty = parent_form.total_return_pcs
                     
-
                     labour_workout_child_instance.labour_workin_pcs = labour_workout_child_instance.labour_workin_pcs + labour_workin_qty
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
 
                     labour_workout_child_instance.save()
 
                     parent_form.save()
+
+
+
 
                     for form in product_to_item_formset:
 
@@ -6323,23 +6327,24 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
                             product_to_item_form.pending_for_approval = product_to_item_form.return_pcs
                             
-                            l_w_o_instance = product_to_item_labour_child_workout.objects.get(labour_workout=labour_workout_child_instance,
-                                                                                              product_sku=product_to_item_form.product_sku,
-                                                                                              product_color=product_to_item_form.product_color)
-                            
+                            l_w_o_instance = product_to_item_labour_child_workout.objects.get(labour_workout=labour_workout_child_instance,product_sku=product_to_item_form.product_sku,product_color=product_to_item_form.product_color)
                             
                             if product_to_item_form.pk:
-                                labour_workin_product2item = labour_work_in_product_to_item.objects.get( pk = product_to_item_form.pk)
+                                labour_workin_product2item = labour_work_in_product_to_item.objects.get(pk = product_to_item_form.pk)
                                 qty_to_change = product_to_item_form.return_pcs - labour_workin_product2item.return_pcs
-
+                
                             else:
                                 qty_to_change = product_to_item_form.return_pcs
 
                             l_w_o_instance.labour_w_in_pending = l_w_o_instance.labour_w_in_pending - qty_to_change
-
                             l_w_o_instance.save()
+
                             product_to_item_form.save()
-                    
+                            
+
+
+                            
+
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
 
                 else:
