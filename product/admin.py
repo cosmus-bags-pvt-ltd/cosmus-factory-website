@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from . models import AccountGroup, AccountSubGroup, Product, gst,MainCategory ,Color , ProductImage,PProduct_Creation, StockItem, item_godown_quantity_through_table
+from . models import AccountGroup, AccountSubGroup, Product, gst,MainCategory ,Color , ProductImage,PProduct_Creation, StockItem, item_godown_quantity_through_table, labour_work_in_product_to_item, product_to_item_labour_child_workout
 
 class PProductCreationInline(admin.TabularInline):
     model = PProduct_Creation
@@ -23,6 +23,7 @@ admin.site.register(AccountSubGroup)
 admin.site.register(StockItem)
 admin.site.register(gst)
 admin.site.register(item_godown_quantity_through_table)
+admin.site.register(labour_work_in_product_to_item)
 
 
 

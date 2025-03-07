@@ -902,7 +902,7 @@ class labour_work_in_product_to_item_form(forms.ModelForm):
     class Meta:
         model = labour_work_in_product_to_item
         fields = ['product_sku','product_color','L_work_out_pcs','return_pcs',
-                  'pending_to_return_pcs','qty_to_compare','cur_bal_plus_return_qty']
+                  'pending_to_return_pcs','qty_to_compare','cur_bal_plus_return_qty','dummy_balance_qty']
 
 class labour_work_in_product_to_item_approval_form(forms.ModelForm):
     class Meta:
@@ -1453,7 +1453,7 @@ class SalesVoucherDeliveryChallanForm(forms.ModelForm):
         model = SalesVoucherDeliveryChallan
         fields = ['delivery_challan','total_qty','balance_qty']
 
-SalesVoucherDeliveryChallanFormset = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=1, can_delete=True)
+
 
 SalesVoucherDeliveryChallanFormsetupdate = inlineformset_factory(sales_voucher_master_finish_Goods, SalesVoucherDeliveryChallan,form=SalesVoucherDeliveryChallanForm, extra=0, can_delete=True)
 

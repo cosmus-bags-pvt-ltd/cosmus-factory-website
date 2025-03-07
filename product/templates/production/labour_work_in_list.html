@@ -50,7 +50,8 @@
                         <th>labour name</th>
                         <th>Issues Pcs</th>
                         <th class="text-success">Return Pcs</th>
-                        <th class="text-danger">Balance Pcs</th>
+                        <th class="text-danger">RT Balance Pcs</th>
+                        <th class="text-primary">Voucher REC</th>
                         <th class="text-danger">Pending approval</th>
                         <th class="text-success">Approved Pcs</th>
                         <th>Approve</th>
@@ -71,6 +72,7 @@
                         <td class=" text-center">{{record.labour_voucher_number.total_process_pcs}}</td>
                         <td class="returnQty text-success text-center">{{record.total_return_pcs}}</td>
                         <td class="text-danger text-center">{{record.total_balance_pcs}}</td>
+                        <td class="text-primary text-center">{{record.total_balance_qty}}</td>
                         <td class="pendingValue text-danger text-center">{{record.pending_for_approval_pcs}}</td>
                         <td class="processedQty text-success text-center">{{record.total_approved_pcs}}</td>
                         <td><button class="border-0 bg-transparent btnValue" onclick="approvedGoodsReturnSingle(this)"><a class="approved-btn" ><i class="fa-regular fa-thumbs-up ps-3 fs-5"></i></a></button></td>
