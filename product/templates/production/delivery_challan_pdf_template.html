@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,58 +11,58 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
+            table-layout: fixed;
         }
         th, td {
             border: 1px solid #000;
-            padding: 5px;
-            text-align: center;
+            padding: 3px;
+          
         }
-
-        /* Remove border for "no-border" tables
-        table.no-border th,
-        table.no-border td {
-            border: none;
-        } */
 
         /* Header Styles */
         .header {
             text-align: center;
-            margin-bottom: 10px;
         }
         .logo {
-            width: 250px;
+            /* width: 250px; */
+            display: block;  /* Ensure it behaves like a block element */
+            margin-bottom: 0; 
         }
-        .signature {
-            width: 100px;
+        .header p {
+            margin-top: 0; /* Remove top margin */
+        }
+        .grid-container {
+            display: grid;
+            grid-template-rows: repeat(3, 1fr); /* 3 rows */
+            gap: 20px; /* Space between rows */
+            width: 100%;
         }
 
-        /* Signature Row Flexbox */
-        .signature-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 50px;
-        }
-        .signature-row > div {
-            flex: 1; 
-        }
-        .signature-row .left {
+        .left {
             text-align: left;
         }
-        .signature-row .center {
+
+        .center {
             text-align: center;
         }
-        .signature-row .right {
+
+        .right {
             text-align: right;
         }
+
+        .signature {
+            max-width: 150px;
+            height: auto;
+        }
+
     </style>
 </head>
 <body>
     <!-- Header / Logo Section -->
+    <!-- <span style="float: right;">Delivery Challan</span> -->
     <div class="header">
-      
         {% if logo_base64 %}
-        <h4>Delivery Challan</h4>
+       
             <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" class="logo">
             <p>
                 Mfg. of All Types of Hard and Soft Luggage, Business Gifts,<br>
@@ -73,12 +74,12 @@
     <!-- Party / Shipping / Challan Info -->
     <table class="no-border">
         <tr>
-            <th><strong>Party Name:</strong> {{ challan.party_name.name }}</th>
-            <th><strong>Shipping Address:</strong> {{ challan.shipping_address }}</th>
-            <th>
-                <strong>Delivery Challan No.:</strong> {{ challan.delivery_challan_no }}<br>
-                <strong>Date:</strong> {{ challan.delivery_challan_date }}
-            </th>
+            <td><strong >Party Name :</strong><span>{{ challan.party_name.name }}</span></td>
+            <td colspan="2"><strong >Shipping Address :</strong><span>{{ challan.shipping_address }}</span> </td>
+            <td>
+                <strong >Delivery Challan No.:</strong> <span>{{ challan.delivery_challan_no }}</span> <br>
+                <strong >Date :</strong> <span>{{ challan.delivery_challan_date }}</span>
+            </td>
         </tr>
     </table>
 
@@ -86,68 +87,65 @@
     <table>
         <thead>
             <tr>
-                <th>No</th>
-                <th>Ref No</th>
-                <th>Model No</th>
-                <th>Description</th>
-                <th>QTY</th>
-                <th>Remark</th>
+                <th style="width: 5%;">No</th>
+                <th style="width: 10%;">Ref No</th>
+                <th style="width: 20%;">Model No</th>
+                <th style="width: 50%;">Description</th>
+                <th style="width: 10%;">QTY</th>
+                <th style="width: 15%;">Remark</th>
             </tr>
         </thead>
         <tbody>
             {% for item in products_list %}
             <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ item.ref_no }}</td>
-                <td>{{ item.product }}</td>
-                <td></td>
-                <td>{{ item.product_quantity }}</td>
-                <td></td>
+                <td style="width: 5%;">{{ forloop.counter }}</td>
+                <td style="width: 10%;">{{ item.ref_no }}</td>
+                <td style="width: 20%;">{{ item.product }}</td>
+                <td style="width: 50%;">{{ item.description }}</td>
+                <td style="width: 10%; text-align: center">{{ item.product_quantity }}</td>
+                <td style="width: 15%;">{{ item.remark }}</td>
             </tr>
             {% endfor %}
         </tbody>
         <tbody>
             <tr>
                 <td colspan="3"></td>
-                <td><strong>Total:</strong></td>
-                <td>{{ challan.total_quantity }}</td>
-                <td></td>
+                <td style="width: 50%;"><strong>Total:</strong></td>
+                <td  style="width: 10%; text-align: center;">{{ challan.total_quantity }}</td>
+                <td  style="width: 15%;"></td>
             </tr>
         </tbody>
+    
     </table>
-
-    <!-- Vehicle / Driver / Dispatch Info -->
     <table class="no-border">
         <tr>
-            <td><strong>Vehicle No.:</strong> {{ challan.vehicle_no }}</td>
-            <td><strong>Driver Name:</strong> {{ challan.driver_name }}</td>
-            <td><strong>Dispatch Time:</strong> {{ challan.dispatch_time }}</td>
+            <td colspan="2"><strong >Vehicle No. :</strong> {{ challan.vehicle_no }}</td>
+      
+            <td colspan="2"><strong >Driver Name :</strong>{{ challan.driver_name }} </td>
+       
+            <td colspan="2"><strong >Dispatch Time :</strong> {{ challan.dispatch_time }} </td>
+        </tr>
+        <tr>
+            <td><strong>No of Box :</strong> {{ challan.no_of_boxes }}</td>
+            <td><strong >No of Pcs :</strong> {{ challan.no_of_pcs }}</td>
+            <td colspan="4"><strong >Remark :</strong> {{ challan.remark }}</td>
         </tr>
     </table>
 
-    <!-- Boxes / Pcs / Remark Info -->
-    <table class="no-border">
-        <tr>
-            <td><strong>No of Box:</strong> {{ challan.no_of_boxes }}</td>
-            <td><strong>No of Pcs:</strong> {{ challan.no_of_pcs }}</td>
-            <td><strong>Remark:</strong> {{ challan.remark }}</td>
-        </tr>
-    </table>
 
-    <!-- Signature Row -->
-    <div class="signature-row">
-        <div class="left">
-            <strong>Receiver's Signature</strong>
-        </div>
-        <div class="center">
-            <strong>E. &amp; O.E.</strong>
-        </div>
-        <div class="right">
-            {% if signature_base64 %}
-                <img src="data:image/png;base64,{{ signature_base64 }}" alt="Signature" class="signature"><br>
-            {% endif %}
-            <small>For COSMUS Lifestyle Pvt. Ltd.<br>Authorized Signature</small>
-        </div>
+
+<!-- Signature Row -->
+<!-- Parent Container -->
+<div class="grid-container">
+    <div class="left"><strong>Receiver's Signature</strong></div>
+    <div class="center"><strong>E. &amp; O.E.</strong></div>
+    <div class="right">
+        {% if signature_base64 %}
+        <img src="data:image/png;base64,{{ signature_base64 }}" alt="Signature" class="signature">
+        {% endif %}
     </div>
+</div>
+
+
 </body>
 </html>
