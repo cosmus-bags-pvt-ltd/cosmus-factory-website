@@ -719,14 +719,14 @@ $(document).ready(function(){
         const inputSelectElement = lastRow.querySelector('input[name$="-total_qty"]');
         if (inputSelectElement) {
             inputSelectElement.id = `id_salesvoucherdeliverychallan_set-${formIndex}-total_qty`;
-            inputSelectElement.name = `id_salesvoucherdeliverychallan_set-${formIndex}-total_qty`;
+            inputSelectElement.name = `salesvoucherdeliverychallan_set-${formIndex}-total_qty`;
             inputSelectElement.value = "";
         }
 
         const inputElement = lastRow.querySelector('input[name$="-balance_qty"]');
         if (inputElement) {
             inputElement.id = `id_salesvoucherdeliverychallan_set-${formIndex}-balance_qty`;
-            inputElement.name = `id_salesvoucherdeliverychallan_set-${formIndex}-balance_qty`;
+            inputElement.name = `salesvoucherdeliverychallan_set-${formIndex}-balance_qty`;
             inputElement.value = "";
         }
 
@@ -774,9 +774,13 @@ $(document).ready(function(){
         var challanBalance = parseFloat(selectedRow.find('.challanBalance').val()?.trim()) || 0;
         var dummyQTy = parseInt(row.find('input[name$="-dummy_quantity"]').val()) || 0;
         let qty = parseInt(row.find('.sales-qunatity[name$="-quantity"]').val()) || 0;
-      
+        var challanNo = parseInt(row.find('[name$="-challanValue"]').val()) || 0;
         var challanBalQty = (challanBalance === challanBalanceHidden) ? challanBalanceHidden : challanBalance;
 
+        if(productKey !== challanNo){
+          $('#responseMessage').html('<span class="text-danger">Please select a challan for this product.</span>');
+          return;
+        }
         var newQty = challanBalQty + dummyQTy
         timeout = setTimeout(() => {
         
@@ -1330,14 +1334,21 @@ $(document).ready(function(){
 
               const checkRow = row.querySelector('.godown_deleteId[name$="-DELETE"]');
               const mainQty = parseInt(row.querySelector('[name$="-quantity"]').value) || 0;
-
+              const rowchallanId = parseInt(row.querySelector('[name$="-challanValue"]').value) || 0;
+              var selectedRow = checkedRadio.closest('tr'); 
+              var challanNo = parseInt(selectedRow.find('.chalId').val().trim(), 10);
+              console.log(challanNo , rowchallanId ,typeof(rowchallanId),typeof(challanNo))
+              if(rowchallanId !== challanNo){
+                console.warn("challan no not match.");
+                $('#responseMessage').html('<span class="text-danger">Please select Valid challan no.</span>');
+                return;
+              }
               if (checkRow) {
                 checkRow.checked = true; 
                 checkRow.value = 'true'; 
                 row.style.display = 'none';
                 
-                var selectedRow = checkedRadio.closest('tr'); 
-                var challanNo = parseInt(selectedRow.find('.chalId').val().trim(), 10);
+           
                 var challanQty = parseInt(selectedRow.find('.challanQty').val().trim(), 10) || 0; 
                 var challanBalQty = parseInt(selectedRow.find('.challanBalance').val().trim(), 10) || 0; 
                 var challanBalHiddenQty = parseInt(selectedRow.find('.challanBalancehidden').val().trim(), 10) || 0; 
@@ -1521,12 +1532,12 @@ $(document).ready(function(){
               // Restrict quantity to not exceed balance quantity
               newQty = Math.min(qty, balQty);
             }
-            // console.log(newQty)
+           console.log(newQty)
           totalQty[challanNos][sku] += newQty; 
 
           row.find('[name$="-quantity"]').val(newQty)
         });
-        // console.log('totalQty',totalQty)
+         console.log('totalQty',totalQty)
         if (!Array.isArray(mergedData[productKey])) {
             console.warn("Invalid or missing challan data for productKey:", productKey);
             return;
@@ -1551,7 +1562,7 @@ $(document).ready(function(){
               if(outwardQty === 0){
                 balanceQty = challanSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
               }else{
-                balanceQty = challanSelected ? Math.max(0, item.balance_qty - outwardQty) : item.balance_qty;
+                balanceQty = challanSelected ? Math.max(0, item.qty - outwardQty) : item.balance_qty;
               }
                
                 $('#responseMessage').html('');

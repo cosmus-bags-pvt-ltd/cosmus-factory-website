@@ -5,55 +5,88 @@
     <meta charset="UTF-8">
     <title>Delivery Challan</title>
     <style>
-
-        table{
+        /* Table Styles */
+        table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
         }
-
-        th, td{
+        th, td {
             border: 1px solid #000;
             padding: 5px;
             text-align: center;
         }
-        
-        .header{
-            text-align: center; 
+
+        /* Remove border for "no-border" tables
+        table.no-border th,
+        table.no-border td {
+            border: none;
+        } */
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
         }
-        .logo{
-            width: 150px;
+        .logo {
+            width: 250px;
         }
-        .signature{
+        .signature {
             width: 100px;
+        }
+
+        /* Signature Row Flexbox */
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .signature-row > div {
+            flex: 1; 
+        }
+        .signature-row .left {
+            text-align: left;
+        }
+        .signature-row .center {
+            text-align: center;
+        }
+        .signature-row .right {
+            text-align: right;
         }
     </style>
 </head>
-
 <body>
-
+    <!-- Header / Logo Section -->
     <div class="header">
-        <h4 class="">Delivery Challan</h4>
+      
         {% if logo_base64 %}
+        <h4>Delivery Challan</h4>
             <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" class="logo">
+            <p>
+                Mfg. of All Types of Hard and Soft Luggage, Business Gifts,<br>
+                Leather Articles and All Corporate Gifts
+            </p>
         {% endif %}
-        <small>Mfg. of All Types of Hard and Soft luggage, Business Gifts,<br>
-        Leather Articles and All Corporate Gifts</small>
     </div>
 
+    <!-- Party / Shipping / Challan Info -->
     <table class="no-border">
         <tr>
-            <td><strong>Party Name:</strong> {{ challan.party_name.name }}</td>
-            <td><strong>Shipping Address:</strong> {{ challan.shipping_address }}</td>
-            <td><strong>Delivery Challan No.:</strong> {{ challan.delivery_challan_no }}<br>
-                <strong>Date:</strong> {{ challan.delivery_challan_date }}</td>
+            <th><strong>Party Name:</strong> {{ challan.party_name.name }}</th>
+            <th><strong>Shipping Address:</strong> {{ challan.shipping_address }}</th>
+            <th>
+                <strong>Delivery Challan No.:</strong> {{ challan.delivery_challan_no }}<br>
+                <strong>Date:</strong> {{ challan.delivery_challan_date }}
+            </th>
         </tr>
     </table>
 
+    <!-- Product Table -->
     <table>
         <thead>
             <tr>
-                <th>Sr No</th>
+                <th>No</th>
                 <th>Ref No</th>
                 <th>Model No</th>
                 <th>Description</th>
@@ -73,8 +106,17 @@
             </tr>
             {% endfor %}
         </tbody>
+        <tbody>
+            <tr>
+                <td colspan="3"></td>
+                <td><strong>Total:</strong></td>
+                <td>{{ challan.total_quantity }}</td>
+                <td></td>
+            </tr>
+        </tbody>
     </table>
 
+    <!-- Vehicle / Driver / Dispatch Info -->
     <table class="no-border">
         <tr>
             <td><strong>Vehicle No.:</strong> {{ challan.vehicle_no }}</td>
@@ -83,6 +125,7 @@
         </tr>
     </table>
 
+    <!-- Boxes / Pcs / Remark Info -->
     <table class="no-border">
         <tr>
             <td><strong>No of Box:</strong> {{ challan.no_of_boxes }}</td>
@@ -91,18 +134,20 @@
         </tr>
     </table>
 
-    <div style="margin-top: 50px;">
-        <div style="float: left;">
+    <!-- Signature Row -->
+    <div class="signature-row">
+        <div class="left">
             <strong>Receiver's Signature</strong>
         </div>
-        <div style="float: right; text-align: right;">
-            <strong>E. & O.E.</strong><br>
+        <div class="center">
+            <strong>E. &amp; O.E.</strong>
+        </div>
+        <div class="right">
             {% if signature_base64 %}
                 <img src="data:image/png;base64,{{ signature_base64 }}" alt="Signature" class="signature"><br>
             {% endif %}
             <small>For COSMUS Lifestyle Pvt. Ltd.<br>Authorized Signature</small>
         </div>
     </div>
-
 </body>
 </html>
