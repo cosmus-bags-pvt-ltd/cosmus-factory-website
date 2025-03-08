@@ -435,7 +435,7 @@
                     alert('SKU does not match!');
                     throw new Error('SKU mismatch'); // Prevent further execution and returning the response
                 }
-                console.log(response)
+                
                 $('#id_product').val(response.model_name);
                 $('#id_product_sku').val(response.product_sku);
                 $('#id_product_color').val(response.product_color);

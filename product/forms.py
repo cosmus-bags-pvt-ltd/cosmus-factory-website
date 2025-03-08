@@ -1021,7 +1021,7 @@ product_purchase_voucher_items_formset_update = inlineformset_factory(product_pu
 class Finished_goods_Stock_TransferMaster_form(forms.ModelForm):
     class Meta:
         model = Finished_goods_Stock_TransferMaster
-        fields = ['voucher_no','source_warehouse','destination_warehouse','narration']
+        fields = ['voucher_no','source_warehouse','destination_warehouse','narration','vehicle_no','driver_name','dispatch_time','no_of_boxes','no_of_pcs']
 
 
     def __init__(self, *args, **kwargs):

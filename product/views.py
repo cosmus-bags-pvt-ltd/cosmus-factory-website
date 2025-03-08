@@ -6206,7 +6206,8 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                             'total_recieved_qty' : instances.processed_pcs - instances.labour_w_in_pending,
                             'return_pcs' : '0',
                             'qty_to_compare':  instances.labour_w_in_pending,
-                            'cur_bal_plus_return_qty': instances.labour_w_in_pending 
+                            'cur_bal_plus_return_qty': instances.labour_w_in_pending,
+                            'dummy_balance_qty': instances.processed_pcs - instances.labour_w_in_pending,
                         }
 
                         formset_initial_data.append(initial_data_dict)
@@ -6367,10 +6368,6 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                             l_w_o_instance.save()
 
                             product_to_item_form.save()
-                            
-
-
-                            
 
                     return redirect(reverse('labour-workin-list-create', args=[labour_workout_child_instance.id]) )
 
@@ -10347,44 +10344,32 @@ def process_serial_no(request):
     print("in scan def")
     
     if request.method == 'POST':
+
         serial_no = request.POST.get('serialNo')
         voucher_type = request.POST.get('instance_type_post')
         voucher_no = request.POST.get('instance_number_post')
-        
-        print(serial_no)
 
-        if serial_no:
+        try:
+            if voucher_type == "purchase":
+                exists = product_purchase_voucher_items.objects.filter(product_purchase_master__purchase_number=voucher_no).aggregate(total_sum=Sum('diffrence_qty'))['total_sum'] or 0
 
-            try:
-                
-                if finishedgoodsbinallocation.objects.filter(unique_serial_no=serial_no).exists():
-                    return JsonResponse({'message': 'This Serial Number has already been processed.'}, status=400)
-
-            except IntegrityError:
-                return JsonResponse({'message': 'This serial number has already been processed'}, status=400)
-
-
-            try:
-                
-                exists = finishedgoodsbinallocation.objects.filter(
-                    Q(
-                        Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) &
-                        Q(related_purchase_item__diffrence_qty=0)
-                    ) |
-                    Q(
-                        Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no) &
-                        Q(related_transfer_record__diffrence_qty=0)
-                    )
-                ).exists()
-                                                                                                       
-                if exists:
+                if exists == 0:
                     print("Scan complete")
                     return JsonResponse({'error':'Scaning Completed (All Product Scan Sucessfully Thank you).'}, status=400)
 
-            except Exception:
-                return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
+            if voucher_type == "transfer":
+                exists = Finished_goods_transfer_records.objects.filter(Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no).aggregate(total_sum=Sum('diffrence_qty'))['total_sum'] or 0
+                            
+                if exists == 0:
+                    print("Scan complete")
+                    return JsonResponse({'error':'Scaning Completed (All Product Scan Sucessfully Thank you).'}, status=400)
+
+        except Exception:
+            return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
 
 
+
+        if serial_no:
             try:
                 # Call external API
                 url = f'https://www.cosmusbags.com/cosmus/qrcode.php?wc={serial_no}'
@@ -10393,22 +10378,54 @@ def process_serial_no(request):
                 print(response_data)
 
                 if response_data.get('response_code') == 200 and response_data.get('response_desc') == 'success':
+
                     product_scanned_sku = response_data['sku']
 
+                    try:
+                        if voucher_type == "purchase":
+                            exists = product_purchase_voucher_items.objects.filter(product_purchase_master__purchase_number=voucher_no,product_name__PProduct_SKU=product_scanned_sku).aggregate(total_sum=Sum('diffrence_qty'))['total_sum']
+
+                            if exists == 0:
+                                print("Scan complete")
+                                return JsonResponse({'error': 'This Product Scanning Completed'}, status=400)
+
+                        if voucher_type == "transfer":
+                            exists = Finished_goods_transfer_records.objects.filter(Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no,product__PProduct_SKU=product_scanned_sku).aggregate(total_sum=Sum('diffrence_qty'))['total_sum']         
+                            
+                            if exists == 0:
+                                print("Scan complete")
+                                return JsonResponse({'error':'This Product Scaning Completed'}, status=400)
+
+                    except Exception:
+                        return JsonResponse({'message': 'Failed to fetch data from external API.'}, status=500)
+                    
+            
+                    try:
+                        product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_scanned_sku)
+                    except ObjectDoesNotExist:
+                        return JsonResponse({'error': 'SKU PRODUCT DOES NOT EXIST IN VOUCHER'}, status=400)
+                    
+
+                    try:
+                        # If Serial Number has already been processed.
+                        if finishedgoodsbinallocation.objects.only('id').filter(unique_serial_no=serial_no).exists():
+
+                            return JsonResponse({'error': 'This Serial Number has already been processed.'}, status=400)
+                            
+                    except IntegrityError:
+                        return JsonResponse({'error': 'This serial number has already been processed'}, status=400)
+
                     # Fetch product details
-                    product_instance = PProduct_Creation.objects.get(PProduct_SKU=product_scanned_sku)
                     model_name = product_instance.Product.Model_Name if product_instance.Product.Model_Name else None
                     product_name = product_instance.Product.Product_Name if product_instance.Product.Product_Name else None
                     product_sku = product_instance.PProduct_SKU
                     product_color = product_instance.PProduct_color.color_name if product_instance.PProduct_color else None
                     product_image = product_instance.PProduct_image.url if product_instance.PProduct_image else None
 
+                    
                     # Get product main categories
                     product_main_cats = product_instance.Product.product_cats.all()
                     main_cats_all = [x.SubCategory_id.product_main_category for x in product_main_cats]
-
-                    # # Retrieve last selected bin from table
-                    last_selected_bin_id = finishedgoodsbinallocation.objects.filter(Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) |Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no)).order_by('-created_date').first()
 
                     bins_related_to_product = []
 
@@ -10424,7 +10441,9 @@ def process_serial_no(request):
                             'products_in_bin': product_count
                         })
 
-                    
+                    # Retrieve last selected bin from table
+                    last_selected_bin_id = finishedgoodsbinallocation.objects.filter(Q(related_purchase_item__product_purchase_master__purchase_number=voucher_no) |Q(related_transfer_record__Finished_goods_Stock_TransferMasterinstance__voucher_no=voucher_no)).order_by('-created_date').first()
+
                     # Sort bins: Show last selected bin first
                     if last_selected_bin_id:
                         bins_related_to_product.sort(key=lambda x: x['bin_id'] != last_selected_bin_id.bin_number.id)
@@ -16049,6 +16068,13 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
                                 if not form.cleaned_data.get('DELETE'):
                                     form_instance = form.save(commit=False)
                                     form_instance.sales_voucher = master_form_instance
+
+                                    challan_id = form.cleaned_data.get('delivery_challan')
+                                    balance_qty = form.cleaned_data.get('balance_qty')
+
+                                    sales_voucher_delivery_challan_relation_obj = SalesVoucherDeliveryChallan.objects.filter(delivery_challan = challan_id).update(balance_qty=balance_qty)
+                                    
+
                                     form_instance.save()
                     else:
                         print("Delivery Challan Formset Errors:", delivery_challan_formset.errors)
