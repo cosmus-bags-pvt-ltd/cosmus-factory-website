@@ -140,8 +140,7 @@
                                 <th>Product Sku</th>
                                 <th class="text-nowrap">Color</th>
                                 <th>Issue QTY</th>
-                                
-                                <th>Voucher Rec</th>
+                                <th>Prev Vch Rec</th>
                                 <th class="text-danger text-nowrap">Bal QTY</th>
                                 <th class="text-primary text-nowrap">Return QTY <input type="checkbox" class="ms-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>   
                                 
@@ -225,7 +224,7 @@
                             <tr class="mainTableList fw-bold">
                                 <td colspan="2" class="text-end">Total =</td>
                                 <td><input type="number" class="productorderrawqty-input text-center" id="tIssueQty"  value=""></td>
-                                <td><input type="number" class="productorderrawqty-input text-center text-success"   value="0"></td>
+                                <td><input type="number" class="productorderrawqty-input text-center text-primary"  id="tDummyQty"  value=""></td>
                                 <td><input type="number" class="productorderrawqty-input text-center text-danger" id="tBalanceQty" value=""></td>
                                 <td><input type="number" class="productorderrawqty-input ms-2 text-primary" name="finalReturnQty" id="tReturnQty" value=""></td>
                                 <td><input type="number" class="productorderrawqty-input text-center text-success" name="finalReceivedQty" id="tReceivedQty" value=""></td>
@@ -504,7 +503,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var balancepc= 0;
     var issueValue = 0;
     var receivedValue = 0;
-   
+    var dummyqty = 0;
     if(labourId != ''){
         var totalReturn = document.querySelectorAll('[name$="-return_pcs"]');
         
@@ -520,6 +519,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var IssueQty = parseInt(row.querySelector('input[name$="-L_work_out_pcs"]').value) || 0;
             var ReceivedQty = parseInt(row.querySelector('input[name$="-total_recieved_qty"]').value) || 0;
             var balanceReceiveQty = parseInt(row.querySelector('input[name$="-cur_bal_plus_return_qty"]').value) || 0;
+            var dummyValue = parseInt(row.querySelector('input[name$="-dummy_balance_qty"]').value) || 0;
              if(returnValue > balance){
                 returnValue = balanceReceiveQty;
                 element.value = balanceReceiveQty;
@@ -533,8 +533,8 @@ document.addEventListener("DOMContentLoaded", function () {
             total  += returnValue;
             balancepc += balanceQtyValue;
             issueValue +=IssueQty;
-            receivedValue += ReceivedQty
-            
+            receivedValue += ReceivedQty;
+            dummyqty += dummyValue;
         })
 
     }else{
@@ -550,6 +550,8 @@ document.addEventListener("DOMContentLoaded", function () {
             var IssueQty = parseInt(row.querySelector('input[name$="-L_work_out_pcs"]').value) || 0;
             var ReceivedQty = parseInt(row.querySelector('input[name$="-total_recieved_qty"]').value) || 0;
             var balanceReceiveQty = parseInt(row.querySelector('input[name$="-cur_bal_plus_return_qty"]').value) || 0;
+            var dummyValue = parseInt(row.querySelector('input[name$="-dummy_balance_qty"]').value) || 0;
+
              if(returnValue > balance){
                 returnValue = balanceReceiveQty;
                 input.value = balanceReceiveQty;
@@ -563,6 +565,7 @@ document.addEventListener("DOMContentLoaded", function () {
             balancepc += balanceQty;
             issueValue +=IssueQty;
             receivedValue += ReceivedQty;
+            dummyqty += dummyValue;
         })
     }
     
@@ -573,7 +576,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('tIssueQty').value = issueValue;
     document.getElementById('TotalValue').textContent=issueValue;
     document.getElementById('tReceivedQty').value = receivedValue;
-
+    document.getElementById('tDummyQty').value = dummyqty;
   }
 
   

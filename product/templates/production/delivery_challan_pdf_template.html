@@ -90,9 +90,9 @@
                 <th style="width: 5%;">No</th>
                 <th style="width: 10%;">Ref No</th>
                 <th style="width: 20%;">Model No</th>
-                <th style="width: 50%;">Description</th>
+                <th style="width: 20%;">color</th>
                 <th style="width: 10%;">QTY</th>
-                <th style="width: 15%;">Remark</th>
+                <th style="width: 15%;">Units</th>
             </tr>
         </thead>
         <tbody>
@@ -101,9 +101,9 @@
                 <td style="width: 5%;">{{ forloop.counter }}</td>
                 <td style="width: 10%;">{{ item.ref_no }}</td>
                 <td style="width: 20%;">{{ item.product }}</td>
-                <td style="width: 50%;">{{ item.description }}</td>
+                <td style="width: 20%;">{{ item.color }}</td>
                 <td style="width: 10%; text-align: center">{{ item.product_quantity }}</td>
-                <td style="width: 15%;">{{ item.remark }}</td>
+                <td style="width: 15%;">Pcs</td>
             </tr>
             {% endfor %}
         </tbody>

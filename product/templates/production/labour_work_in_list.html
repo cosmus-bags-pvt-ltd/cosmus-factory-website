@@ -52,7 +52,7 @@
                         <th>Issues Pcs</th>
                         <th class="text-success">Return Pcs</th>
                         <th class="text-danger">Balance Pcs</th>
-                        <th class="text-primary">Voucher REC</th>
+                        <th class="text-primary">Prev Vch REC</th>
                         <th class="text-danger">Pending approval</th>
                         <th class="text-success">Approved Pcs</th>
                         <th>Approve</th>
@@ -80,6 +80,7 @@
                         <td><button class="border-0 bg-transparent btnValue" onclick="approvedGoodsReturnSingle(this)"><a class="approved-btn" ><i class="fa-regular fa-thumbs-up ps-3 fs-5"></i></a></button></td>
                         <td><button type="button" data-id="{{ cutting_order.processed_qty }}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"  class="border-0 bg-transparent " onclick="cuttingPkValue(this)"><i class="fa-solid fa-person-circle-check px-3 fs-5"></i></button></td>
                         
+                        {% if forloop.last %}
                         {% if record.approved_Qty_total == 0 %}
                         <td><button class="border-0 bg-transparent viewBtn"><a href="{% url 'labour-workin-view-update' record.labour_voucher_number.id record.id False %}"><i class="fa-solid fa-pen-to-square px-2"></i></a></button></td>
                         
@@ -90,7 +91,12 @@
                         
                         <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{record.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa-solid fa-trash text-danger px-2"></i></button></td>
                         <!-- <input type="hidden" name="labour_workin_id" value = "{{record.id}}" id="id_labour_workin_id"> -->
+                        {% else %}
+                   
+                        <td></td>
                         
+                        <td></td>
+                        {% endif %}
                       
                     </tr>
                     {% endfor %}
