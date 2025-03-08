@@ -94,9 +94,10 @@
                                     <th>Product Sku</th>
                                     <th>Color</th>
                                     <th>Issue QTY</th>
+                                    <th class="text-primary text-nowrap">Prev Vch Rec</th>
+                                    <th class="text-danger text-nowrap">Bal QTY</th>
+                                    <th class="text-primary text-nowrap">Return QTY <input type="checkbox" class="ms-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>   
                                     <th class="text-success text-nowrap">Received QTY</th>
-                                    <th class="text-danger text-nowrap">Balance QTY</th>
-                                    <th class="text-primary text-nowrap">Return QTY <input type="checkbox" class="mx-1" id="id_labourWorkInCheckbox" name="labourWorkInCheckbox" value=""></th>
                                 </tr>
                             </thead>
                             <tbody class="mainTableList ">
@@ -667,12 +668,13 @@ $(document).on('click', '.search-input',function(){
                     
                     newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input text-center" name="l_w_in_products-' + index + '-L_work_out_pcs" value="' + rowData.L_work_out_pcs + '" id="id_l_w_in_products-' + index + '-L_work_out_pcs" readonly>' ));
                     
-                    newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input text-center text-success" name="l_w_in_products-' + index + '-total_recieved_qty" value="' + rowData.total_recieved_qty + '" id="id_l_w_in_products-' + index + '-total_recieved_qty" readonly> <input type="hidden" class="productorderrawqty-input" name="l_w_in_products-' + index + '-pending_to_return_pcs" value="' + rowData.pending_to_return_pcs + '" id="id_l_w_in_products-' + index + '-pending_to_return_pcs">'));
+                    newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input text-center text-primary" name="l_w_in_products-' + index + '-dummy_balance_qty" value="' + rowData.dummy_balance_qty + '" id="id_l_w_in_products-' + index + '-dummy_balance_qty" readonly> '));
                     
                     newRow.append($('<td>').html('<input type="number"  class="productorderrawqty-input text-center text-danger" name="l_w_in_products-' + index +'-qty_to_compare" value="'+ rowData.qty_to_compare+'" id="id_id_l_w_in_products-' + index + '-qty_to_compare" readonly>'));
                     
                     newRow.append($('<td>').html('<input type="number" class="productorderqty-input text-primary" name="l_w_in_products-' + index + '-return_pcs" value="' + rowData.return_pcs + '" id="id_l_w_in_products-' + index + '-return_pcs">'));
                     
+                    newRow.append($('<td>').html('<input type="number" class="productorderrawqty-input text-center text-success" name="l_w_in_products-' + index + '-total_recieved_qty" value="' + rowData.total_recieved_qty + '" id="id_l_w_in_products-' + index + '-total_recieved_qty" readonly> <input type="hidden" class="productorderrawqty-input" name="l_w_in_products-' + index + '-pending_to_return_pcs" value="' + rowData.pending_to_return_pcs + '" id="id_l_w_in_products-' + index + '-pending_to_return_pcs">'));
                     // Hidden field for balance
                     newRow.append($('<input type="hidden" class="productorderrawqty-input" name="l_w_in_products-' + index + '-cur_bal_plus_return_qty" value="' + rowData.cur_bal_plus_return_qty + '" id="id_l_w_in_products-' + index + '-cur_bal_plus_return_qty" readonly>'));
 
@@ -686,9 +688,10 @@ $(document).on('click', '.search-input',function(){
                         totalRow.append($('<td>').html('<span >Total :</span>'))
                         totalRow.append($('<td>').html(''))
                         totalRow.append($('<td class="text-center">').html('<span id="totalLWoPic"></span>'))
-                        totalRow.append($('<td class="text-center text-success">').html('<span id="totalIssuePic"></span>'))
+                        totalRow.append($('<td class="text-center text-primary">').html('<span id="totaldummyPic"></span>'))
                         totalRow.append($('<td class="text-center text-danger">').html('<span id="totalBalancePic"></span>'))
                         totalRow.append($('<td class="text-center text-primary">').html('<span id="totalReturnPic"></span>'))
+                        totalRow.append($('<td class="text-center text-success">').html('<span id="totalIssuePic"></span>'))
                         totalupdateRows.append(totalRow) 
                         
                         
@@ -725,6 +728,7 @@ function CalculateTotalValue() {
     var pendingPc = 0;
     var actual =0;
     var receive = 0;
+    var dummy = 0
     var table = document.querySelector('#labourworkInTables tbody');
     var totalReturnPcs = document.querySelectorAll('[name$="-return_pcs"]');
 
@@ -736,6 +740,7 @@ function CalculateTotalValue() {
             var issueQty = parseInt(row.querySelector('input[name$="-L_work_out_pcs"]').value) || 0;
             var recivedQty = parseInt(row.querySelector('input[name$="-total_recieved_qty"]').value) || 0;
             var balanceReceiveQty = parseInt(row.querySelector('input[name$="-cur_bal_plus_return_qty"]').value) || 0;
+            var dummyQty = parseInt(row.querySelector('input[name$="-dummy_balance_qty"]').value) || 0;
 
              if(returnValue > balance){
                 returnValue = balanceReceiveQty;
@@ -749,6 +754,7 @@ function CalculateTotalValue() {
             total  += returnValue;
              pendingPc += balanceQty;
              receive += recivedQty;
+             dummy += dummyQty;
         })
 
     document.getElementById('id_total_return_pcs').value = total;
@@ -758,6 +764,7 @@ function CalculateTotalValue() {
     document.getElementById('totalLWoPic').textContent = actual;
     document.getElementById('totalAlllwi').textContent = actual;
     document.getElementById('totalIssuePic').textContent = receive;
+    document.getElementById('totaldummyPic').textContent = dummy;
     CalculateAmount();
 }
 
