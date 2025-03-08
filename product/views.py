@@ -1606,6 +1606,16 @@ def color_delete(request, pk):
 
 
 def item_fabric_group_create_update(request, pk = None):
+
+    user = request.user
+
+    logger.info(f"item_fabric_group_create_update function run by {user}")
+
+    if not user.has_perm('product.view_fabric_group_model'):
+        messages.error(request, "You do not have permission to view fabric")
+        return redirect('dashboard-main')
+
+
     queryset = Fabric_Group_Model.objects.all()
 
     fabric_group_search = request.GET.get('fabric_group_search','')
@@ -1636,17 +1646,32 @@ def item_fabric_group_create_update(request, pk = None):
         page_name = "Edit Fabric"
 
     form = ItemFabricGroup(instance=instance)
+
     if request.method == 'POST':
+        
+        if instance and not user.has_perm('product.change_fabric_group_model'):
+            messages.error(request, "You do not have permission to update a fabric.")
+            return redirect('item-fabgroup-create-list')
+        
+        if not instance and not user.has_perm('product.add_fabric_group_model'):
+            messages.error(request, "You do not have permission to add a fabric.")
+            return redirect('item-fabgroup-create-list')
+
         form = ItemFabricGroup(request.POST, instance=instance)
+
         if form.is_valid():
             form_instance = form.save(commit=False)
             form_instance.c_user = request.user
             form_instance.save()
 
+            
+
             if pk:
                 messages.success(request,'Fabric group updated sucessfully.')
+                logger.info(f"fabric group {form.cleaned_data.get('fab_grp_name')} update by {user}")
             else:
                 messages.success(request,'Fabric group created sucessfully.')
+                logger.info(f"fabric group {form.cleaned_data.get('fab_grp_name')} created by {user}")
 
             if template_name == 'product/item_fabric_group_create_update.html':
                 return redirect('item-fabgroup-create-list')
@@ -1657,22 +1682,25 @@ def item_fabric_group_create_update(request, pk = None):
 
         else:
             
-            return render(request,template_name,{'title': title,"fab_group_all":queryset,"fabric_group_search":fabric_group_search,
-                                                                                  'form':form,'page_name':page_name})
+            return render(request,template_name,{'title': title,"fab_group_all":queryset,"fabric_group_search":fabric_group_search,'form':form,'page_name':page_name})
 
-
-    return render(request,template_name,{'title': title, "fab_group_all":queryset,"fabric_group_search":fabric_group_search,
-                                                                          'form':form,'page_name':page_name})
+    return render(request,template_name,{'title': title, "fab_group_all":queryset,"fabric_group_search":fabric_group_search,'form':form,'page_name':page_name})
 
 
 
 
-
+@permission_required('product.delete_fabric_group_model', raise_exception=True)
 def item_fabric_group_delete(request,pk):
+    user = request.user
+
+    logger.info(f"item_fabric_group_delete function run by {user}")
+
     try:
         item_fabric_pk = get_object_or_404(Fabric_Group_Model,pk=pk)
         item_fabric_pk.delete()
+
         messages.success(request,f'Fabric group {item_fabric_pk.fab_grp_name} was deleted')
+        logger.info(f"Fabric group {item_fabric_pk.fab_grp_name} was deleted by {user}")
 
     except IntegrityError as e:
         messages.error(request,f'Cannot delete {item_fabric_pk.fab_grp_name} because it is referenced by other objects.')
@@ -16135,6 +16163,9 @@ def delivery_challan_list(request):
     #Delivery challan total_qty and balance_qty
     delivary_challan_list = DeliveryChallanMaster.objects.annotate(total_qty=Sum('deliverychallanproducts__quantity'),total_balance_qty=Sum('deliverychallanproducts__balance_qty')).order_by('created_date')
 
+    #stock transfer queryset
+    warehouse_product_transfer_list = Finished_goods_Stock_TransferMaster.objects.all().annotate(all_qc_qty=Sum('finished_goods_transfer_records__qc_recieved_qty'),total_recieved_qty=Sum('finished_goods_transfer_records__product_quantity_transfer')).order_by('created_date')
+
     #Labour workin create qty (subquery)
     product_queryset_subquery = labour_work_in_product_to_item.objects.filter(product_sku = OuterRef('PProduct_SKU')).values('product_sku').annotate(total_labour_workin_qty_sum = Coalesce(Sum('return_pcs'), 0)).values('total_labour_workin_qty_sum')
 
@@ -16174,7 +16205,7 @@ def delivery_challan_list(request):
             Q(total_challan_qty__gt=0)).order_by('Product__Model_Name').select_related('Product','PProduct_color')
     
     
-    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset,'page_name':'Delivery challan'})
+    return render(request,'production/delivery_challan_list.html',{'delivary_challan_list':delivary_challan_list,'product_queryset':product_queryset,'page_name':'Delivery challan','warehouse_product_transfer_list':warehouse_product_transfer_list})
 
 
 
