@@ -1152,6 +1152,11 @@ class Finished_goods_Stock_TransferMaster(models.Model):
     updated_date = models.DateTimeField(auto_now = True)
     transnfer_cancelled = models.BooleanField(default = False)
     actions = models.CharField(max_length=20, choices = ACTIONS)
+    vehicle_no = models.CharField(max_length=50)
+    driver_name = models.CharField(max_length=100)
+    dispatch_time = models.TimeField()
+    no_of_boxes = models.PositiveIntegerField()
+    no_of_pcs = models.PositiveIntegerField()
 
 
 

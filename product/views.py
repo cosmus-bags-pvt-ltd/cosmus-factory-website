@@ -6206,7 +6206,8 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                             'total_recieved_qty' : instances.processed_pcs - instances.labour_w_in_pending,
                             'return_pcs' : '0',
                             'qty_to_compare':  instances.labour_w_in_pending,
-                            'cur_bal_plus_return_qty': instances.labour_w_in_pending 
+                            'cur_bal_plus_return_qty': instances.labour_w_in_pending,
+                            'dummy_balance_qty': instances.processed_pcs - instances.labour_w_in_pending,
                         }
 
                         formset_initial_data.append(initial_data_dict)
@@ -16067,6 +16068,13 @@ def salesvouchercreateupdate(request,s_id=None,dc_id=None):
                                 if not form.cleaned_data.get('DELETE'):
                                     form_instance = form.save(commit=False)
                                     form_instance.sales_voucher = master_form_instance
+
+                                    challan_id = form.cleaned_data.get('delivery_challan')
+                                    balance_qty = form.cleaned_data.get('balance_qty')
+
+                                    sales_voucher_delivery_challan_relation_obj = SalesVoucherDeliveryChallan.objects.filter(delivery_challan = challan_id).update(balance_qty=balance_qty)
+                                    
+
                                     form_instance.save()
                     else:
                         print("Delivery Challan Formset Errors:", delivery_challan_formset.errors)
