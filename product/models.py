@@ -942,7 +942,7 @@ class labour_work_in_master(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
 
 
-
+#This
 class labour_work_in_product_to_item(models.Model):
     labour_workin_instance = models.ForeignKey(labour_work_in_master, on_delete=models.CASCADE, related_name='l_w_in_products')
     product_sku = models.PositiveBigIntegerField()
