@@ -1535,7 +1535,7 @@ $(document).ready(function(){
            console.log(newQty)
           totalQty[challanNos][sku] += newQty; 
 
-          row.find('[name$="-quantity"]').val(newQty)
+          // row.find('[name$="-quantity"]').val(newQty)
         });
          console.log('totalQty',totalQty)
         if (!Array.isArray(mergedData[productKey])) {
@@ -1543,7 +1543,6 @@ $(document).ready(function(){
             return;
         }
 
-  
         mergedData[productKey].forEach(item => {
             let balanceQty;
             let sku = String(item.sku).trim();
@@ -1560,7 +1559,7 @@ $(document).ready(function(){
                 return;
             }else{
               if(outwardQty === 0){
-                balanceQty = challanSelected ? Math.max(0, item.qty - outwardQty) : item.qty;
+                balanceQty = balQty;
               }else{
                 balanceQty = challanSelected ? Math.max(0, item.qty - outwardQty) : item.balance_qty;
               }
