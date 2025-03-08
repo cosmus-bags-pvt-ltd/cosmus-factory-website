@@ -129,9 +129,9 @@
 </div>
 
 
-<button type="button" class="edit_btn w-100 mb-2 text-start" id="stock_transfer_btn"><span class="text-start" style="margin-left: 160px;">Stock Transfer List</span><span class="bg-c-blue ms-4 px-2 py-1 rounded">T Qty = <span id="totals"></span></span><span class="purchaseOrderCuttingVouchareArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
+<button type="button" class="edit_btn w-100 mb-2 text-start" id="stock_transfer_btn"><span class="text-start" style="margin-left: 160px;">Stock Transfer List</span><span class="bg-c-blue ms-4 px-2 py-1 rounded">T Qty = <span id="stockTransferQtys"></span></span><span class="purchaseOrderCuttingVouchareArrow"><i class="fas fa-angle-right arrowBtn"></i></span></button>
   <div id="stock_transfe_list" style="display: none;">
-    <table class="table table-striped table-bordered table-hover" style="width:100%;">
+    <table class="table table-striped table-bordered table-hover" style="width:100%;" id="stockTrfList">
       <thead class="text-nowrap name_absolute sticky-top">
         <tr>
           <th>No</th>
@@ -139,7 +139,7 @@
           <th>Voucher No</th>
           <th>Source Godown</th>
           <th>Destination Godown</th>
-          <th>Total Qty</th>
+          <th class="text-primary">Total Qty <span id="stockTransferQty"></span></th>
           <th>Remark</th>
           <th>Edit</th>
           <!-- <th>Delete</th> -->
@@ -155,7 +155,7 @@
           <td>{{ warehouse_product_transfer.voucher_no }}</td>
           <td>{{ warehouse_product_transfer.source_warehouse.godown_name_finished }}</td>
           <td>{{ warehouse_product_transfer.destination_warehouse.warehouse_name_finished }}</td>
-          <td class="text-center">{{ warehouse_product_transfer.total_recieved_qty }}</td>
+          <td class="text-center text-primary" ><span class="stockTransferValue">{{ warehouse_product_transfer.total_recieved_qty }}</span></td>
           <td>{{ warehouse_product_transfer.narration }}</td>
           {% if warehouse_product_transfer.all_qc_qty > 0 %}
           <td><a href="{% url 'warehouse-product-transfer-update' warehouse_product_transfer.id %}"><span class="ps-3"><i class="fa-solid fa-eye"></i></span></a></td> 
@@ -245,6 +245,7 @@
     function totalValueCheck(){
       var total = 0;
       var pending = 0;
+      var stock = 0;
       var  totalqty = document.querySelectorAll('#deliveryChallanList .mainTableList tr');
         totalqty.forEach(row => {
             var value = parseInt(row.querySelector('.totalValue').textContent) || 0;
@@ -256,6 +257,14 @@
             document.getElementById('pendingBillQty').textContent = pending;
             document.getElementById('pendingBill').textContent = pending;
         });
+
+        var stockTransfer = document.querySelectorAll('#stockTrfList .mainTableList tr');
+        stockTransfer.forEach(row => {
+          var stockValue = parseInt(row.querySelector('.stockTransferValue').textContent) || 0;
+          stock += stockValue;
+          document.getElementById('stockTransferQty').textContent = stock;
+          document.getElementById('stockTransferQtys').textContent = stock;
+        })
     }
 
     function calculateAllTotalValue(){
