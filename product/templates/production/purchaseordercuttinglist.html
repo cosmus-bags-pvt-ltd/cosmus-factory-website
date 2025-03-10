@@ -52,7 +52,7 @@
             {% for cutting_order in p_o_cutting_order_all %}
             <tr>
               <td>{{forloop.counter}}</td>
-              <td class="text-nowrap">{{cutting_order.created_date}}</td>
+              <td class="text-nowrap">{{cutting_order.created_date|date:"d/m/y, g:i a"}}</td>
               <td class="cuttingOderId">{{cutting_order.raw_material_cutting_id}}</td>
               <td class="text-nowrap">{{cutting_order.factory_employee_id.factory_emp_name}}</td>
               <td class="processedQty text-center text-success">{{cutting_order.processed_qty}}</td>

@@ -151,7 +151,7 @@
           
         <tr>
           <td>{{forloop.counter}}</td>
-          <td>{{warehouse_product_transfer.created_date}}</td>
+          <td>{{warehouse_product_transfer.created_date|date:"d/m/y, g:i a"}}</td>
           <td>{{ warehouse_product_transfer.voucher_no }}</td>
           <td>{{ warehouse_product_transfer.source_warehouse.godown_name_finished }}</td>
           <td>{{ warehouse_product_transfer.destination_warehouse.warehouse_name_finished }}</td>

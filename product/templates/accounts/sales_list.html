@@ -38,7 +38,7 @@
                 {% for sale in sales_list %}
               <tr>
                 <td>{{forloop.counter}}</td>
-                <td>{{sale.created_date}}</td>
+                <td>{{sale.created_date|date:"d/m/y, g:i a"}}</td>
                 <td>{{sale.party_name.name}}</td>
                 <td>{{sale.ledger_type}}</td>
                 <td>{{sale.sales_no}}</td>

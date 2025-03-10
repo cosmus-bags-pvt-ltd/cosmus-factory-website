@@ -30,7 +30,7 @@
             {% for cutting_order in pending_approval_query %}
             <tr>
               <td>{{forloop.counter}}</td>
-              <td  class="text-nowrap">{{cutting_order.created_date}}</td>
+              <td  class="text-nowrap">{{cutting_order.created_date|date:"d/m/y, g:i a"}}</td>
               <td class="cuttingOderId">{{cutting_order.raw_material_cutting_id}}</td>
               <td class="text-nowrap">{{cutting_order.factory_employee_id.factory_emp_name}}</td>
               <td>{{cutting_order.purchase_order_id.purchase_order_number}}</td>

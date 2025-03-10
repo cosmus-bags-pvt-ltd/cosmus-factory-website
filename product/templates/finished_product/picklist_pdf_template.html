@@ -21,7 +21,7 @@
 <body>
     <h1>Picklist No: {{ picklist.picklist_no }}</h1>
     <p>Created by: {{ picklist.c_user }}</p>
-    <p>Created Date: {{ picklist.created_date }}</p>
+    <p>Created Date: {{ picklist.created_date|date:"d/m/y, g:i a" }}</p>
     
     <h3>Products List:</h3>
     <table>

@@ -30,7 +30,7 @@
             {% for entry in instance_entries_all %}
             <tr>
                 <td>{{forloop.counter}}</td>
-                <td>{{ entry.created_date }}</td>
+                <td>{{ entry.created_date|date:"d/m/y, g:i a" }}</td>
                 <td>
                     {% if entry.product__PProduct_image %}
                         <img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ entry.product__PProduct_image }}" alt="img" style="width:25px; object-fit: contain;" onclick="showLargeImage(this.src)">
@@ -95,7 +95,7 @@
             {% for entry in instance_entries %}
             <tr>
                 <td>{{forloop.counter}}</td>
-                <td>{{ entry.created_date }}</td>
+                <td>{{ entry.created_date|date:"d/m/y, g:i a" }}</td>
                 <td>
                     {% if entry.product__PProduct_image %}
                         <img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ entry.product__PProduct_image }}" alt="img" style="width:25px; object-fit: contain;" onclick="showLargeImage(this.src)">
