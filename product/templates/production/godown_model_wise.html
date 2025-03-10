@@ -12,13 +12,9 @@
         {% endif %}
         {% endfor %}
     
-        
-</div class="mt-1"> 
-<label  class="fw-bold " for="">Approval Pending Qty : </label><span class="text-danger"> {{purchase_order_instance.total_approval_pending |default_if_none:0}}</span>
-<label  class="fw-bold ms-3" for="">Total Approved QTY : </label><span class="text-danger"> {{product_quantity.total_quantity}}</span>
-<div>
-
-</div>
+    <label  class="fw-bold ms-3" for="">App. Pend. Qty : </label><span class="text-danger fw-bold"> {{purchase_order_instance.total_approval_pending |default_if_none:0}}</span>
+    <label  class="fw-bold ms-3" for="">T Appr QTY : </label><span class="text-danger fw-bold"> {{product_quantity.total_quantity}}</span>
+</div> 
 
 <div class=" mt-2">
     <!-- <h3>Model Wise</h3> -->
@@ -54,7 +50,7 @@
                 <td class="text-center"><span class="text-success tolatReceivedQty">{{instance.total_return_pcs_1|default_if_none:'0'}}</span></td>
                 <td class="text-center"><span class="tolatBalanceQty text-danger">{{instance.total_balance_to_vendor|default_if_none:'0'}}</span></td>
 
-                <td class="text-center"><button><span class="tolatPendingQty text-primary"><a href="{% url 'labour-workin-pending-split' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{instance.total_pending_to_approval_qty |default_if_none:'0'}}</a></span></button></td>
+                <td class="text-center"><span class="tolatPendingQty text-primary"><a href="{% url 'labour-workin-pending-split' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{instance.total_pending_to_approval_qty |default_if_none:'0'}}</a></span></td>
 
                 <td class="text-center"><span class="text-success totalApprovedQty">{{instance.total_approved_qty |default_if_none:'0'}}</span></td>
                     <input type="hidden" class="godownId" value="{{instance.challan_no}}">
@@ -103,6 +99,14 @@
  
         godownModel.forEach(function(item){
             item.style.cursor = 'pointer';
+            var link = item.querySelector('a');
+        if (link) {
+            link.addEventListener('click', function(event) {
+                event.stopPropagation(); // Stop event bubbling to the row
+            });
+        }
+
+
             item.addEventListener('click',function(event){
                 event.preventDefault();
              
