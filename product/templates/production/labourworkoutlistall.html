@@ -110,7 +110,7 @@
                             {% for record in labour_workout_completed %}
                             <tr>
                                 <td>{{forloop.counter}}</td>
-                                <td class="text-nowrap">{{record.created_date}}</td>
+                                <td class="text-nowrap">{{record.created_date|date:"d/m/y, g:i a"}}</td>
                                 <td class="text-center"><a href="{% url 'purchase-order-update' record.purchase_order_cutting_master.purchase_order_id.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ff1084; text-decoration: none;">{{record.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</a></td>
                                 <td>{{record.purchase_order_cutting_master.purchase_order_id.ledger_party_name.name}}</td>
                                 <td class="text-center"><a href="{% url 'edit_production_product' record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{record.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a></td>
@@ -163,7 +163,7 @@
           <tr>
             <td>{{forloop.counter}}</td>
             <td>{{instance.challan_no}}</td>
-            <td>{{instance.created_date}}</td>
+            <td>{{instance.created_date|date:"d/m/y, g:i a"}}</td>
             <td><a href="{% url 'finished-goods-godown-product-ref-vendor-wise-report' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID instance.challan_no %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1097ff; text-decoration: none;">{{instance.labour_name.name}}</a></td>
             <td class="text-center text-primary totalLwo">{{instance.total_process_pcs}}</td>
             <td class="text-center text-success totalLwi">{{instance.total_labour_workin_qty | default_if_none:0}}</td>

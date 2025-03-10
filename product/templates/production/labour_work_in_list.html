@@ -49,12 +49,12 @@
                         <td>Date</td>
                         <th>GRN No</th>
                         <th>labour name</th>
-                        <th>Issues Pcs</th>
-                        <th class="text-success">Return Pcs</th>
-                        <th class="text-danger">Balance Pcs</th>
+                        <th>Issue Pcs</th>
+                        <th class="text-success">Rtn Pcs</th>
+                        <th class="text-danger">Bal Pcs</th>
                         <th class="text-primary">Prev Vch REC</th>
-                        <th class="text-danger">Pending approval</th>
-                        <th class="text-success">Approved Pcs</th>
+                        <th class="text-danger">Pend appr</th>
+                        <th class="text-success">Appr Pcs</th>
                         <th>Approve</th>
                         <th>Approve log</th>
                         <th>Edit</th>
@@ -68,7 +68,7 @@
                     <tr>
                       <input type="hidden" name="labour_workin_id" value="{{record.id}}" id="id_labour_workin_id">
                         <td>{{forloop.counter}}</td>
-                        <td>{{record.modified_date}}</td>
+                        <td>{{record.modified_date|date:"d/m/y, g:i a"}}</td>
                         <td>{{record.voucher_number}}</td>
                         <td>{{record.labour_voucher_number.labour_name.name}}</td>
                         <td class=" text-center">{{record.labour_voucher_number.total_process_pcs}}</td>

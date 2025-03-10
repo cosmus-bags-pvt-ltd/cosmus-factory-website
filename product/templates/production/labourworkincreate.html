@@ -281,8 +281,8 @@
                             <tr>
                                 <th>Date</th>
                                 <th>GR No</th>
-                                <th>T Return Pcs</th>
-                                <th>T Appr Pcs</th>
+                                <th class="text-success">T Rtn Pcs</th>
+                                <th class="text-primary">T Appr Pcs</th>
                             </tr>
                         </thead>
                         <tbody class="mainTableList text-center">
@@ -290,16 +290,16 @@
                             <tr>
                                 <td>{{x.created_date|date:"d/m/y, g:i a"}}</td>
                                 <td>{{x.voucher_number}}</td>
-                                <td><span class="returnpcs ">{{x.total_return_pcs}}</span></td>
-                                <td><span class="approvepcs ">{{x.total_approved_quantity}}</span></td>
+                                <td class="text-center"><span class="returnpcs text-success ">{{x.total_return_pcs}}</span></td>
+                                <td class="text-center"><span class="approvepcs text-primary">{{x.total_approved_quantity}}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>
                         <tbody class="mainTable text-center">
                             <tr class="fw-bold">
                                 <td colspan="2">Total : <span id="TotalValue"></span></td>
-                                <td><span id="totalRetrun" class="text-success"></span></td>
-                                <td><span id="totalapprove" class="text-primary"></span></td>
+                                <td class="text-center"><span id="totalRetrun" class="text-success"></span></td>
+                                <td class="text-center"><span id="totalapprove" class="text-primary"></span></td>
                             </tr>
                         </tbody>
                     </table>
