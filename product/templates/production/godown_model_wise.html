@@ -52,7 +52,7 @@
 
                 <td class="text-center"><span class="tolatPendingQty text-primary"><a href="{% url 'labour-workin-pending-split' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{instance.total_pending_to_approval_qty |default_if_none:'0'}}</a></span></td>
 
-                <td class="text-center"><span class="text-success totalApprovedQty"><a href="{% url 'labour-workin-approval-split' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ab2e3c; text-decoration: none;">{{instance.total_approved_qty |default_if_none:'0'}}</a></span></td>
+                <td class="text-center"><span class="text-success totalApprovedQty"><a href="{% url 'labour-workin-approval-split' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #34ab2e; text-decoration: none;">{{instance.total_approved_qty |default_if_none:'0'}}</a></span></td>
                     <input type="hidden" class="godownId" value="{{instance.challan_no}}">
             </tr>
             {% endfor %}
@@ -99,14 +99,13 @@
  
         godownModel.forEach(function(item){
             item.style.cursor = 'pointer';
-            var link = item.querySelector('a');
-        if (link) {
-            link.addEventListener('click', function(event) {
-                event.stopPropagation(); // Stop event bubbling to the row
+            var links = item.querySelectorAll('a');
+            links.forEach(function(link) {
+                link.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevents triggering the row click event
+                });
             });
-        }
-
-
+            
             item.addEventListener('click',function(event){
                 event.preventDefault();
              
