@@ -140,8 +140,8 @@
                 <input type="text" class="purchase-itemName me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no" value="{{ master_form.instance.vehicle_no}}">
                 <label for="id_driver_name" class="me-1">Driver name :</label>
                 <input type="text" class="purchase-itemName me-3" name="driver_name" maxlength="100" required id="id_driver_name" value="{{ master_form.instance.driver_name}}">
-                <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
-                <input type="text" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time" value="{{ master_form.instance.dispatch_time|time:'H:i' }}" readonly> 
+                <label for="id_created_date" class="me-1">Created Date Time :</label>
+                <input type="text" class="purchase-itemName me-3 bg-transparent border-0" name="created_date" id="id_created_date" value="{{ master_form.instance.created_date}}" readonly required>
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes" value="{{ master_form.instance.no_of_boxes}}">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
@@ -160,15 +160,15 @@
                 <input type="text" class="purchase-itemName me-3" name="vehicle_no" maxlength="50" required id="id_vehicle_no">
                 <label for="id_driver_name" class="me-1">Driver name :</label>
                 <input type="text" class="purchase-itemName me-3" name="driver_name" maxlength="100" required id="id_driver_name">
-                <label for="id_dispatch_time" class="me-1">Dispatch time :</label>
-                <input type="text" class="purchase-itemName me-3" name="dispatch_time" required id="id_dispatch_time_create" readonly> 
+                <label for="id_created_date" class="me-1">Created Date Time :</label>
+                <input type="text" class="purchase-itemName me-3 bg-transparent border-0" name="created_date" id="id_created_date" value="" readonly required>
                 <label for="id_no_of_boxes" class="me-1">No of boxes :</label>
                 <input type="number" class="me-1 purchase-mark" name="no_of_boxes" min="0" required id="id_no_of_boxes">
                 <label for="id_no_of_pcs" class="me-1">No of pcs :</label>
                 <input type="number" class="me-1 product_remark" name="no_of_pcs" min="0" required id="id_no_of_pcs" readonly>
             </div>
+
             <div class="mb-2">
-               
                 <label for="id_remark" class="me-1">Remark :</label>
                 <input type="text" name="remark" class="productpurchaseInvoice " required id="id_remark">
             </div>
@@ -184,24 +184,16 @@
 
 
 <script>
-    function setRealTime() {
+    document.addEventListener("DOMContentLoaded", function() {
+        const dateInput = document.getElementById('id_created_date');
         const now = new Date();
-        let hours = now.getHours();
-        let minutes = now.getMinutes();
-
-        // Add leading zero if minutes < 10
-        if (minutes < 10) {
-            minutes = '0' + minutes;
-        }
-
-        // Format time as HH:MM (24-hour format)
-        const currentTime = hours + ':' + minutes;
-        document.getElementById('id_dispatch_time_create').value = currentTime;
-    }
-
-    window.onload = setRealTime;
-
-    setInterval(setRealTime, 1000);
+        const formattedDate = now.getFullYear() + '-' 
+                            + String(now.getMonth() + 1).padStart(2, '0') + '-' 
+                            + String(now.getDate()).padStart(2, '0') + ' ' + '  '
+                            + String(now.getHours()).padStart(2, '0') + ':' 
+                            + String(now.getMinutes()).padStart(2, '0')
+        dateInput.value = formattedDate;
+    });
 
     $(document).ready(function () {
         var searchedItemNameDict;

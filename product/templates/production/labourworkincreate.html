@@ -333,8 +333,11 @@
         </div>
     </div>
 
-    
-    <button type="submit" value="Submit" class="create-btn" id="id_submitLabourWorkIn" data-bs-toggle="modal" data-bs-target="#exampleModal">Submit</button>
+    {% if current_entry_id == last_entry_id %}
+        <button type="submit" value="Submit" class="create-btn" id="id_submitLabourWorkIn" data-bs-toggle="modal" data-bs-target="#exampleModal">Submit</button>
+    {% else %}
+        <button type="submit" class="create-btn" disabled style="background-color: #ccc; cursor: not-allowed;">Submit</button>
+    {% endif %}
 </form>
 
 <!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

@@ -6139,6 +6139,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
     labour_workin_all = None
 
     approval_check = approved
+
     
     
     if l_w_o_id is None:
@@ -6274,6 +6275,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))
 
         last_entry = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).order_by('-created_date').first()
+        
 
         last_labour_charges = last_entry.labour_charges if last_entry else labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.labour_charges
 
@@ -6339,6 +6341,8 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         print("********* IN EDIT MODE **********")
 
         labour_workout_child_instance = labour_workout_childs.objects.get(id = l_w_o_id)
+
+        last_entry = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).order_by('-created_date').first()
 
         labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))
 
@@ -6441,7 +6445,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         except Exception as e:
             messages.error(request,f'Other exceptions {e}')
     
-    return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all})
+    return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all,'last_entry_id': last_entry.id if last_entry else None,'current_entry_id': master_form.instance.id if master_form.instance else None,})
 
 
 
