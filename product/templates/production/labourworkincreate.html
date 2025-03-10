@@ -282,7 +282,7 @@
         
                         {% if not master_form.instance.id %}
         
-                        <input type="number" class="productorder_input" name="labour_charges" step="0.01"value="{{master_form.labour_charges.initial}}" required id="id_labour_charges" style="border: 1px solid blue; outline: none;" >
+                        <input type="number" class="productorder_input" name="labour_charges" step="0.01"value="{{master_form.labour_charges.initial}}" required id="id_labour_charges"style="border: 1px solid blue; outline: none;" >
                         {% else %}
         
                         <input type="number" class="productorder_input" name="labour_charges" step="0.01" value="{{master_form.instance.labour_charges | floatformat:2}}" id="id_labour_charges" style="border: 1px solid blue; outline: none;">
