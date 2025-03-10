@@ -1,0 +1,38 @@
+{% extends 'product/base.html' %} 
+{% load static %} 
+{% block body %}
+
+<table border="1" width="100%">
+    <thead>
+        <tr>
+            <th>Product Image</th>
+            <th>Product Color</th>
+            <th>SKU</th>
+            <th>Reference ID</th>
+            <th>Model Name</th>
+            <th>Total Processed Pcs</th>
+            <th>Total Returned Pcs</th>
+            <th>Balance Pcs</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in final_report %}
+        <tr>
+            <td>
+                <img src="{{ item.product_image }}" width="50" height="50">
+            </td>
+            <td>{{ item.product_color }}</td>
+            <td>{{ item.product_sku }}</td>
+            <td>{{ item.reference_id }}</td>
+            <td>{{ item.model_name }}</td>
+            <td>{{ item.total_process }}</td>
+            <td>{{ item.total_return }}</td>
+            <td>{{ item.balance_pcs }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+{% endblock body %}

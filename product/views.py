@@ -6743,6 +6743,8 @@ def purchaseorderlabourworkinapprovecheckajax(request):
             return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred'}, status = 500)
 
 
+
+
 def finished_goods_godown_wise_report(request, g_id):
     
     
@@ -6757,6 +6759,9 @@ def finished_goods_godown_wise_report(request, g_id):
         all_godown_qty = Subquery(all_godown_stock))  
 
     return render(request,'production/godown_product_qty.html', {'product_quantity' : product_quantity})
+
+
+
 
 
 def finished_goods_godown_wise_report_all(request):
@@ -6798,6 +6803,9 @@ def finished_goods_godown_wise_report_all(request):
     The query will always return a number (e.g., 0 if no data is found or None values exist).
     
     """
+
+
+
 
 def finished_goods_godown_product_ref_wise_report(request, ref_no):
 
@@ -6928,6 +6936,43 @@ def finished_goods_vendor_model_wise_report(request, ref_no, challan_no):
         lwo_id = challan_no
 
         return render(request,'production/finishedgoodsvendormodelwisereport.html',{'report_data_sorted':report_data_sorted,'reference_no':reference_no,'product_instance':product_instance,'total_labour_workout':total_labour_workout,'labour_workout_p_2_i':labour_workout_p_2_i, 'SKU_List':SKU_List,'result_dict':final_dict,'lwo_total_qty':lwo_total_qty, 'lwo_date':lwo_date , 'lwo_id': lwo_id, 'total_sku_qty':total_sku_qty})
+
+
+
+
+def finished_goods_color_wise_report(request):
+    lwo_processed = product_to_item_labour_child_workout.objects.values(
+        'product_sku', 'product_color'
+    ).annotate(total_process=Sum('processed_pcs')).order_by('product_sku')
+    
+    lwi_processed = labour_work_in_product_to_item.objects.values(
+        'product_sku', 'product_color'
+    ).annotate(total_process=Sum('return_pcs')).order_by('product_sku')
+    
+
+    Products = PProduct_Creation.objects.all().values('PProduct_image','PProduct_color__color_name','Product__Product_Refrence_ID','PProduct_SKU','Product__Model_Name')
+
+    first_merge = []
+
+    for lwo in lwo_processed:
+        for product in Products:
+            sku = product['PProduct_SKU']
+            if sku == int(lwo['product_sku']):
+                first_merge.append({
+                    'product_image': product['PProduct_image'] if product else '',
+                    'product_color': product['PProduct_color__color_name'] if product else '',
+                    'product_sku': sku,
+                    'reference_id': product['Product__Product_Refrence_ID'] if product else '',
+                    'model_name': product['Product__Model_Name'] if product else '',
+                    'total_process': lwo['total_process'],
+                })
+
+    print("first_merge = ",first_merge)
+
+        
+    return render(request,'production/finished_goods_color_wise_report.html')
+
+
 
 
 
