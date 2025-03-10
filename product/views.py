@@ -1111,6 +1111,9 @@ def create_update_bin_for_raw_material(request, r_id=None,b_id=None):
 
 
 
+
+
+
 def delete_bin_for_raw_material(request,b_id):
 
     try:
@@ -6140,6 +6143,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
     approval_check = approved
 
+    last_entry_for_submit_button = None
     
     
     if l_w_o_id is None:
@@ -6342,7 +6346,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
         labour_workout_child_instance = labour_workout_childs.objects.get(id = l_w_o_id)
 
-        last_entry = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).order_by('-created_date').first()
+        last_entry_for_submit_button = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).order_by('-created_date').first()
 
         labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))
 
@@ -6445,7 +6449,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         except Exception as e:
             messages.error(request,f'Other exceptions {e}')
     
-    return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all,'last_entry_id': last_entry.id if last_entry else None,'current_entry_id': master_form.instance.id if master_form.instance else None,})
+    return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all,'last_entry_id': last_entry_for_submit_button.id if last_entry_for_submit_button else None,'current_entry_id': master_form.instance.id if master_form.instance else None,})
 
 
 
@@ -7166,11 +7170,15 @@ def labour_workin_approval_split(request,ref_id):
 
 def labour_workin_pending_split(request,ref_id):
 
-    queryset = labour_work_in_master.objects.filter(labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID = ref_id)
+    product_info = Product.objects.get(Product_Refrence_ID = ref_id)
+    product_images = PProduct_Creation.objects.filter(Product=product_info)
 
+    queryset = labour_work_in_master.objects.filter(labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID = ref_id)
+    
     sku_list = [f'{sku.PProduct_SKU}-{sku.PProduct_color.color_name}' for sku in PProduct_Creation.objects.filter(Product__Product_Refrence_ID=ref_id)]
 
     list_to_send = []
+
     for query in queryset:
         dict_to_append = {
             'vendor_name' : query.labour_voucher_number.labour_name.name,
@@ -7178,6 +7186,7 @@ def labour_workin_pending_split(request,ref_id):
             'challan_no' : query.labour_voucher_number.challan_no,
             'pending_qty' : [],  
         }
+
         qty_dict = dict(query.l_w_in_products.all().values_list('product_sku','pending_for_approval'))
 
         qty = {}
@@ -7196,7 +7205,7 @@ def labour_workin_pending_split(request,ref_id):
         
         list_to_send.append(dict_to_append)
 
-    return render(request,'finished_product/labourworkinpendingsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list})
+    return render(request,'finished_product/labourworkinpendingsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list,'product_info':product_info,'product_images':product_images})
 
 
 
