@@ -81,10 +81,10 @@
         </div>
         <div class="mt-4">
             {% if form.instance.id %}
-            <p class="ms-1">Created Date: <span class="ms-5 fw-bold">{{ form.instance.created_date }}</span></p> 
+            <p class="ms-1">Created Date: <span class="ms-5 fw-bold">{{ form.instance.created_date|date:"d/m/y, g:i a" }}</span></p> 
 
             {% if form.instance.modified_date_time %}
-            <p class="ms-1">Modified Date: <span class=" ms-5 fw-bold">{{ form.instance.modified_date_time }}</span></p>
+            <p class="ms-1">Modified Date: <span class=" ms-5 fw-bold">{{ form.instance.modified_date_time|date:"d/m/y, g:i a" }}</span></p>
             {% endif %} 
             
             {% elif not form.instance.id %}

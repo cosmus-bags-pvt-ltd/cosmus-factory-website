@@ -37,7 +37,7 @@
             <tr>
               <input type="hidden" class="check_diffQty" value="{{record.check_diff_qty}}">
                 <td>{{forloop.counter}}</td>
-                <td>{{record.created_date}}</td>
+                <td>{{record.created_date|date:"d/m/y, g:i a"}}</td>
                 <td>{{record.purchase_number}}</td>
                 <td>{{record.party_name.name}}</td>
                 <td>{{record.supplier_invoice_number}}</td>

@@ -50,7 +50,7 @@
                             {% for po in purchase_orders_cutting_pending %}
                             <tr> 
                                 <td>{{forloop.counter}}</td>
-                                <td class="text-nowrap">{{po.created_date}}</td>
+                                <td class="text-nowrap">{{po.created_date|date:"d/m/y, g:i a"}}</td>
                                 <td class="text-center"><a href="{% url 'purchase-order-update' po.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ff1084; text-decoration: none;">{{po.purchase_order_number}}</a></td>
                                 <td class="text-center"><a class="border-0 rounded  mb-1 px-2 py-1 text-white d-inline-block" style="background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' po.product_reference_number.Product_Refrence_ID %}">{{po.product_reference_number.Product_Refrence_ID}}</a></td>
                                 <td class="text-nowrap">{{po.product_reference_number.Model_Name}}</td>
@@ -104,7 +104,7 @@
                             {% for po in purchase_orders_cutting_completed %}
                             <tr>
                                 <td>{{forloop.counter}}</td>
-                                <td>{{po.created_date}}</td>
+                                <td>{{po.created_date|date:"d/m/y, g:i a"}}</td>
                                 <td class="text-center"><a href="{% url 'purchase-order-update' po.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ff1084; text-decoration: none;">{{po.purchase_order_number}}</a></td>
                                 <td class="text-center"><a class="border-0 rounded  mb-1 px-2 py-1 text-white d-inline-block" style="background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' po.product_reference_number.Product_Refrence_ID %}">{{po.product_reference_number.Product_Refrence_ID}}</a></td>
                                 <td>{{po.product_reference_number.Model_Name}}</td>
@@ -152,7 +152,7 @@
                         <tr>
                             <td>{{forloop.counter}}</td>
                             <td>{{instance.raw_material_cutting_id}}</td>
-                            <td>{{instance.created_date}}</td>
+                            <td>{{instance.created_date|date:"d/m/y, g:i a"}}</td>
                             <td class="text-center"><a href="{% url 'purchase-order-update' instance.purchase_order_id.id %}" class="border-0 rounded text-white  mb-1 px-2 py-1 d-inline-block" style=" background-color: #ff1084; text-decoration: none;">{{instance.purchase_order_id.purchase_order_number}}</a></td>
                             <td class="text-center"><a class="border-0 rounded  mb-1 px-2 py-1 text-white d-inline-block" style="background-color: #ab2e3c; text-decoration: none;" href="{% url 'edit_production_product' instance.purchase_order_id.product_reference_number.Product_Refrence_ID %}">{{instance.purchase_order_id.product_reference_number.Product_Refrence_ID}}</a></td>
                             <td>{{instance.purchase_order_id.product_reference_number.Model_Name}}</td>

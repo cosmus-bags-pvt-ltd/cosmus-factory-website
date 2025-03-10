@@ -66,7 +66,7 @@
                     <tr>
                         <td>{{forloop.counter}}</td>
                         <td class="text-center ">{{record.challan_no}}</td>
-                        <td>{{record.created_date}}</td>
+                        <td>{{record.created_date|date:"d/m/y, g:i a"}}</td>
                         <td>{{record.labour_name.name}}</td>
                         <td class="text-center text-success">{{record.total_process_pcs}}</td>
                         <td class="text-center text-danger">{{record.total_balance_pcs}}</td>

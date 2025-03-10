@@ -43,7 +43,7 @@
                         {% for order in order_list %}
                         <tr>
                             <td>{{forloop.counter}}</td>
-                            <td>{{ order.created_date }}</td> 
+                            <td>{{ order.created_date|date:"d/m/y, g:i a" }}</td> 
                             <td>{{ order.po_no }}</td> 
                             <td>{{ order.party_name.name }}</td>
                             <td>{{ order.total_qty }}</td>
@@ -82,7 +82,7 @@
                         {% for order in order_list_complete %}
                         <tr>
                             <td>{{forloop.counter}}</td>
-                            <td>{{ order.created_date }}</td> 
+                            <td>{{ order.created_date|date:"d/m/y, g:i a" }}</td> 
                             <td>{{ order.po_no }}</td> 
                             <td>{{ order.party_name.name }}</td>
                             <td>{{ order.total_demo_qty }}</td>

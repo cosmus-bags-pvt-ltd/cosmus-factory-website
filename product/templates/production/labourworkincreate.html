@@ -311,7 +311,7 @@
                         <tbody class="mainTableList text-center">
                             {% for x in labour_workin_all %}
                             <tr>
-                                <td>{{x.created_date}}</td>
+                                <td>{{x.created_date|date:"d/m/y, g:i a"}}</td>
                                 <td>{{x.voucher_number}}</td>
                                 <td><span class="returnpcs ">{{x.total_return_pcs}}</span></td>
                                 <td><span class="approvepcs ">{{x.total_approved_quantity}}</span></td>

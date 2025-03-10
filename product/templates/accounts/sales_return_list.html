@@ -32,7 +32,7 @@
             {% for data in queryset %}
               <tr>
                 <td>{{forloop.counter}}</td>
-                <td>{{data.created_date}}</td>
+                <td>{{data.created_date|date:"d/m/y, g:i a"}}</td>
                 <td>{{data.party_name.name}}</td>
                 <!-- <td>{{data.ledger_type}}</td> -->
                 <td class="table-success text-center">{{data.sales_voucher_master.sale_no}}</td>

@@ -23,7 +23,7 @@
             {% for sale in final_list %}
             {% if sale.ledger_type == 'sales' %}
             <tr class="table-success">
-                <td>{{sale.created_date}}</td>
+                <td>{{sale.created_date|date:"d/m/y, g:i a"}}</td>
                 <td class="ledgertype">{{sale.ledger_type}}</td>
                 <td class="text-center">{{sale.sale_no}}</td>
                 <td></td>
@@ -36,7 +36,7 @@
             </tr>
             {% else %}
             <tr class="table-danger">
-                <td>{{sale.created_date}}</td>
+                <td>{{sale.created_date|date:"d/m/y, g:i a"}}</td>
                 <td class="ledgertype">{{sale.ledger_type}}</td>
                 <td class="text-center">{{sale.sales_return_inward_instance__sales_return_no}}</td>
                 <td></td>

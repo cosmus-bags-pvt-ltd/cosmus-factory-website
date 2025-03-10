@@ -28,7 +28,7 @@
             <tr>
                 <td>{{forloop.counter}}</td>
 
-                <td>{{data.created_date}}</td>
+                <td>{{data.created_date|date:"d/m/y, g:i a"}}</td>
 
                 <td><img id="productImgPreview" name="product_img" src="{{ MEDIA_URL }}{{ data.product_name__PProduct_image }}" alt="Product" style="width: 30px; cursor: pointer;" onclick="showLargeImage(this.src)"></td>
 

@@ -29,14 +29,14 @@
                 <th>Challan No</th>
                 <th>Date</th>
                 <th>Vendor Name</th>
-                <th>Total Labour Work Out</th>
-                <th>Total Labour Work In</th>
-                <th>Rep Out</th>
-                <th>Rep In</th>
-                <th>Total Received</th>
-                <th>Total Balance to Vendor</th>
-                <th>Approval Pending Qty</th>
-                <th>Total Approved Qty</th>
+                <th class="text-info">T LWO</th>
+                <th class="text-primary">T LWI</th>
+                <th class="text-danger">Rep Out</th>
+                <th class="text-primary">Rep In</th>
+                <th class="text-success">T Rec QTY</th>
+                <th class="text-danger">T Bal to Vend</th>
+                <th class="text-primary">Appr Pend Qty</th>
+                <th class="text-success">T Appr Qty</th>
                 
             </tr>
         </thead>
@@ -45,16 +45,16 @@
             <tr>
                 <td>{{instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number}}</td>
                 <td>{{instance.challan_no}}</td>
-                <td>{{instance.created_date}}</td>
+                <td>{{instance.created_date|date:"d/m/y, g:i a"}}</td>
                 <td>{{instance.labour_name.name}}</td>
-                <td><span class="tolatLwoqty">{{instance.total_process_pcs}}</span></td>
-                <td><span class="tolatLwiqty">{{instance.total_return_pcs_1|default_if_none:'0'}}</span></td>
-                <td></td>
-                <td></td>
-                <td>{{instance.total_return_pcs_1|default_if_none:'0'}}</td>
-                <td><span class="tolatBalanceQty">{{instance.total_balance_to_vendor|default_if_none:'0'}}</span></td>
-                <td><span class="tolatPendingQty">{{instance.total_pending_to_approval_qty |default_if_none:'0'}}</span></td>
-                <td>{{instance.total_approved_qty |default_if_none:'0'}}</td>
+                <td class="text-center"><span class="tolatLwoqty text-info">{{instance.total_process_pcs}}</span></td>
+                <td class="text-center"><span class="tolatLwiqty text-primary">{{instance.total_return_pcs_1|default_if_none:'0'}}</span></td>
+                <td class="text-center"><span class="text-danger reperOut">0</span></td>
+                <td class="text-center"><span class="text-primary reperIn">0</span></td>
+                <td class="text-center"><span class="text-success tolatReceivedQty">{{instance.total_return_pcs_1|default_if_none:'0'}}</span></td>
+                <td class="text-center"><span class="tolatBalanceQty text-danger">{{instance.total_balance_to_vendor|default_if_none:'0'}}</span></td>
+                <td class="text-center"><span class="tolatPendingQty text-primary">{{instance.total_pending_to_approval_qty |default_if_none:'0'}}</span></td>
+                <td class="text-center"><span class="text-success totalApprovedQty">{{instance.total_approved_qty |default_if_none:'0'}}</span></td>
                     <input type="hidden" class="godownId" value="{{instance.challan_no}}">
             </tr>
             {% endfor %}
@@ -62,14 +62,14 @@
         <tbody class="mainTableList" id="totalLabourwokoutInValues">
             <tr>
                 <td colspan="4" class="fw-bold">Total</td>
-                <td><span class="fw-bold" id="tLabourWorkQty">0</span></td>
-                <td><span class="fw-bold" id="tLabourWorkInQty">0</span></td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-                <td><span class="fw-bold" id="tBalanceQty">0</span></td>
-                <td><span class="fw-bold" id="tApprovedQty">0</span></td>
-                <td>0</td>
+                <td class="text-center"><span class="fw-bold text-info" id="tLabourWorkQty">0</span></td>
+                <td class="text-center"><span class="fw-bold text-primary" id="tLabourWorkInQty">0</span></td>
+                <td class="text-center"><span class="fw-bold text-danger" id="tReperOutQty">0</span></td>
+                <td class="text-center"><span class="fw-bold text-primary" id="tReperInQty">0</span></td>
+                <td class="text-center"><span class="fw-bold text-success" id="tRecQty">0</span></td>
+                <td class="text-center"><span class="fw-bold text-danger" id="tBalanceQty">0</span></td>
+                <td class="text-center"><span class="fw-bold text-primary" id="tApprovedQty">0</span></td>
+                <td class="text-center"><span class="fw-bold text-success" id="tQty">0</span></td>
             </tr>
         </tbody>
     </table>
@@ -118,6 +118,11 @@
         var labourWorkin = 0;
         var balanceQty = 0;
         var approvedQty = 0;
+        var reperIn = 0;
+        var reperOut = 0;
+        var received = 0;
+        var totalQty = 0;
+
         var totalLabourWout = document.querySelectorAll('.tolatLwoqty');
         totalLabourWout.forEach(function(item){
             labourWorkout = labourWorkout + parseInt(item.textContent);
@@ -127,12 +132,24 @@
             balanceQty += parseInt(tBalanceQty.textContent);
             var tApprovedQty = item.closest('tr').querySelector('.tolatPendingQty');
             approvedQty += parseInt(tApprovedQty.textContent);
+            var reparOut = item.closest('tr').querySelector('.reperOut');
+            reperOut += parseInt(reparOut.textContent);
+            var reparIn = item.closest('tr').querySelector('.reperIn');
+            reperIn += parseInt(reparIn.textContent);
+            var receivedQty = item.closest('tr').querySelector('.tolatReceivedQty');
+            received += parseInt(receivedQty.textContent);
+            var tQty = item.closest('tr').querySelector('.totalApprovedQty');
+            totalQty += parseInt(tQty.textContent);
 
 
             document.getElementById('tLabourWorkQty').textContent = labourWorkout;
             document.getElementById('tLabourWorkInQty').textContent = labourWorkin;
             document.getElementById('tBalanceQty').textContent = balanceQty;
             document.getElementById('tApprovedQty').textContent = approvedQty;
+            document.getElementById('tReperOutQty').textContent = reperOut;
+            document.getElementById('tReperInQty').textContent = reperIn;
+            document.getElementById('tRecQty').textContent = received;
+            document.getElementById('tQty').textContent = totalQty;
         })
 
     }
