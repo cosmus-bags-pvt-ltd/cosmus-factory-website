@@ -50,20 +50,23 @@
             <div class="col-lg-4">
                 <div class="d-flex mb-2">
                     <label for="id_challan_no" class="item-form">Challan no :</label>
-                    <input type="text" class="item-select" name="challan_no" value="{{master_form.challan_no.initial | default_if_none:''}}"required id="id_challan_no" readonly style="border: 1px solid blue; outline: none;">
+                    <input type="hidden" class="item-select" name="challan_no" value="{{master_form.challan_no.initial | default_if_none:''}}"required id="id_challan_no" readonly style="border: 1px solid blue; outline: none;">
+                    <a href="{% url 'labour-workout-single-view' master_form.initial.challan_no_id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f5a623; text-decoration: none;">{{ master_form.initial.challan_no }}</a>
                 </div>
                 <div class="d-flex mb-2">
                     <label for="id_purchase_order_no" class="item-form">PO.No :</label>
-                    <input type="text" class="item-select" name="purchase_order_no" value="{{master_form.purchase_order_no.initial | default_if_none:''}}" required id="id_purchase_order_no" readonly style="border: 1px solid blue; outline: none;">
+                    <input type="hidden" class="item-select" name="purchase_order_no" value="{{master_form.purchase_order_no.initial | default_if_none:''}}" required id="id_purchase_order_no" readonly style="border: 1px solid blue; outline: none;">
+                    <a href="{% url 'purchase-order-update' master_form.initial.purchase_order_no_id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff1084; text-decoration: none;">{{master_form.purchase_order_no.initial}}</a>
                 </div>
                 <div class="d-flex mb-2">
                     <label for="id_cutting_vch_no" class="item-form">cutting vch no :</label>
-                    <input type="text" class="item-select" name="cutting_vch_no" value="{{master_form.cutting_vch_no.initial}}" required id="id_cutting_vch_no" readonly style="border: 1px solid blue; outline: none;">
-    
+                    <input type="hidden" class="item-select" name="cutting_vch_no" value="{{master_form.cutting_vch_no.initial}}" required id="id_cutting_vch_no" readonly style="border: 1px solid blue; outline: none;">
+                    <a href="{% url 'purchase-order-cutting-update' master_form.initial.purchase_order_no_id master_form.initial.refrence_number master_form.initial.cutting_vch_no_id %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ab732e; text-decoration: none;">{{master_form.cutting_vch_no.initial}}</a>
                 </div>
                 <div class="d-flex mb-2">
                     <label for="id_refrence_number" class="item-form">Ref No :</label>
-                    <input type="number" class="item-select" name="refrence_number" value="{{master_form.refrence_number.initial | default_if_none:''}}" required id="id_refrence_number" readonly style="border: 1px solid blue; outline: none;">
+                    <input type="hidden" class="item-select" name="refrence_number" value="{{master_form.refrence_number.initial | default_if_none:''}}" required id="id_refrence_number" readonly style="border: 1px solid blue; outline: none;">
+                    <a href="{% url 'edit_production_product' master_form.initial.refrence_number %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ab2e3c; text-decoration: none;">{{master_form.refrence_number.initial}}</a>
                 </div>
                 <div class="d-flex mb-2">
                     <label for="id_model_name" class="item-form">Model Name :</label>

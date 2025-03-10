@@ -37,6 +37,7 @@
             <thead class="name_absolute sticky-top">
               <tr>
                 <th>No</th>
+                <th>Rack</th>
                 <th>Name</th>
                 <th>Edit</th>
                 <th>Delete</th>
@@ -47,6 +48,7 @@
               {% for bin in bin_list %}
               <tr>
                 <td>{{ forloop.counter }}</td>
+                <td>{{bin.rack.rack_name}}</td>
                 <td>{{bin}}</td>
                 <td><a href="{% url 'update-bin-for-raw-material' bin.rack.id bin.id %}"><i class="fa-solid fa-pen-to-square px-1"></i></a></td>
                 <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ bin.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger px-2"></button></td>

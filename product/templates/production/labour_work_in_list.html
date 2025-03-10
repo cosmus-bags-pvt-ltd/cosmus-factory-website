@@ -90,13 +90,16 @@
                         {% endif %}
                         
                         <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{record.id}}" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa-solid fa-trash text-danger px-2"></i></button></td>
-                        <!-- <input type="hidden" name="labour_workin_id" value = "{{record.id}}" id="id_labour_workin_id"> -->
                         {% else %}
-                   
-                        <td></td>
+                        {% if record.approved_Qty_total == 0 %}
+                        <td><button class="border-0 bg-transparent viewBtn"><a href="{% url 'labour-workin-view-update' record.labour_voucher_number.id record.id False %}"><i class="fa-solid fa-eye px-2"></i></a></button></td>
                         
-                        <td></td>
+                        {% elif record.approved_Qty_total != 0 %}
+                        <td><button class="border-0 bg-transparent viewBtn"></button><a href="{% url 'labour-workin-view-update' record.labour_voucher_number.id record.id True %}"><i class="fa-solid fa-eye px-2"></i></a></button></td>
+
                         {% endif %}
+                        <td></td>
+                    {% endif %}
                       
                     </tr>
                     {% endfor %}

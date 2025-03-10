@@ -6105,6 +6105,10 @@ def cuttingroomqty(request):
 
 def labourworkincreatelist(request,l_w_o_id):
 
+    user = request.user
+
+    logger.info(f"labour workin create list function run by {user}.")
+
     labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
 
     labour_workin_instances = list(
@@ -6115,11 +6119,11 @@ def labourworkincreatelist(request,l_w_o_id):
             total_approved_pcs=Sum('l_w_in_products__approved_qty'),
             pending_for_approval_pcs=Sum('l_w_in_products__pending_for_approval'),
             total_balance_qty=Sum('l_w_in_products__dummy_balance_qty')
-        ).order_by('modified_date')
+        ).order_by('created_date')
     )
 
 
-    return render(request,'production/labour_work_in_list.html',{'labour_workout_child_instance':labour_workout_child_instance,'labour_workin_instances':labour_workin_instances,'page_name':'Purchase Order Wise'})
+    return render(request,'production/labour_work_in_list.html',{'labour_workout_child_instance':labour_workout_child_instance,'labour_workin_instances':labour_workin_instances,'page_name':'Challan Wise GRN'})
 
 
 
@@ -6135,6 +6139,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
     labour_workin_all = None
 
     approval_check = approved
+
     
     
     if l_w_o_id is None:
@@ -6264,20 +6269,41 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         print("********* IN CREATE MODE **********")
 
         labour_workin_master_instance = None
+
         labour_workout_child_instance = labour_workout_childs.objects.get(id=l_w_o_id)
 
-        labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))  
+        labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))
+
+        last_entry = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).order_by('-created_date').first()
+        
+
+        last_labour_charges = last_entry.labour_charges if last_entry else labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.labour_charges
 
         initial_data = {
             'labour_name': labour_workout_child_instance.labour_name.name,
-            'challan_no' : labour_workout_child_instance.challan_no ,
+
+            'challan_no' : labour_workout_child_instance.challan_no,
+
+            'challan_no_id' : labour_workout_child_instance.id,
+
             'purchase_order_no' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number,
+
+            'purchase_order_no_id':labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.id,
+
             'cutting_vch_no' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.raw_material_cutting_id,
+
+            'cutting_vch_no_id' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.raw_material_cutting_id,
+
             'refrence_number' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID,
+
             'model_name': labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name,
+
             'total_p_o_qty' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces,
+
             'labour_workout_qty' : labour_workout_child_instance.total_process_pcs,
-            'labour_charges': labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.labour_charges,
+
+            'labour_charges': last_labour_charges,
+
             'total_balance_pcs' :  labour_workout_child_instance.labour_workin_pending_pcs,  
         }
 
@@ -6316,6 +6342,8 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
 
         labour_workout_child_instance = labour_workout_childs.objects.get(id = l_w_o_id)
 
+        last_entry = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).order_by('-created_date').first()
+
         labour_workin_all = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty'))
 
         product_to_item_l_w_in = product_to_item_labour_child_workout.objects.filter(labour_workout=labour_workout_child_instance)
@@ -6338,8 +6366,12 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                 form.initial['total_recieved_qty'] = instance.processed_pcs - instance.labour_w_in_pending
 
     if request.method == 'POST':
-          
+        
+        print(request.POST)
+
         labour_workout_child_i = request.POST.get('labour_workout_child_instance_id')
+
+        print(labour_workout_child_i)
 
         if labour_workout_child_i:
             labour_workout_child_instance = labour_workout_childs.objects.get(id=labour_workout_child_i)
@@ -6356,7 +6388,9 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     
                     #save master form 
                     parent_form = master_form.save(commit = False)
-                    
+
+                    master_form.instance.labour_charges = master_form.cleaned_data['labour_charges']
+
                     parent_form.labour_voucher_number = labour_workout_child_instance
                     
                     if master_form.instance.id:
@@ -6368,7 +6402,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     parent_form.labour_voucher_number.labour_workin_pending_pcs = parent_form.total_balance_pcs
 
                     labour_workout_child_instance.save()
-
+                    
                     parent_form.save()
 
 
@@ -6411,8 +6445,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
         except Exception as e:
             messages.error(request,f'Other exceptions {e}')
     
-    return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,
-                    'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all})
+    return render(request,template_name,{'master_form':master_form,'labour_work_in_product_to_item_formset':product_to_item_formset,'approval_check':approval_check,'page_name':'Labour Workin Create','labour_workin_all':labour_workin_all,'last_entry_id': last_entry.id if last_entry else None,'current_entry_id': master_form.instance.id if master_form.instance else None,})
 
 
 
@@ -6495,9 +6528,14 @@ def labourworkinlistall(request):
 
 
 def labourworkinpurchaseorderlist(request ,p_o_no):
+
+    user = request.user
+
+    logger.info(f"labour workin purchase order list function run by {user}.")
+
     purchase_order_instance = purchase_order.objects.get(id = p_o_no)
 
-    labour_workin_purchase_order_list = labour_workout_childs.objects.filter(labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__id = p_o_no).annotate(total_approved_qty=Sum('labour_work_in_master__l_w_in_products__approved_qty'), total_pending_approved_qty=Sum('labour_work_in_master__l_w_in_products__pending_for_approval'))
+    labour_workin_purchase_order_list = labour_workout_childs.objects.filter(labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__id = p_o_no).annotate(total_approved_qty=Sum('labour_work_in_master__l_w_in_products__approved_qty'), total_pending_approved_qty=Sum('labour_work_in_master__l_w_in_products__pending_for_approval')).order_by('created_date')
 
     lab_workout_master = labour_workout_childs.objects.filter(labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__id = p_o_no)
     
@@ -6506,15 +6544,14 @@ def labourworkinpurchaseorderlist(request ,p_o_no):
         total_lab_qty = total_lab_qty + instance.total_process_pcs
 
     lab_work_in_qty = labour_work_in_master.objects.filter(labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__id = p_o_no)
+
     total_lab_workin_qty = 0
     for instance in lab_work_in_qty:
         total_lab_workin_qty = total_lab_workin_qty + instance.total_return_pcs
 
     balance_qty = total_lab_qty - total_lab_workin_qty
 
-    return render(request,'production/labour_workin_purchase_order_list.html',{'labour_workin_purchase_order_list':labour_workin_purchase_order_list,
-                    'purchase_order_instance':purchase_order_instance, 'total_lab_qty':total_lab_qty, 'total_lab_workin_qty':total_lab_workin_qty,
-                    'balance_qty':balance_qty,'page_name':'Purchase Order Wise'})
+    return render(request,'production/labour_workin_purchase_order_list.html',{'labour_workin_purchase_order_list':labour_workin_purchase_order_list,'purchase_order_instance':purchase_order_instance, 'total_lab_qty':total_lab_qty, 'total_lab_workin_qty':total_lab_workin_qty, 'balance_qty':balance_qty,'page_name':'PO Wise Challan'})
 
 
 

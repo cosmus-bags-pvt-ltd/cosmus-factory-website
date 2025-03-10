@@ -1212,7 +1212,6 @@ class DeliveryChallanMaster(models.Model):
     shipping_address = models.TextField()
     vehicle_no = models.CharField(max_length=50)
     driver_name = models.CharField(max_length=100)
-    dispatch_time = models.TimeField()
     no_of_boxes = models.PositiveIntegerField()
     no_of_pcs = models.PositiveIntegerField()
     selected_godown = models.ForeignKey(Godown_finished_goods, on_delete=models.PROTECT)

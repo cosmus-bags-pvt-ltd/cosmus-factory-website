@@ -115,7 +115,7 @@
           <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{ challan.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-trash text-danger ps-3"></button></td>
           <td><a href="{% url 'download-delivery-challan-pdf' challan.id %}"><img src="../../../static/images/icons8-pdf-40.png" width="25px" class="me-2"></a></td>
           {% if challan.total_balance_qty == 0 %}
-          <td></td>
+          <td><a href=""></a></td>
           {% else%}
           <td><a href="{% url 'sales-voucher-create' 0 challan.id %}"><i class="fa-solid fa-circle-plus px-2"></i></a></td>
           {% endif %}
@@ -139,7 +139,10 @@
           <th>Vch No</th>
           <th>Src. Godown</th>
           <th>Dest. Godown</th>
-          <th class="text-primary">Total Qty <span id="stockTransferQty"></span></th>
+          <th>Total Qty <span id="stockTransferQty"></span></th>
+          <th>T Box</th> 
+          <th>Vehl No</th>
+          <th>Driver Name</th>
           <th>Remark</th>
           <th>Edit</th>
           <!-- <th>Delete</th> -->
@@ -155,14 +158,17 @@
           <td>{{ warehouse_product_transfer.voucher_no }}</td>
           <td>{{ warehouse_product_transfer.source_warehouse.godown_name_finished }}</td>
           <td>{{ warehouse_product_transfer.destination_warehouse.warehouse_name_finished }}</td>
-          <td class="text-center text-primary" ><span class="stockTransferValue">{{ warehouse_product_transfer.total_recieved_qty }}</span></td>
+          <td class="text-center"><span class="stockTransferValue">{{ warehouse_product_transfer.total_recieved_qty }}</span></td>
+          <td>{{ warehouse_product_transfer.no_of_boxes }}</td>
+          <td class="text-nowrap">{{ warehouse_product_transfer.vehicle_no }}</td>
+          <td>{{ warehouse_product_transfer.driver_name }}</td>
           <td>{{ warehouse_product_transfer.narration }}</td>
           {% if warehouse_product_transfer.all_qc_qty > 0 %}
           <td><a href="{% url 'warehouse-product-transfer-update' warehouse_product_transfer.id %}"><span class="ps-3"><i class="fa-solid fa-eye"></i></span></a></td> 
           {% else %}
           <td><a href="{% url 'warehouse-product-transfer-update' warehouse_product_transfer.id %}"><span class="ps-3"><i  class="fa-solid fa-pen-to-square"></i></span></a></td> 
           {% endif %}
-          <!-- <td><button class="border-0 bg-transparent delete-btn" data-item-id="{{warehouse_product_transfer.id}}" data-key="{{warehouse_product_transfer.all_qc_qty}}" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa-solid fa-xmark text-danger px-3 fs-5"></i></button></td> -->
+          
           <input type="hidden" class="deleted_Value" value="{{warehouse_product_transfer.transnfer_cancelled}}">
           <td></td>
           
@@ -226,7 +232,7 @@
       toggleVisible("stock_transfer_btn", "stock_transfe_list");
 
     })
-
+    document.body.appendChild(document.getElementById('exampleModal'));
     document.body.appendChild(document.getElementById('customModal'));
     function showLargeImage(src) {
         let modal = document.getElementById("customModal");
@@ -323,7 +329,7 @@
     totalValueCheck();
 
 
-    document.body.appendChild(document.getElementById('exampleModal'));
+   
 
   $(document).ready(function () {
    
