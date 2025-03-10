@@ -6209,20 +6209,27 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     labour_workout_child_instance = labour_workout_childs.objects.get(id = labour_work_out_id)
 
                     labour_workin_all_qd = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).annotate(total_approved_quantity = Sum('l_w_in_products__approved_qty')).values('voucher_number','total_return_pcs','total_approved_quantity','created_date')
-                    labour_workin_all = list(labour_workin_all_qd) 
+                    labour_workin_all = list(labour_workin_all_qd)
+
+                    last_entry = labour_work_in_master.objects.filter(labour_voucher_number=labour_workout_child_instance).order_by('-created_date').first()
+
+                    last_labour_charges = last_entry.labour_charges if last_entry else labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.labour_charges
 
                     labour_workout_child_instance_id = labour_workout_child_instance.id
                     
                     master_initial_data = {
                         'labour_name': labour_workout_child_instance.labour_name.name,
-                        'challan_no' : labour_workout_child_instance.challan_no ,
+                        'challan_no' : labour_workout_child_instance.challan_no,
+                        'challan_no_id' : labour_workout_child_instance.id,
                         'purchase_order_no' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number,
+                        'purchase_order_no_id':labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.id,
                         'cutting_vch_no' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.raw_material_cutting_id,
+                        'cutting_vch_no_id' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.raw_material_cutting_id,
                         'refrence_number' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID,
                         'model_name': labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Model_Name,
                         'total_p_o_qty' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.number_of_pieces,
                         'labour_workout_qty' : labour_workout_child_instance.total_process_pcs,
-                        'labour_charges': labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.labour_charges,
+                        'labour_charges': last_labour_charges,
                         'total_balance_pcs' : labour_workout_child_instance.labour_workin_pending_pcs,
                         }
 
@@ -7130,6 +7137,10 @@ def raw_material_estimation_popup(request, pk=None):
 
 
 def labour_workin_approval_split(request,ref_id):
+
+    product_info = Product.objects.get(Product_Refrence_ID = ref_id)
+    product_images = PProduct_Creation.objects.filter(Product=product_info)
+
     queryset = labour_work_in_master.objects.filter(labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID = ref_id)
 
     sku_list = [f'{sku.PProduct_SKU}-{sku.PProduct_color.color_name}' for sku in PProduct_Creation.objects.filter(Product__Product_Refrence_ID=ref_id)]
@@ -7162,8 +7173,7 @@ def labour_workin_approval_split(request,ref_id):
         
         list_to_send.append(dict_to_append)
 
-  
-    return render(request,'finished_product/labourworkinapprovalsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list})
+    return render(request,'finished_product/labourworkinapprovalsplit.html',{'list_to_send':list_to_send,'sku_list':sku_list,'product_info':product_info,'product_images':product_images})
 
 
 
