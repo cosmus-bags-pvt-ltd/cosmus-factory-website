@@ -66,7 +66,7 @@
                   <tr>
                       <th>No</th>
                       <th>Ref No</th>
-                      <th>Product Name</th>
+                      <th>Model Name</th>
                       <th>SKU</th>
                       <th>Color</th>
                       <th>Qty</th>
@@ -141,6 +141,11 @@
                   {% endif %}
                   {% endfor %}
               </tbody>
+              <tr>
+                <td colspan="5">Total :</td>
+                <td><input type="text" value="" class="product_remark  border-0 stock_qty" name="total-quantity" maxlength="200" id="id_total-quantity" readonly></td>
+                <td></td>
+            </tr>
           </table>
           {% if voucher_instance.qc_all_qty > 0 %}
             <input readonly  type="number" class="product_row" name="productRow" id="id_productRow" value="1">
@@ -262,10 +267,30 @@
             })
         }) 
         } 
-       
 
         
+        $(document).on('input', 'input[name$="-product_quantity_transfer"]', function (e) { 
+
+            calculateTotalQuantity()
+      
+
+        })
+
+        function calculateTotalQuantity() {
+                let totalQty = 0;
+            $('#mainProductForm .mainTableList tr').each(function () {
+                if ($(this).css('display') !== 'none') {
+                    let qty = parseInt($(this).find('input[name$="-product_quantity_transfer"]').val()) || 0;
+                    totalQty += qty;
+                }
+            });
+
+            $('#id_total-quantity, #id_no_of_pcs').val(totalQty);
+                
+            }
+            calculateTotalQuantity()
     })
+
     
       document.addEventListener('DOMContentLoaded', function () {
   

@@ -47,25 +47,25 @@
     </div>
     <div id="labourWorkInFormAfterClick" style="display: none;" >
         <div class="row" >
-            <div class="col-lg-5">
+            <div class="col-lg-4">
                 <div class="d-flex mb-2">
                     <label for="id_challan_no" class="item-form">Challan no :</label>
-                    <input type="text" class="item-select" name="challan_no" value="{{master_form.challan_no.initial | default_if_none:''}}"required id="id_challan_no" readonly style="border: 1px solid blue; outline: none;">
+                    <input type="hidden" class="item-select" name="challan_no" value="{{ master_form.challan_no.initial | default_if_none:''}}"required id="id_challan_no" readonly>
                 </div>
                 <div class="d-flex mb-2">
                     <label for="id_purchase_order_no" class="item-form">PO.No :</label>
-                    <input type="text" class="item-select" name="purchase_order_no" value="{{master_form.purchase_order_no.initial | default_if_none:''}}" required id="id_purchase_order_no" readonly style="border: 1px solid blue; outline: none;">
+                    <input type="hidden" class="item-select" name="purchase_order_no" value="{{master_form.purchase_order_no.initial | default_if_none:''}}" required id="id_purchase_order_no" readonly>
+                    
                 </div>
-                <div class="d-flex mb-3">
+                <div class="d-flex mb-2">
                     <label for="id_cutting_vch_no" class="item-form">cutting vch no :</label>
-                    <input type="text" class="item-select" name="cutting_vch_no" value="{{master_form.cutting_vch_no.initial}}" required id="id_cutting_vch_no" readonly style="border: 1px solid blue; outline: none;">
-    
+                    <input type="hidden" class="item-select" name="cutting_vch_no" value="{{master_form.cutting_vch_no.initial}}" required id="id_cutting_vch_no" readonly>
+                    
                 </div>
-                
-
                 <div class="d-flex mb-2">
                     <label for="id_refrence_number" class="item-form">Ref No :</label>
-                    <input type="number" class="item-select" name="refrence_number" value="{{master_form.refrence_number.initial | default_if_none:''}}" required id="id_refrence_number" readonly style="border: 1px solid blue; outline: none;">
+                    <input type="hidden" class="item-select" name="refrence_number" value="{{master_form.refrence_number.initial | default_if_none:''}}" required id="id_refrence_number" readonly>
+                   
                 </div>
                 <div class="d-flex mb-2">
                     <label for="id_model_name" class="item-form">Model Name :</label>
@@ -147,14 +147,14 @@
                                 <th>T Appr Pcs</th>
                             </tr>
                         </thead>
-                        <tbody class="mainTableList">
+                        <tbody class="mainTableList text-nowrap">
                             
                         </tbody>
                         <tbody class="mainTable text-center">
                             <tr class="fw-bold">
                                 <td colspan="2">Total : <span id="totalAlllwi"></span></td>
-                                <td><span id="totalRetrun" class="text-primary "></span></td>
-                                <td><span id="totalapprove" class="text-success"></span></td>
+                                <td class="text-center"><span id="totalRetrun" class="text-primary "></span></td>
+                                <td class="text-center"><span id="totalapprove" class="text-success"></span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -698,8 +698,20 @@ $(document).on('click', '.search-input',function(){
                 var tableGrNoQty = $('#grNoTotalQty .mainTableList');
                 tableGrNoQty.empty();
                totalData.forEach(function(data, index){
+                var createdDate = new Date(data.created_date);
+
+                // Format date as "DD/MM/YY, h:mm a"
+                var formattedDate = createdDate.toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "2-digit"
+                }) + ', ' + createdDate.toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                });
                 var row = $('<tr class="text-center">');
-                    row.append($('<td>').text(data.created_date))
+                    row.append($('<td>').text(formattedDate ))
                     row.append($('<td>').text(data.voucher_number))
                     row.append($('<td class="returnValue">').text(data.total_return_pcs))
                     row.append($('<td class="approveValue">').text(data.total_approved_quantity))

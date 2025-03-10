@@ -6219,7 +6219,7 @@ def labourworkincreate(request, l_w_o_id = None, pk = None, approved=False):
                     
                     master_initial_data = {
                         'labour_name': labour_workout_child_instance.labour_name.name,
-                        'challan_no' : labour_workout_child_instance.challan_no ,
+                        'challan_no' : labour_workout_child_instance.challan_no,
                         'challan_no_id' : labour_workout_child_instance.id,
                         'purchase_order_no' : labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.purchase_order_number,
                         'purchase_order_no_id':labour_workout_child_instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.id,

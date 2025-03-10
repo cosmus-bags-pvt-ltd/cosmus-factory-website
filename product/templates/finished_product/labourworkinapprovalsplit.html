@@ -2,7 +2,18 @@
 {% load static %}
 {% block body %}
 
-<div class="mt-3 table-res">
+<div class="mt-1">
+  <label class="fw-bold">Ref No :</label><span class="text-danger ms-2 refId"> {{ product_info.Product_Refrence_ID }}</span>
+  <label class="fw-bold ms-3">Model Name :</label><span class="text-danger ms-2">{{ product_info.Model_Name }}</span>
+  <label class="fw-bold ps-3">IMG :</label>
+      {% for instance in product_images %}
+      {% if instance.PProduct_image.url is not None %}
+      <img src=" {{instance.PProduct_image.url}}" style="width: 30px; height: 30px; cursor: pointer;" onclick="showLargeImage(this.src)">
+      {% endif %}
+      {% endfor %}
+</div>
+
+<div class="mt-2 table-res">
     <table class="table table-striped table-hover table-bordered table-primary">
         <thead class="name_absolute">
             <tr>
