@@ -49,24 +49,30 @@
         <div class="row" >
             <div class="col-lg-4">
                 <div class="d-flex mb-2">
-                    <label for="id_challan_no" class="item-form">Challan no :</label>
-                    <input type="hidden" class="item-select" name="challan_no" value="{{ master_form.challan_no.initial | default_if_none:''}}"required id="id_challan_no" readonly>
+                    <label for="id_challan_no" class="item-form">Challan No :</label>
+                    <input type="hidden" class="item-select" name="challan_no" value="{{ master_form.challan_no.initial | default_if_none:'' }}" required id="id_challan_no" readonly>
+                    <a href="#" id="challan_no_link" target="_blank" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #f5a623; text-decoration: none;" ></a>
                 </div>
+                
                 <div class="d-flex mb-2">
-                    <label for="id_purchase_order_no" class="item-form">PO.No :</label>
-                    <input type="hidden" class="item-select" name="purchase_order_no" value="{{master_form.purchase_order_no.initial | default_if_none:''}}" required id="id_purchase_order_no" readonly>
-                    
+                    <label for="id_purchase_order_no" class="item-form">PO No :</label>
+                    <input type="hidden" class="item-select" name="purchase_order_no" value="{{ master_form.purchase_order_no.initial | default_if_none:'' }}" required id="id_purchase_order_no" readonly>
+                    <a href="#" id="purchase_order_no_link" target="_blank" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ff1084; text-decoration: none;"></a>
                 </div>
+                
                 <div class="d-flex mb-2">
-                    <label for="id_cutting_vch_no" class="item-form">cutting vch no :</label>
-                    <input type="hidden" class="item-select" name="cutting_vch_no" value="{{master_form.cutting_vch_no.initial}}" required id="id_cutting_vch_no" readonly>
-                    
+                    <label for="id_cutting_vch_no" class="item-form">Cutting Vch No :</label>
+                    <input type="hidden" class="item-select" name="cutting_vch_no" value="{{ master_form.cutting_vch_no.initial | default_if_none:'' }}" required id="id_cutting_vch_no" readonly>
+                    <a href="#" id="cutting_vch_no_link" target="_blank" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ab732e; text-decoration: none;"></a>
                 </div>
+                
                 <div class="d-flex mb-2">
                     <label for="id_refrence_number" class="item-form">Ref No :</label>
-                    <input type="hidden" class="item-select" name="refrence_number" value="{{master_form.refrence_number.initial | default_if_none:''}}" required id="id_refrence_number" readonly>
-                   
+                    <input type="hidden" class="item-select" name="refrence_number" value="{{ master_form.refrence_number.initial | default_if_none:'' }}" required id="id_refrence_number" readonly>
+                    <a href="#" id="refrence_number_link" target="_blank" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #ab2e3c; text-decoration: none;"></a>
                 </div>
+                
+                
                 <div class="d-flex mb-2">
                     <label for="id_model_name" class="item-form">Model Name :</label>
                     <input type="text" class="item-select" name="model_name" value="{{master_form.model_name.initial | default_if_none:''}}" required id="id_model_name" readonly style="border: 1px solid blue; outline: none;" >
@@ -630,12 +636,35 @@ $(document).on('click', '.search-input',function(){
                 var challanRows = $('#labourWorkInFormAfterClick');
                 var submit = $('#id_submit');
               
-               
-        
                 // Hide the table and show form sections
                 tableWorkIn.css("display", "none");
                 challanRows.css("display", "block");
                 submit.css("display", "block");
+
+                function updateFieldAndLink(inputId, linkId, value, urlPattern, ...placeholders) {
+                    var inputElement = challanRows.find('#' + inputId);
+                    var linkElement = challanRows.find('#' + linkId);
+
+                    if (value) {
+                        inputElement.val(value);
+                        
+                        // Replace multiple placeholders dynamically
+                        placeholders.forEach((placeholderValue, index) => {
+                            urlPattern = urlPattern.replace(`PLACEHOLDER${index + 1}`, placeholderValue);
+                        });
+
+                        linkElement.attr('href', urlPattern).text(value).show();
+                    } else {
+                        linkElement.hide();
+                    }
+                }
+
+                // Update form fields with master data and dynamically generate Django URLs
+                updateFieldAndLink('id_challan_no', 'challan_no_link', masterData.challan_no, '/labourworkoutsingleview/PLACEHOLDER1', masterData.challan_no_id);
+                updateFieldAndLink('id_purchase_order_no', 'purchase_order_no_link', masterData.purchase_order_no, '/purchaseorderupdate/PLACEHOLDER1', masterData.purchase_order_no_id);
+                updateFieldAndLink('id_cutting_vch_no', 'cutting_vch_no_link', masterData.cutting_vch_no, '/purchaseordercuttingupdate/PLACEHOLDER1/PLACEHOLDER2/PLACEHOLDER3', masterData.purchase_order_no_id, masterData.refrence_number, masterData.cutting_vch_no);
+                updateFieldAndLink('id_refrence_number', 'refrence_number_link', masterData.refrence_number, '/editpproduct/PLACEHOLDER1', masterData.refrence_number);
+
                 
                 // Update form fields with master data
                 challanRows.find('#id_challan_no').val(masterData.challan_no);
@@ -660,7 +689,7 @@ $(document).on('click', '.search-input',function(){
                 formsetData.forEach(function(rowData, index) {
                     var newRow = $('<tr>');
                         
-                        newRow.append('<input type="hidden" name="l_w_in_products-' + index + '-id" value="" id="id_l_w_in_products-0-id">');
+                    newRow.append('<input type="hidden" name="l_w_in_products-' + index + '-id" value="" id="id_l_w_in_products-0-id">');
                     // Create the input fields dynamically for each column
                     newRow.append($('<td>').html('<input type="text" class="itemNewQty" name="l_w_in_products-' + index + '-product_sku" value="' + rowData.product_sku + '" maxlength="100" id="id_l_w_in_products-' + index + '-product_sku">'));
                     
