@@ -24,8 +24,8 @@
             {% for row in all_reports %}
             <tr>
               <td>{{forloop.counter}}</td>
-              <td class="text-nowrap">{{row.create_date|date:"d/m/y, g:i a"}}</td>
-              <td class="text-nowrap">{{row.modified_date_time|date:"d/m/y, g:i a"}}</td>
+              <td class="text-nowrap">{{row.create_date|date:"d-m-Y"}}</td>
+              <td class="text-nowrap">{{row.modified_date_time|date:"d-m-Y"}}</td>
               <td class="text-nowrap">{{row.ledger.name}}</td>
               <td>{{row.voucher_type}}</td>
               <td>{{row.voucher_no}}</td>

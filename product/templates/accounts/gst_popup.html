@@ -39,14 +39,19 @@
                     'X-CSRFToken': '{{ csrf_token }}',
                 }
             });
-
+            
+            const data = await response.json(); // Await the response.json() call
             if (response.ok) {
-                const data = await response.json();  // Await the response.json() call
+                  
                 window.opener.postMessage(data, '*');
                 window.close();
-
                 formSubmitted = true;  // Set flag to true after successful submission
+
             } else {
+                if (data.error) {
+                    alert(data.error);
+                    window.close();
+                }   
                 console.error('Failed to update GST.');
             }
         } catch (error) {

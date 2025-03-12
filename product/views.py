@@ -1504,16 +1504,27 @@ def item_delete(request, pk):
 
 
 
-
+# SUBCATEGORY FUNCTIONS
 def color_create_update(request, pk=None):
 
     user = request.user
 
-    # Check if the user has 'view_color' permission; otherwise, block access
     if not user.has_perm('product.view_color'):
         messages.error(request, "You do not have permission to view Colors")
-        return redirect('dashboard-main')  # Redirect to a safe page
+        return redirect('dashboard-main')
+    
+    if request.path == '/color_popup/':
+        if not (user.has_perm('product.add_color') or user.has_perm('product.change_color')):
+            return JsonResponse({'error': 'You do not have permission to add or edit color.'})
+    
 
+    if request.path == '/color_popup/':
+        if not user.has_perm('product.view_color'):
+            return JsonResponse({'error': 'You do not have permission to add color.'})
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
     queryset = Color.objects.all()
     color_search = request.GET.get('color_search','')
 
@@ -1546,16 +1557,16 @@ def color_create_update(request, pk=None):
         instance = None
 
     form = ColorForm(instance=instance)
+
     if request.method == 'POST':
         
-        # Check for add/update permissions only when modifying data
         if instance and not user.has_perm('product.change_color'):
             messages.error(request, "You do not have permission to update a color.")
-            return redirect('simplecolorlist')  # Redirect to a safe page
+            return redirect('simplecolorlist')
+        
         if not instance and not user.has_perm('product.add_color'):
             messages.error(request, "You do not have permission to add a color.")
-            return redirect('simplecolorlist')  # Redirect to a safe page
-
+            return redirect('simplecolorlist')
 
         form = ColorForm(request.POST, instance=instance)
 
@@ -1564,7 +1575,6 @@ def color_create_update(request, pk=None):
             form_instance.c_user = request.user
             form_instance.save()
 
-            
             if request.path == '/simple_colorcreate_update/' or request.path == f'/simple_colorcreate_update/{pk}':
                 if instance:
                     messages.success(request, 'Color updated successfully.')
@@ -1584,9 +1594,6 @@ def color_create_update(request, pk=None):
     return render(request, template_name , {'title': title, 'form': form, 'colors':queryset,'color_search':color_search,'page_name':page_name})
 
 
-
-
-
 @permission_required('product.delete_color', raise_exception=True)
 def color_delete(request, pk):
     product_color = get_object_or_404(Color,pk=pk)
@@ -1599,15 +1606,6 @@ def color_delete(request, pk):
     return redirect('simplecolorlist')
 
 
-
-
-
-
-
-
-
-
-
 def item_fabric_group_create_update(request, pk = None):
 
     user = request.user
@@ -1615,10 +1613,22 @@ def item_fabric_group_create_update(request, pk = None):
     logger.info(f"item_fabric_group_create_update function run by {user}")
 
     if not user.has_perm('product.view_fabric_group_model'):
-        messages.error(request, "You do not have permission to view fabric")
+        messages.error(request, "You do not have permission to view fabric groups.")
         return redirect('dashboard-main')
+        
+    if request.path == '/fabric_popup/':
+        if not (user.has_perm('product.add_fabric_group_model') or user.has_perm('product.change_fabric_group_model')):
+            return JsonResponse({'error': 'You do not have permission to add or edit fabric group.'})
+
+        
+    if request.path == '/fabric_popup/':
+        if not user.has_perm('product.view_fabric_group_model'):
+            return JsonResponse({'error': 'You do not have permission to view fabric group.'})
 
 
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
     queryset = Fabric_Group_Model.objects.all()
 
     fabric_group_search = request.GET.get('fabric_group_search','')
@@ -1667,8 +1677,6 @@ def item_fabric_group_create_update(request, pk = None):
             form_instance.c_user = request.user
             form_instance.save()
 
-            
-
             if pk:
                 messages.success(request,'Fabric group updated sucessfully.')
                 logger.info(f"fabric group {form.cleaned_data.get('fab_grp_name')} update by {user}")
@@ -1690,8 +1698,6 @@ def item_fabric_group_create_update(request, pk = None):
     return render(request,template_name,{'title': title, "fab_group_all":queryset,"fabric_group_search":fabric_group_search,'form':form,'page_name':page_name})
 
 
-
-
 @permission_required('product.delete_fabric_group_model', raise_exception=True)
 def item_fabric_group_delete(request,pk):
     user = request.user
@@ -1711,16 +1717,28 @@ def item_fabric_group_delete(request,pk):
     return redirect('item-fabgroup-create-list')
 
 
-
-
-
-
-
-
-@permission_required('product.add_unit_name_create', raise_exception=True)
-@permission_required('product.change_unit_name_create', raise_exception=True)
-@permission_required('product.view_unit_name_create', raise_exception=True)
 def unit_name_create_update(request,pk=None):
+
+    user = request.user
+
+    logger.info(f"unit_name_create_update function run by {user}")
+
+    if not user.has_perm('product.view_unit_name_create'):
+        messages.error(request, "You do not have permission to view units")
+        return redirect('dashboard-main')
+
+    if request.path == '/units_popup/':
+        if not (user.has_perm('product.add_unit_name_create') or user.has_perm('product.change_unit_name_create')):
+            return JsonResponse({'error': 'You do not have permission to add or edit unit.'})
+
+    
+    if request.path == '/units_popup/':
+        if not user.has_perm('product.view_unit_name_create'):
+            return JsonResponse({'error': 'You do not have permission to add or edit unit.'})
+
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
     
     queryset = Unit_Name_Create.objects.all()
 
@@ -1755,6 +1773,16 @@ def unit_name_create_update(request,pk=None):
 
 
     if request.method == 'POST':
+
+        if instance and not user.has_perm('product.change_unit_name_create'):
+            messages.error(request, "You do not have permission to update a unit.")
+            return redirect('unit_name-create_list')
+
+        if not instance and not user.has_perm('product.add_unit_name_create'):
+            messages.error(request, "You do not have permission to add a unit.")
+            return redirect('unit_name-create_list')
+        
+
         form = UnitName(request.POST, instance=instance)
         if form.is_valid():
             form_instance = form.save(commit=False)
@@ -1763,8 +1791,10 @@ def unit_name_create_update(request,pk=None):
 
             if pk:
                 messages.success(request,'Unit updated sucessfully.')
+                logger.info(f"{form_instance.unit_name} updated by {user}")
             else:
                 messages.success(request,'Unit created sucessfully.')
+                logger.info(f"{form_instance.unit_name} created by {user}")
 
             
             if  template_name == 'product/unit_name_create_update.html':
@@ -1782,35 +1812,405 @@ def unit_name_create_update(request,pk=None):
         return render(request, template_name, {'title':title,'form':form,"unit_name_all":queryset,'unit_name_search':unit_name_search,'page_name':page_name})
 
 
-
-
-
 def unit_name_units_ajax(request):
+    
+    user = request.user
+
     unit_name_pk = request.GET.get('unit_name_pk')
+
     if unit_name_pk is not None:
+
+        if not user.has_perm('product.add_unit_name_create'):
+            return JsonResponse({'error': 'You do not have permission to add a unit.', 'close': True}, status=403)
+    
         unit_name_instance = get_object_or_404(Unit_Name_Create,pk=unit_name_pk)
         unit_name_units = unit_name_instance.unit_value
-        return JsonResponse({'unit_name_units':unit_name_units})
-        
 
+        logger.info(f"{unit_name_units} updated by {user}")
+
+        return JsonResponse({'unit_name_units':unit_name_units})
+    else:
+        return JsonResponse({'error': 'Invalid Request'}, status=400)   
 
 
 @permission_required('product.delete_unit_name_create', raise_exception=True)
 def unit_name_delete(request,pk):
+
+    user = request.user
+
+    logger.info(f"unit_name_delete function run by {user}")
+
     try:
         unit_name_pk = get_object_or_404(Unit_Name_Create,pk=pk)
         unit_name_pk.delete()
+        logger.info(f"Unit name {unit_name_pk.unit_name} deleted by {user}")
         messages.success(request,f'Unit name {unit_name_pk.unit_name} was deleted.')
     except IntegrityError as e:
         messages.error(request,f'Cannot delete {unit_name_pk.unit_name} because it is referenced by other objects.')
     return redirect('unit_name-create_list')
 
 
+def packaging_create_update(request, pk = None):
+    
+    user = request.user
+
+    logger.info(f"packaging_create_update function run by {user}")
+
+    if not user.has_perm('product.view_packaging'):
+        messages.error(request, "You do not have permission to view Packing.")
+        return redirect('dashboard-main')
+        
+    if request.path == '/packagingpop/':
+        if not (user.has_perm('product.add_packaging') or user.has_perm('product.change_packaging')):
+            return JsonResponse({'error': 'You do not have permission to add or edit Packing.'})
+        
+    if request.path == '/packagingpop/':
+        if not user.has_perm('product.view_packaging'):
+            return JsonResponse({'error': 'You do not have permission to view Packing.'})
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
+    queryset =  packaging.objects.all()
+
+    packaging_search = request.GET.get('packaging_search','')
+
+    if packaging_search != '':
+        queryset =  packaging.objects.filter(packing_material__icontains = packaging_search)
+
+    if pk:
+        packaging_instance = packaging.objects.get(pk=pk)
+        title = 'Update'
+    else:
+        packaging_instance = None
+        title = 'Create'
+
+    if request.path == '/packagingpop/':
+        template_name = 'misc/packaging_popup.html'
+
+    elif request.path == '/packaging_create/' or f'/packagingupdate/{pk}':
+        template_name = 'misc/packaging_create_update.html'
+
+    if request.path == '/packaging_create/':
+        page_name = "Create Packaging"
+    else:
+        page_name = "Edit Packaging"
+
+    form = packaging_form(instance = packaging_instance)
+
+    if request.method == 'POST':
+
+        if packaging_instance and not user.has_perm('product.change_packaging'):
+            messages.error(request, "You do not have permission to update a Packing.")
+            return redirect('packaging-create-list')
+
+        if not packaging_instance and not user.has_perm('product.add_packaging'):
+            messages.error(request, "You do not have permission to add a Packing.")
+            return redirect('packaging-create-list')
 
 
+        form = packaging_form(request.POST ,instance=packaging_instance)
+        if form.is_valid():
+            form_instance = form.save(commit=False)
+            form_instance.c_user = request.user
+            form_instance.save()
+
+            if pk:
+                messages.success(request,'packing updated sucessfully.')
+                logger.info(f"{form_instance.packing_material} updated by {user}")
+            else:
+                messages.success(request,'packing created sucessfully.')
+                logger.info(f"{form_instance.packing_material} created by {user}")
+
+            if template_name == 'misc/packaging_create_update.html':
+                return redirect('packaging-create-list')
+
+            elif template_name == 'misc/packaging_popup.html':
+
+                packaging_all_values = packaging.objects.all().values('id','packing_material')
+
+                return JsonResponse({'packaging_all_values': list(packaging_all_values)})
+        else:
+            return render(request, template_name ,{'form':form,'title':title,'packaging_all':queryset,'page_name':page_name}) 
+
+    return render(request, template_name ,{'form':form,'title':title,'packaging_all':queryset,'page_name':page_name})
 
 
+@permission_required('product.delete_packaging', raise_exception=True)
+def packaging_delete(request,pk):
 
+    user = request.user
+
+    logger.info(f"packaging_delete function run by {user}")
+
+    packaging_pk =  packaging.objects.get(pk=pk)
+    packaging_pk.delete()
+
+    logger.info(f"{packaging_pk.packing_material} delete by {user}")
+    messages.success(request, 'Packing deleted.')
+
+    return redirect('packaging-create-list')
+
+
+def gst_create_update(request, pk = None):
+
+    user = request.user
+
+    logger.info(f"gst_create_update function run by {user}")
+
+    if not user.has_perm('product.view_gst'):
+        messages.error(request, "You do not have permission to view GST")
+        return redirect('dashboard-main')
+
+    if request.path == '/gstpopup/':
+        if not (user.has_perm('product.add_gst') or user.has_perm('product.change_gst')):
+            return JsonResponse({'error': 'You do not have permission to add or edit GST'})
+
+
+    if request.path == '/gstpopup/':
+        if not user.has_perm('product.view_gst'):
+            return JsonResponse({'error': 'You do not have permission to view GST'})
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
+    queryset =  gst.objects.all()
+
+    gst_search = request.GET.get('gst_search','')
+
+    if gst_search != "":
+        queryset =  gst.objects.filter(gst_percentage__contains = gst_search)
+
+    if pk:
+        instance = gst.objects.get(pk=pk)
+        title = 'Update'
+
+    else:
+        instance = None
+        title = 'Create'
+
+
+    if request.path == '/gstpopup/':
+        template_name = 'accounts/gst_popup.html'
+        page_name = None
+
+    elif request.path == '/gstcreate/':
+        template_name = 'accounts/gst_create_update.html'
+        page_name = "Create GST"
+
+    elif request.path == f'/gstupdate/{pk}':
+        template_name = 'accounts/gst_create_update.html'
+        page_name = "Edit GST"
+
+    form = gst_form(instance = instance)
+    if request.method == 'POST':
+
+        if not instance and not user.has_perm('product.add_gst'):
+            messages.error(request, "You do not have permission to add GST")
+            return redirect('gst-create-list')
+
+        if instance and not user.has_perm('product.change_gst'):
+            messages.error(request, "You do not have permission to update GST")
+            return redirect('gst-create-list')
+    
+        form = gst_form(request.POST, instance = instance)
+        if form.is_valid():
+            form_instance = form.save(commit=False)
+            form_instance.c_user = request.user
+            form_instance.save()
+            
+            if pk:
+                messages.success(request,'GST updated successfully.')
+                logger.info(f"{form_instance.gst_percentage} updated by {user}")
+            else:
+                messages.success(request,'GST created successfully.')
+                logger.info(f"{form_instance.gst_percentage} created by {user}")
+
+            if template_name == 'accounts/gst_create_update.html':
+                
+                return redirect('gst-create-list')
+
+            elif template_name == 'accounts/gst_popup.html':
+                
+                gst_updated = gst.objects.all().values('id', 'gst_percentage')
+                
+                return JsonResponse({"gst_updated": list(gst_updated)})
+        else:
+            return render(request,template_name,{'form':form, 'title':title, 'gsts':queryset,'page_name':page_name})
+
+    return render(request,template_name,{'form':form, 'title':title, 'gsts':queryset,'page_name':page_name})
+
+
+@permission_required('product.delete_gst', raise_exception=True)
+def gst_delete(request,pk):
+
+    user = request.user
+
+    logger.info(f"gst_delete function run by {user}")
+
+    gst_pk = gst.objects.get(pk=pk)
+    gst_pk.delete()
+
+    logger.info(f"{gst_pk.gst_percentage} GST deleted {user}")
+    messages.success(request,f"{gst_pk.gst_percentage}GST deleted")
+
+    return redirect('gst-create-list')
+
+
+def fabric_finishes_create_update(request, pk = None):
+
+    user = request.user
+
+    if not user.has_perm('product.view_fabricfinishes'):
+        messages.error(request, "You do not have permission to view fabric finishes.")
+        return redirect('dashboard-main')
+
+    if request.path == '/fabricfinishespopup/':
+        if not (user.has_perm('product.add_fabricfinishes') or user.has_perm('product.change_fabricfinishes')):
+            return JsonResponse({'error': 'You do not have permission to add or edit fabric finishes.'})
+
+    if request.path == '/fabricfinishespopup/':
+        if not user.has_perm('product.view_fabricfinishes'):
+            return JsonResponse({'error': 'You do not have permission to add fabric finishes.'})
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+
+    queryset =  FabricFinishes.objects.all()
+
+    fabric_finishes_search = request.GET.get('fabric_finishes_search','')
+
+    if fabric_finishes_search != '':
+        queryset =  FabricFinishes.objects.filter(fabric_finish__icontains = fabric_finishes_search)
+
+    if pk:
+        fabric_finishes_instance = FabricFinishes.objects.get(pk=pk)
+        title = 'Update'
+    else:
+        fabric_finishes_instance = None
+        title = 'Create'
+
+    if request.path == '/fabricfinishespopup/':
+        template_name = 'misc/fabric_finishes_popup.html'
+
+    elif request.path == '/fabricfinishesscreate/' or f'/fabricfinishesupdate/{pk}':
+        template_name = 'misc/fabric_finishes_create_update.html'
+        page_name = "Fabric Finishes"
+    
+    if request.path == '/fabricfinishesscreate/':
+        page_name = "Create Fabric Finishes"
+    else:
+        page_name = "Edit Fabric Finishes"
+
+
+    form = FabricFinishes_form(instance = fabric_finishes_instance)
+
+    if request.method == 'POST':
+
+        if fabric_finishes_instance and not user.has_perm('product.change_fabricfinishes'):
+            messages.error(request, "You do not have permission to update a fabric finish.")
+            return redirect('fabric-finishes-create-list')
+
+        if not fabric_finishes_instance and not user.has_perm('product.add_fabricfinishes'):
+            messages.error(request, "You do not have permission to add a fabric finish.")
+            return redirect('fabric-finishes-create-list')
+        
+        
+        form = FabricFinishes_form(request.POST,instance = fabric_finishes_instance)
+
+        if form.is_valid():
+            form_instance = form.save(commit=False)
+            form_instance.c_user = request.user
+            form_instance.save()
+
+            if pk:
+                messages.success(request,'fabric finish updated sucessfully')
+            else:
+                messages.success(request,'fabric finish created sucessfully')
+
+            if template_name == 'misc/fabric_finishes_create_update.html':
+                return redirect('fabric-finishes-create-list')
+            
+            elif template_name == 'misc/fabric_finishes_popup.html':
+                fabric_finishes_all = FabricFinishes.objects.all().values('id', 'fabric_finish')
+                
+                return JsonResponse({"fabric_finishes_all": list(fabric_finishes_all)})
+        else:
+            
+            return render(request,template_name,{'form':form,'title':title,'fabricfinishes':queryset,'fabric_finishes_search':fabric_finishes_search,'page_name':page_name})
+
+    return render(request,template_name,{'form':form,'title':title,'fabricfinishes':queryset,'fabric_finishes_search':fabric_finishes_search,'page_name':page_name})
+
+
+@permission_required('product.delete_fabricfinishes', raise_exception=True)
+def fabric_finishes_delete(request,pk):
+
+    user = request.user
+    
+    logger.info(f"fabric_finishes_delete function run by {user}")
+
+    fabric_finish =  FabricFinishes.objects.get(pk=pk)
+    fabric_finish.delete()
+
+    logger.info(f"{fabric_finish.fabric_finish} fabric finish deleted by {user}")
+    messages.success(request,'fabric finish deleted.')
+    return redirect('fabric-finishes-create-list')
+
+
+def cutting_room_create_update_list(request, pk=None):
+
+    user = request.user
+    
+    logger.info(f"cutting_room_create_update_list function run by {user}")
+
+    if not user.has_perm('product.view_cutting_room'):
+        messages.error(request, "You do not have permission to view cutting rooms")
+        return redirect('dashboard-main')
+    
+    cutting_rooms = cutting_room.objects.all()
+
+    if request.path == '/cutting_room_create/':
+        page_name = "Create Cutting Room"
+    else:
+        page_name = "Edit Cutting Room"
+
+    if pk:
+        instance = cutting_room.objects.get(id = pk)
+    else:
+        instance = None
+
+    form = cutting_room_form(request.POST or None, instance = instance) 
+
+    if request.method == 'POST':
+
+        if instance and not user.has_perm('product.change_cutting_room'):
+            messages.error(request, "You do not have permission to update a cutting room.")
+            return redirect('cutting_room-create')
+
+        if not instance and not user.has_perm('product.add_cutting_room'):
+            messages.error(request, "You do not have permission to add a cutting room.")
+            return redirect('cutting_room-create')
+        
+        if form.is_valid():
+            form.save()
+
+            if pk:
+                messages.success(request,f"{form.cleaned_data['cutting_room_name']} cutting room created succesfully")
+                logger.info(f"{form.cleaned_data['cutting_room_name']} cutting room by {user}")
+            else:
+                messages.success(request,f"{form.cleaned_data['cutting_room_name']} cutting room updated succesfully")
+                logger.info(f"{form.cleaned_data['cutting_room_name']} cutting room by {user}")
+
+            return redirect('cutting_room-create')
+    
+    return render(request,'production/cuttingroomcreateupdatelist.html', {'form':form,'cutting_rooms':cutting_rooms,'page_name':page_name})
+
+
+@permission_required('product.delete_cutting_room', raise_exception=True)
+def cuttingroomdelete(request,pk):
+    instance = cutting_room.objects.get(pk=pk)
+    instance.delete()
+    return redirect('cutting_room-create')
 
 
 
@@ -3071,210 +3471,18 @@ def purchasevoucherdelete(request,pk):
 
 
 
-def gst_create_update(request, pk = None):
-
-    queryset =  gst.objects.all()
-
-    gst_search = request.GET.get('gst_search','')
-
-    if gst_search != "":
-        queryset =  gst.objects.filter(gst_percentage__contains = gst_search)
-
-
-    if pk:
-        instance = gst.objects.get(pk=pk)
-        title = 'Update'
-
-    else:
-        instance = None
-        title = 'Create'
-
-
-    if request.path == '/gstpopup/':
-        template_name = 'accounts/gst_popup.html'
-        page_name = None
-    elif request.path == '/gstcreate/':
-        template_name = 'accounts/gst_create_update.html'
-        page_name = "Create GST"
-
-    elif request.path == f'/gstupdate/{pk}':
-        template_name = 'accounts/gst_create_update.html'
-        page_name = "Edit GST"
-
-    form = gst_form(instance = instance)
-    if request.method == 'POST':
-        form = gst_form(request.POST, instance = instance)
-        if form.is_valid():
-            form_instance = form.save(commit=False)
-            form_instance.c_user = request.user
-            form_instance.save()
-            
-            if pk:
-                messages.success(request,'GST updated successfully.')
-            else:
-                messages.success(request,'GST created successfully.')
-
-            if template_name == 'accounts/gst_create_update.html':
-                
-                return redirect('gst-create-list')
-
-            elif template_name == 'accounts/gst_popup.html':
-                
-                gst_updated = gst.objects.all().values('id', 'gst_percentage')
-                
-                return JsonResponse({"gst_updated": list(gst_updated)})
-        else:
-            return render(request,template_name,{'form':form, 'title':title, 'gsts':queryset,'page_name':page_name})
-
-    return render(request,template_name,{'form':form, 'title':title, 'gsts':queryset,'page_name':page_name})
 
 
 
 
 
-def gst_delete(request,pk):
-    gst_pk = gst.objects.get(pk=pk)
-    gst_pk.delete()
-    messages.success(request,'GST deleted')
-    return redirect('gst-create-list')
 
 
 
 
 
-def fabric_finishes_create_update(request, pk = None):
-    queryset =  FabricFinishes.objects.all()
-
-    fabric_finishes_search = request.GET.get('fabric_finishes_search','')
-
-    if fabric_finishes_search != '':
-        queryset =  FabricFinishes.objects.filter(fabric_finish__icontains = fabric_finishes_search)
-
-    if pk:
-        fabric_finishes_instance = FabricFinishes.objects.get(pk=pk)
-        title = 'Update'
-    else:
-        fabric_finishes_instance = None
-        title = 'Create'
-
-    if request.path == '/fabricfinishespopup/':
-        template_name = 'misc/fabric_finishes_popup.html'
-
-    elif request.path == '/fabricfinishesscreate/' or f'/fabricfinishesupdate/{pk}':
-        template_name = 'misc/fabric_finishes_create_update.html'
-        page_name = "Fabric Finishes"
-    
-    if request.path == '/fabricfinishesscreate/':
-        page_name = "Create Fabric Finishes"
-    else:
-        page_name = "Edit Fabric Finishes"
 
 
-    form = FabricFinishes_form(instance = fabric_finishes_instance)
-
-    if request.method == 'POST':
-        form = FabricFinishes_form(request.POST,instance = fabric_finishes_instance)
-
-        if form.is_valid():
-            form_instance = form.save(commit=False)
-            form_instance.c_user = request.user
-            form_instance.save()
-
-            if pk:
-                messages.success(request,'fabric finish updated sucessfully')
-            else:
-                messages.success(request,'fabric finish created sucessfully')
-
-            if template_name == 'misc/fabric_finishes_create_update.html':
-                return redirect('fabric-finishes-create-list')
-            
-            elif template_name == 'misc/fabric_finishes_popup.html':
-                fabric_finishes_all = FabricFinishes.objects.all().values('id', 'fabric_finish')
-                
-                return JsonResponse({"fabric_finishes_all": list(fabric_finishes_all)})
-        else:
-            
-            return render(request,template_name,{'form':form,'title':title,'fabricfinishes':queryset,'fabric_finishes_search':fabric_finishes_search,'page_name':page_name})
-
-    return render(request,template_name,{'form':form,'title':title,'fabricfinishes':queryset,'fabric_finishes_search':fabric_finishes_search,'page_name':page_name})
-
-
-
-
-
-def fabric_finishes_delete(request,pk):
-    fabric_finish =  FabricFinishes.objects.get(pk=pk)
-    fabric_finish.delete()
-    messages.success(request,'fabric finish deleted.')
-    return redirect('fabric-finishes-create-list')
-
-
-
-
-def packaging_create_update(request, pk = None):
-    
-    queryset =  packaging.objects.all()
-
-    packaging_search = request.GET.get('packaging_search','')
-
-    if packaging_search != '':
-        queryset =  packaging.objects.filter(packing_material__icontains = packaging_search)
-
-    if pk:
-        packaging_instance = packaging.objects.get(pk=pk)
-        title = 'Update'
-    else:
-        packaging_instance = None
-        title = 'Create'
-
-    if request.path == '/packagingpop/':
-        template_name = 'misc/packaging_popup.html'
-
-    elif request.path == '/packaging_create/' or f'/packagingupdate/{pk}':
-        template_name = 'misc/packaging_create_update.html'
-
-    if request.path == '/packaging_create/':
-        page_name = "Create Packaging"
-    else:
-        page_name = "Edit Packaging"
-
-    form = packaging_form(instance = packaging_instance)
-
-    if request.method == 'POST':
-        form = packaging_form(request.POST ,instance=packaging_instance)
-        if form.is_valid():
-            form_instance = form.save(commit=False)
-            form_instance.c_user = request.user
-            form_instance.save()
-
-            if pk:
-                messages.success(request,'packing updated sucessfully.')
-            else:
-                messages.success(request,'packing created sucessfully.')
-
-            
-            if template_name == 'misc/packaging_create_update.html':
-                return redirect('packaging-create-list')
-
-            elif template_name == 'misc/packaging_popup.html':
-
-                packaging_all_values = packaging.objects.all().values('id','packing_material')
-
-                return JsonResponse({'packaging_all_values': list(packaging_all_values)})
-        else:
-            return render(request, template_name ,{'form':form,'title':title,'packaging_all':queryset,'page_name':page_name}) 
-
-    return render(request, template_name ,{'form':form,'title':title,'packaging_all':queryset,'page_name':page_name})
-
-
-
-
-
-def packaging_delete(request,pk):
-    packaging_pk =  packaging.objects.get(pk=pk)
-    packaging_pk.delete()
-    messages.success(request, 'Packing deleted.')
-    return redirect('packaging-create-list')
 
 
 
@@ -6957,7 +7165,17 @@ def finished_goods_color_wise_report(request):
     for lwo in lwo_processed:
         for product in Products:
             sku = product['PProduct_SKU']
-            if sku == int(lwo['product_sku']):
+            color = product['PProduct_color__color_name']
+
+            if sku == int(lwo['product_sku']) and color == lwo['product_color']:
+
+                total_process_lwi = 0
+            
+                for lwi in lwi_processed:
+                    if int(lwi['product_sku']) == product['PProduct_SKU'] and lwi['product_color'] == color:
+                        total_process_lwi = lwi['total_process']
+                        break
+
                 first_merge.append({
                     'product_image': product['PProduct_image'] if product else '',
                     'product_color': product['PProduct_color__color_name'] if product else '',
@@ -6965,12 +7183,88 @@ def finished_goods_color_wise_report(request):
                     'reference_id': product['Product__Product_Refrence_ID'] if product else '',
                     'model_name': product['Product__Model_Name'] if product else '',
                     'total_process': lwo['total_process'],
+                    'total_process_lwi': total_process_lwi,
+                    'total_balance':lwo['total_process'] - total_process_lwi
                 })
 
-    print("first_merge = ",first_merge)
+    return render(request,'production/finished_goods_color_wise_report.html',{'final_report':first_merge,'MEDIA_URL': settings.MEDIA_URL})
 
-        
-    return render(request,'production/finished_goods_color_wise_report.html')
+
+def finished_goods_color_challan_and_grn_vise_report(request,ref_no):
+
+    lwo_instances = labour_workout_childs.objects.filter(labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID = ref_no)
+
+    lwo_total = labour_workout_childs.objects.filter(labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID = ref_no).aggregate(total_lwo = Sum('labour_workout_child_items__processed_pcs'))['total_lwo'] or 0
+    
+    lwo_processed = []
+
+    for i in lwo_instances:
+
+        challan_no = i.challan_no
+        created_date = i.created_date
+        vendor = i.labour_name.name
+
+        v_dict = {}
+
+        v_dict["voucher_data"] = {}
+
+        v_dict["voucher_data"]["created_date"] = created_date
+        v_dict["voucher_data"]["vendor"] = vendor
+        v_dict["voucher_data"]["challan_no"] = challan_no
+
+        v_dict["sku_data"] = {}
+
+        for item in i.labour_workout_child_items.all():
+            sku = int(item.product_sku)
+            v_dict["sku_data"][sku] = item.processed_pcs
+    
+        lwo_processed.append(v_dict)
+    
+    # print("lwo_processed = ",lwo_processed)
+
+
+    lwi_instance = labour_work_in_master.objects.filter(labour_voucher_number__labour_workout_master_instance__purchase_order_cutting_master__purchase_order_id__product_reference_number__Product_Refrence_ID = ref_no)
+
+    lwi_processed = []
+
+    for i in lwi_instance:
+
+        grn_no = i.voucher_number
+        created_date = i.created_date
+        vendor = i.labour_voucher_number.labour_name.name
+
+        g_dict = {}
+
+        g_dict["voucher_data"] = {}
+
+        g_dict["voucher_data"]["created_date"] = created_date
+        g_dict["voucher_data"]["vendor"] = vendor
+        g_dict["voucher_data"]["grn_no"] = grn_no
+
+        g_dict["sku_data"] = {}
+
+        for item in i.l_w_in_products.all():
+            sku = int(item.product_sku)
+            g_dict["sku_data"][sku] = item.return_pcs
+
+        lwi_processed.append(g_dict)
+
+    # print("lwi_processed = ", lwi_processed)
+
+    skus = PProduct_Creation.objects.filter(Product__Product_Refrence_ID = ref_no)
+
+    final_processed = lwo_processed + lwi_processed
+    final_processed = sorted(final_processed, key=lambda x: x['voucher_data']['created_date'])
+
+    print("final_processed = ", final_processed)
+
+    
+
+    return render(request,"production/finished_goods_color_challan_and_grn_vise_report.html",{'skus':skus,'final_processed':final_processed,'lwo_total':lwo_total})
+
+
+
+
 
 
 
@@ -9324,6 +9618,8 @@ def raw_material_estimation_calculate_excel_download(request):
 
 def factory_employee_create_update_list(request ,pk=None):
 
+    user = request.user
+    
     if request.path == '/factory_emp_create/':
         page_name = "Create Factory Employee"
     else:
@@ -9407,41 +9703,6 @@ def factoryempdelete(request,pk=None):
 
 
 
-def cutting_room_create_update_list(request, pk=None):
-    if request.path == '/cutting_room_create/':
-        page_name = "Create Cutting Room"
-    else:
-        page_name = "Edit Cutting Room"
-
-
-    if pk:
-        instance = cutting_room.objects.get(id = pk)
-
-    else:
-        instance = None
-
-    form = cutting_room_form(request.POST or None, instance = instance) 
-
-    if request.user.is_superuser:
-        cutting_rooms = cutting_room.objects.all()
-    
-    
-
-
-    if request.method == 'POST':
-        if form.is_valid():
-            form.save()
-            return redirect('cutting_room-create')
-    
-    return render(request,'production/cuttingroomcreateupdatelist.html', {'form':form,'cutting_rooms':cutting_rooms,'page_name':page_name})
-
-
-
-
-def cuttingroomdelete(request,pk):
-    instance = cutting_room.objects.get(pk=pk)
-    instance.delete()
-    return redirect('cutting_room-create')
 
 
 

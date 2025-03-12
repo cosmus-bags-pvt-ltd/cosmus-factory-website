@@ -334,7 +334,9 @@ urlpatterns = [
 
     path('godownproductreport/<int:g_id>', views.finished_goods_godown_wise_report, name = 'finished-goods-godown-wise-report'),
     path('godownproductreportall/', views.finished_goods_godown_wise_report_all, name = 'finished-goods-godown-wise-report-all'),
+    #This
     path('finishedgoodscolorwisereport/', views.finished_goods_color_wise_report, name = 'finished-goods-color-wise-report'),
+    path('finishedgoodscolorchallanandgrnvisereport/<int:ref_no>/', views.finished_goods_color_challan_and_grn_vise_report, name = 'finished-goods-color-challan-and-grn-vise-report'),
     path('finishedgoodsgodownproductrefwisereport/<int:ref_no>', views.finished_goods_godown_product_ref_wise_report, name = 'finished-goods-godown-product-ref-wise-report'),
     path('finishedgoodsgodownproductrefvendorwisereport/<int:ref_no>/<int:challan_no>', views.finished_goods_vendor_model_wise_report, name = 'finished-goods-godown-product-ref-vendor-wise-report'),
 
