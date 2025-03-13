@@ -7,7 +7,10 @@
   <div class="row">
     <div class="col-lg-12 mt-4">
       <div class="d-flex mb-2">
-        <button class="product-btn" id="addLedgerClick" onclick="reversAddLedger()">Add +</button>
+        {% if perms.product.add_ledger %}
+            <button class="product-btn" id="addLedgerClick" onclick="reversAddLedger()">Add +</button>
+        {% endif %}
+        
         <div class="container-flex"> 
          <input class="" type="search" placeholder="Search" aria-label="Search" id="p_search" name="product_search" >
          <input type="submit" class="mx-2"></input>
@@ -98,7 +101,7 @@
       $('#confirmDeleteButton').click(function(){
         var itemId = $(this).data('item-id');
           // Redirect to delete view
-          window.location.href = '/producttransfertowarehousedelete/' + itemId;
+          window.location.href = '/ledgerdelete/' + itemId;
       });
   });
 </script>  
