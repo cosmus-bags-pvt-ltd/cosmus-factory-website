@@ -618,7 +618,8 @@ def add_product_video_url(request,pk):
     logger.info(f"add_product_video_url function run by {user}")
 
     if not (user.has_perm('product.add_productvideourls') or user.has_perm('product.change_productvideourls')):
-        return JsonResponse({'error': 'You do not have permission to add or edit videos.'})
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'You do not have permission to add or edit videos.'})
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})

@@ -4,13 +4,13 @@
 
 <div class="mt-2">
     {% if form.instance.id %}
-    <button type="button" class="itemCreate_btn"><a class="text-decoration-none text-white" href="{% url 'item-create' %}">Create</a></button>
+    <a href="{% url 'item-create' %}" class="border-1 rounded mb-1 px-2 py-1 d-inline-block text-white fw-bold " style="background-color: #10a7ff; text-decoration: none; color: #fff;">Create</a>
     {% endif %}
     
   <form method="POST" enctype="multipart/form-data" autocapitalize="off">
       {% csrf_token %}
       <input type="hidden" name="id" value="{{form.instance.id}}" id="id_items">
-    <div class="d-flex mb-3">
+    <div class="d-flex mb-2">
       {% if not form.instance.id %}
       <label for="id_item-to-clone" class="item-form text-primary fw-bold">Clone :</label>
       <div class="custom-dropdown-container">
@@ -187,7 +187,7 @@
                     </div>
                   </td>
                   <td><input type="number" class="itemNewQty" name="{{forloop.counter0}}-total_quantity" id="id_{{forloop.counter0}}-total_quantity" value="{{shade_form.instance.total_quantity}}" readonly></td>
-                  <td><input type="number" class="itemNewQty" name="{{foorloop.counter0}}-total_rate" id="id_{{forloop.counter0}}-total_rate" value="{{shade_form.instance.rate}}" readonly></td>
+                  <td><input type="number" class="itemNewQty" name="{{forloop.counter0}}-total_rate" id="id_{{forloop.counter0}}-total_rate" value="{{shade_form.instance.rate}}" readonly></td>
                   <td><input type="number" class="itemNewQty" name="{{forloop.counter0}}-total_value" id="id_{{forloop.counter0}}-total_value" value="{{shade_form.instance.total_rate}}" readonly></td>
                   <td><button type="button" class="add_btn itemQty" id="{{ shade_form.prefix }}-opening_qty" name="{{ shade_form.prefix }}-opening_qty" >Add</button></td>
                   <td><span class="delete-btn border-0 bg-transparent" style="cursor: pointer;"><i class="fa-solid fa-trash text-danger px-3 py-2 fs-6"><input type="checkbox" class="shade_deleteId px-2" style="display: none;"  name="{{shade_form.prefix}}-DELETE" id="{{shade_form.prefix}}-DELETE" value="" ></i></span></td>
@@ -274,58 +274,40 @@
           
         </div>
         {% endif %}
-        <!-- <div>
-          {% if form.instance.id %}
-            {% for bin in form.instance.bin.all %}
-                <span>{{ bin.rack.rack_name }}-{{ bin.bin_name }}</span>
-            {% empty %}
-                <span>No bins assigned.</span>
-            {% endfor %}
-        {% else %}
-            <span>Item not yet created.</span>
-        {% endif %}
-        </div> -->
-        <!-- <div class="mb-3">
-          <label for="" class="item-form">Racks :</label>
-          <select class="item-select " required id="id_rack">
-            {% for rack in racks %}
-            <option value="{{ rack.rack_name }}">{{ rack.rack_name }}</option>
-            {% endfor %}
-          </select>
-
-        </div> -->
+   
 
         <div class="mb-3">
-
-          <button type="button" class="edit_btn w-75 mb-3" id="AddButton">
-              Add Bins + <span class="labourIncompleteArrow"><i class="fas fa-angle-right arrowBtn"></i></span>
-          </button>
-          
-          <div id="addbutton_List" style="display: none;">
-           
+          <label for="id_bin" class="item-form">Add Bins:</label>
+          <select class="item-select" required id="id_bin">
+              <option value="" disabled selected>Select Rack</option>
               {% for rack in racks %}
-              
-              <button type="button" class="itemRack_btn w-75 mb-3 rackshow_btn" data-rack-id="rack{{ forloop.counter }}">
-                  {{ rack.rack_name }}
-                  <span class="labourIncompleteArrow"><i class="fas fa-angle-right arrowBtn"></i></span>
-              </button>
-              
-              <div id="rack{{ forloop.counter }}" class="BinsShow mb-2" style="display: none;">
-                  {% for bin in form.bin.field.queryset %}
-                      {% if bin.rack == rack %}
-                          <span class="mx-1">
-                              <input type="checkbox" name="bin" value="{{ bin.id }}" {% if bin in form.instance.bin.all %}checked{% endif %} style="cursor:pointer;">
-                              <span class="{% if forloop.counter|divisibleby:2 %}text-danger fw-bold {% else %}text-primary fw-bold{% endif %}">
-                                  {{ bin.bin_name }}
-                              </span>
-                          </span>
-                      {% endif %}
-                  {% endfor %}
-              </div>
-          {% endfor %}
-            </div>
-             
+              <option value="{{ rack.id }}">{{ rack.rack_name }}</option>
+              {% endfor %}
+          </select>
+      </div>
+      
+      <div id="bin-container">
+          {% for rack in racks %}
+          <div class="bin-group" data-rack="{{ rack.id }}" style="display: none;">
+              {% for bin in form.bin.field.queryset %}
+              {% if bin.rack == rack %}
+              <span class="mx-1">
+                  <input type="checkbox" class="bin-checkbox" name="bin" value="{{ bin.id }}" data-rack="{{ rack.id }}" 
+                  {% if bin in form.instance.bin.all %}checked{% endif %} style="cursor:pointer;">
+                  {{ bin.bin_name }}
+              </span>
+              {% endif %}
+              {% endfor %}
           </div>
+          {% endfor %}
+      </div>
+      
+      <!-- Selected Bins Display -->
+      <div id="selected-bins" class="mt-3"></div>
+      
+        
+
+         
       </div>
 
 
@@ -338,6 +320,49 @@
 
 </div>
 
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    const rackSelect = document.getElementById("id_bin");
+    const binContainer = document.getElementById("bin-container");
+    const selectedBinsDiv = document.getElementById("selected-bins");
+
+    rackSelect.addEventListener("change", function () {
+        // Hide all bin groups
+        document.querySelectorAll(".bin-group").forEach(group => {
+            group.style.display = "none";
+        });
+
+        // Show bins for selected racks
+        const selectedRackIds = Array.from(rackSelect.selectedOptions).map(opt => opt.value);
+        selectedRackIds.forEach(rackId => {
+            document.querySelectorAll(`.bin-group[data-rack="${rackId}"]`).forEach(group => {
+                group.style.display = "block";
+            });
+        });
+    });
+
+    binContainer.addEventListener("change", function (event) {
+        if (event.target.classList.contains("bin-checkbox")) {
+            updateSelectedBins();
+        }
+    });
+
+    function updateSelectedBins() {
+        selectedBinsDiv.innerHTML = ""; // Clear previous selections
+        document.querySelectorAll(".bin-checkbox:checked").forEach(bin => {
+            const binLabel = bin.nextSibling.textContent.trim();
+            const binId = bin.value;
+            const rackId = bin.getAttribute("data-rack");
+            
+            const binElement = document.createElement("div");
+            binElement.innerHTML = `Rack ${rackId}: ${binLabel}`;
+            selectedBinsDiv.appendChild(binElement);
+        });
+    }
+});
+
+  </script>
 
 
 <script>
