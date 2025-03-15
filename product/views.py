@@ -123,40 +123,38 @@ def dashboard(request):
 
 
 def edit_production_product(request,pk):
-   
+    
+    user = request.user
+
+    if not user.has_perm('product.view_product'):
+        messages.error(request, "You do not have permission to view product")
+        return redirect('pproductlist')
+    
     gsts = gst.objects.all()
     pproduct = get_object_or_404(Product, Product_Refrence_ID=pk)
-    
     
     product_skus = pproduct.productdetails.all()
     
     products_sku_counts = PProduct_Creation.objects.filter(Product__Product_Refrence_ID=pk).count()
 
-    
     prod2cat_instance = Product2SubCategory.objects.filter(Product_id= pproduct.id)
     prod_main_cat_name = ''
     prod_main_cat_id = ''
     prod_sub_cat_dict = {}
     prod_sub_cat_dict_all = {}
 
-    
     if prod2cat_instance.exists():
         prodmaincat = prod2cat_instance.first()
         
         prod_main_cat_name = prodmaincat.SubCategory_id.product_main_category.product_category_name
         prod_main_cat_id = prodmaincat.SubCategory_id.product_main_category.id
 
-
-        
         for subcat in prod2cat_instance:
             prod_sub_cat_dict[subcat.SubCategory_id.id] = subcat.SubCategory_id.product_sub_category_name
 
-
-        
         sub_categories = SubCategory.objects.filter(product_main_category = prod_main_cat_id)
         for sub_cat_all in sub_categories:
             prod_sub_cat_dict_all[sub_cat_all.id] = sub_cat_all.product_sub_category_name
-
 
     colors = Color.objects.all()
     main_categories = MainCategory.objects.all()
@@ -165,6 +163,15 @@ def edit_production_product(request,pk):
     formset = CustomPProductaddFormSet(instance=pproduct)
 
     if request.method == 'POST':
+
+        if not pproduct and not user.has_perm('product.add_product'):
+            messages.error(request, "You do not have permission to add product")
+            return redirect('pproductlist')
+    
+        if pproduct and not user.has_perm('product.change_product'):
+            messages.error(request, "You do not have permission to Update product")
+            return redirect('pproductlist')
+        
         product_ref_id = pk
         
         try:
@@ -184,7 +191,6 @@ def edit_production_product(request,pk):
                         ws1 = wb['product_special_configs']
                         ws2 = wb['product_common_configs']
 
-                        
                         grand_total = 0
                         grand_total_combi = 0
 
@@ -210,7 +216,6 @@ def edit_production_product(request,pk):
                                         elif body_combi == 'combi':
                                             grand_total_combi = grand_total_combi + float(dimention_total)  
 
-
                                         p2i_config_instance = set_prod_item_part_name.objects.get(id=id)
 
                                         p2i_config_instance.producttoitem.grand_total = grand_total   
@@ -231,8 +236,6 @@ def edit_production_product(request,pk):
                                         p2i_config_instance.producttoitem.c_user =  request.user
                                         p2i_config_instance.delete()
                                         p2i_config_instance.producttoitem.save()
-
-
                             else:
                                 grand_total = 0
                                 grand_total_combi = 0
@@ -240,7 +243,7 @@ def edit_production_product(request,pk):
                         
                         for product_c in PProduct_Creation.objects.filter(Product__Product_Refrence_ID = pk): 
                             product_sku = product_c.PProduct_SKU
-                           
+
                             row_no = 0  
                             grand_total = 0
                             grand_total_combi = 0
@@ -257,15 +260,9 @@ def edit_production_product(request,pk):
                                 
                                 if id is not None and item_name is not None:  
                                     
-                                    
                                     p2i_instances = product_2_item_through_table.objects.get(PProduct_pk = product_sku, Item_pk__item_name = item_name, common_unique = True)
                                     
-                                    
-                                    
-                                    
-                                    
                                     p2i_instances_configs = set_prod_item_part_name.objects.filter(producttoitem=p2i_instances).order_by('id')[row_no]
-                                    
 
                                     if part_name is not None and body_combi is not None:  
 
@@ -283,7 +280,6 @@ def edit_production_product(request,pk):
                                         p2i_instances_configs.producttoitem.grand_total = grand_total 
                                         p2i_instances_configs.producttoitem.grand_total_combi = grand_total_combi   
 
-
                                         p2i_instances_configs.c_user = request.user
                                         p2i_instances_configs.producttoitem.c_user = request.user
                                         p2i_instances_configs.save()
@@ -297,12 +293,10 @@ def edit_production_product(request,pk):
                                         p2i_instances_configs.delete()
                                         p2i_instances_configs.producttoitem.save()
                                         
-
                                 else:
                                     row_no = 0
                                     grand_total = 0
                                     grand_total_combi = 0
-
 
                 else:
                     messages.error(request, 'File with invalid Product Refrence Id uploaded')
@@ -430,6 +424,10 @@ def product_color_sku(request,ref_id = None):
     user = request.user
 
     logger.info(f"product_color_sku function run by {user}")
+
+    if not user.has_perm('product.view_pproduct_creation'):
+        messages.error(request, "You do not have permission to view product")
+        return redirect('pproductlist')
     
     color = Color.objects.all()
 
@@ -444,11 +442,11 @@ def product_color_sku(request,ref_id = None):
 
     if request.method == 'POST':
 
-        if not instance and not user.has_perm('product.add_product'):
+        if not instance and not user.has_perm('product.add_pproduct_creation'):
             messages.error(request, "You do not have permission to add product")
             return redirect('pproductlist')
-    
-        if instance and not user.has_perm('product.change_product'):
+
+        if instance and not user.has_perm('product.change_pproduct_creation'):
             messages.error(request, "You do not have permission to Update product")
             return redirect('pproductlist')
         
@@ -556,14 +554,49 @@ def pproduct_delete(request, pk):
 
 def add_product_images(request, pk):
 
+    user = request.user
+
+    logger.info(f"add_product_images function run by {user}")
+
+    if not (user.has_perm('product.add_productimage') or user.has_perm('product.change_productimage')):
+        return JsonResponse({'error': 'You do not have permission to add or edit images.'})
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
+    if not user.has_perm('product.view_productimage'):
+        messages.error(request, "You do not have permission to view images")
+        return redirect('dashboard-main')
+
+
     product = PProduct_Creation.objects.get(pk=pk)   
     formset = ProductImagesFormSet(instance=product)  
     
     if request.method == 'POST':
+
+        if product and not user.has_perm('product.change_productimage'):
+            messages.error(request, "You do not have permission to update a images.")
+            return redirect('dashboard-main')
+
+        if product and not user.has_perm('product.delete_productimage'):
+            messages.error(request, "You do not have permission to delete a images.")
+            return redirect('dashboard-main')
+
+        if not product and not user.has_perm('product.add_productimage'):
+            messages.error(request, "You do not have permission to update a images.")
+            return redirect('dashboard-main')
+
+
         formset = ProductImagesFormSet(request.POST, request.FILES, instance=product, c_user=request.user)
         if formset.is_valid():
             formset.save()
-            messages.success(request,'Product images sucessfully added.')
+
+            if pk:
+                messages.success(request,'Product images sucessfully update.')
+                logger.info(f"Product images sucessfully update by {user}")
+            else:
+                messages.success(request,'Product images sucessfully added.')
+                logger.info(f"Product images sucessfully added. by {user}")
             
             close_window_script = """
             <script>
@@ -571,7 +604,6 @@ def add_product_images(request, pk):
             window.close();  // Close current window
             </script>
             """
-
             return HttpResponse(close_window_script)
         else:
             return render(request, 'product/add_product_images.html', {'formset': formset, 'product': product})
@@ -579,20 +611,50 @@ def add_product_images(request, pk):
     return render(request, 'product/add_product_images.html', {'formset': formset, 'product': product})
 
 
-
-
-
 def add_product_video_url(request,pk):
+
+    user = request.user
+
+    logger.info(f"add_product_video_url function run by {user}")
+
+    if not (user.has_perm('product.add_productvideourls') or user.has_perm('product.change_productvideourls')):
+        return JsonResponse({'error': 'You do not have permission to add or edit videos.'})
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
+    if not user.has_perm('product.view_productvideourls'):
+        messages.error(request, "You do not have permission to view videos")
+        return redirect('dashboard-main')
     
     product = PProduct_Creation.objects.get(pk=pk)   
     formset = ProductVideoFormSet(instance= product)  
 
     if request.method == 'POST':
+
+        if product and not user.has_perm('product.change_productvideourls'):
+            messages.error(request, "You do not have permission to update a videos.")
+            return redirect('dashboard-main')
+
+        if product and not user.has_perm('product.delete_productvideourls'):
+            messages.error(request, "You do not have permission to delete a videos.")
+            return redirect('dashboard-main')
+
+        if not product and not user.has_perm('product.add_productvideourls'):
+            messages.error(request, "You do not have permission to update a videos.")
+            return redirect('dashboard-main')
+        
         formset = ProductVideoFormSet(request.POST, instance=product, c_user=request.user)
         
         if formset.is_valid():
             formset.save()
-            messages.success(request,'Product url sucessfully added.')
+
+            if pk:
+                messages.success(request,'Product video url sucessfully update.')
+                logger.info(f"Product video url sucessfully update by {user}")
+            else:
+                messages.success(request,'Product video url sucessfully added.')
+                logger.info(f"Product video url sucessfully added. by {user}")
             
             close_window_script = """
             <script>
@@ -1416,18 +1478,19 @@ def color_create_update(request, pk=None):
 
     user = request.user
 
-    if not user.has_perm('product.view_color'):
-        messages.error(request, "You do not have permission to view Colors")
-        return redirect('dashboard-main')
+    
     
     if request.path == '/color_popup/':
         if not (user.has_perm('product.add_color') or user.has_perm('product.change_color')):
             return JsonResponse({'error': 'You do not have permission to add or edit color.'})
-    
 
     if request.path == '/color_popup/':
         if not user.has_perm('product.view_color'):
             return JsonResponse({'error': 'You do not have permission to add color.'})
+
+    if not user.has_perm('product.view_color'):
+        messages.error(request, "You do not have permission to view Colors")
+        return redirect('dashboard-main')
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
@@ -1513,10 +1576,6 @@ def item_fabric_group_create_update(request, pk = None):
     user = request.user
 
     logger.info(f"item_fabric_group_create_update function run by {user}")
-
-    if not user.has_perm('product.view_fabric_group_model'):
-        messages.error(request, "You do not have permission to view fabric groups.")
-        return redirect('dashboard-main')
         
     if request.path == '/fabric_popup/':
         if not (user.has_perm('product.add_fabric_group_model') or user.has_perm('product.change_fabric_group_model')):
@@ -1530,6 +1589,10 @@ def item_fabric_group_create_update(request, pk = None):
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
+    
+    if not user.has_perm('product.view_fabric_group_model'):
+        messages.error(request, "You do not have permission to view fabric groups.")
+        return redirect('dashboard-main')
     
     queryset = Fabric_Group_Model.objects.all()
 
@@ -1622,10 +1685,6 @@ def unit_name_create_update(request,pk=None):
 
     logger.info(f"unit_name_create_update function run by {user}")
 
-    if not user.has_perm('product.view_unit_name_create'):
-        messages.error(request, "You do not have permission to view units")
-        return redirect('dashboard-main')
-
     if request.path == '/units_popup/':
         if not (user.has_perm('product.add_unit_name_create') or user.has_perm('product.change_unit_name_create')):
             return JsonResponse({'error': 'You do not have permission to add or edit unit.'})
@@ -1638,6 +1697,10 @@ def unit_name_create_update(request,pk=None):
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
+
+    if not user.has_perm('product.view_unit_name_create'):
+        messages.error(request, "You do not have permission to view units")
+        return redirect('dashboard-main')
     
     queryset = Unit_Name_Create.objects.all()
 
@@ -1748,10 +1811,6 @@ def packaging_create_update(request, pk = None):
     user = request.user
 
     logger.info(f"packaging_create_update function run by {user}")
-
-    if not user.has_perm('product.view_packaging'):
-        messages.error(request, "You do not have permission to view Packing.")
-        return redirect('dashboard-main')
         
     if request.path == '/packagingpop/':
         if not (user.has_perm('product.add_packaging') or user.has_perm('product.change_packaging')):
@@ -1764,6 +1823,11 @@ def packaging_create_update(request, pk = None):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
     
+    if not user.has_perm('product.view_packaging'):
+        messages.error(request, "You do not have permission to view Packing.")
+        return redirect('dashboard-main')
+
+
     queryset =  packaging.objects.all()
 
     packaging_search = request.GET.get('packaging_search','')
@@ -1847,14 +1911,9 @@ def gst_create_update(request, pk = None):
 
     logger.info(f"gst_create_update function run by {user}")
 
-    if not user.has_perm('product.view_gst'):
-        messages.error(request, "You do not have permission to view GST")
-        return redirect('dashboard-main')
-
     if request.path == '/gstpopup/':
         if not (user.has_perm('product.add_gst') or user.has_perm('product.change_gst')):
             return JsonResponse({'error': 'You do not have permission to add or edit GST'})
-
 
     if request.path == '/gstpopup/':
         if not user.has_perm('product.view_gst'):
@@ -1862,6 +1921,10 @@ def gst_create_update(request, pk = None):
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
+
+    if not user.has_perm('product.view_gst'):
+        messages.error(request, "You do not have permission to view GST")
+        return redirect('dashboard-main')
     
     queryset =  gst.objects.all()
 
@@ -1949,10 +2012,6 @@ def fabric_finishes_create_update(request, pk = None):
 
     user = request.user
 
-    if not user.has_perm('product.view_fabricfinishes'):
-        messages.error(request, "You do not have permission to view fabric finishes.")
-        return redirect('dashboard-main')
-
     if request.path == '/fabricfinishespopup/':
         if not (user.has_perm('product.add_fabricfinishes') or user.has_perm('product.change_fabricfinishes')):
             return JsonResponse({'error': 'You do not have permission to add or edit fabric finishes.'})
@@ -1964,6 +2023,11 @@ def fabric_finishes_create_update(request, pk = None):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
 
+    
+    if not user.has_perm('product.view_fabricfinishes'):
+        messages.error(request, "You do not have permission to view fabric finishes.")
+        return redirect('dashboard-main')
+    
     queryset =  FabricFinishes.objects.all()
 
     fabric_finishes_search = request.GET.get('fabric_finishes_search','')
@@ -4025,282 +4089,20 @@ def purchasevoucherdelete(request,pk):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 
-# def product2item(request,product_refrence_id):
-    
-#     try:
-
-#         all_ref_ids = Product.objects.all()
-        
-#         items = Item_Creation.objects.all().order_by('item_name')
-#         product_refrence_no = product_refrence_id
-#         model_name = Product.objects.get(Product_Refrence_ID=product_refrence_id)
-
-#         Products_all = PProduct_Creation.objects.filter(Product__Product_Refrence_ID=product_refrence_id).select_related('PProduct_color')
-
-#         if not Products_all.exists():
-#                 raise ValueError("No products found for the given reference ID.")
-        
-        
-#         extraformspecial = True
-#         for product in Products_all:
-#             if product.product_2_item_through_table_set.filter(common_unique = False):
-#                 extraformspecial = False
-
-        
-#         extraformcommon = True
-#         for product in Products_all:
-#             if product.product_2_item_through_table_set.filter(common_unique = True):
-#                 extraformcommon = False
-        
-
-        
-        
-#         product2item_instances = product_2_item_through_table.objects.filter(
-#             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,
-#               common_unique = False).select_related('PProduct_pk','Item_pk','PProduct_pk__PProduct_color').order_by('row_number')
-        
-
-#         if extraformspecial:
-#             formset_single = Product2ItemFormsetExtraForm(queryset = product2item_instances, prefix='product2itemuniqueformset')
-
-#         else:
-#             formset_single = Product2ItemFormset(queryset=product2item_instances , prefix = 'product2itemuniqueformset')
-
-        
-        
-        
-        
-        
-        
-#         distinct_product2item_commmon_instances = product_2_item_through_table.objects.filter(
-#             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,common_unique = True).order_by(
-#                 'row_number','id').distinct('row_number').select_related('PProduct_pk','Item_pk')
-
-
-#         if extraformcommon:
-#             formset_common = Product2CommonItemFormSetExtraForm(queryset=distinct_product2item_commmon_instances,prefix='product2itemcommonformset')
-
-#         else:
-#             formset_common = Product2CommonItemFormSet(queryset=distinct_product2item_commmon_instances,prefix='product2itemcommonformset')
-
-
-        
-#         clone_ajax_valid = False
-#         if extraformcommon and extraformspecial:
-#             clone_ajax_valid = True
-
-#         if request.method == 'POST':
-#             print(request.POST)
-#             formset_single = Product2ItemFormset(request.POST, queryset=product2item_instances, prefix='product2itemuniqueformset')
-#             formset_common = Product2CommonItemFormSet(request.POST, queryset=distinct_product2item_commmon_instances, prefix='product2itemcommonformset') 
-            
-#             formset_single_valid = False
-#             formset_common_valid = False
-            
-            
-#             if formset_single.is_valid():
-                
-#                 try:
-                    
-#                     for form in formset_single.deleted_forms:
-#                         if form.instance.pk:  
-                            
-                            
-                            
-                            
-                            
-                            
-#                             form.instance.delete()
-                            
-                            
-
-                    
-#                     for form in formset_single:
-#                         if not form.cleaned_data.get('DELETE'): 
-#                             if form.cleaned_data.get('Item_pk'):  
-                                
-#                                 if form.instance.pk:  
-#                                     existing_instance = product_2_item_through_table.objects.get(pk=form.instance.pk)  
-#                                     initial_rows = existing_instance.no_of_rows 
-#                                 else:
-#                                     initial_rows = 0
-
-#                                 p2i_instance = form.save(commit = False)
-#                                 p2i_instance.c_user = request.user
-#                                 p2i_instance.common_unique = False 
-#                                 p2i_instance.save()
-#                                 logger.info(f"Product to item created/updated special - {p2i_instance.id}")
-
-#                                 no_of_rows_to_create = form.cleaned_data['no_of_rows'] - initial_rows   
-#                                 p2i_instance.row_number = form.cleaned_data['row_number']
-
-#                                 if no_of_rows_to_create > 0:
-#                                     for row in range(no_of_rows_to_create):
-                                        
-#                                         logger.info(f" set prod item part name created of p2i instance - {p2i_instance.id}")
-#                                         set_prod_item_part_name.objects.create(producttoitem = p2i_instance, c_user = request.user)
-
-#                                 p2i_instance.save()
-#                                 formset_single_valid = True
-
-#                             else:
-#                                 raise ValidationError('Please select existing Item Name or select from the dropdown')
-                                
-#                 except Exception as e:
-#                     logger.error(f'Error saving unique records - {e}')
-#                     messages.error(request, f'Error saving unique records - {e}')  
-            
-#             else:
-#                 logger.error(f'Error saving unique records - {formset_single.errors}')
-#                 messages.error(request, f'Error saving unique records - {formset_single.errors}') 
-                            
-            
-#             if formset_common.is_valid():
-#                 try:
-#                     for form in formset_common.deleted_forms:
-#                         if form.instance.id: 
-#                             deleted_item = form.instance.Item_pk  
-                            
-                            
-
-                            
-#                             for product in Products_all: 
-#                                 p2i_to_delete = product_2_item_through_table.objects.filter(PProduct_pk=product, Item_pk=deleted_item, common_unique=True)
-#                                 logger.info(f"Deleted product to item instace of {product}, - {deleted_item}")
-#                                 p2i_to_delete.delete()
-                            
-                            
-
-                            
-#                     for form in formset_common: 
-#                         if not form.cleaned_data.get('DELETE'): 
-
-#                             if form.cleaned_data.get('Item_pk'):  
-
-#                                 for product in Products_all:
-                                    
-                                    
-#                                     item = form.cleaned_data['Item_pk']
-                                    
-#                                     obj, created = product_2_item_through_table.objects.get_or_create(PProduct_pk=product, Item_pk=item, common_unique=True)
-#                                     obj.c_user = request.user
-                                    
-                                    
-#                                     if created:
-#                                         initial_rows = 0
-
-#                                     if not created:
-#                                         initial_rows = obj.no_of_rows
-                                    
-#                                     obj.no_of_rows = form.cleaned_data['no_of_rows']
-#                                     obj.Remark = form.cleaned_data['Remark']
-#                                     obj.row_number = form.cleaned_data['row_number']
-#                                     logger.info(f"Product to item created/updated common - {obj.id}")
-#                                     obj.save()
-                                
-                                    
-#                                     rows_to_create = form.cleaned_data['no_of_rows'] - initial_rows
-#                                     if rows_to_create > 0:
-#                                             for row in range(rows_to_create):
-#                                                 set_prod_item_part_name.objects.create(producttoitem = obj,c_user = request.user)
-#                                                 logger.info(f" set prod item part name created of - {obj.id}")
-
-#                                     formset_common_valid = True
-
-#                             else:
-#                                 raise ValidationError('Please select existing Item Name or select from the dropdown')
-                                    
-
-#                 except Exception as e:
-#                     logger.error(f'Error saving common records - {e}')
-#                     messages.error(request, f'Error saving common records{e}.') 
-
-#             else:
-#                 logger.error(f'Error saving unique records - {formset_common.errors}')
-#                 messages.error(request, f'Error saving unique records - {formset_common.errors}')
-        
-
-#             if formset_common_valid and formset_single_valid:
-
-#                 messages.success(request,'Items to Product sucessfully added.')
-#                 close_window_script = """
-#                                                 <script>
-#                                                 window.opener.location.reload(true);  // Reload parent window if needed
-#                                                 window.close();  // Close current window
-#                                                 </script>
-#                                                 """
-#                 return HttpResponse(close_window_script)
-            
-#             else:
-#                 for form_errors in formset_common.errors:
-#                     if form_errors:
-#                         logger.error(f'Error with formset_common form - {product_refrence_id } - {form_errors}')
-#                         messages.error(request, f'{form_errors}')
-
-#                 for form_errors in formset_single.errors:
-#                     if form_errors:
-#                         logger.error(f'Error with formset_common form - {product_refrence_id } - {form_errors}')
-#                         messages.error(request, f'{form_errors}')
-
-
-#                 close_window_script = """
-#                             <script>
-#                                                 window.opener.location.reload(true);  // Reload parent window if needed
-#                                                 window.close();  // Close current window
-#                                                 </script>
-#                                                 """
-#                 return HttpResponse(close_window_script)
-
-
-#         return render(request,'production/product2itemsetproduction.html', {'formset_single':formset_single,'formset_common':formset_common,
-#                                                                 'Products_all':Products_all,'all_ref_ids':all_ref_ids,'clone_ajax_valid':clone_ajax_valid,
-#                                                                 'items':items,'product_refrence_no': product_refrence_no,'model_name':model_name})
-
-#     except Exception as e:
-#         logger.error(f'Error with forms - {product_refrence_id } - {e}')
-#         messages.error(request, 'An unexpected error occurred. Please try again later.')
-#         return render(request, 'production/product2itemsetproduction.html', {
-#             'formset_single': formset_single,
-#             'formset_common': formset_common,
-#             'Products_all': Products_all,
-#             'items': items,
-#             'product_refrence_no': product_refrence_no,
-#             'model_name':model_name
-#         })
-
-
-
-
-
-
-
 def product2item(request,product_refrence_id):
+
+    user = request.user
+
+    if not (user.has_perm('product.add_product_2_item_through_table') or user.has_perm('product.change_product_2_item_through_table')):
+        return JsonResponse({'error': 'You do not have permission to add or edit set production.'})
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
     
+    if not user.has_perm('product.view_product_2_item_through_table'):
+        messages.error(request, "You do not have permission to view set production")
+        return redirect('dashboard-main')
+        
     try:
 
         all_ref_ids = Product.objects.all()
@@ -4327,8 +4129,6 @@ def product2item(request,product_refrence_id):
                 extraformcommon = False
         
 
-        
-        
         product2item_instances = product_2_item_through_table.objects.filter(
             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,
               common_unique = False).select_related('PProduct_pk','Item_pk','PProduct_pk__PProduct_color').order_by('row_number')
@@ -4360,6 +4160,12 @@ def product2item(request,product_refrence_id):
 
         if request.method == 'POST':
             # print(request.POST)
+
+            if not (user.has_perm('product.change_product_2_item_through_table') or user.has_perm('product.add_product_2_item_through_table') or user.has_perm('product.delete_product_2_item_through_table')):
+                messages.error(request, "You do not have permission to Add or update a set production.")
+                return redirect('dashboard-main')
+            
+
             formset_single = Product2ItemFormset(request.POST, queryset=product2item_instances, prefix='product2itemuniqueformset')
             formset_common = Product2CommonItemFormSet(request.POST, queryset=distinct_product2item_commmon_instances, prefix='product2itemcommonformset') 
             
@@ -4533,31 +4339,15 @@ def product2item(request,product_refrence_id):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def export_Product2Item_excel(request,product_ref_id):
+    
+    user = request.user
+
+    if not user.has_perm('product.view_product_2_item_through_table'):
+        return JsonResponse({'error': 'You do not have permission to download set production.'})
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
     
     try:
         
@@ -4882,7 +4672,7 @@ def purchaseorderdelete(request,pk):
 
 def excel_download_production(request, module_name, pk):
 
-
+    print("excel_download_production")
     if module_name is not None and pk is not None:  
 
         file_name = None
