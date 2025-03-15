@@ -464,11 +464,14 @@
   <div id="set_production" style="display: none;">
     <div class="row">
       <div class="col-lg-3">
+        {% if perms.view_product_2_item_through_table %}
         <div class="d-flex mb-3">
           <label>Set Production:</label>
           <button type="button" class="add_btn" id="edit_set_production" onclick="editSetProduction(this)">Edit Production</button>
-          
           </div>
+          {% else %}
+          <div class="d-flex mb-3"></div>
+          {% endif %}
           <div class="d-flex mb-2">
             <label class="mt-1 me-2">Download File:</label>
         <label for="setProduction">
