@@ -487,7 +487,7 @@
 
     window.addEventListener('message', function(event) {
         const data = event.data;
-        // console.log(data.ledger_labour);
+        
         if (data.ledger_labour) {
             populateDropdownLedger(data.ledger_labour, '#id_party_name', 'name', 'Select Name');
         }
@@ -597,7 +597,6 @@ $(document).ready(function(){
 
     challanable.each(function () {
         var challanId = parseInt($(this).find('.chalId').val()?.trim(), 10) || 0;
-        // console.log('challanId:', challanId, typeof challanId);
         
         if (challanId === challanNo) {
             challanExists = true;
@@ -617,7 +616,7 @@ $(document).ready(function(){
               var salesDelivery = $('#salesDeliveryTable .mainTableList tr');
               salesDelivery.empty();
                var productChallan = response.d_challan_data;
-              //  console.log('productChallan',response)
+           
            
                 if (productChallan && response.products  ) {
                   var hiddenData = $('#salesHiddenData').val();
@@ -777,9 +776,6 @@ $(document).ready(function(){
         var parsedData = safeParseJSON(storedData);
         var parsedUpdateData = safeParseJSON(latestUpdate);
 
-        // console.log('parsedData',parsedData)
-        // console.log('parsedUpdateData',parsedUpdateData)
-
         if ($.isEmptyObject(parsedData) && $.isEmptyObject(parsedUpdateData)) {
             console.log("No Challan data found.");
             return;
@@ -794,12 +790,12 @@ $(document).ready(function(){
             console.warn("No data found for this challanNosa:", productKey);
             return;
         }
-        // console.log('mergedData',mergedData)
+
         var totalQty = {};
         var challanSelected = false;
         let newQty;
         var formId = $('#id_sales_voucher_finish_goods_set-0-id').val();
-        // console.log('formId',formId,typeof(formId))
+
          if(formId === ''){
 
             $('[name$="-product_name"]').each(function () {
@@ -822,7 +818,7 @@ $(document).ready(function(){
               if (!totalQty[challanNos][sku]) totalQty[challanNos][sku] = 0;
           
               let balQty = parseFloat(mergedData[challanNos]?.find(item => String(item.sku).trim() === sku)?.balance_qty) || 0;
-            console.log('balQtyssssss',balQty)
+         
             
               if(balQty === 0){
                 newQty = qty;
@@ -830,7 +826,7 @@ $(document).ready(function(){
                 // Restrict quantity to not exceed balance quantity
                 newQty = Math.min(qty, balQty);
               }
-            // console.log('newQty',newQty)
+   
             totalQty[challanNos][sku] += newQty; 
 
             row.find('[name$="-quantity"]').val(newQty)
@@ -850,9 +846,6 @@ $(document).ready(function(){
             let balQty = item.balance_qty;
          
             let outwardQty = challanSelected ? (totalQty[productKey]?.[sku] || 0) : 0;
-           console.log('outwardQty',outwardQty)
-           console.log('balQty',balQty)
-           console.log('qty',qty)
           
             if(outwardQty > qty){
                 $('#responseMessage').html('<span class="text-danger">challan quantity exceeds available quantity.</span>');
@@ -882,7 +875,7 @@ $(document).ready(function(){
 
               if (challanSelected) {
            var totalBalance = challanBalanceHidden - totalQutward;
-           console.log('totalBalance',totalBalance)
+
            selectedRow.find('.challanBalance').val(totalBalance)
         }
 
@@ -909,7 +902,7 @@ $(document).ready(function(){
             totalQty[challanNos][sku] += qty; 
 
           });
-          console.log('totalQty',totalQty)
+   
           if (!Array.isArray(mergedData[productKey])) {
             console.warn("Invalid or missing challan data for productKey:", productKey);
             return;
@@ -923,9 +916,6 @@ $(document).ready(function(){
                 let balQty = item.balance_qty;
             
                 let outwardQty = challanSelected ? (totalQty[productKey]?.[sku] || 0) : 0;
-              console.log('outwardQtyupdates',outwardQty)
-              console.log('balQtyupdates',balQty)
-              console.log('qtyupdates',qty)
               
               if (outwardQty > qty) {
                     $('#responseMessage').html('<span class="text-danger">Challan quantity exceeds available quantity.</span>');
@@ -955,11 +945,10 @@ $(document).ready(function(){
                   let totalBalance = 0;
                   if (challanSelected) {
                       // let qtyInputExists = $('[name$="-quantity"]').filter(function() { return $(this).val(); }).length > 0;
-                      // console.log('qtyInputExists',qtyInputExists)
-                      // console.log('totalQutward',totalQutward)
+                  
                       totalBalance = challanQty - totalQutward;
 
-                      console.log('totalBalance', totalBalance);
+               
                       selectedRow.find('.challanBalance').val(totalBalance);
                   }
          }
@@ -2181,10 +2170,10 @@ $(document).ready(function(){
                           return;
                       } else {
                           var nextRow = tableRows[index + 1];;
-                          // console.log('nextRow',nextRow)
+          
                           if (nextRow) {
                               var nextItemInput = nextRow.querySelector('[name$="product_name_value"]');
-                              // console.log('nextRow',nextItemInput)
+                            
                               if (nextItemInput && nextItemInput.value === '') {
                                   nextItemInput.focus();
                               } else {
