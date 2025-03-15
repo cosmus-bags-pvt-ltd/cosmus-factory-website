@@ -162,7 +162,7 @@
           {% for instance in labour_workout_instance_all %}
           <tr>
             <td>{{forloop.counter}}</td>
-            <td>{{instance.challan_no}}</td>
+            <td class="text-center"><a href="{% url 'labour-workout-single-view' instance.id %}" class="bg-secondary p-1 text-white rounded" style="text-decoration: none;">{{instance.challan_no}}</a></td>
             <td>{{instance.created_date|date:"d/m/y, g:i a"}}</td>
             <td><a href="{% url 'finished-goods-godown-product-ref-vendor-wise-report' instance.labour_workout_master_instance.purchase_order_cutting_master.purchase_order_id.product_reference_number.Product_Refrence_ID instance.challan_no %}" class="border-0 rounded mb-1 px-2 py-1 d-inline-block text-white" style="background-color: #1097ff; text-decoration: none;">{{instance.labour_name.name}}</a></td>
             <td class="text-center text-primary totalLwo">{{instance.total_process_pcs}}</td>

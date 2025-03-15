@@ -72,7 +72,7 @@
 
             
           </select> 
-          <button type="button" class="itemCreate_btn popup-trigger" onclick="openLedgerTypePopup()">+</button>
+          <button type="button" class="itemCreate_btn popup-trigger" onclick="openLedgerTypePopup(this)">+</button>
         </div>
         <span id="gstError" class="error-messagesGst"></span>
         <div class="d-flex mb-3">
@@ -176,7 +176,34 @@
   
   let popUpWindow = null;
   function openLedgerTypePopup(button){
-    openPopup(button, '{% url "ledger-Types-create-popup" %}');
+    const url = '{% url "ledger-Types-create-popup" %}';
+
+    fetch(url,{
+      method:'GET',
+      headers : {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(response =>{
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json().then(data => {
+            if (!response.ok) {
+                throw new Error(data.error || 'Permission denied');
+            }
+            return data;
+        });
+      }
+    })
+    .then(data => {
+      if (data.error) {
+          alert(data.error); 
+      } else if (data.html) {
+          openPopup(button, url);
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error:', error);
+      alert(error.message);
+    });
   }
 
   function openPopup(button, url) {

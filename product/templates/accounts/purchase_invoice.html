@@ -60,7 +60,7 @@
                         {% endif%}
                     </select>
                 </div>
-                    <button type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup()">+</button>
+                    <button type="button" class="itemCreate_btn popup-trigger" onclick="openPurchasePartyPopup(this)">+</button>
              
                 <div class="d-flex ms-3">
                     <label for="id_GST_number" class="me-2" >Party GST No :</label>
@@ -214,7 +214,27 @@
  
   var popUpNewWindow = null;
     function openPurchasePartyPopup(button){
-    openNewPopup(button, '{% url "ledger-popup-create" %}');
+    
+        const url = '{% url "ledger-popup-create" %}'
+
+        fetch(url)
+        .then(response => {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                return response.json(); 
+            }
+            else {
+                return response.text().then(html => ({ html }));
+            }
+        })
+        .then(data =>{
+            if(data.error){
+                alert(data.error)
+            }
+            else{
+                openNewPopup(button, url)
+            }
+        })
     }
 
     function openNewPopup(button, url){

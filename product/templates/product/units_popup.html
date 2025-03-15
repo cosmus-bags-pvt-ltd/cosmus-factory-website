@@ -23,11 +23,13 @@
 
 <script>
   let formSubmitted = false;  // Flag to track whether form is submitted
+
   document.addEventListener("DOMContentLoaded", function () {
         window.onload = function() {
         document.getElementById("id_unit_name").focus();
     };
     })
+
   document.getElementById('unitsForm').addEventListener('submit', async function (event) {
     event.preventDefault();  // Prevent the default form submission
     var submitBtn = document.getElementById('submitButton');
@@ -45,18 +47,25 @@
           'X-CSRFToken': '{{ csrf_token }}',
         }
       });
-
+      
       if (response.ok) {
-
         const data = await response.json();  // Await the response.json() call
         window.opener.postMessage(data, '*');
         window.close();  // Now you can access the JSON data
         formSubmitted = true;  // Set flag to true after successful submission
+
       } else {
+      
+        const data = await response.json();
+        if (data.error) {
+          alert(data.error);
+          window.close()
+        }
         console.error('Failed to create Units.');
       }
 
     } catch (error) {
+      
       console.error('Error:', error);
     }
   });
@@ -68,6 +77,7 @@
       window.opener.postMessage(data, '*');
     }
   });
+
 </script>
 
 

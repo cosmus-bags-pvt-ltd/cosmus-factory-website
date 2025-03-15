@@ -63,7 +63,7 @@
             {% endif %}
           </select>
           {% if not form.instance.id %}
-          <button type="button" class="itemCreate_btn popup-trigger" onclick="opencolorPopup()">+</button>
+          <button type="button" class="itemCreate_btn popup-trigger" onclick="opencolorPopup(this)">+</button>
           {% endif %}
         </div>
         <div class="d-flex my-3">
@@ -82,7 +82,7 @@
             {% endif %}
           </select>
           {% if not form.instance.id %}
-          <button class="itemCreate_btn" type="button" onclick="openFabPopup()">+</button>
+          <button class="itemCreate_btn" type="button" onclick="openFabPopup(this)">+</button>
           {% endif %}
         </div>
       </div>
@@ -100,7 +100,7 @@
           {% endfor %}
         </select>
         {% if not form.instance.id %}
-        <button type="button" class="itemCreate_btn" onclick="openFabricFinishPopup()">+</button>
+        <button type="button" class="itemCreate_btn" onclick="openFabricFinishPopup(this)">+</button>
         {% endif %}
       </div>
       <div class="d-flex ">
@@ -241,7 +241,7 @@
             {% endif %}
           </select>
           {% if not form.instance.id %}
-          <button type="button" class="itemCreate_btn" onclick="openUnitPopup()">+</button>
+          <button type="button" class="itemCreate_btn" onclick="openUnitPopup(this)">+</button>
           {% endif %}
         </div>
         <div class="d-flex my-3">
@@ -937,29 +937,56 @@ $(document).ready(function(){
 
 
 var popUpWindow = null;
+
 function openFabPopup(button) {
-  openPopup(button, '{% url "fabric-popup" %}');
+  openPopupWithPermissionCheck(button, '{% url "fabric-popup" %}');
 }
 
 function opencolorPopup(button) {
-  openPopup(button, '{% url "color-popup" %}');
+  openPopupWithPermissionCheck(button, '{% url "color-popup" %}');
 }
 
 function openUnitPopup(button) {
-  openPopup(button, '{% url "unit-name-popup" %}');
+  openPopupWithPermissionCheck(button, '{% url "unit-name-popup" %}');
 }
 
 function openGstPopup(button) {
-  openPopup(button, '{% url "gst-popup" %}');
+  openPopupWithPermissionCheck(button, '{% url "gst-popup" %}');
 }
 
 function openPackagePopup(button) {
-  openPopup(button,'{% url "packaging-popup" %}');
+  openPopupWithPermissionCheck(button, '{% url "packaging-popup" %}');
 }
 
 function openFabricFinishPopup(button) {
-  openPopup(button, '{% url "fabric-finishes-popup" %}');
+  openPopupWithPermissionCheck(button, '{% url "fabric-finishes-popup" %}');
 }
+
+
+function openPopupWithPermissionCheck(button, url) {
+  fetch(url, {
+    method: 'GET',
+    headers: {'X-Requested-With': 'XMLHttpRequest'}})
+  .then(response => {
+      if (!response.ok) {
+          throw new Error('Server responded with an error');
+      }
+      return response.json();
+    })
+  .then(data => {
+      if (data.error) {
+        alert(data.error);
+      } else {
+        openPopup(button, url);
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+      alert("An error occurred while checking permissions.");
+  });
+}
+
+
 
 function openPopup(button, url) {
   if (popUpWindow === null || popUpWindow.closed) {
