@@ -63,7 +63,9 @@
             {% endif %}
           </select>
           {% if not form.instance.id %}
+          {% if perms.add_color %}
           <button type="button" class="itemCreate_btn popup-trigger" onclick="opencolorPopup(this)">+</button>
+          {% endif %}
           {% endif %}
         </div>
         <div class="d-flex my-3">

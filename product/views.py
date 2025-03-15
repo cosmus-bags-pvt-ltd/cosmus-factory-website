@@ -401,18 +401,7 @@ def edit_production_product(request,pk):
 
 
 
-def product2subcategoryproductajax(request):
-    selected_main_cat = request.GET.get('p_main_cat')
-    sub_cats = SubCategory.objects.filter(product_main_category = selected_main_cat)
-    
-    sub_cat_dict = {}
 
-    for sub_cat in sub_cats:
-        sub_cat_dict[sub_cat.id] = sub_cat.product_sub_category_name 
-
-
-    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        return JsonResponse({'sub_cat_dict':sub_cat_dict})
 
 
 
@@ -426,8 +415,11 @@ def product_color_sku(request,ref_id = None):
     logger.info(f"product_color_sku function run by {user}")
 
     if not user.has_perm('product.view_pproduct_creation'):
-        messages.error(request, "You do not have permission to view product")
-        return redirect('pproductlist')
+        messages.error(request, "You do not have permission to view product sku")
+        if ref_id:
+            return redirect(reverse('edit_production_product', args=[ref_id]))
+        else:
+            return redirect('pproductlist')
     
     color = Color.objects.all()
 
@@ -676,9 +668,11 @@ def definemaincategoryproduct(request,pk=None):
 
     user = request.user
 
-    # Check if the user has 'view_color' permission; otherwise, block access
-    # if not user.has_perm('product.view_maincategory'):
-    #     raise PermissionDenied("You do not have permission to view this page.")
+    logger.info(f"definemaincategoryproduct function run by {user}")
+
+    if not user.has_perm('product.view_maincategory'):
+        messages.error(request,"You do not have permission to view this page.")
+        return redirect('dashboard-main')
 
     queryset = MainCategory.objects.all()
 
@@ -687,22 +681,24 @@ def definemaincategoryproduct(request,pk=None):
     if main_cat_product_search != '':
         queryset = MainCategory.objects.filter(product_category_name__icontains = main_cat_product_search)
 
-
     if pk:
         instance = MainCategory.objects.get(pk=pk)
-        title = 'Update'
-        message = 'updated'
         page_name = 'Edit Main Category'
     else:
         instance = None
-        title = 'Create'
-        message = 'created'
         page_name = 'Create Main Category'
-
     
     form = product_main_category_form(instance=instance)
     
     if request.method == 'POST':
+
+        if instance and not user.has_perm('product.change_maincategory'):
+            messages.error(request, "You do not have permission to update a maincategory.")
+            return redirect('define-main-category-product')
+
+        if not instance and not user.has_perm('product.add_maincategory'):
+            messages.error(request, "You do not have permission to add a maincategory.")
+            return redirect('define-main-category-product')
 
         form = product_main_category_form(request.POST, instance= instance)
 
@@ -711,38 +707,48 @@ def definemaincategoryproduct(request,pk=None):
             form_instance.c_user = request.user
             form_instance.save()
 
-            if message == 'created':
+            if pk:
                 messages.success(request,'Main Category created sucessfully')
-
-            if message == 'updated':
+                logger.info(f"Main Category created sucessfully")
+            else:
                 messages.success(request,'Main Category updated sucessfully')
-
+                logger.info(f'Main Category updated sucessfully')
             return redirect('define-main-category-product')
         else:
-            return render(request,'product/definemaincategoryproduct.html',{'form':form,'main_cats':queryset,
-                                                                    'title':title,'main_cat_product_search':main_cat_product_search,
-                                                                    'page_name':page_name})
+            print(form.errors)
         
     return render(request,'product/definemaincategoryproduct.html',{'form':form,'main_cats':queryset,
-                                                                    'title':title,'main_cat_product_search':main_cat_product_search,
+                                                                    'main_cat_product_search':main_cat_product_search,
                                                                     'page_name':page_name})
 
 
-
-
+@permission_required('product.delete_maincategory', raise_exception=True)
 def definemaincategoryproductdelete(request,pk):
+
+    user = request.user
+
+    logger.info(f"definemaincategoryproductdelete function run by {user}")
+
     try:
         instance = MainCategory.objects.get(pk=pk)
         instance.delete()
-        messages.success(request,'Main Category Deleted Successfully.')
+        messages.success(request,f'{instance.product_category_name} Main Category Deleted Successfully.')
+        logger.info(f"{instance.product_category_name} Main Category Deleted Successfully. by {user}")
+
     except Exception as e :
         messages.error(request,f'{e}')
     return redirect('define-main-category-product')
 
 
-
-
 def definesubcategoryproduct(request, pk=None):
+
+    user = request.user
+
+    logger.info(f"define sub category product function run by {user}")
+
+    if not user.has_perm('product.view_subcategory'):
+        messages.error(request,"You do not have permission to view this page.")
+        return redirect('dashboard-main')
 
     if pk:
         instance = SubCategory.objects.get(pk=pk)
@@ -758,6 +764,15 @@ def definesubcategoryproduct(request, pk=None):
 
     if request.method == 'POST':
         print(request.POST)
+
+        if instance and not user.has_perm('product.change_subcategory'):
+            messages.error(request, "You do not have permission to update a subcategory.")
+            return redirect('define-sub-category-product')
+
+        if not instance and not user.has_perm('product.add_subcategory'):
+            messages.error(request, "You do not have permission to add a subcategory.")
+            return redirect('define-sub-category-product')
+        
         try:
             form = product_sub_category_form(request.POST, instance = instance)
 
@@ -769,6 +784,13 @@ def definesubcategoryproduct(request, pk=None):
 
                 form_instance.save()
 
+                if pk:
+                    messages.success(request,'Sub Category created sucessfully')
+                    logger.info(f"Sub Category created sucessfully")
+                else:
+                    messages.success(request,'Sub Category updated sucessfully')
+                    logger.info(f'Sub Category updated sucessfully')
+
                 return redirect('define-sub-category-product')
         except Exception as e:
             print(e)
@@ -777,19 +799,32 @@ def definesubcategoryproduct(request, pk=None):
     return render(request,'product/definesubcategoryproduct.html',{'main_categories':main_categories, 'form':form,'page_name':page_name,})
 
 
+@permission_required('product.delete_subcategory', raise_exception=True)
+def definesubcategoryproductdelete(request, pk):
 
+    user = request.user
 
+    logger.info(f"definesubcategoryproductdelete function run by {user}")
+
+    try:
+        instance = SubCategory.objects.get(pk=pk)
+        instance.delete()
+        messages.success(request,f'{instance.product_sub_category_name} Sub Category Deleted Successfully.')
+        logger.info(f'{instance.product_sub_category_name} Sub Category Deleted Successfully by {user}')
+
+    except Exception as e:
+        messages.error(request,f'An Exception occoured - {e}')    
+    return redirect('define-sub-category-product')
 
 
 
 def assign_bin_to_product_ajax(request):
+
     formset = None
     rack_id = None
     post_data = None
     main_categories = MainCategory.objects.all()
     zones = finished_goods_warehouse_zone.objects.all()
-
-
 
     main_category = request.POST.get('mainProduct')
     product_main_category_id = request.POST.get('product_main_category')
@@ -797,7 +832,6 @@ def assign_bin_to_product_ajax(request):
     rack_id = request.POST.get('rack')
 
     
-
     racks = finished_goods_warehouse_racks.objects.filter(zone_finished_name=zone_id).exclude(pk=rack_id)
 
 
@@ -829,14 +863,6 @@ def assign_bin_to_product_ajax(request):
         'zones': zones,'post_data': post_data,
         'racks':racks
     })
-
-
-
-
-
-
-
-
 
 def save_bin_to_subcategory(request,sub_id):
 
@@ -882,7 +908,6 @@ def save_bin_to_subcategory(request,sub_id):
                     messages.success(request,'Sub-Category updated sucessfully')
             
                 return redirect('subcategory-bin-list')
-            
             else:
                 print(formset.non_form_errors())
                 
@@ -894,10 +919,6 @@ def save_bin_to_subcategory(request,sub_id):
             messages.error(request,f'An Exception occoured - {e}')
 
     return render(request, 'product/assignbintoproduct.html')
-
-
-
-
 
 def update_bin_to_subcategory(request,sub_id,r_id,bin_id=None):
     if sub_id:
@@ -978,10 +999,6 @@ def update_bin_to_subcategory(request,sub_id,r_id,bin_id=None):
 
     return render(request, 'product/assignbintoproduct.html',{'formset':formset,'post_data':post_data,'zones': zones,'editable_bin_id': bin_id,'racks':racks})
 
-
-
-
-
 def subcategory_bin_list(request):
     
     subcategories = finished_product_warehouse_bin.objects.filter(sub_catergory_id__isnull=False).select_related( 
@@ -1005,18 +1022,17 @@ def subcategory_bin_list(request):
 
 
 
+def product2subcategoryproductajax(request):
+    selected_main_cat = request.GET.get('p_main_cat')
+    sub_cats = SubCategory.objects.filter(product_main_category = selected_main_cat)
+    
+    sub_cat_dict = {}
 
+    for sub_cat in sub_cats:
+        sub_cat_dict[sub_cat.id] = sub_cat.product_sub_category_name 
 
-def definesubcategoryproductdelete(request, pk):
-    try:
-        instance = SubCategory.objects.get(pk=pk)
-        instance.delete()
-        messages.success(request,'Sub Category Deleted Successfully.')
-    except Exception as e:
-        messages.error(request,f'An Exception occoured - {e}')    
-    return redirect('define-sub-category-product')
-
-
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        return JsonResponse({'sub_cat_dict':sub_cat_dict})
 
 
 def product2subcategory(request):
@@ -1049,23 +1065,15 @@ def product2subcategory(request):
                 p_2_c_instance = Product2SubCategory.objects.filter(Product_id=p_id, SubCategory_id=s_c_id).first() 
                 updated_instances_front.append(p_2_c_instance)
 
-            
-            
             updated_instance_pk = set(obj.pk for obj in updated_instances_front if obj is not None)
             
             instances_to_delete = [obj for obj in existing_instances if obj.pk not in updated_instance_pk]
             
-            
             for obj in instances_to_delete:
                 obj.delete()
 
-            
-                
-            
-            
             for sub_cat_id in sub_category_ids:
-
-                
+ 
                 s_c_id =  get_object_or_404(SubCategory, id = sub_cat_id)
 
                 p2c, created = Product2SubCategory.objects.get_or_create(Product_id=p_id, SubCategory_id=s_c_id)
@@ -1083,8 +1091,6 @@ def product2subcategory(request):
                                                               })
 
 
-
-
 def product2subcategoryajax(request):
 
     productid = request.GET.get('selected_product_id')
@@ -1095,8 +1101,6 @@ def product2subcategoryajax(request):
     for obj in categoryforselectedproduct:
         dict_result[obj.SubCategory_id.id] = obj.SubCategory_id.product_sub_category_name
     
-    
-
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
             return JsonResponse({'dict_result':dict_result})
 
@@ -1105,9 +1109,17 @@ def product2subcategoryajax(request):
 
 
 
-
+# ======================== ITEM CREATION ===========================
 
 def item_create(request):
+
+    user = request.user
+
+    logger.info(f"item_create function run by {user}")
+
+    if not user.has_perm('product.add_item_creation'):
+        messages.error(request, "You do not have permission to add a item.")
+        return redirect('item-list')
 
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
@@ -1119,14 +1131,17 @@ def item_create(request):
     form = Itemform()
     racks = rack_for_raw_material.objects.all()
 
-
     if request.path == '/itemcreatepopup/':
         template_name = 'product/item_create_popup.html'
     else:
         template_name = 'product/item_create_update.html'
         
     if request.method == 'POST':
-        print(request.POST)
+
+        if not user.has_perm('product.add_item_creation'):
+            messages.error(request, "You do not have permission to add a item.")
+            return redirect('item-list')
+
         form = Itemform(request.POST, request.FILES)
         if form.is_valid():
             form_instance = form.save(commit=False)
@@ -1135,11 +1150,10 @@ def item_create(request):
             
             form_instance.bin.set(form.cleaned_data.get('bin', []))
 
-            
             if request.path == '/itemcreatepopup/':
                 return HttpResponse('item created', status = 200) 
             else:
-                logger.info("Item Successfully Created")
+                logger.info(f"{form_instance.item_name} Item Successfully Created by {user}")
                 messages.success(request,'Item has been created')
                 return redirect(reverse('item-edit', args=[form_instance.id]))
     
@@ -1151,9 +1165,15 @@ def item_create(request):
     
     return render(request,template_name,{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'items_to_clone':items_to_clone,'page_name':'Create raw material','racks':racks})
 
+def item_edit(request,pk):
 
+    user = request.user
 
-def item_edit(request,pk): 
+    logger.info(f"item_edit function run by {user}")
+
+    if not user.has_perm('product.change_item_creation'):
+        messages.error(request, "You do not have permission to edit a item.")
+        return redirect('item-list') 
     
     gsts = gst.objects.all()
     fab_grp = Fabric_Group_Model.objects.all()
@@ -1176,6 +1196,11 @@ def item_edit(request,pk):
     
     
     if request.method == 'POST':
+
+        if not user.has_perm('product.change_item_creation'):
+            messages.error(request, "You do not have permission to edit a item.")
+            return redirect('item-list') 
+    
         form = Itemform(request.POST, request.FILES , instance = item_pk)
         formset = ShadeFormSet(request.POST , request.FILES, instance = item_pk)
         print(request.POST)
@@ -1236,9 +1261,8 @@ def item_edit(request,pk):
                                         if form.is_valid():
                                             form_instance = form.save(commit = False)
                                             form_instance.opening_purchase_voucher_godown_item = shade_form_instance
-                            
                                             form_instance.save()
-                                    
+                logger.info(f"Item updated successfully by {user}")                     
                 messages.success(request,'Item updated successfully')
                 return redirect('item-list')
             
@@ -1253,9 +1277,14 @@ def item_edit(request,pk):
         
     return render(request,'product/item_create_update.html',{'gsts':gsts,'fab_grp':fab_grp,'unit_name':unit_name,'colors':colors,'packaging_material_all':packaging_material_all,'fab_finishes':fab_finishes,'form':form,'formset': formset,"page_name":"Edit raw material",'racks':racks})
 
-
-
 def item_clone_ajax(request):
+
+    user = request.user
+
+    if not user.has_perm('product.add_item_creation'):
+        messages.error(request, "You do not have permission to add a item.")
+        return redirect('item-list')
+    
     selected_item_name_value = int(request.GET.get('itemValue'))
     
     if selected_item_name_value:
@@ -1274,9 +1303,15 @@ def item_clone_ajax(request):
        
     return JsonResponse({'response_data':response_data})
 
-
-
 def item_list(request):
+
+    user = request.user
+
+    logger.info(f"item_list function run by {user}")
+
+    if not user.has_perm('product.view_item_creation'):
+        messages.error(request, "You do not have permission to view items")
+        return redirect('dashboard-main')
     
     g_search = request.GET.get('item_search','')
 
@@ -1335,11 +1370,13 @@ def item_list(request):
 
     return render(request,'product/list_item.html', {"items":queryset,"item_search":g_search,"page_name":"Raw Materials","bins": bins,})
     
-
-
-
-
 def openingquantityformsetpopup(request,parent_row_id=None,primary_key=None):
+
+    user = request.user
+
+    if not user.has_perm('product.view_godown_raw_material'):
+        messages.error(request, "You do not have permission to view qty")
+        return redirect('dashboard-main')
     
     godowns =  Godown_raw_material.objects.all()
 
@@ -1383,6 +1420,17 @@ def openingquantityformsetpopup(request,parent_row_id=None,primary_key=None):
         
         if request.method == 'POST':
             
+            if not user.has_perm('product.add_godown_raw_material'):
+                messages.error(request, "You do not have permission to add qty")
+                return redirect('dashboard-main')
+            
+            if not user.has_perm('product.change_godown_raw_material'):
+                messages.error(request, "You do not have permission to update qty")
+                return redirect('dashboard-main')
+            
+            if not user.has_perm('product.delete_godown_raw_material'):
+                messages.error(request, "You do not have permission to delete qty")
+                return redirect('dashboard-main')
             
             if primary_key is not None:
 
@@ -1430,9 +1478,6 @@ def openingquantityformsetpopup(request,parent_row_id=None,primary_key=None):
     return render(request,'product/opening_godown_qty.html',{'formset':formset,'godowns':godowns ,"parent_row_id":parent_row_id, 'primary_key':primary_key,'shade_instance':shade_instance})
 
 
-
-
-
 def openingquantityformsetpopupajax(request):
     itemValue_get = request.GET.get('itemValue')
     primary_key_id_get = request.GET.get('primary_key_id')        
@@ -1449,16 +1494,13 @@ def openingquantityformsetpopupajax(request):
     return JsonResponse({'popup_url':popup_url})
 
 
-
-
-
+@permission_required('product.delete_item_creation', raise_exception=True)
 def item_delete(request, pk):
-    
     try:
         item_pk = get_object_or_404(Item_Creation,pk = pk)
         item_pk.delete()
         messages.success(request,f'Item {item_pk.item_name} was deleted')
-    
+        logger.info(f'Item {item_pk.item_name} was deleted')
     
     except Exception as e:
          messages.error(request, f'EXCEPTION-{e}')
@@ -1467,14 +1509,9 @@ def item_delete(request, pk):
     return redirect('item-list')
 
 
-
-
-
-
-
-
-
 # ======================== SUBCATEGORY FUNCTIONS ===========================
+
+
 def color_create_update(request, pk=None):
 
     user = request.user
@@ -4094,11 +4131,7 @@ def product2item(request,product_refrence_id):
 
     user = request.user
 
-    if not (user.has_perm('product.add_product_2_item_through_table') or user.has_perm('product.change_product_2_item_through_table')):
-        return JsonResponse({'error': 'You do not have permission to add or edit set production.'})
-
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({'success': True})
+    logger.info(f"product2item function run by {user}")
     
     if not user.has_perm('product.view_product_2_item_through_table'):
         messages.error(request, "You do not have permission to view set production")
@@ -4134,27 +4167,22 @@ def product2item(request,product_refrence_id):
             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,
               common_unique = False).select_related('PProduct_pk','Item_pk','PProduct_pk__PProduct_color').order_by('row_number')
         
-
         if extraformspecial:
             formset_single = Product2ItemFormsetExtraForm(queryset = product2item_instances, prefix='product2itemuniqueformset')
 
         else:
             formset_single = Product2ItemFormset(queryset=product2item_instances , prefix = 'product2itemuniqueformset')
 
-
         distinct_product2item_commmon_instances = product_2_item_through_table.objects.filter(
             PProduct_pk__Product__Product_Refrence_ID=product_refrence_id,common_unique = True).order_by(
                 'row_number','id').distinct('row_number').select_related('PProduct_pk','Item_pk')
 
-
         if extraformcommon:
             formset_common = Product2CommonItemFormSetExtraForm(queryset=distinct_product2item_commmon_instances,prefix='product2itemcommonformset')
-
         else:
             formset_common = Product2CommonItemFormSet(queryset=distinct_product2item_commmon_instances,prefix='product2itemcommonformset')
 
 
-        
         clone_ajax_valid = False
         if extraformcommon and extraformspecial:
             clone_ajax_valid = True
@@ -4173,16 +4201,12 @@ def product2item(request,product_refrence_id):
             formset_single_valid = False
             formset_common_valid = False
             
-            
             if formset_single.is_valid():
-                
                 try:
-                    
                     for form in formset_single.deleted_forms:
                         if form.instance.pk:  
                             form.instance.delete()
                             
-
                     for form in formset_single:
                         if not form.cleaned_data.get('DELETE'): 
                             if form.cleaned_data.get('Item_pk'):                                  
@@ -4196,6 +4220,7 @@ def product2item(request,product_refrence_id):
                                 p2i_instance.c_user = request.user
                                 p2i_instance.common_unique = False 
                                 p2i_instance.save()
+
                                 logger.info(f"Product to item created/updated special - {p2i_instance.id}")
 
                                 no_of_rows_to_create = form.cleaned_data['no_of_rows'] - initial_rows   
@@ -4203,7 +4228,6 @@ def product2item(request,product_refrence_id):
 
                                 if no_of_rows_to_create > 0:
                                     for row in range(no_of_rows_to_create):
-                                        
                                         logger.info(f" set prod item part name created of p2i instance - {p2i_instance.id}")
                                         set_prod_item_part_name.objects.create(producttoitem = p2i_instance, c_user = request.user)
 
@@ -4241,7 +4265,6 @@ def product2item(request,product_refrence_id):
 
                                 for product in Products_all:
 
-                                
                                     old_item = form.initial.get('Item_pk')
 
                                     if old_item:
@@ -4253,7 +4276,6 @@ def product2item(request,product_refrence_id):
 
                                     obj, created = product_2_item_through_table.objects.get_or_create(PProduct_pk=product, Item_pk=item, common_unique=True)
                                     obj.c_user = request.user
-                                    
                                     
                                     if created:
                                         initial_rows = 0
@@ -4276,15 +4298,12 @@ def product2item(request,product_refrence_id):
                                                 logger.info(f" set prod item part name created of - {obj.id}")
 
                                     formset_common_valid = True
-
                             else:
                                 raise ValidationError('Please select existing Item Name or select from the dropdown')
                                     
-
                 except Exception as e:
                     logger.error(f'Error saving common records - {e}')
                     messages.error(request, f'Error saving common records{e}.') 
-
             else:
                 logger.error(f'Error saving unique records - {formset_common.errors}')
                 messages.error(request, f'Error saving unique records - {formset_common.errors}')
@@ -4293,12 +4312,11 @@ def product2item(request,product_refrence_id):
             if formset_common_valid and formset_single_valid:
 
                 messages.success(request,'Items to Product sucessfully added.')
-                close_window_script = """
-                                                <script>
-                                                window.opener.location.reload(true);  // Reload parent window if needed
-                                                window.close();  // Close current window
-                                                </script>
-                                                """
+                close_window_script = """<script>
+                window.opener.location.reload(true);  // Reload parent window if needed
+                window.close();  // Close current window
+                </script>"""
+
                 return HttpResponse(close_window_script)
             
             else:
@@ -4344,6 +4362,8 @@ def export_Product2Item_excel(request,product_ref_id):
     
     user = request.user
 
+    logger.info(f"export_Product2Item_excel function run by {user}")
+
     if not user.has_perm('product.view_product_2_item_through_table'):
         return JsonResponse({'error': 'You do not have permission to download set production.'})
 
@@ -4360,14 +4380,12 @@ def export_Product2Item_excel(request,product_ref_id):
             PProduct_pk__Product__Product_Refrence_ID=product_ref_id, common_unique = True).order_by(
             'row_number', 'id').distinct('row_number')
 
-        
         if not products_in_i2p_special and not products_in_i2p_common:
             logger.error(f"Add Items to the respective Products first - {product_ref_id}")
             raise ObjectDoesNotExist("Add Items to the respective Products first")
 
         wb = Workbook()
 
-        
         default_sheet = wb['Sheet']
         wb.remove(default_sheet)    
 
@@ -4379,18 +4397,14 @@ def export_Product2Item_excel(request,product_ref_id):
 
         column_widths = [10, 40, 20, 30, 20, 15, 12 ,12, 12, 12]  
 
-        
         for i, column_width in enumerate(column_widths, start=1):  
             col_letter = get_column_letter(i)
             sheet1.column_dimensions[col_letter].width = column_width
-
-
         
         for i, column_width in enumerate(column_widths, start=1):
             col_letter = get_column_letter(i)
             sheet2.column_dimensions[col_letter].width = column_width
 
-        
         headers =  ['id','item name', 'product sku','part name', 'part dimention','dimention total','part pieces','body/combi','grand_total', 'combi_total']
         sheet1.append(headers)
 
@@ -4417,12 +4431,6 @@ def export_Product2Item_excel(request,product_ref_id):
 
             for row in rows_to_insert_s1:
                 sheet1.append(row)
-
-            
-            
-            
-            
-
                 row_count_to_unlock = row_count_to_unlock + 1
 
             row_count_to_unlock_total =  row_count_to_unlock_total + row_count_to_unlock
@@ -4487,8 +4495,12 @@ def export_Product2Item_excel(request,product_ref_id):
         file_name_with_pk = f'product_reference_id_{product_ref_id}'
         response['Content-Disposition'] = f'attachment; filename="{file_name_with_pk}.xlsx"'
 
+        logger.info(f"{file_name_with_pk}.xlsx download by {user}")
+
         return response
-    
+
+        
+
     except product_2_item_through_table.DoesNotExist:
         messages.error(request, 'No data found for the given product reference ID.')
         logger.error(f"items for product Does not exists for refrence id {product_ref_id}")
@@ -4504,6 +4516,15 @@ def export_Product2Item_excel(request,product_ref_id):
 
 
 def viewproduct2items_configs(request, product_sku):
+
+    user = request.user
+
+    logger.info(f"viewproduct2items_configs function run by {user}")
+
+    ref_id = PProduct_Creation.objects.get(PProduct_SKU = product_sku).Product.Product_Refrence_ID
+    if not user.has_perm('product.view_product_2_item_through_table'):
+        messages.error(request, "You do not have permission to view configs")
+        return redirect(reverse('edit_production_product',args=[ref_id]))
 
     try:
         product2item_instances = product_2_item_through_table.objects.filter(PProduct_pk__PProduct_SKU=product_sku).order_by('row_number')
@@ -4522,11 +4543,9 @@ def viewproduct2items_configs(request, product_sku):
             'error_message': f'No items found for product SKU: {product_sku}'})
 
     except DatabaseError as e:
-        
         return HttpResponseServerError(f'A database error occurred: {e}')
 
     except Exception as e:
-        
         return HttpResponseServerError(f'An unexpected error occurred: {e}')
     
 
