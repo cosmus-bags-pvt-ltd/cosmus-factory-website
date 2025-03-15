@@ -53,13 +53,13 @@
                                 <option value="{{form.instance.product_id.id}}">{{form.instance.product_id.Product_Name}}</option>
                                 
                                 {% for x in product_all %}
-                                <option value="{{x.id}}">{{x.Product_Name}}</option>
+                                <option value="{{x.id}}">{{x.Model_Name}}</option>
                                 {% endfor %}
 
                                 {% elif not form.instance.id %}
                                 <option value=""></option>
                                 {% for x in product_all %}
-                                <option value="{{x.id}}">{{x.Product_Name}}</option>
+                                <option value="{{x.id}}">{{x.Model_Name}}</option>
                                 {% endfor %}
                                 {% endif %}
                             </select>

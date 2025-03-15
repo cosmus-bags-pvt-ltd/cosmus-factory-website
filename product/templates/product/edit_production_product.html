@@ -639,7 +639,26 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
   function redirectDownloadSetProduction() {
     var ref_id = document.getElementById('id_Product_Refrence_ID').value
-    window.location.href = '/export_Product2Item_excel/' + encodeURIComponent(ref_id)
+    const url = `/export_Product2Item_excel/${ref_id}`
+
+    fetch(url,{
+      method : "GET",
+      headers : {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Server responded with an error');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        alert(data.error);
+      } else {
+        window.location.href = '/export_Product2Item_excel/' + encodeURIComponent(ref_id)
+      }
+    })
+    //window.location.href = '/export_Product2Item_excel/' + encodeURIComponent(ref_id)
   }
 
   function checkAll(source) {
